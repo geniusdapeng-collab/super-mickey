@@ -7,28 +7,35 @@ process.chdir('/root/.openclaw/workspace');
 const { NirathMasterPipeline } = require('/root/.openclaw/workspace/zhuoyue-system/core/nirath-master-pipeline.js');
 
 async function run() {
-  console.log('🎬 启动健康科普预生产 v6.6.9.4-patch9');
+  console.log('🎬 启动健康科普预生产 v6.6.9.4-patch13');
   console.log('=====================================');
   
   const pipeline = new NirathMasterPipeline({
     mode: 'generic',
     outputDir: './output/health-edu-ep01-v669',
-    isPreProduction: true // v6.6.9.4-patch9-fix: 显式声明预生产模式，避免Stage-13闸机误判
+    isPreProduction: true // v6.6.9.4-patch13-fix: 显式声明预生产模式，避免Stage-13闸机误判
   });
   
   const input = {
     projectName: 'health-edu-ep01-rhabdo-v669',
     title: '什么是横纹肌溶解——横纹肌溶解的症状以及实验室检查',
     videoType: 'health-education',
-    creativeIndex: 1.0, // v6.6.9.4-patch9: 极高创意指数（内部最大1.0）
+    creativeIndex: 1.0, // v6.6.9.4-patch13: 极高创意指数（内部最大1.0）
     targetDuration: 62,
-    aspectRatio: '16:9', // v6.6.9.4-patch9: 用户要求16:9宽屏
+    aspectRatio: '16:9', // v6.6.9.4-patch13: 用户要求16:9宽屏
     style: 'realistic',
     characters: [{
-      id: 'chen-zhuo', // v6.6.9.4-patch9: 使用正确的角色ID
+      id: 'chen-zhuo',
       name: '陈卓',
       role: 'presenter',
-      description: '穿警服的陈女士，健康科普讲解员，亲切温和，专业可信'
+      description: '穿警服的陈女士，健康科普讲解员，亲切温和，专业可信',
+      // v6.6.9.4-patch13-fix: 绑定定妆照，确保片头和正片角色一致性
+      portraits: [
+        'image://bestiary/chen-zhuo-front.png',
+        'image://bestiary/chen-zhuo-threeQuarter.png',
+        'image://bestiary/chen-zhuo-closeup.png',
+        'image://bestiary/chen-zhuo-side.png'
+      ]
     }],
     hasOpening: true,
     noPreview: true,
@@ -37,7 +44,7 @@ async function run() {
     presenterStyle: 'professional-with-natural-gestures',
     visualStyle: 'full-realistic-cinematic',
     quality: 'hollywood-film-grade',
-    // v6.6.9.4-patch12: 人物灵动感软性注入
+    // v6.6.9.4-patch13: 人物灵动感软性注入
     directorNote: '陈卓表现要活泼灵动，像朋友一样亲切，拒绝呆板说教感',
     performanceStyle: 'vlog-style-interactive',
     mannerisms: [
