@@ -74,7 +74,7 @@ const { generateAmbientSoundField } = require('./ambient-sound-designer.js');
 const { OrientPrimordialCoreV24 } = require('../shanhaijing-render-engine/orient-primordial-core-v24.js');
 const { CameraMovementSystem } = require('./camera-movement-system-v2.js');
 // 🔥 v6.2-fix: 引入v3镜头内时间轴生成器(恢复英雄之旅运镜复杂度)
-const { IntraShotTimelineGenerator, SHOT_SIZE_TRANSITIONS, LIGHTING_TRANSITIONS, SPEED_CURVES, TRANSITION_EFFECTS } = require('./camera-movement-system-v3.js');
+const { CameraMovementSystemV4 } = require('./camera-movement-system-v4.js');
 const { NirathCharacterEnhancer, WorldSoulBinding } = require('./nirath-character-enhancement.js');
 const audit = require('./audit-logger'); // P1: 操作审计日志
 const { UniversalStyleInjector } = require('./universal-style-injector.js');
@@ -4396,65 +4396,11 @@ ${isNirath
     // v6.2-patch65: 重置一镜到底计数器(每轮预生产独立计数)
     this._oneShotCounter = { used: 0, max: 2 };
 
-    // 🔥 v6.2-fix: 初始化v3镜头内时间轴生成器
-    const timelineGenerator = new IntraShotTimelineGenerator();
-
-    // 场景类型→景别切换策略映射(英雄之旅运镜设计)
-    // v6.2-patch107: 新增top-down和fpv特殊场景支持
-    const sceneTypeToTransition = {
-      opening: 'progressive_reveal',      // 开场:渐进式揭示
-      establishing: 'progressive_reveal', // 建立:渐进式揭示
-      discovery: 'impact_shock',          // 发现:震撼式冲击
-      reveal: 'impact_shock',             // 揭示:震撼式冲击
-      beastReveal: 'impact_shock',        // 异兽揭示:震撼式冲击
-      interaction: 'orbit_explore',       // 互动:环绕式探索
-      dialogue: 'dialogue_dance',         // 对话:对话式切换
-      climax: 'chase_dynamic',            // 高潮:追逐式动态
-      chase: 'chase_dynamic',             // 追逐:追逐式动态
-      closing: 'poetic_wander',           // 结尾:诗意式游走
-      environment: 'progressive_reveal',   // 环境:渐进式揭示
-      'top-down': 'progressive_reveal',    // 俯视:渐进式揭示(全局展示)
-      'fpv': 'chase_dynamic'               // FPV:追逐式动态
-    };
-
-    // 情绪阶段→灯光变化类型映射
-    const emotionToLighting = {
-      establishing: 'dawn_break',         // 建立:晨曦渐亮
-      rising: 'spotlight_drama',          // 上升:戏剧聚光
-      building: 'spotlight_drama',        // 蓄力:戏剧聚光
-      climax: 'energy_burst',             // 高潮:能量爆发
-      resolve: 'emotion_temperature',     // 解决:情绪冷暖
-      neutral: 'dawn_break'               // 中性:晨曦渐亮
-    };
-
-    // 情绪阶段→速度曲线映射
-    // v6.2-patch66-fix: 扩展映射覆盖所有情绪类型,防止激烈情绪使用慢速运镜
-    // 重要:只能使用 SPEED_CURVES 中已有的值 (slow_fast_slow/fast_slow_fast/building/exploding/breathing)
-    const emotionToSpeedCurve = {
-      establishing: 'slow_fast_slow',      // 建立:慢快慢
-      rising: 'building',                 // 上升:递进加速
-      building: 'building',               // 蓄力:递进加速
-      climax: 'exploding',               // 高潮:爆发式
-      resolve: 'breathing',               // 解决:呼吸式
-      neutral: 'slow_fast_slow',          // 中性:慢快慢
-      // 新增映射:覆盖所有情绪类型,只使用已有speedCurve
-      tension: 'exploding',               // 紧张:爆发式(快速)
-      conflict: 'fast_slow_fast',          // 冲突:快慢快(紧张)
-      awe: 'exploding',                   // 敬畏:爆发式(震撼)
-      fear: 'exploding',                  // 恐惧:爆发式(冲击)
-      anger: 'exploding',                 // 愤怒:爆发式(激烈)
-      curious: 'slow_fast_slow',          // 好奇:慢快慢(探索)
-      confusion: 'slow_fast_slow',         // 困惑:慢快慢(不安)
-      relief: 'breathing',                 // 释然:呼吸式(舒缓)
-      joy: 'fast_slow_fast',               // 喜悦:快慢快(活力)
-      sadness: 'breathing',               // 悲伤:呼吸式(缓慢)
-      surprise: 'exploding',              // 惊讶:爆发式(冲击)
-      trust: 'slow_fast_slow',             // 信任:慢快慢(稳定)
-      anticipation: 'building',           // 期待:递进加速(累积)
-      disgust: 'exploding',              // 厌恶:爆发式(强烈)
-    };
+    // 🔥 v4.0: 初始化v4镜头内时间轴生成器(LLM驱动)
+    const cameraMovementV4 = new CameraMovementSystemV4();
 
     const movements = [];
+    let previousShot = null; // v4.0: 用于镜头间连续性
     for (const shot of storyboard.shots) {
       let movement;
 
@@ -4474,7 +4420,7 @@ ${isNirath
         this.log('STAGE-9', `  🎬 FPV运镜: ${shot.id} | 导演决策: ${shot.fpvReason || '特殊场景FPV'}`);
 
         if (this.mode === 'nirath') {
-          // Nirath模式:生成FPV电影感运镜 + v3时间轴
+          // Nirath模式:生成FPV电影感运镜 + v4时间轴
           const sceneName = (shot.scene || '').split('-')[0]?.trim() || shot.scene || 'default';
           const phase = shot.emotionPhase || 'climax';
 
@@ -4498,30 +4444,37 @@ ${isNirath
             movement.isFPV = true;
             movement.fpvScore = shot.fpvScore;
 
-            // 🔥 v6.2-fix: FPV镜头也加入v3时间轴(2-3段简化版)
-            const fpvTimeline = timelineGenerator.generateTimeline({
-              transitionType: 'chase_dynamic',
-              lightingType: 'energy_burst',
-              speedCurve: 'exploding',
-              duration: shot.duration || 5,
-              emotionPhase: 'climax',
-              sceneName
-            });
+            // 🔥 v4.0: FPV镜头使用v4 LLM时间轴
+            const fpvV4Result = await cameraMovementV4.generateIntraShotTimelineV4(shot, previousShot, { autoFix: true });
+            const fpvTimeline = fpvV4Result.timeline;
+            // 转换v4段到v3兼容格式
+            const SHOT_SIZE_DESC_MAP = {
+              extreme_wide: '极端远景（环境全貌）', wide: '远景（环境+主体）', full: '全景（全身）',
+              medium: '中景（半身/双人）', close_up: '特写（面部/细节）', extreme_close: '极端特写（眼睛/纹理）'
+            };
+            const SPEED_DESC_MAP = {
+              'slow': '缓慢', 'medium': '中等', 'fast': '快速', 'very_slow': '极慢', 'very_fast': '极快',
+              '极慢': '极慢', '缓慢': '缓慢', '中等': '中等', '快速': '快速', '极快': '极快'
+            };
+            fpvTimeline.segments = (fpvTimeline.segments || []).map(s => ({
+              ...s, shotSizeDesc: SHOT_SIZE_DESC_MAP[s.shotSize] || s.shotSize,
+              speed: { description: SPEED_DESC_MAP[s.speed] || s.speed || '中等' }
+            }));
             movement.timeline = fpvTimeline;
 
-            this.log('STAGE-9', `  ✅ FPV运镜+v3时间轴: ${shot.id} | ${fpvTimeline.segmentCount}段 | ${movement.description?.substring(0, 50)}...`);
+            this.log('STAGE-9', `  ✅ FPV运镜+v4时间轴: ${shot.id} | ${fpvTimeline.segmentCount}段 | ${movement.description?.substring(0, 50)}...`);
           } catch (e) {
-            this.log('STAGE-9', `  ⚠️ FPV运镜生成失败: ${e.message} | 回退到普通运镜+v3时间轴`);
-            movement = this.generateV3CameraMovement(shot, timelineGenerator, sceneTypeToTransition, emotionToLighting, emotionToSpeedCurve);
+            this.log('STAGE-9', `  ⚠️ FPV运镜生成失败: ${e.message} | 回退到v4运镜`);
+            movement = await this.generateV4CameraMovement(shot, cameraMovementV4, previousShot);
           }
         } else {
           // 通用模式:标准运镜
           movement = this.modules.cameraMovement.generateMovement(shot);
         }
       } else {
-        // 🔥 v6.2-fix: 非FPV镜头使用v3完整运镜系统
+        // 🔥 v4.0: 非FPV镜头使用v4 LLM驱动运镜系统
         if (this.mode === 'nirath') {
-          movement = this.generateV3CameraMovement(shot, timelineGenerator, sceneTypeToTransition, emotionToLighting, emotionToSpeedCurve);
+          movement = await this.generateV4CameraMovement(shot, cameraMovementV4, previousShot);
         } else {
           movement = this.modules.cameraMovement.generateMovement(shot);
         }
@@ -4531,70 +4484,92 @@ ${isNirath
 
       // 🔥 v6.2-patch49-fix: 将运镜同步保存到shot对象,供下游消费
       shot.cameraMovement = movement;
+
+      // v4.0: 更新previousShot用于镜头间连续性
+      previousShot = shot;
     }
 
     const fpvCount = movements.filter(m => m.isFPV).length;
-    const v3Count = movements.filter(m => m.movement?.timeline?.segments?.length > 2).length;
-    this.log('STAGE-9', `✅ 运镜完成 | 镜头数: ${movements.length} | v3多段式: ${v3Count} | FPV: ${fpvCount} | 传统: ${movements.length - v3Count - fpvCount}`);
+    const v4Count = movements.filter(m => m.movement?.timeline?.segments?.length > 0).length;
+    this.log('STAGE-9', `✅ 运镜完成 | 镜头数: ${movements.length} | v4多段式: ${v4Count} | FPV: ${fpvCount} | 传统: ${movements.length - v4Count - fpvCount}`);
     return movements;
   }
 
   /**
-   * 🔥 v6.2-fix: 生成v3完整运镜(多段式时间轴+转场+灯光+速度曲线)
+   * 🔥 v4.0: 生成v4 LLM驱动运镜(个性化镜头内时间轴)
+   * 替代v3规则模板,使用LLM理解内容生成创意运镜
    */
-  generateV3CameraMovement(shot, timelineGenerator, sceneTypeToTransition, emotionToLighting, emotionToSpeedCurve) {
+  async generateV4CameraMovement(shot, cameraMovementV4, previousShot) {
     const sceneName = (shot.scene || '').split('-')[0]?.trim() || shot.scene || 'default';
     const phase = shot.emotionPhase ||
                   (shot.type === 'opening' ? 'establishing' :
                    shot.type === 'climax' ? 'climax' : 'rising');
 
+    // v4.0: 景别描述映射
+    const SHOT_SIZE_DESC_MAP = {
+      extreme_wide: '极端远景（环境全貌）',
+      wide: '远景（环境+主体）',
+      full: '全景（全身）',
+      medium: '中景（半身/双人）',
+      close_up: '特写（面部/细节）',
+      extreme_close: '极端特写（眼睛/纹理）'
+    };
+
+    // v4.0: 速度描述映射
+    const SPEED_DESC_MAP = {
+      'slow': '缓慢', 'medium': '中等', 'fast': '快速',
+      'very_slow': '极慢', 'very_fast': '极快', '极慢': '极慢', '缓慢': '缓慢',
+      '中等': '中等', '快速': '快速', '极快': '极快'
+    };
+
     // v6.2-patch107: top-down特殊场景处理
     if (shot.shotType === 'top-down' || shot.type === 'top-down') {
       this.log('STAGE-9', `  🎬 俯视运镜: ${shot.id} | 场景: ${sceneName} | 无Face Close-up`);
-      const timeline = timelineGenerator.generateTimeline({
-        transitionType: 'progressive_reveal',
-        lightingType: 'dawn_break',
-        speedCurve: 'slow_fast_slow',
-        duration: shot.duration || 5,
-        emotionPhase: phase,
-        sceneName
-      });
+      const topDownShot = { ...shot, sceneName, sceneDescription: shot.scene || '俯视场景', duration: shot.duration || 5, emotionPhase: phase, characters: shot.characters || [], type: 'top-down' };
+      const v4Result = await cameraMovementV4.generateIntraShotTimelineV4(topDownShot, previousShot, { autoFix: true });
+      const timeline = v4Result.timeline;
+
+      // 转换v4段到v3兼容格式
+      const compatibleSegments = (timeline.segments || []).map(s => ({
+        ...s,
+        shotSizeDesc: SHOT_SIZE_DESC_MAP[s.shotSize] || s.shotSize,
+        speed: { description: SPEED_DESC_MAP[s.speed] || s.speed || '中等' }
+      }));
+      timeline.segments = compatibleSegments;
 
       return {
         description: `(俯视镜头)从正上方拍摄,展示全局布局。${sceneName}的棋盘/场景从空中俯瞰,人物作为小元素分布在画面中。无Face Close-up,以整体构图为主。`,
         timeline,
-        v3Enabled: true,
-        transitionType: 'progressive_reveal',
-        lightingType: 'dawn_break',
-        speedCurve: 'slow_fast_slow',
+        v4Enabled: true,
+        transitionType: timeline.transitionType || 'top-down',
         shotType: 'top-down',
         cameraAngle: 'top-down',
         noFaceCloseUp: true
       };
     }
 
-    // 根据场景类型选择景别切换策略
-    const transitionType = sceneTypeToTransition[shot.type] || 'progressive_reveal';
-    // 根据情绪阶段选择灯光变化
-    const lightingType = emotionToLighting[phase] || 'dawn_break';
-    // 根据情绪阶段选择速度曲线
-    const speedCurve = emotionToSpeedCurve[phase] || 'slow_fast_slow';
+    // v4.0: 调用LLM驱动生成个性化时间轴
+    const v4Result = await cameraMovementV4.generateIntraShotTimelineV4(shot, previousShot, { autoFix: true });
+    const timeline = v4Result.timeline;
 
-    // 生成v3完整时间轴
-    const timeline = timelineGenerator.generateTimeline({
-      transitionType,
-      lightingType,
-      speedCurve,
-      duration: shot.duration || 5,
-      emotionPhase: phase,
-      sceneName
-    });
-
-    // v6.2-patch66-fix: 防御性检查,防止无效timeline导致segments.map报错
-    if (!timeline || !timeline.segments) {
-      this.log('STAGE-9', `  ⚠️ 时间轴生成失败: ${shot.id} | transitionType=${transitionType} | speedCurve=${speedCurve} | 回退到基础运镜`);
+    // v4.0: 防御性检查,防止无效timeline
+    if (!timeline || !timeline.segments || timeline.segments.length === 0) {
+      this.log('STAGE-9', `  ⚠️ v4时间轴生成失败: ${shot.id} | 回退到基础运镜`);
+      const baseMovement = this.modules.cameraMovement.generateNirathMovement(sceneName, phase, {
+        shotSize: shot.shotSize,
+        movement: shot.movement,
+        speed: shot.speed
+      });
       return baseMovement;
     }
+
+    // 转换v4段到v3兼容格式(供下游使用)
+    const compatibleSegments = timeline.segments.map(s => ({
+      ...s,
+      shotSizeDesc: SHOT_SIZE_DESC_MAP[s.shotSize] || s.shotSize,
+      speed: { description: SPEED_DESC_MAP[s.speed] || s.speed || '中等' }
+    }));
+    timeline.segments = compatibleSegments;
 
     // 同时调用v2系统生成基础运镜描述(向后兼容)
     const baseMovement = this.modules.cameraMovement.generateNirathMovement(sceneName, phase, {
@@ -4603,26 +4578,24 @@ ${isNirath
       speed: shot.speed
     });
 
-    // 合并:v3时间轴 + v2基础描述
+    // 合并:v4时间轴 + v2基础描述
     const movement = {
       ...baseMovement,
       timeline,
-      v3Enabled: true,
-      transitionType,
-      lightingType,
-      speedCurve
+      v4Enabled: true,
+      transitionType: timeline.transitionType || 'llm_v4',
+      v4Mode: v4Result.mode || 'v4-llm-driven'
     };
 
     // 生成自然语言描述
     const segDesc = timeline.segments.map(s =>
-      `${s.timeRange} ${s.shotSizeDesc} ${s.speed.description} ${s.movement}${s.transition ? '→' + (TRANSITION_EFFECTS[s.transition]?.name || s.transition) : ''}`
+      `${s.timeRange} ${s.shotSizeDesc} ${s.speed.description} ${s.movement}`
     ).join(' | ');
 
-    // v6.2-patch97-fix: 一镜到底智能判断(基于transitionType和段内transition效果)
-    // 一镜到底要求无硬切/移焦:若时间轴内含多段切换效果,或transitionType为多段剪辑型,标记为多段运镜
-    const hasHardCuts = timeline.segments.some(s => s.transition && ['hard_cut','jump_cut','whip_pan','match_cut'].includes(s.transition));
-    const isMultiSegmentType = ['chase_dynamic','impact_shock','montage','parallel'].includes(transitionType);
-    const canUseOneShot = !hasHardCuts && !isMultiSegmentType && this._oneShotCounter.used < this._oneShotCounter.max;
+    // v4.0: 一镜到底判断(基于v4策略)
+    const strategy = timeline.strategy || '';
+    const isOneShotStrategy = /一镜到底|长镜头|连续|one.shot|single.take/i.test(strategy);
+    const canUseOneShot = isOneShotStrategy && this._oneShotCounter.used < this._oneShotCounter.max;
     if (canUseOneShot) this._oneShotCounter.used++;
 
     const oneShotPrefix = canUseOneShot ? '(一镜到底!)' : '(多段运镜)';
@@ -4634,12 +4607,14 @@ ${isNirath
       movement.description += `\n${ciiInstructions.trim()}`;
     }
 
-    // v6.2-patch63-fix: 将timeline段数同步到shot对象,供Stage 11质量评分使用
+    // v4.0: 将timeline段数同步到shot对象,供Stage 11质量评分使用
     shot._segments = timeline.segments;
     shot._segmentCount = timeline.segmentCount;
     shot._timeline = timeline;
+    shot._v4Strategy = timeline.strategy;
+    shot._v4Reasoning = timeline.reasoning;
 
-    this.log('STAGE-9', `  🎬 v3运镜: ${shot.id} | ${timeline.segmentCount}段 | ${transitionType} | ${lightingType} | ${speedCurve} | ${shot.duration || 5}秒`);
+    this.log('STAGE-9', `  🎬 v4运镜: ${shot.id} | ${timeline.segmentCount}段 | 策略:${timeline.strategy || 'N/A'} | ${shot.duration || 5}秒 | 模式:${v4Result.mode || 'unknown'}`);
 
     return movement;
   }
@@ -7389,7 +7364,8 @@ ${isNirath
       '';
 
     const audioText = this.enhanceAudioWithMethodology(
-      (prompt.match(/【音频】([^【]*)/) || [])[1] ||
+      (prompt.match(/【环境音效】([^【]*)/) || [])[1] ||  // v6.6.9.4-patch9: 标准字段名
+      (prompt.match(/【音频】([^【]*)/) || [])[1] ||     // 兼容旧字段
       [
         /伴随[^，。,；;]*/g,
         /动作产生[^，。,；;]*/g,

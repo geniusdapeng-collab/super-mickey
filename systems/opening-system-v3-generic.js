@@ -54,7 +54,7 @@ function generateGenericOpening(config) {
     cameraPlan: [{ time: `${act2End.toFixed(1)}-${act3End.toFixed(1)}s`, movement: 'hold on title card' }]
   };
 
-  const fullPrompt = `16:9宽屏电影级镜头。【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic | 【基础】hyperrealistic, ultra-detailed, high dynamic range, film grain, 35mm texture, cinematic film | 【空间】明亮整洁的健康科普演播室/医疗教育环境，柔和自然光，干净真实 | 【主体】${presenterName}，身穿专业医护工作服，亲切温和，专业可信，面向镜头，自然微笑 | 【动态】${act1.content} ${act2.content} ${act3.content} | 【风格】color palette: natural earth tones + daylight highlights + medical white accents, professional documentary aesthetic | 【质控】blurry, low resolution, cartoon, anime, 3D render, CGI, plastic look, overexposed, crushed blacks, distorted face, extra fingers, waxy skin | 【明亮约束】自然光或柔和室内照明，画面真实干净，禁止暗黑/灰暗 | 【角色约束】画面中仅出现${presenterName}，禁止重复角色`;
+  const fullPrompt = `16:9宽屏电影级镜头。【渲染】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic, hyperrealistic, ultra-detailed, high dynamic range, film grain, 35mm texture, cinematic film | 【空间】明亮整洁的健康科普演播室/医疗教育环境，柔和自然光，干净真实 | 【视觉】${presenterName}，身穿专业医护工作服，亲切温和，专业可信，面向镜头，自然微笑 | 【动态】${act1.content} ${act2.content} ${act3.content} | 【风格】color palette: natural earth tones + daylight highlights + medical white accents, professional documentary aesthetic | 【负面约束】blurry, low resolution, cartoon, anime, 3D render, CGI, plastic look, overexposed, crushed blacks, distorted face, extra fingers, waxy skin | 【明亮约束】自然光或柔和室内照明，画面真实干净，禁止暗黑/灰暗 | 【角色约束】画面中仅出现${presenterName}，禁止重复角色`;
 
   return {
     duration,

@@ -546,17 +546,23 @@ class PromptTierArchitecture {
       prompt = this._trimAtPunctuation(prompt, this.maxLength);
     }
     
-    // 构建 raw 视图（七层分隔）
-    const raw = [
-      '【约束】' + layers.constraint,
-      '【基础】' + layers.foundation,
+    // 构建 raw 视图（标准字段名，上游统一，下游零映射）
+    // v6.6.9.4-patch9-fix: 七层架构字段名 → 标准字段名
+    // 【约束】+【基础】→【渲染】|【主体】→【视觉】|【音频】→【环境音效】|【质控】→【负面约束】
+    const rawParts = [
+      '【渲染】' + [layers.constraint, layers.foundation].filter(Boolean).join(', '),
       '【空间】' + layers.space,
-      '【主体】' + layers.subject,
+      '【视觉】' + layers.subject,
       '【动态】' + layers.dynamic,
       '【风格】' + layers.style,
-      '【音频】' + layers.audio,  // 🔊
-      '【质控】' + layers.quality
-    ].filter(s => s.length > 3).join(' | ');
+      '【环境音效】' + layers.audio,
+      '【负面约束】' + layers.quality
+    ];
+    // 导演风格（如有）→【导演】
+    if (directorStyleText) {
+      rawParts.push('【导演】' + directorStyleText);
+    }
+    const raw = rawParts.filter(s => s.length > 3).join(' | ');
     
     return { prompt, raw };
   }

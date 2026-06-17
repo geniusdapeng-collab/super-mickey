@@ -13,7 +13,6 @@
  * 来源: 外部专家方案落地
  */
 
-const { IntraShotTimelineGenerator } = require('./camera-movement-system-v3.js');
 const { LLMEngine } = require('./llm-reasoning-engine');
 
 // ========== Layer 1: 场景分析器 ==========
@@ -681,15 +680,43 @@ class CameraMovementSystemV4 {
     };
   }
   
-  generateIntraShotTimeline(sceneName, emotionPhase, options = {}) {
-    return new IntraShotTimelineGenerator().generateTimeline({
-      transitionType: options.transitionType,
-      lightingType: options.lightingType,
-      speedCurve: options.speedCurve,
-      duration: options.duration,
-      emotionPhase,
-      sceneName
-    });
+  generateIntraShotTimeline(sceneName, emotionPhase = 'establishing', options = {}) {
+    // v4.0: 原生软回退实现，移除v3依赖
+    const duration = Number(options.duration) || 5;
+    const segmentCount = duration <= 6 ? 2 : (duration <= 16 ? 3 : 4);
+    const step = duration / segmentCount;
+    const preferred = ['medium', 'medium_close_up', 'close_up'];
+
+    const segments = [];
+    for (let i = 0; i < segmentCount; i++) {
+      const start = +(i * step).toFixed(1);
+      const end = +(i === segmentCount - 1 ? duration : (i + 1) * step).toFixed(1);
+      segments.push({
+        timeRange: `${start}-${end}s`,
+        shotSize: preferred[Math.min(i, preferred.length - 1)] || 'medium',
+        movement: i === 0 ? '稳定开场' : (i === segmentCount - 1 ? '收尾定格' : '内容推进'),
+        speed: i === 0 ? '缓慢' : '中等',
+        reason: `第${i + 1}段基于${duration}秒时长分配。`
+      });
+    }
+
+    const strategy = `${sceneName}场景软回退时间轴`;
+    const reasoning = `基于${duration}秒时长与${emotionPhase}情绪，采用原生v4软回退生成。`;
+
+    return {
+      strategy,
+      reasoning,
+      segmentCount,
+      segments,
+      generatedBy: 'v4-soft-fallback-native',
+      description: `${strategy}（${segmentCount}段，${duration}秒）`,
+      transitionType: options.transitionType || 'default',
+      timeline: {
+        strategy,
+        reasoning,
+        segments
+      }
+    };
   }
 }
 
