@@ -6,7 +6,7 @@
     "age": 28,
     "gender": "female",
     "species": "human",
-    "role": "",
+    "role": "presenter",
     "origin": "Earth"
   },
   "visualIdentity": {
@@ -18,18 +18,12 @@
     "hair": "black",
     "eyes": "brown",
     "facialFeatures": "asian",
-    "distinguishingMarks": ""
+    "distinguishingMarks": "",
+    "outfit": "",
+    "appearance": {}
   },
   "personality": {
-    "core": {
-      "core": "warm",
-      "traits": [
-        "kind",
-        "patient",
-        "loving",
-        "nurturing"
-      ]
-    },
+    "core": "warm",
     "traits": [
       "kind",
       "brave"
@@ -56,9 +50,9 @@
     "emotion": "neutral",
     "language": "zh-CN"
   },
-  "createdAt": "2026-06-12T23:44:47.321Z",
-  "updatedAt": "2026-06-12T23:44:47.321Z",
-  "version": "2.0",
+  "createdAt": "2026-06-17T04:12:28.010Z",
+  "updatedAt": "2026-06-17T04:12:28.011Z",
+  "version": "2.1",
   "generatedAssets": {
     "portraits": [
       "image://bestiary/chen-zhuo-front.png",
@@ -76,7 +70,7 @@
     "analyzedDimensions": [],
     "lastComplianceCheck": null,
     "promptTemplates": {},
-    "minimalAnchor": "陈卓: Nirath异兽, Nirath原生特征, 双恒星光照反射",
+    "minimalAnchor": "陈卓: 人类, 28岁女性, presenter",
     "portraitPaths": [
       "image://bestiary/chen-zhuo-front.png",
       "image://bestiary/chen-zhuo-threeQuarter.png",
@@ -86,5 +80,7 @@
       "image://bestiary/chen-zhuo-action.png",
       "image://bestiary/chen-zhuo-detail.png"
     ]
-  }
+  },
+  "species": "human",
+  "race": "human"
 }

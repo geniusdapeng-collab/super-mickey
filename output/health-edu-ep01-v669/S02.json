@@ -1,0 +1,776 @@
+{
+  "shotId": "S02",
+  "recordedAt": "2026-06-17T04:18:37.611Z",
+  "rawShot": {
+    "id": "S02",
+    "scene": "核心机制解析",
+    "dialogue": "横纹肌溶解，就是肌肉细胞大面积坏死，肌红蛋白漏进血液，可能堵塞肾小管，引发急性肾衰竭。",
+    "narration": "横纹肌溶解，就是肌肉细胞大面积坏死，肌红蛋白漏进血液，可能堵塞肾小管，引发急性肾衰竭。",
+    "duration": 15,
+    "type": "content",
+    "characters": [
+      "chen-zhuo"
+    ],
+    "mouthAction": "speaking_normal",
+    "importance": 5,
+    "visualComplexity": 5,
+    "emotionPhase": "tension",
+    "visualPrompt": "超写实纪录片风格，三甲医院肾内科诊室环境，陈卓身穿白大褂站在人体解剖示意图前，手持激光笔指向肾脏结构图，面向镜头进行专业讲解，表情沉稳专注，中近景构图，人物位于画面中央偏左，背景可见真实的医学书籍和诊疗设备，柔和顶光结合侧窗自然光，画面质感细腻真实，肤色自然，景深适中，镜头稳定无晃动，整体呈现权威可信的医疗科普氛围，竖屏构图人物比例协调。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
+    "fpvRecommended": false,
+    "fpvScore": 58,
+    "fpvReason": "建议传统运镜：情绪/视觉不适合FPV",
+    "cameraMovement": {
+      "timeline": {
+        "strategy": "渐进侵入式",
+        "reasoning": "通过逐步收紧的景别和加速的运动，将观众从观察者身份强行拉入医学恐怖的微观世界，用物理空间的压缩模拟病理机制对机体的入侵过程，配合专业术语的累积叙述制造认知压迫感。",
+        "segmentCount": 3,
+        "segments": [
+          {
+            "index": 0,
+            "timeRange": "0-5",
+            "shotSize": "medium",
+            "movement": "轨道车向角色平滑推进65厘米，同时镜头向右横摇12度",
+            "speed": "3秒完成推进，后期加速至1.5秒完成剩余距离",
+            "reason": "建立对话空间的环境锚点，初始克制运动让观众稳定接收'横纹肌溶解'的诊断名词，中段加速暗示病情恶化速率超过预期。"
+          },
+          {
+            "index": 1,
+            "timeRange": "5-10",
+            "shotSize": "close_up",
+            "movement": "斯坦尼康从角色肩膀上方下沉23厘米至胸部高度，同时镜头俯仰下调8度",
+            "speed": "5秒匀速完成，末端0.5秒微震颤2度",
+            "reason": "切入'肌红蛋白漏进血液'的具象化叙述，下沉动作模拟体液沉积的物理重力，末端震颤外化肾功能崩溃的不可逆性。"
+          },
+          {
+            "index": 2,
+            "timeRange": "10-15",
+            "shotSize": "close_up",
+            "movement": "轨道车向角色面部持续推进41厘米，镜头同步向左横摇5度、仰角抬升4度",
+            "speed": "4秒完成，最后1秒加速至0.5秒完成最后10厘米",
+            "reason": "直面'急性肾衰竭'的终极宣判，双重轴向运动打破构图平衡制造窒息感，最终逼近面部迫使观众承担与角色同等的死亡恐惧。"
+          }
+        ],
+        "generatedBy": "LLM-v4",
+        "description": "渐进侵入式：从medium逐步过渡到close_up，共3段，强调内容驱动的细微推进。",
+        "transitionType": "llm_v4",
+        "timeline": {
+          "strategy": "渐进侵入式",
+          "reasoning": "通过逐步收紧的景别和加速的运动，将观众从观察者身份强行拉入医学恐怖的微观世界，用物理空间的压缩模拟病理机制对机体的入侵过程，配合专业术语的累积叙述制造认知压迫感。",
+          "segments": [
+            {
+              "index": 0,
+              "timeRange": "0-5",
+              "shotSize": "medium",
+              "movement": "轨道车向角色平滑推进65厘米，同时镜头向右横摇12度",
+              "speed": "3秒完成推进，后期加速至1.5秒完成剩余距离",
+              "reason": "建立对话空间的环境锚点，初始克制运动让观众稳定接收'横纹肌溶解'的诊断名词，中段加速暗示病情恶化速率超过预期。"
+            },
+            {
+              "index": 1,
+              "timeRange": "5-10",
+              "shotSize": "close_up",
+              "movement": "斯坦尼康从角色肩膀上方下沉23厘米至胸部高度，同时镜头俯仰下调8度",
+              "speed": "5秒匀速完成，末端0.5秒微震颤2度",
+              "reason": "切入'肌红蛋白漏进血液'的具象化叙述，下沉动作模拟体液沉积的物理重力，末端震颤外化肾功能崩溃的不可逆性。"
+            },
+            {
+              "index": 2,
+              "timeRange": "10-15",
+              "shotSize": "close_up",
+              "movement": "轨道车向角色面部持续推进41厘米，镜头同步向左横摇5度、仰角抬升4度",
+              "speed": "4秒完成，最后1秒加速至0.5秒完成最后10厘米",
+              "reason": "直面'急性肾衰竭'的终极宣判，双重轴向运动打破构图平衡制造窒息感，最终逼近面部迫使观众承担与角色同等的死亡恐惧。"
+            }
+          ]
+        }
+      },
+      "v4Enabled": true,
+      "v4Analysis": {
+        "spaceSize": "medium",
+        "sceneType": "dialogue",
+        "sceneTypeName": "对话",
+        "segmentCount": 3,
+        "constraints": {
+          "minSize": "medium",
+          "maxSize": "wide",
+          "forbidden": [
+            "extreme_wide"
+          ],
+          "preferred": [
+            "medium",
+            "close_up"
+          ],
+          "defaultSize": "medium"
+        },
+        "movementStyle": "stable",
+        "characterCount": 1,
+        "duration": 15,
+        "shotId": "核心机制解析",
+        "dialogue": "横纹肌溶解，就是肌肉细胞大面积坏死，肌红蛋白漏进血液，可能堵塞肾小管，引发急性肾衰竭。",
+        "emotionPhase": "tension"
+      },
+      "v4Continuity": {
+        "valid": true,
+        "warnings": [],
+        "fixes": []
+      },
+      "description": "渐进侵入式：从medium逐步过渡到close_up，共3段精细运镜。首段：轨道车向角色平滑推进65厘米，同时镜头向右横摇12度。设计意图：通过逐步收紧的景别和加速的运动，将观众从观察者身份强行拉入医学恐怖的微观世界，用物理空间的压缩模拟病理机制对机体的入侵过程，配合专业术语的累积叙述制造认知压迫感",
+      "shotSize": "medium",
+      "position": "center",
+      "movement": "轨道车向角色平滑推进65厘米，同时镜头向右横摇12度",
+      "speed": "3秒完成推进，后期加速至1.5秒完成剩余距离",
+      "timeRange": "0-5"
+    },
+    "prompt": "16:9宽屏电影级镜头。【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic | 【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film | 【空间】golden hour, clear sky, atmospheric haze, depth layers, foreground to background | 【主体】陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业人像摄影，自然生活化场景 | 【动态】电影级镜头, 核心机制解析, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression, 轨道车向角色平滑推进65厘米，同时镜头向右横摇12度 | 【风格】color palette: natural earth shadows + daylight highlights + green foliage accents, cinematic atmosphere, 通用导演 aesthetic | 【音频】伴随白天环境音, 动作产生自然动作声, 氛围弥漫明亮日常氛围, 声画精准同步，嘴型与发音对齐 | 【质控】blurry, low resolution, pixelated, compression artifacts, cartoon, anime, illustration, 3D render look, CGI appearance, plastic look, distorted perspective, impossible geometry, floating objects, inconsistent scale, flat lighting, overexposed, crushed blacks, double shadows, wrong light direction, distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose, unnatural physics, fake water, static water, cardboard texture, plastic foliage 渐进侵入式：从medium逐步过渡到close_up，共3段精细运镜。首段：轨道车向角色平滑推进65厘米，同时镜头向右横摇12度。设计意图：通过逐步收紧的景别和加速的运动，将观众从观察者身份强行拉入医学恐怖的微观世界，用物理空间的压缩模拟病理机制对机体的入侵过程，配合专业术语的累积叙述制造认知压迫感 【负面约束】no blurry, no cartoon, no deformed hands, no extra fingers, no watermark, no text 【明亮约束】自然光或柔和室内照明,画面真实干净,禁止暗黑/灰暗。 【角色约束】画面中仅出现陈卓,禁止重复角色 speaking_normal",
+    "qualityScore": {
+      "score": 88,
+      "grade": "A",
+      "passed": true,
+      "action": "放行",
+      "scores": {
+        "tier1Completeness": 100,
+        "visualPurity": 100,
+        "utilization": 117,
+        "techValidity": 100,
+        "emotionConsistency": 70,
+        "negativeCompleteness": 0
+      },
+      "details": [
+        {
+          "dimension": "Tier-1完整性",
+          "score": 100,
+          "weight": 25,
+          "checks": {
+            "hasSubject": true,
+            "hasAction": true,
+            "hasScene": true,
+            "hasCamera": true
+          },
+          "missing": null,
+          "comment": "Tier-1完整"
+        },
+        {
+          "dimension": "视觉纯度",
+          "score": 100,
+          "weight": 20,
+          "contaminationScore": 0,
+          "comment": "视觉纯净"
+        },
+        {
+          "dimension": "字符利用率",
+          "score": 117,
+          "weight": 15,
+          "length": 1168,
+          "maxLength": 1500,
+          "utilization": 78,
+          "comment": "利用率良好"
+        },
+        {
+          "dimension": "技术规格有效性",
+          "score": 100,
+          "weight": 15,
+          "invalidCount": 0,
+          "foundInvalid": null,
+          "comment": "技术声明有效"
+        },
+        {
+          "dimension": "情绪-表情一致性",
+          "score": 70,
+          "weight": 15,
+          "comment": "未定义情绪阶段，默认评分"
+        },
+        {
+          "dimension": "负面约束完整性",
+          "score": 0,
+          "weight": 10,
+          "foundCount": 0,
+          "total": 3,
+          "missing": [
+            "no metallic shine",
+            "no traditional Chinese symbols",
+            "natural eye colors only"
+          ],
+          "comment": "缺失: no metallic shine, no traditional Chinese symbols, natural eye colors only"
+        }
+      ],
+      "duration": 0,
+      "report": "===== Prompt质量门禁报告 =====\n\n总分: 88/100 | 评级: A | 动作: 放行\n\n各维度评分:\n  Tier-1完整性: 100/100 (权重25% → 25分) — Tier-1完整\n  视觉纯度: 100/100 (权重20% → 20分) — 视觉纯净\n  字符利用率: 117/100 (权重15% → 18分) — 利用率良好\n  技术规格有效性: 100/100 (权重15% → 15分) — 技术声明有效\n  情绪-表情一致性: 70/100 (权重15% → 11分) — 未定义情绪阶段，默认评分\n  负面约束完整性: 0/100 (权重10% → 0分) — 缺失: no metallic shine, no traditional Chinese symbols, natural eye colors only\n\n综合: ✅ 通过门禁"
+    },
+    "channelData": {
+      "narration": {
+        "text": "横纹肌溶解，就是肌肉细胞大面积坏死，肌红蛋白漏进血液，可能堵塞肾小管，引发急性肾衰竭。",
+        "ttsReady": true,
+        "duration": 9
+      },
+      "visual": {
+        "text": "电影级镜头, 核心机制解析, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression",
+        "hasLipSync": false
+      },
+      "lipSync": null
+    }
+  },
+  "mappedShot": {
+    "id": "S02",
+    "type": "content",
+    "scene": "核心机制解析",
+    "sceneType": "nature_epic",
+    "emotionPhase": "tension",
+    "narration": "横纹肌溶解，就是肌肉细胞大面积坏死，肌红蛋白漏进血液，可能堵塞肾小管，引发急性肾衰竭。",
+    "action": "",
+    "visualPrompt": "超写实纪录片风格，三甲医院肾内科诊室环境，陈卓身穿白大褂站在人体解剖示意图前，手持激光笔指向肾脏结构图，面向镜头进行专业讲解，表情沉稳专注，中近景构图，人物位于画面中央偏左，背景可见真实的医学书籍和诊疗设备，柔和顶光结合侧窗自然光，画面质感细腻真实，肤色自然，景深适中，镜头稳定无晃动，整体呈现权威可信的医疗科普氛围，竖屏构图人物比例协调。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
+    "camera": "",
+    "cameraMovement": {
+      "timeline": {
+        "strategy": "渐进侵入式",
+        "reasoning": "通过逐步收紧的景别和加速的运动，将观众从观察者身份强行拉入医学恐怖的微观世界，用物理空间的压缩模拟病理机制对机体的入侵过程，配合专业术语的累积叙述制造认知压迫感。",
+        "segmentCount": 3,
+        "segments": [
+          {
+            "index": 0,
+            "timeRange": "0-5",
+            "shotSize": "medium",
+            "movement": "轨道车向角色平滑推进65厘米，同时镜头向右横摇12度",
+            "speed": "3秒完成推进，后期加速至1.5秒完成剩余距离",
+            "reason": "建立对话空间的环境锚点，初始克制运动让观众稳定接收'横纹肌溶解'的诊断名词，中段加速暗示病情恶化速率超过预期。"
+          },
+          {
+            "index": 1,
+            "timeRange": "5-10",
+            "shotSize": "close_up",
+            "movement": "斯坦尼康从角色肩膀上方下沉23厘米至胸部高度，同时镜头俯仰下调8度",
+            "speed": "5秒匀速完成，末端0.5秒微震颤2度",
+            "reason": "切入'肌红蛋白漏进血液'的具象化叙述，下沉动作模拟体液沉积的物理重力，末端震颤外化肾功能崩溃的不可逆性。"
+          },
+          {
+            "index": 2,
+            "timeRange": "10-15",
+            "shotSize": "close_up",
+            "movement": "轨道车向角色面部持续推进41厘米，镜头同步向左横摇5度、仰角抬升4度",
+            "speed": "4秒完成，最后1秒加速至0.5秒完成最后10厘米",
+            "reason": "直面'急性肾衰竭'的终极宣判，双重轴向运动打破构图平衡制造窒息感，最终逼近面部迫使观众承担与角色同等的死亡恐惧。"
+          }
+        ],
+        "generatedBy": "LLM-v4",
+        "description": "渐进侵入式：从medium逐步过渡到close_up，共3段，强调内容驱动的细微推进。",
+        "transitionType": "llm_v4",
+        "timeline": {
+          "strategy": "渐进侵入式",
+          "reasoning": "通过逐步收紧的景别和加速的运动，将观众从观察者身份强行拉入医学恐怖的微观世界，用物理空间的压缩模拟病理机制对机体的入侵过程，配合专业术语的累积叙述制造认知压迫感。",
+          "segments": [
+            {
+              "index": 0,
+              "timeRange": "0-5",
+              "shotSize": "medium",
+              "movement": "轨道车向角色平滑推进65厘米，同时镜头向右横摇12度",
+              "speed": "3秒完成推进，后期加速至1.5秒完成剩余距离",
+              "reason": "建立对话空间的环境锚点，初始克制运动让观众稳定接收'横纹肌溶解'的诊断名词，中段加速暗示病情恶化速率超过预期。"
+            },
+            {
+              "index": 1,
+              "timeRange": "5-10",
+              "shotSize": "close_up",
+              "movement": "斯坦尼康从角色肩膀上方下沉23厘米至胸部高度，同时镜头俯仰下调8度",
+              "speed": "5秒匀速完成，末端0.5秒微震颤2度",
+              "reason": "切入'肌红蛋白漏进血液'的具象化叙述，下沉动作模拟体液沉积的物理重力，末端震颤外化肾功能崩溃的不可逆性。"
+            },
+            {
+              "index": 2,
+              "timeRange": "10-15",
+              "shotSize": "close_up",
+              "movement": "轨道车向角色面部持续推进41厘米，镜头同步向左横摇5度、仰角抬升4度",
+              "speed": "4秒完成，最后1秒加速至0.5秒完成最后10厘米",
+              "reason": "直面'急性肾衰竭'的终极宣判，双重轴向运动打破构图平衡制造窒息感，最终逼近面部迫使观众承担与角色同等的死亡恐惧。"
+            }
+          ]
+        }
+      },
+      "v4Enabled": true,
+      "v4Analysis": {
+        "spaceSize": "medium",
+        "sceneType": "dialogue",
+        "sceneTypeName": "对话",
+        "segmentCount": 3,
+        "constraints": {
+          "minSize": "medium",
+          "maxSize": "wide",
+          "forbidden": [
+            "extreme_wide"
+          ],
+          "preferred": [
+            "medium",
+            "close_up"
+          ],
+          "defaultSize": "medium"
+        },
+        "movementStyle": "stable",
+        "characterCount": 1,
+        "duration": 15,
+        "shotId": "核心机制解析",
+        "dialogue": "横纹肌溶解，就是肌肉细胞大面积坏死，肌红蛋白漏进血液，可能堵塞肾小管，引发急性肾衰竭。",
+        "emotionPhase": "tension"
+      },
+      "v4Continuity": {
+        "valid": true,
+        "warnings": [],
+        "fixes": []
+      },
+      "description": "渐进侵入式：从medium逐步过渡到close_up，共3段精细运镜。首段：轨道车向角色平滑推进65厘米，同时镜头向右横摇12度。设计意图：通过逐步收紧的景别和加速的运动，将观众从观察者身份强行拉入医学恐怖的微观世界，用物理空间的压缩模拟病理机制对机体的入侵过程，配合专业术语的累积叙述制造认知压迫感",
+      "shotSize": "medium",
+      "position": "center",
+      "movement": "轨道车向角色平滑推进65厘米，同时镜头向右横摇12度",
+      "speed": "3秒完成推进，后期加速至1.5秒完成剩余距离",
+      "timeRange": "0-5"
+    },
+    "lighting": null,
+    "audio": "",
+    "renderStyle": "",
+    "negativePrompt": "",
+    "characters": [
+      "chen-zhuo"
+    ],
+    "duration": 15,
+    "beastId": "",
+    "beastName": "",
+    "tension": 0,
+    "isOpening": false,
+    "isEnding": false,
+    "isClosing": false
+  },
+  "context": {
+    "totalShots": 6,
+    "protagonistName": "主角",
+    "beastId": "",
+    "beastName": "",
+    "habitat": "核心机制解析",
+    "episodeTheme": "",
+    "sceneType": "nature_epic"
+  },
+  "schemaCheck": {
+    "valid": true,
+    "issues": [],
+    "warnings": []
+  },
+  "subsystemFields": {
+    "CHARACTER": "chen-zhuo",
+    "SCENE": "核心机制解析",
+    "MOOD": "tension",
+    "RENDER": "电影级、超写实、细节丰富",
+    "DIALOGUE": "横纹肌溶解，就是肌肉细胞大面积坏死，肌红蛋白漏进血液，可能堵塞肾小管，引发急性肾衰竭。",
+    "CAMERA": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
+    "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K",
+    "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow",
+    "meta": {
+      "source": "camera-movement-system-v3",
+      "raw": {
+        "scene": "核心机制解析",
+        "emotionPhase": "tension",
+        "duration": 15,
+        "baseMovement": {
+          "scene": "核心机制解析",
+          "physicsDriver": "generic",
+          "primaryMovement": "smooth_track",
+          "speed": "smooth",
+          "shotSize": "medium",
+          "cameraHeight": "normal",
+          "lens": "35mm",
+          "pattern": "standard tracking",
+          "emotionMapping": null,
+          "referenceFilm": "general cinematic",
+          "lightSync": false,
+          "bioPulseSync": false,
+          "gravityFactor": 1,
+          "intraShotCombo": {
+            "name": "开场建立",
+            "segments": [
+              {
+                "camera": "static",
+                "duration": 2,
+                "lighting": "LIT-N02",
+                "emotion": "宁静"
+              },
+              {
+                "camera": "push_in",
+                "duration": 3,
+                "lighting": "LIT-D03",
+                "emotion": "聚焦"
+              },
+              {
+                "camera": "orbit_right",
+                "duration": 2,
+                "lighting": "LIT-D08",
+                "emotion": "升华"
+              }
+            ],
+            "description": "固定建立 → 推近聚焦 → 环绕升华"
+          },
+          "hasMultiSegment": true,
+          "segmentCount": 3,
+          "comboDescription": "【运镜组合】开场建立：0-5秒：static → 5-10秒：push_in → 10-15秒：orbit_right",
+          "timeline": [
+            {
+              "range": "0-5s",
+              "action": "static (宁静)",
+              "movement": "static",
+              "lighting": "晨光侧射"
+            },
+            {
+              "range": "5-10s",
+              "action": "push_in (聚焦)",
+              "movement": "push_in",
+              "lighting": "自然光"
+            },
+            {
+              "range": "10-15s",
+              "action": "orbit_right (升华)",
+              "movement": "orbit_right",
+              "lighting": "自然光"
+            }
+          ],
+          "timelineSource": "intra-shot-combo",
+          "description": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic"
+        },
+        "description": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic",
+        "intraShotTimeline": {
+          "totalDuration": 15,
+          "segmentCount": 4,
+          "transitionName": "渐进式揭示",
+          "transitionDesc": "从远景逐步推到特写，建立环境→发现主体→情感亲密",
+          "lightingName": "晨曦渐亮",
+          "lightingDesc": "从黑暗中逐渐亮起，模拟日出效果",
+          "speedCurveName": "慢快慢",
+          "speedCurveDesc": "开始缓慢，中间加速，最后减速",
+          "segments": [
+            {
+              "index": 0,
+              "timeRange": "早期",
+              "duration": 3,
+              "shotSize": "extreme_wide",
+              "shotSizeDesc": "极端远景（环境全貌）",
+              "movement": "orbit_360",
+              "speed": {
+                "value": 0.3,
+                "description": "缓慢"
+              },
+              "lighting": {
+                "intensity": 0.1,
+                "colorTemp": 2000,
+                "direction": "low_back",
+                "effect": "仅轮廓可见"
+              },
+              "transition": "smooth_dissolve"
+            },
+            {
+              "index": 1,
+              "timeRange": "中期",
+              "duration": 4.5,
+              "shotSize": "wide",
+              "shotSizeDesc": "远景（环境+主体）",
+              "movement": "push_in",
+              "speed": {
+                "value": 0.8,
+                "description": "很快"
+              },
+              "lighting": {
+                "intensity": 0.3,
+                "colorTemp": 2800,
+                "direction": "side",
+                "effect": "侧光渐强"
+              },
+              "transition": "hard_cut"
+            },
+            {
+              "index": 2,
+              "timeRange": "后期",
+              "duration": 4.5,
+              "shotSize": "medium",
+              "shotSizeDesc": "中景（半身/双人）",
+              "movement": "push_in",
+              "speed": {
+                "value": 1,
+                "description": "极限速度"
+              },
+              "lighting": {
+                "intensity": 0.6,
+                "colorTemp": 4500,
+                "direction": "45_degree",
+                "effect": "主体清晰"
+              },
+              "transition": "rack_focus"
+            },
+            {
+              "index": 3,
+              "timeRange": "尾声",
+              "duration": 3,
+              "shotSize": "close_up",
+              "shotSizeDesc": "特写（面部/细节）",
+              "movement": "hold",
+              "speed": {
+                "value": 0.6,
+                "description": "快速"
+              },
+              "lighting": {
+                "intensity": 1,
+                "colorTemp": 5600,
+                "direction": "front_top",
+                "effect": "全面照亮"
+              },
+              "transition": null
+            }
+          ],
+          "summary": "【镜头时间轴 - 渐进式揭示】\n策略：从远景逐步推到特写，建立环境→发现主体→情感亲密\n灯光：晨曦渐亮 - 从黑暗中逐渐亮起，模拟日出效果\n速度：慢快慢 - 开始缓慢，中间加速，最后减速\n\n早期｜极端远景（环境全貌）｜缓慢｜orbit_360｜灯光：仅轮廓可见\n  → 转场：平滑渐变\n中期｜远景（环境+主体）｜很快｜push_in｜灯光：侧光渐强\n  → 转场：硬切\n后期｜中景（半身/双人）｜极限速度｜push_in｜灯光：主体清晰\n  → 转场：移焦过渡\n尾声｜特写（面部/细节）｜快速｜hold｜灯光：全面照亮\n"
+        },
+        "intraShotPrompt": "【运镜时间轴 - 一镜到底多段式】\n本镜头共4段，总时长15秒。\n景别切换策略：渐进式揭示（从远景逐步推到特写，建立环境→发现主体→情感亲密）\n灯光变化：晨曦渐亮（从黑暗中逐渐亮起，模拟日出效果）\n速度曲线：慢快慢（开始缓慢，中间加速，最后减速）\n\n早期：\n  景别：极端远景（环境全貌）\n  运镜：orbit_360\n  速度：缓慢（强度0.3）\n  灯光：仅轮廓可见，色温2000K，强度0.1\n  → 转场：平滑渐变（0.5-1秒平滑过渡）\n\n中期：\n  景别：远景（环境+主体）\n  运镜：push_in\n  速度：很快（强度0.8）\n  灯光：侧光渐强，色温2800K，强度0.3\n  → 转场：硬切（瞬间切换，无过渡）\n\n后期：\n  景别：中景（半身/双人）\n  运镜：push_in\n  速度：极限速度（强度1）\n  灯光：主体清晰，色温4500K，强度0.6\n  → 转场：移焦过渡（焦点从前景移到后景（或反之）实现切换）\n\n尾声：\n  景别：特写（面部/细节）\n  运镜：hold\n  速度：快速（强度0.6）\n  灯光：全面照亮，色温5600K，强度1\n\n",
+        "camera": "extreme_wide orbit_360, 50mm lens, normal speed",
+        "lighting": "low_back key 2000K, 仅轮廓可见",
+        "config": {
+          "transitionType": "progressive_reveal",
+          "lightingType": "dawn_break",
+          "speedCurve": "slow_fast_slow"
+        }
+      }
+    },
+    "AUDIO": "【环境音效】风声、风穿过物体声",
+    "_meta": {
+      "activatedSubsystems": [
+        "CameraMovementSystemV3Bridge",
+        "AmbientSoundDesignerBridge"
+      ],
+      "hasBeast": false,
+      "isOpening": false,
+      "isClimax": false
+    }
+  },
+  "llmFields": {},
+  "mergedFields": {
+    "CHARACTER": "chen-zhuo",
+    "SCENE": "核心机制解析",
+    "MOOD": "tension",
+    "RENDER": "电影级、超写实、细节丰富",
+    "DIALOGUE": "横纹肌溶解，就是肌肉细胞大面积坏死，肌红蛋白漏进血液，可能堵塞肾小管，引发急性肾衰竭。",
+    "CAMERA": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
+    "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K",
+    "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow",
+    "meta": {
+      "source": "camera-movement-system-v3",
+      "raw": {
+        "scene": "核心机制解析",
+        "emotionPhase": "tension",
+        "duration": 15,
+        "baseMovement": {
+          "scene": "核心机制解析",
+          "physicsDriver": "generic",
+          "primaryMovement": "smooth_track",
+          "speed": "smooth",
+          "shotSize": "medium",
+          "cameraHeight": "normal",
+          "lens": "35mm",
+          "pattern": "standard tracking",
+          "emotionMapping": null,
+          "referenceFilm": "general cinematic",
+          "lightSync": false,
+          "bioPulseSync": false,
+          "gravityFactor": 1,
+          "intraShotCombo": {
+            "name": "开场建立",
+            "segments": [
+              {
+                "camera": "static",
+                "duration": 2,
+                "lighting": "LIT-N02",
+                "emotion": "宁静"
+              },
+              {
+                "camera": "push_in",
+                "duration": 3,
+                "lighting": "LIT-D03",
+                "emotion": "聚焦"
+              },
+              {
+                "camera": "orbit_right",
+                "duration": 2,
+                "lighting": "LIT-D08",
+                "emotion": "升华"
+              }
+            ],
+            "description": "固定建立 → 推近聚焦 → 环绕升华"
+          },
+          "hasMultiSegment": true,
+          "segmentCount": 3,
+          "comboDescription": "【运镜组合】开场建立：0-5秒：static → 5-10秒：push_in → 10-15秒：orbit_right",
+          "timeline": [
+            {
+              "range": "0-5s",
+              "action": "static (宁静)",
+              "movement": "static",
+              "lighting": "晨光侧射"
+            },
+            {
+              "range": "5-10s",
+              "action": "push_in (聚焦)",
+              "movement": "push_in",
+              "lighting": "自然光"
+            },
+            {
+              "range": "10-15s",
+              "action": "orbit_right (升华)",
+              "movement": "orbit_right",
+              "lighting": "自然光"
+            }
+          ],
+          "timelineSource": "intra-shot-combo",
+          "description": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic"
+        },
+        "description": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic",
+        "intraShotTimeline": {
+          "totalDuration": 15,
+          "segmentCount": 4,
+          "transitionName": "渐进式揭示",
+          "transitionDesc": "从远景逐步推到特写，建立环境→发现主体→情感亲密",
+          "lightingName": "晨曦渐亮",
+          "lightingDesc": "从黑暗中逐渐亮起，模拟日出效果",
+          "speedCurveName": "慢快慢",
+          "speedCurveDesc": "开始缓慢，中间加速，最后减速",
+          "segments": [
+            {
+              "index": 0,
+              "timeRange": "早期",
+              "duration": 3,
+              "shotSize": "extreme_wide",
+              "shotSizeDesc": "极端远景（环境全貌）",
+              "movement": "orbit_360",
+              "speed": {
+                "value": 0.3,
+                "description": "缓慢"
+              },
+              "lighting": {
+                "intensity": 0.1,
+                "colorTemp": 2000,
+                "direction": "low_back",
+                "effect": "仅轮廓可见"
+              },
+              "transition": "smooth_dissolve"
+            },
+            {
+              "index": 1,
+              "timeRange": "中期",
+              "duration": 4.5,
+              "shotSize": "wide",
+              "shotSizeDesc": "远景（环境+主体）",
+              "movement": "push_in",
+              "speed": {
+                "value": 0.8,
+                "description": "很快"
+              },
+              "lighting": {
+                "intensity": 0.3,
+                "colorTemp": 2800,
+                "direction": "side",
+                "effect": "侧光渐强"
+              },
+              "transition": "hard_cut"
+            },
+            {
+              "index": 2,
+              "timeRange": "后期",
+              "duration": 4.5,
+              "shotSize": "medium",
+              "shotSizeDesc": "中景（半身/双人）",
+              "movement": "push_in",
+              "speed": {
+                "value": 1,
+                "description": "极限速度"
+              },
+              "lighting": {
+                "intensity": 0.6,
+                "colorTemp": 4500,
+                "direction": "45_degree",
+                "effect": "主体清晰"
+              },
+              "transition": "rack_focus"
+            },
+            {
+              "index": 3,
+              "timeRange": "尾声",
+              "duration": 3,
+              "shotSize": "close_up",
+              "shotSizeDesc": "特写（面部/细节）",
+              "movement": "hold",
+              "speed": {
+                "value": 0.6,
+                "description": "快速"
+              },
+              "lighting": {
+                "intensity": 1,
+                "colorTemp": 5600,
+                "direction": "front_top",
+                "effect": "全面照亮"
+              },
+              "transition": null
+            }
+          ],
+          "summary": "【镜头时间轴 - 渐进式揭示】\n策略：从远景逐步推到特写，建立环境→发现主体→情感亲密\n灯光：晨曦渐亮 - 从黑暗中逐渐亮起，模拟日出效果\n速度：慢快慢 - 开始缓慢，中间加速，最后减速\n\n早期｜极端远景（环境全貌）｜缓慢｜orbit_360｜灯光：仅轮廓可见\n  → 转场：平滑渐变\n中期｜远景（环境+主体）｜很快｜push_in｜灯光：侧光渐强\n  → 转场：硬切\n后期｜中景（半身/双人）｜极限速度｜push_in｜灯光：主体清晰\n  → 转场：移焦过渡\n尾声｜特写（面部/细节）｜快速｜hold｜灯光：全面照亮\n"
+        },
+        "intraShotPrompt": "【运镜时间轴 - 一镜到底多段式】\n本镜头共4段，总时长15秒。\n景别切换策略：渐进式揭示（从远景逐步推到特写，建立环境→发现主体→情感亲密）\n灯光变化：晨曦渐亮（从黑暗中逐渐亮起，模拟日出效果）\n速度曲线：慢快慢（开始缓慢，中间加速，最后减速）\n\n早期：\n  景别：极端远景（环境全貌）\n  运镜：orbit_360\n  速度：缓慢（强度0.3）\n  灯光：仅轮廓可见，色温2000K，强度0.1\n  → 转场：平滑渐变（0.5-1秒平滑过渡）\n\n中期：\n  景别：远景（环境+主体）\n  运镜：push_in\n  速度：很快（强度0.8）\n  灯光：侧光渐强，色温2800K，强度0.3\n  → 转场：硬切（瞬间切换，无过渡）\n\n后期：\n  景别：中景（半身/双人）\n  运镜：push_in\n  速度：极限速度（强度1）\n  灯光：主体清晰，色温4500K，强度0.6\n  → 转场：移焦过渡（焦点从前景移到后景（或反之）实现切换）\n\n尾声：\n  景别：特写（面部/细节）\n  运镜：hold\n  速度：快速（强度0.6）\n  灯光：全面照亮，色温5600K，强度1\n\n",
+        "camera": "extreme_wide orbit_360, 50mm lens, normal speed",
+        "lighting": "low_back key 2000K, 仅轮廓可见",
+        "config": {
+          "transitionType": "progressive_reveal",
+          "lightingType": "dawn_break",
+          "speedCurve": "slow_fast_slow"
+        }
+      }
+    },
+    "AUDIO": "【环境音效】风声、风穿过物体声",
+    "_meta": {
+      "activatedSubsystems": [
+        "CameraMovementSystemV3Bridge",
+        "AmbientSoundDesignerBridge"
+      ],
+      "hasBeast": false,
+      "isOpening": false,
+      "isClimax": false
+    },
+    "NEGATIVE": "no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers"
+  },
+  "normalizedFields": {
+    "CHARACTER": "chen-zhuo",
+    "DIALOGUE": "横纹肌溶解，就是肌肉细胞大面积坏死，肌红蛋白漏进血液，可能堵塞肾小管，引发急性肾衰竭。",
+    "ACTION": "",
+    "SCENE": "核心机制解析",
+    "MOOD": "tension",
+    "CAMERA": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
+    "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K",
+    "NEGATIVE": "no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers",
+    "AUDIO": "【环境音效】风声、风穿过物体声",
+    "RENDER": "电影级、超写实、细节丰富",
+    "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow"
+  },
+  "finalPrompt": "{CHARACTER: chen-zhuo | DIALOGUE: 横纹肌溶解，就是肌肉细胞大面积坏死，肌红蛋白漏进血液，可能堵塞肾小管，引发急性肾衰竭。 | SCENE: 核心机制解析 | MOOD: tension | CAMERA: （一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人） | LIGHTING: 仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K | NEGATIVE: no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers | AUDIO: 【环境音效】风声、风穿过物体声 | RENDER: 电影级、超写实、细节丰富 | DIRECTOR: 景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow}",
+  "validation": {
+    "valid": true,
+    "issues": [],
+    "warnings": [],
+    "stats": {
+      "length": 751,
+      "emptyFields": [
+        "ACTION"
+      ],
+      "filledFields": [
+        "CHARACTER",
+        "DIALOGUE",
+        "SCENE",
+        "MOOD",
+        "CAMERA",
+        "LIGHTING",
+        "NEGATIVE",
+        "AUDIO",
+        "RENDER",
+        "DIRECTOR"
+      ]
+    }
+  },
+  "meta": {
+    "builderVersion": "v3",
+    "timestamp": "2026-06-17T04:18:37.611Z"
+  }
+}

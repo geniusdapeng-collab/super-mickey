@@ -1,0 +1,244 @@
+{
+  "id": "houyi",
+  "name": "后羿",
+  "type": "protagonist",
+  "universes": [
+    "nirath-main"
+  ],
+  "firstAppearance": "houyi-v1.0",
+  "visualIdentity": {
+    "style": "写实风格，亚洲面孔，中国上古神射手，东方奇幻史诗质感，非欧美化，非动漫化，电影级光影",
+    "origin": "中国上古，帝尧麾下",
+    "age": "青年（约22岁）",
+    "species": "人类（凡人）",
+    "world": "Nirath星球上古时代，人间守护者",
+    "baseIdentity": "中国青年男子，亚洲面孔，真实摄影，非欧美化，上古神射手",
+    "appearance": {
+      "hair": {
+        "description": "黑色长发束成高马尾，几缕碎发垂在额前被汗水黏住，发根有晒出的浅棕色，发质粗硬如弓弦",
+        "consistency": "strict",
+        "promptFragment": "黑色长发束高马尾额前碎发汗湿发根浅棕发质粗硬如弓弦中国青年亚洲面孔"
+      },
+      "eyes": {
+        "description": "狭长的内双丹凤眼，瞳孔深褐色近乎黑色，专注时眼神如箭尖般锐利，放松时又像深潭般温和，眼角有常年眯眼瞄准留下的细纹",
+        "consistency": "strict",
+        "promptFragment": "狭长内双丹凤眼瞳孔深褐色近乎黑色眼神锐利如箭尖眼角眯眼瞄准细纹中国青年亚洲面孔"
+      },
+      "face": {
+        "description": "棱角分明的国字脸，颧骨略高，皮肤是长期户外日晒的小麦色且粗糙有细纹，鼻梁挺直但不高耸，嘴唇偏薄常紧抿，下巴有道小伤疤（幼时练弓被弦弹伤），典型的中国北方青年长相",
+        "consistency": "strict",
+        "promptFragment": "棱角分明国字脸颧骨略高小麦色粗糙皮肤鼻梁挺直不高耸嘴唇偏薄下巴小伤疤中国北方青年亚洲面孔"
+      },
+      "skin": {
+        "description": "健康的小麦色偏深，手臂和肩颈有晒伤的蜕皮痕迹，手掌布满厚茧（拉弓磨出），指关节粗大，虎口有弦痕",
+        "consistency": "strict",
+        "promptFragment": "小麦色偏深手臂肩颈晒伤蜕皮手掌厚茧拉弓磨出指关节粗大脑门弦痕"
+      },
+      "clothing": {
+        "description": "深褐色皮革短打劲装（便于射箭），肩部和肘部有加固的藤编护甲，腰间系着玄色丝绦（挂箭囊），下身是深灰色束腿长裤（裤脚扎进皮靴），脚穿棕色牛皮短靴（靴底磨损严重，鞋头有踢石留下的划痕）",
+        "consistency": "strict",
+        "promptFragment": "深褐色皮革短打劲装藤编护甲肩肘加固腰间玄色丝绦挂箭囊深灰色束腿长裤棕色牛皮短靴靴底磨损"
+      },
+      "accessories": {
+        "description": "背上背着巨大的扶桑木长弓（弓身弯曲如新月，缠着若木叶编织的弓弦，弓臂有烫金符文），腰间箭囊插着九支玄冰箭（箭镞泛蓝光，箭羽是北冥鲲鳍的银白色），左腕戴着一串粗糙的骨珠手链（每颗珠子来自他救过的人）",
+        "consistency": "strict",
+        "promptFragment": "扶桑木长弓新月弯曲若木叶弓弦烫金符文玄冰箭九支箭镞泛蓝光鲲鳍银白箭羽左腕骨珠手链"
+      },
+      "build": {
+        "description": "高大健壮但不魁梧，肩宽臂长（拉弓需要），背部肌肉线条明显（长期开弓），站姿挺拔如松，拉弓时左臂前伸右臂后拉的姿态极具张力",
+        "consistency": "strict",
+        "promptFragment": "高大健壮肩宽臂长背部肌肉线条明显站姿挺拔如松拉弓姿态张力"
+      },
+      "expression": {
+        "description": "平时沉稳内敛不苟言笑，瞄准箭时极度专注眉头微蹙眼神如炬，射完箭后长舒一口气嘴角微微上扬，面对十日时不是愤怒而是悲悯，面对小G时温柔如兄长",
+        "consistency": "medium",
+        "promptFragment": "沉稳内敛不苟言笑瞄准专注眉头微蹙眼神如炬射完箭嘴角微扬面对十日悲悯面对小G温柔如兄长"
+      }
+    },
+    "angles": {
+      "front": {
+        "description": "正面：国字脸棱角分明，深褐色丹凤眼直视前方，深褐色皮革劲装，背负扶桑木巨弓，九支玄冰箭泛蓝光",
+        "promptExtra": "正面视角，全身站立，面部清晰，弓和箭囊清晰可见",
+        "useFor": [
+          "全身镜头",
+          "对话镜头"
+        ]
+      },
+      "threeQuarter": {
+        "description": "七分面：侧脸轮廓如刀削，高马尾飘动，拉弓姿态左臂前伸右臂后拉，弓弦绷紧，箭镞对准画面外",
+        "promptExtra": "七分面视角，拉弓姿态，弓弦绷紧，肌肉线条清晰",
+        "useFor": [
+          "动作镜头",
+          "战斗镜头"
+        ]
+      },
+      "side": {
+        "description": "侧面：鼻梁挺直侧影如山峰，弓身新月弧度完美，手臂肌肉线条，箭囊侧面可见九支箭的排列",
+        "promptExtra": "纯侧面视角，剪影感，弓身弧度优美",
+        "useFor": [
+          "剪影镜头",
+          "轮廓展示"
+        ]
+      },
+      "back": {
+        "description": "背影：宽肩窄腰，扶桑木巨弓斜背，高马尾垂至肩胛，皮革劲装背部有汗渍，走向东海最高峰",
+        "promptExtra": "背影视角，走向远方，东海背景，步伐坚定",
+        "useFor": [
+          "远景镜头",
+          "史诗感镜头"
+        ]
+      },
+      "closeup": {
+        "description": "特写：丹凤眼瞳孔倒映十日，眼角细纹，紧抿的嘴唇，下巴伤疤，汗水从额角滑落，不是愤怒是悲悯",
+        "promptExtra": "面部特写，眼神细节，汗水反光，情绪饱满",
+        "useFor": [
+          "情绪镜头",
+          "眼神戏"
+        ]
+      },
+      "action": {
+        "description": "射日动作：满弓姿态，玄冰箭泛蓝光，弓臂烫金符文发光，背景是十日并空的焦土天空，箭离弦瞬间",
+        "promptExtra": "动态捕捉，箭离弦瞬间，弓弦震动，十日背景",
+        "useFor": [
+          "高潮镜头",
+          "动作定格"
+        ]
+      }
+    }
+  },
+  "portraitConfig": {
+    "model": "seedream-5-0",
+    "size": "2K",
+    "style": "写实，中国上古神射手，东方奇幻史诗，电影级光影，非欧美化"
+  },
+  "personality": {
+    "core": "温柔而坚定的守护者，用力量劝退而非杀戮",
+    "traits": [
+      "沉稳内敛",
+      "极度专注",
+      "悲悯之心",
+      "不善言辞",
+      "行动派",
+      "责任感极强",
+      "对光明有独特理解"
+    ],
+    "archetype": "慈悲的战士/温柔的守护者",
+    "MBTI": "ISTJ",
+    "growthArc": "从帝尧麾下的'神射手'到理解'刚刚好'的人间守护者"
+  },
+  "likes": [
+    "黎明时分的光线",
+    "扶桑树叶的清香",
+    "箭离弦时的嗡鸣",
+    "看着庄稼在雨后抬头",
+    "教孩子们拉弓（但不教射箭）",
+    "坐在东海之滨听潮声"
+  ],
+  "dislikes": [
+    "过量的光",
+    "无意义的杀戮",
+    "被当作神崇拜",
+    "人们忘记自己也能守护家园",
+    "弓弦绷断的声音",
+    "离别"
+  ],
+  "skills": {
+    "primary": "射术（天下第一，不凭神力凭技艺）",
+    "secondary": [
+      "辨识风向",
+      "读懂日影",
+      "用扶桑木修弓",
+      "安抚受惊的马",
+      "在地窖里安抚孩子"
+    ],
+    "hidden": "他最强的箭从不说杀戮，只说'请回'"
+  },
+  "fears": [
+    "自己的力量失控",
+    "被人间当作神来依赖（而非自己站起来）",
+    "第十日真的离去留下永恒黑夜"
+  ],
+  "desires": [
+    "人间能自己守护自己",
+    "光明'刚刚好'——不烈不弱",
+    "和小G一起看见庄稼拔节"
+  ],
+  "speechStyle": {
+    "tone": "简短有力，每句话都像箭一样精准",
+    "catchphrases": [
+      "请回",
+      "刚刚好",
+      "不是要你走，是要你刚刚好",
+      "你看，庄稼在抬头"
+    ],
+    "habits": [
+      "说话前习惯沉默三秒",
+      "紧张时会摸弓弦",
+      "从不承诺'永远'，只说'今天'"
+    ]
+  },
+  "relationships": {
+    "xiaG": "被小G当作兄长和导师，教他'刚刚好'的哲学",
+    "xihe": "对羲和有复杂的敬意——理解母亲护子之心，但坚持十日必须回归",
+    "tenSuns": "不是敌人，是'迷路的弟弟们'，每一箭都是劝退不是惩罚",
+    "emperorYao": "帝尧麾下的射手，但最终选择留在人间而非返回天庭"
+  },
+  "backstory": {
+    "origin": "生于东海之滨的猎户之家，父亲死于山洪，母亲用最后一口水把他推进地窖",
+    "trigger": "目睹十日并出，发誓用弓箭'劝退'过量的光",
+    "journey": "拜师学习制弓，用扶桑木若木叶蚕丝制弓，用玄冰鲲鳍制箭",
+    "conflict": "世人期待他'射杀'太阳，但他选择'劝退'",
+    "growth": "从'神射手'到理解'温柔即最强力量'，把弓埋进东海之滨"
+  },
+  "roleInStory": {
+    "function": "射日者——但不是毁灭者，是校准者",
+    "archetype": "慈悲的战士",
+    "arc": "从被期待的'英雄'到自我选择的'守护者'",
+    "relationshipToXiaoG": "导师与兄长，教小G'刚刚好'的哲学，小G继承他的日影记录"
+  },
+  "generatedAssets": {
+    "portraits": [
+      {
+        "angle": "front",
+        "path": "/root/.openclaw/workspace/characters/houyi/portraits/houyi-v1.0-front.png",
+        "version": "v1.0",
+        "generatedAt": "2026-05-19T11:01:42.460Z"
+      },
+      {
+        "angle": "threeQuarter",
+        "path": "/root/.openclaw/workspace/characters/houyi/portraits/houyi-v1.0-threeQuarter.png",
+        "version": "v1.0",
+        "generatedAt": "2026-05-19T11:01:42.460Z"
+      },
+      {
+        "angle": "side",
+        "path": "/root/.openclaw/workspace/characters/houyi/portraits/houyi-v1.0-side.png",
+        "version": "v1.0",
+        "generatedAt": "2026-05-19T11:01:42.460Z"
+      },
+      {
+        "angle": "back",
+        "path": "/root/.openclaw/workspace/characters/houyi/portraits/houyi-v1.0-back.png",
+        "version": "v1.0",
+        "generatedAt": "2026-05-19T11:01:42.460Z"
+      },
+      {
+        "angle": "action",
+        "path": "/root/.openclaw/workspace/characters/houyi/portraits/houyi-v1.0-action.png",
+        "version": "v1.0",
+        "generatedAt": "2026-05-19T11:01:42.460Z"
+      },
+      {
+        "angle": "closeup",
+        "path": "/root/.openclaw/workspace/characters/houyi/portraits/houyi-v1.0-closeup-v2.png",
+        "version": "v1.0-v2",
+        "generatedAt": "2026-05-19T11:35:23.176Z"
+      }
+    ],
+    "referenceImages": []
+  },
+  "appearances": [],
+  "createdAt": "2026-05-19T10:52:00.000Z",
+  "updatedAt": "2026-05-19T11:35:23.176Z",
+  "version": "1.0"
+}

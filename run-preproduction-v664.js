@@ -7,27 +7,28 @@ process.chdir('/root/.openclaw/workspace');
 const { NirathMasterPipeline } = require('/root/.openclaw/workspace/zhuoyue-system/core/nirath-master-pipeline.js');
 
 async function run() {
-  console.log('🎬 启动健康科普预生产 v6.6.4');
+  console.log('🎬 启动健康科普预生产 v6.6.9.4-patch9');
   console.log('=====================================');
   
   const pipeline = new NirathMasterPipeline({
     mode: 'generic',
-    outputDir: './output/health-edu-ep01-v664'
+    outputDir: './output/health-edu-ep01-v669',
+    isPreProduction: true // v6.6.9.4-patch9-fix: 显式声明预生产模式，避免Stage-13闸机误判
   });
   
   const input = {
-    projectName: 'health-edu-ep01-rhabdo-v664',
+    projectName: 'health-edu-ep01-rhabdo-v669',
     title: '什么是横纹肌溶解——横纹肌溶解的症状以及实验室检查',
     videoType: 'health-education',
-    creativeIndex: 0.7,
+    creativeIndex: 1.0, // v6.6.9.4-patch9: 极高创意指数（内部最大1.0）
     targetDuration: 62,
-    aspectRatio: '9:16',
+    aspectRatio: '16:9', // v6.6.9.4-patch9: 用户要求16:9宽屏
     style: 'realistic',
     characters: [{
-      id: 'chen-nurse',
+      id: 'chen-zhuo', // v6.6.9.4-patch9: 使用正确的角色ID
       name: '陈卓',
       role: 'presenter',
-      description: '穿警服的护士，专业且亲和'
+      description: '穿警服的陈女士，健康科普讲解员，亲切温和，专业可信'
     }],
     hasOpening: true,
     noPreview: true,

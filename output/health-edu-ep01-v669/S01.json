@@ -1,0 +1,660 @@
+{
+  "shotId": "S01",
+  "recordedAt": "2026-06-17T04:18:37.607Z",
+  "rawShot": {
+    "id": "S01",
+    "scene": "开场介绍",
+    "dialogue": "今天我们来聊一个和运动密切相关的健康隐患——横纹肌溶解。",
+    "narration": "今天我们来聊一个和运动密切相关的健康隐患——横纹肌溶解。",
+    "duration": 5,
+    "type": "opening",
+    "characters": [
+      "chen-zhuo"
+    ],
+    "mouthAction": "speaking_normal",
+    "importance": 5,
+    "visualComplexity": 5,
+    "emotionPhase": "curiosity",
+    "visualPrompt": "超写实纪录片风格，明亮的医疗科普演播室环境中，主持人陈卓身穿简洁得体的便装或白大褂，正面站立面对镜头，双手自然交叠于身前或配合开场讲解做轻微手势，神情专业且亲切，位于中近景构图，人物占据画面中央偏上位置，背景为浅色调的医学科普墙或简洁书架，点缀人体解剖示意模型，自然柔光从左侧打亮面部，无明显阴影，画面色调干净偏暖，镜头稳定无抖动，整体呈现权威可信、平易近人的健康科普质感，适合竖屏9比16画幅。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
+    "fpvRecommended": false,
+    "fpvScore": 35,
+    "fpvReason": "建议传统运镜：情绪/视觉不适合FPV",
+    "cameraMovement": {
+      "timeline": {
+        "strategy": "切入揭示式运镜",
+        "reasoning": "独白讲解类内容需要快速建立话题吸引力，通过由人物中景切入到关键道具/文字卡片的特写，制造信息揭示的悬念感，符合curiosity情绪要求；5秒时长需高效完成信息铺垫，避免冗余叙事",
+        "segmentCount": 2,
+        "segments": [
+          {
+            "index": 0,
+            "timeRange": "0-2.5",
+            "shotSize": "medium",
+            "movement": "横移向左30厘米，同时前推15厘米，焦点从人物面部逐渐过渡至手中持有的运动水杯或蛋白粉容器",
+            "speed": "中速匀速，0.5秒完成起幅缓冲后保持恒定",
+            "reason": "中景建立讲解者身份，手持运动相关道具暗示话题领域，横移结合前推制造动态期待感，引导观众视线向核心道具汇聚，为信息揭示做铺垫"
+          },
+          {
+            "index": 1,
+            "timeRange": "2.5-5",
+            "shotSize": "close_up",
+            "movement": "前推8厘米至道具标签文字，同时顺时针旋轴15度使标签正对镜头，焦点锐化至文字边缘",
+            "speed": "减速推进，最后1秒速度降至初始30%形成凝视感",
+            "reason": "特写强制锁定核心信息载体，物理距离压缩制造窥秘感，旋轴矫正确保信息可读性，速度衰减配合curiosity情绪达到即将揭示关键答案的临界点，台词中"
+          }
+        ],
+        "generatedBy": "LLM-v4",
+        "description": "切入揭示式运镜：从medium逐步过渡到close_up，共2段，强调内容驱动的细微推进。",
+        "transitionType": "llm_v4",
+        "timeline": {
+          "strategy": "切入揭示式运镜",
+          "reasoning": "独白讲解类内容需要快速建立话题吸引力，通过由人物中景切入到关键道具/文字卡片的特写，制造信息揭示的悬念感，符合curiosity情绪要求；5秒时长需高效完成信息铺垫，避免冗余叙事",
+          "segments": [
+            {
+              "index": 0,
+              "timeRange": "0-2.5",
+              "shotSize": "medium",
+              "movement": "横移向左30厘米，同时前推15厘米，焦点从人物面部逐渐过渡至手中持有的运动水杯或蛋白粉容器",
+              "speed": "中速匀速，0.5秒完成起幅缓冲后保持恒定",
+              "reason": "中景建立讲解者身份，手持运动相关道具暗示话题领域，横移结合前推制造动态期待感，引导观众视线向核心道具汇聚，为信息揭示做铺垫"
+            },
+            {
+              "index": 1,
+              "timeRange": "2.5-5",
+              "shotSize": "close_up",
+              "movement": "前推8厘米至道具标签文字，同时顺时针旋轴15度使标签正对镜头，焦点锐化至文字边缘",
+              "speed": "减速推进，最后1秒速度降至初始30%形成凝视感",
+              "reason": "特写强制锁定核心信息载体，物理距离压缩制造窥秘感，旋轴矫正确保信息可读性，速度衰减配合curiosity情绪达到即将揭示关键答案的临界点，台词中"
+            }
+          ]
+        }
+      },
+      "v4Enabled": true,
+      "v4Analysis": {
+        "spaceSize": "medium",
+        "sceneType": "monologue",
+        "sceneTypeName": "独白/讲解",
+        "segmentCount": 3,
+        "constraints": {
+          "minSize": "medium",
+          "maxSize": "wide",
+          "forbidden": [
+            "extreme_wide"
+          ],
+          "preferred": [
+            "medium",
+            "close_up"
+          ],
+          "defaultSize": "medium"
+        },
+        "movementStyle": "stable",
+        "characterCount": 1,
+        "duration": 5,
+        "shotId": "开场介绍",
+        "dialogue": "今天我们来聊一个和运动密切相关的健康隐患——横纹肌溶解。",
+        "emotionPhase": "curiosity"
+      },
+      "v4Continuity": null,
+      "description": "切入揭示式运镜：从medium逐步过渡到close_up，共2段精细运镜。首段：横移向左30厘米，同时前推15厘米，焦点从人物面部逐渐过渡至手中持有的运动水杯或蛋白粉容器。设计意图：独白讲解类内容需要快速建立话题吸引力，通过由人物中景切入到关键道具/文字卡片的特写，制造信息揭示的悬念感，符合curiosity情绪要求；5秒时长需高效完成信息",
+      "shotSize": "medium",
+      "position": "center",
+      "movement": "横移向左30厘米，同时前推15厘米，焦点从人物面部逐渐过渡至手中持有的运动水杯或蛋白粉容器",
+      "speed": "中速匀速，0.5秒完成起幅缓冲后保持恒定",
+      "timeRange": "0-2.5"
+    },
+    "prompt": "16:9宽屏电影级镜头。【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic | 【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film | 【空间】golden hour, clear sky, atmospheric haze, depth layers, foreground to background | 【主体】陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业人像摄影，自然生活化场景 | 【动态】电影级镜头, 开场介绍, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression, 横移向左30厘米，同时前推15厘米，焦点从人物面部逐渐过渡至手中持有的运动水杯或蛋白粉容器 | 【风格】color palette: natural earth shadows + daylight highlights + green foliage accents, cinematic atmosphere, 通用导演 aesthetic | 【音频】伴随白天环境音, 动作产生自然动作声, 氛围弥漫明亮日常氛围, 声画精准同步，嘴型与发音对齐 | 【质控】blurry, low resolution, pixelated, compression artifacts, cartoon, anime, illustration, 3D render look, CGI appearance, plastic look, distorted perspective, impossible geometry, floating objects, inconsistent scale, flat lighting, overexposed, crushed blacks, double shadows, wrong light direction, distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose, unnatural physics, fake water, static water, cardboard texture, plastic foliage 切入揭示式运镜：从medium逐步过渡到close_up，共2段精细运镜。首段：横移向左30厘米，同时前推15厘米，焦点从人物面部逐渐过渡至手中持有的运动水杯或蛋白粉容器。设计意图：独白讲解类内容需要快速建立话题吸引力，通过由人物中景切入到关键道具/文字卡片的特写，制造信息揭示的悬念感，符合curiosity情绪要求；5秒时长需高效完成信息 【负面约束】no blurry, no cartoon, no deformed hands, no extra fingers, no watermark, no text 【明亮约束】自然光或柔和室内照明,画面真实干净,禁止暗黑/灰暗。 【角色约束】画面中仅出现陈卓,禁止重复角色 speaking_normal",
+    "qualityScore": {
+      "score": 88,
+      "grade": "A",
+      "passed": true,
+      "action": "放行",
+      "scores": {
+        "tier1Completeness": 100,
+        "visualPurity": 100,
+        "utilization": 119,
+        "techValidity": 100,
+        "emotionConsistency": 70,
+        "negativeCompleteness": 0
+      },
+      "details": [
+        {
+          "dimension": "Tier-1完整性",
+          "score": 100,
+          "weight": 25,
+          "checks": {
+            "hasSubject": true,
+            "hasAction": true,
+            "hasScene": true,
+            "hasCamera": true
+          },
+          "missing": null,
+          "comment": "Tier-1完整"
+        },
+        {
+          "dimension": "视觉纯度",
+          "score": 100,
+          "weight": 20,
+          "contaminationScore": 0,
+          "comment": "视觉纯净"
+        },
+        {
+          "dimension": "字符利用率",
+          "score": 119,
+          "weight": 15,
+          "length": 1185,
+          "maxLength": 1500,
+          "utilization": 79,
+          "comment": "利用率良好"
+        },
+        {
+          "dimension": "技术规格有效性",
+          "score": 100,
+          "weight": 15,
+          "invalidCount": 0,
+          "foundInvalid": null,
+          "comment": "技术声明有效"
+        },
+        {
+          "dimension": "情绪-表情一致性",
+          "score": 70,
+          "weight": 15,
+          "comment": "未定义情绪阶段，默认评分"
+        },
+        {
+          "dimension": "负面约束完整性",
+          "score": 0,
+          "weight": 10,
+          "foundCount": 0,
+          "total": 3,
+          "missing": [
+            "no metallic shine",
+            "no traditional Chinese symbols",
+            "natural eye colors only"
+          ],
+          "comment": "缺失: no metallic shine, no traditional Chinese symbols, natural eye colors only"
+        }
+      ],
+      "duration": 1,
+      "report": "===== Prompt质量门禁报告 =====\n\n总分: 88/100 | 评级: A | 动作: 放行\n\n各维度评分:\n  Tier-1完整性: 100/100 (权重25% → 25分) — Tier-1完整\n  视觉纯度: 100/100 (权重20% → 20分) — 视觉纯净\n  字符利用率: 119/100 (权重15% → 18分) — 利用率良好\n  技术规格有效性: 100/100 (权重15% → 15分) — 技术声明有效\n  情绪-表情一致性: 70/100 (权重15% → 11分) — 未定义情绪阶段，默认评分\n  负面约束完整性: 0/100 (权重10% → 0分) — 缺失: no metallic shine, no traditional Chinese symbols, natural eye colors only\n\n综合: ✅ 通过门禁"
+    },
+    "channelData": {
+      "narration": {
+        "text": "今天我们来聊一个和运动密切相关的健康隐患——横纹肌溶解。",
+        "ttsReady": true,
+        "duration": 6
+      },
+      "visual": {
+        "text": "电影级镜头, 开场介绍, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression",
+        "hasLipSync": false
+      },
+      "lipSync": null
+    }
+  },
+  "mappedShot": {
+    "id": "S01",
+    "type": "opening",
+    "scene": "开场介绍",
+    "sceneType": "nature_epic",
+    "emotionPhase": "curiosity",
+    "narration": "今天我们来聊一个和运动密切相关的健康隐患——横纹肌溶解。",
+    "action": "",
+    "visualPrompt": "超写实纪录片风格，明亮的医疗科普演播室环境中，主持人陈卓身穿简洁得体的便装或白大褂，正面站立面对镜头，双手自然交叠于身前或配合开场讲解做轻微手势，神情专业且亲切，位于中近景构图，人物占据画面中央偏上位置，背景为浅色调的医学科普墙或简洁书架，点缀人体解剖示意模型，自然柔光从左侧打亮面部，无明显阴影，画面色调干净偏暖，镜头稳定无抖动，整体呈现权威可信、平易近人的健康科普质感，适合竖屏9比16画幅。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
+    "camera": "",
+    "cameraMovement": {
+      "timeline": {
+        "strategy": "切入揭示式运镜",
+        "reasoning": "独白讲解类内容需要快速建立话题吸引力，通过由人物中景切入到关键道具/文字卡片的特写，制造信息揭示的悬念感，符合curiosity情绪要求；5秒时长需高效完成信息铺垫，避免冗余叙事",
+        "segmentCount": 2,
+        "segments": [
+          {
+            "index": 0,
+            "timeRange": "0-2.5",
+            "shotSize": "medium",
+            "movement": "横移向左30厘米，同时前推15厘米，焦点从人物面部逐渐过渡至手中持有的运动水杯或蛋白粉容器",
+            "speed": "中速匀速，0.5秒完成起幅缓冲后保持恒定",
+            "reason": "中景建立讲解者身份，手持运动相关道具暗示话题领域，横移结合前推制造动态期待感，引导观众视线向核心道具汇聚，为信息揭示做铺垫"
+          },
+          {
+            "index": 1,
+            "timeRange": "2.5-5",
+            "shotSize": "close_up",
+            "movement": "前推8厘米至道具标签文字，同时顺时针旋轴15度使标签正对镜头，焦点锐化至文字边缘",
+            "speed": "减速推进，最后1秒速度降至初始30%形成凝视感",
+            "reason": "特写强制锁定核心信息载体，物理距离压缩制造窥秘感，旋轴矫正确保信息可读性，速度衰减配合curiosity情绪达到即将揭示关键答案的临界点，台词中"
+          }
+        ],
+        "generatedBy": "LLM-v4",
+        "description": "切入揭示式运镜：从medium逐步过渡到close_up，共2段，强调内容驱动的细微推进。",
+        "transitionType": "llm_v4",
+        "timeline": {
+          "strategy": "切入揭示式运镜",
+          "reasoning": "独白讲解类内容需要快速建立话题吸引力，通过由人物中景切入到关键道具/文字卡片的特写，制造信息揭示的悬念感，符合curiosity情绪要求；5秒时长需高效完成信息铺垫，避免冗余叙事",
+          "segments": [
+            {
+              "index": 0,
+              "timeRange": "0-2.5",
+              "shotSize": "medium",
+              "movement": "横移向左30厘米，同时前推15厘米，焦点从人物面部逐渐过渡至手中持有的运动水杯或蛋白粉容器",
+              "speed": "中速匀速，0.5秒完成起幅缓冲后保持恒定",
+              "reason": "中景建立讲解者身份，手持运动相关道具暗示话题领域，横移结合前推制造动态期待感，引导观众视线向核心道具汇聚，为信息揭示做铺垫"
+            },
+            {
+              "index": 1,
+              "timeRange": "2.5-5",
+              "shotSize": "close_up",
+              "movement": "前推8厘米至道具标签文字，同时顺时针旋轴15度使标签正对镜头，焦点锐化至文字边缘",
+              "speed": "减速推进，最后1秒速度降至初始30%形成凝视感",
+              "reason": "特写强制锁定核心信息载体，物理距离压缩制造窥秘感，旋轴矫正确保信息可读性，速度衰减配合curiosity情绪达到即将揭示关键答案的临界点，台词中"
+            }
+          ]
+        }
+      },
+      "v4Enabled": true,
+      "v4Analysis": {
+        "spaceSize": "medium",
+        "sceneType": "monologue",
+        "sceneTypeName": "独白/讲解",
+        "segmentCount": 3,
+        "constraints": {
+          "minSize": "medium",
+          "maxSize": "wide",
+          "forbidden": [
+            "extreme_wide"
+          ],
+          "preferred": [
+            "medium",
+            "close_up"
+          ],
+          "defaultSize": "medium"
+        },
+        "movementStyle": "stable",
+        "characterCount": 1,
+        "duration": 5,
+        "shotId": "开场介绍",
+        "dialogue": "今天我们来聊一个和运动密切相关的健康隐患——横纹肌溶解。",
+        "emotionPhase": "curiosity"
+      },
+      "v4Continuity": null,
+      "description": "切入揭示式运镜：从medium逐步过渡到close_up，共2段精细运镜。首段：横移向左30厘米，同时前推15厘米，焦点从人物面部逐渐过渡至手中持有的运动水杯或蛋白粉容器。设计意图：独白讲解类内容需要快速建立话题吸引力，通过由人物中景切入到关键道具/文字卡片的特写，制造信息揭示的悬念感，符合curiosity情绪要求；5秒时长需高效完成信息",
+      "shotSize": "medium",
+      "position": "center",
+      "movement": "横移向左30厘米，同时前推15厘米，焦点从人物面部逐渐过渡至手中持有的运动水杯或蛋白粉容器",
+      "speed": "中速匀速，0.5秒完成起幅缓冲后保持恒定",
+      "timeRange": "0-2.5"
+    },
+    "lighting": null,
+    "audio": "",
+    "renderStyle": "",
+    "negativePrompt": "",
+    "characters": [
+      "chen-zhuo"
+    ],
+    "duration": 5,
+    "beastId": "",
+    "beastName": "",
+    "tension": 0,
+    "isOpening": false,
+    "isEnding": false,
+    "isClosing": false
+  },
+  "context": {
+    "totalShots": 6,
+    "protagonistName": "主角",
+    "beastId": "",
+    "beastName": "",
+    "habitat": "开场介绍",
+    "episodeTheme": "",
+    "sceneType": "nature_epic"
+  },
+  "schemaCheck": {
+    "valid": true,
+    "issues": [],
+    "warnings": []
+  },
+  "subsystemFields": {
+    "CHARACTER": "chen-zhuo",
+    "SCENE": "开场介绍",
+    "MOOD": "establishing",
+    "RENDER": "电影级、超写实、细节丰富",
+    "DIALOGUE": "今天我们来聊一个和运动密切相关的健康隐患——横纹肌溶解。",
+    "CAMERA": "（一镜到底！），镜头时间轴：0-3s: 缓慢establish，远景→中景，氛围铺垫 → 3-5s: 微微定格，眼神/表情接触，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
+    "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K",
+    "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow",
+    "meta": {
+      "source": "camera-movement-system-v3",
+      "raw": {
+        "scene": "开场介绍",
+        "emotionPhase": "curiosity",
+        "duration": 5,
+        "baseMovement": {
+          "scene": "开场介绍",
+          "physicsDriver": "generic",
+          "primaryMovement": "smooth_track",
+          "speed": "smooth",
+          "shotSize": "medium",
+          "cameraHeight": "normal",
+          "lens": "35mm",
+          "pattern": "standard tracking",
+          "emotionMapping": null,
+          "referenceFilm": "general cinematic",
+          "lightSync": false,
+          "bioPulseSync": false,
+          "gravityFactor": 1,
+          "timeline": [
+            {
+              "range": "0-3s",
+              "action": "缓慢establish，远景→中景，氛围铺垫"
+            },
+            {
+              "range": "3-5s",
+              "action": "微微定格，眼神/表情接触"
+            }
+          ],
+          "description": "（一镜到底！），镜头时间轴：0-3s: 缓慢establish，远景→中景，氛围铺垫 → 3-5s: 微微定格，眼神/表情接触，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic"
+        },
+        "description": "（一镜到底！），镜头时间轴：0-3s: 缓慢establish，远景→中景，氛围铺垫 → 3-5s: 微微定格，眼神/表情接触，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic",
+        "intraShotTimeline": {
+          "totalDuration": 5,
+          "segmentCount": 4,
+          "transitionName": "渐进式揭示",
+          "transitionDesc": "从远景逐步推到特写，建立环境→发现主体→情感亲密",
+          "lightingName": "晨曦渐亮",
+          "lightingDesc": "从黑暗中逐渐亮起，模拟日出效果",
+          "speedCurveName": "慢快慢",
+          "speedCurveDesc": "开始缓慢，中间加速，最后减速",
+          "segments": [
+            {
+              "index": 0,
+              "timeRange": "早期",
+              "duration": 1,
+              "shotSize": "extreme_wide",
+              "shotSizeDesc": "极端远景（环境全貌）",
+              "movement": "orbit_360",
+              "speed": {
+                "value": 0.3,
+                "description": "缓慢"
+              },
+              "lighting": {
+                "intensity": 0.1,
+                "colorTemp": 2000,
+                "direction": "low_back",
+                "effect": "仅轮廓可见"
+              },
+              "transition": "smooth_dissolve"
+            },
+            {
+              "index": 1,
+              "timeRange": "中期",
+              "duration": 1.5,
+              "shotSize": "wide",
+              "shotSizeDesc": "远景（环境+主体）",
+              "movement": "push_in",
+              "speed": {
+                "value": 0.8,
+                "description": "很快"
+              },
+              "lighting": {
+                "intensity": 0.3,
+                "colorTemp": 2800,
+                "direction": "side",
+                "effect": "侧光渐强"
+              },
+              "transition": "hard_cut"
+            },
+            {
+              "index": 2,
+              "timeRange": "后期",
+              "duration": 1.5,
+              "shotSize": "medium",
+              "shotSizeDesc": "中景（半身/双人）",
+              "movement": "push_in",
+              "speed": {
+                "value": 1,
+                "description": "极限速度"
+              },
+              "lighting": {
+                "intensity": 0.6,
+                "colorTemp": 4500,
+                "direction": "45_degree",
+                "effect": "主体清晰"
+              },
+              "transition": "rack_focus"
+            },
+            {
+              "index": 3,
+              "timeRange": "尾声",
+              "duration": 1,
+              "shotSize": "close_up",
+              "shotSizeDesc": "特写（面部/细节）",
+              "movement": "hold",
+              "speed": {
+                "value": 0.6,
+                "description": "快速"
+              },
+              "lighting": {
+                "intensity": 1,
+                "colorTemp": 5600,
+                "direction": "front_top",
+                "effect": "全面照亮"
+              },
+              "transition": null
+            }
+          ],
+          "summary": "【镜头时间轴 - 渐进式揭示】\n策略：从远景逐步推到特写，建立环境→发现主体→情感亲密\n灯光：晨曦渐亮 - 从黑暗中逐渐亮起，模拟日出效果\n速度：慢快慢 - 开始缓慢，中间加速，最后减速\n\n早期｜极端远景（环境全貌）｜缓慢｜orbit_360｜灯光：仅轮廓可见\n  → 转场：平滑渐变\n中期｜远景（环境+主体）｜很快｜push_in｜灯光：侧光渐强\n  → 转场：硬切\n后期｜中景（半身/双人）｜极限速度｜push_in｜灯光：主体清晰\n  → 转场：移焦过渡\n尾声｜特写（面部/细节）｜快速｜hold｜灯光：全面照亮\n"
+        },
+        "intraShotPrompt": "【运镜时间轴 - 一镜到底多段式】\n本镜头共4段，总时长5秒。\n景别切换策略：渐进式揭示（从远景逐步推到特写，建立环境→发现主体→情感亲密）\n灯光变化：晨曦渐亮（从黑暗中逐渐亮起，模拟日出效果）\n速度曲线：慢快慢（开始缓慢，中间加速，最后减速）\n\n早期：\n  景别：极端远景（环境全貌）\n  运镜：orbit_360\n  速度：缓慢（强度0.3）\n  灯光：仅轮廓可见，色温2000K，强度0.1\n  → 转场：平滑渐变（0.5-1秒平滑过渡）\n\n中期：\n  景别：远景（环境+主体）\n  运镜：push_in\n  速度：很快（强度0.8）\n  灯光：侧光渐强，色温2800K，强度0.3\n  → 转场：硬切（瞬间切换，无过渡）\n\n后期：\n  景别：中景（半身/双人）\n  运镜：push_in\n  速度：极限速度（强度1）\n  灯光：主体清晰，色温4500K，强度0.6\n  → 转场：移焦过渡（焦点从前景移到后景（或反之）实现切换）\n\n尾声：\n  景别：特写（面部/细节）\n  运镜：hold\n  速度：快速（强度0.6）\n  灯光：全面照亮，色温5600K，强度1\n\n",
+        "camera": "extreme_wide orbit_360, 50mm lens, normal speed",
+        "lighting": "low_back key 2000K, 仅轮廓可见",
+        "config": {
+          "transitionType": "progressive_reveal",
+          "lightingType": "dawn_break",
+          "speedCurve": "slow_fast_slow"
+        }
+      }
+    },
+    "AUDIO": "【环境音效】风声、风穿过物体声",
+    "_meta": {
+      "activatedSubsystems": [
+        "CameraMovementSystemV3Bridge",
+        "AmbientSoundDesignerBridge"
+      ],
+      "hasBeast": false,
+      "isOpening": true,
+      "isClimax": false
+    }
+  },
+  "llmFields": {},
+  "mergedFields": {
+    "CHARACTER": "chen-zhuo",
+    "SCENE": "开场介绍",
+    "MOOD": "establishing",
+    "RENDER": "电影级、超写实、细节丰富",
+    "DIALOGUE": "今天我们来聊一个和运动密切相关的健康隐患——横纹肌溶解。",
+    "CAMERA": "（一镜到底！），镜头时间轴：0-3s: 缓慢establish，远景→中景，氛围铺垫 → 3-5s: 微微定格，眼神/表情接触，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
+    "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K",
+    "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow",
+    "meta": {
+      "source": "camera-movement-system-v3",
+      "raw": {
+        "scene": "开场介绍",
+        "emotionPhase": "curiosity",
+        "duration": 5,
+        "baseMovement": {
+          "scene": "开场介绍",
+          "physicsDriver": "generic",
+          "primaryMovement": "smooth_track",
+          "speed": "smooth",
+          "shotSize": "medium",
+          "cameraHeight": "normal",
+          "lens": "35mm",
+          "pattern": "standard tracking",
+          "emotionMapping": null,
+          "referenceFilm": "general cinematic",
+          "lightSync": false,
+          "bioPulseSync": false,
+          "gravityFactor": 1,
+          "timeline": [
+            {
+              "range": "0-3s",
+              "action": "缓慢establish，远景→中景，氛围铺垫"
+            },
+            {
+              "range": "3-5s",
+              "action": "微微定格，眼神/表情接触"
+            }
+          ],
+          "description": "（一镜到底！），镜头时间轴：0-3s: 缓慢establish，远景→中景，氛围铺垫 → 3-5s: 微微定格，眼神/表情接触，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic"
+        },
+        "description": "（一镜到底！），镜头时间轴：0-3s: 缓慢establish，远景→中景，氛围铺垫 → 3-5s: 微微定格，眼神/表情接触，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic",
+        "intraShotTimeline": {
+          "totalDuration": 5,
+          "segmentCount": 4,
+          "transitionName": "渐进式揭示",
+          "transitionDesc": "从远景逐步推到特写，建立环境→发现主体→情感亲密",
+          "lightingName": "晨曦渐亮",
+          "lightingDesc": "从黑暗中逐渐亮起，模拟日出效果",
+          "speedCurveName": "慢快慢",
+          "speedCurveDesc": "开始缓慢，中间加速，最后减速",
+          "segments": [
+            {
+              "index": 0,
+              "timeRange": "早期",
+              "duration": 1,
+              "shotSize": "extreme_wide",
+              "shotSizeDesc": "极端远景（环境全貌）",
+              "movement": "orbit_360",
+              "speed": {
+                "value": 0.3,
+                "description": "缓慢"
+              },
+              "lighting": {
+                "intensity": 0.1,
+                "colorTemp": 2000,
+                "direction": "low_back",
+                "effect": "仅轮廓可见"
+              },
+              "transition": "smooth_dissolve"
+            },
+            {
+              "index": 1,
+              "timeRange": "中期",
+              "duration": 1.5,
+              "shotSize": "wide",
+              "shotSizeDesc": "远景（环境+主体）",
+              "movement": "push_in",
+              "speed": {
+                "value": 0.8,
+                "description": "很快"
+              },
+              "lighting": {
+                "intensity": 0.3,
+                "colorTemp": 2800,
+                "direction": "side",
+                "effect": "侧光渐强"
+              },
+              "transition": "hard_cut"
+            },
+            {
+              "index": 2,
+              "timeRange": "后期",
+              "duration": 1.5,
+              "shotSize": "medium",
+              "shotSizeDesc": "中景（半身/双人）",
+              "movement": "push_in",
+              "speed": {
+                "value": 1,
+                "description": "极限速度"
+              },
+              "lighting": {
+                "intensity": 0.6,
+                "colorTemp": 4500,
+                "direction": "45_degree",
+                "effect": "主体清晰"
+              },
+              "transition": "rack_focus"
+            },
+            {
+              "index": 3,
+              "timeRange": "尾声",
+              "duration": 1,
+              "shotSize": "close_up",
+              "shotSizeDesc": "特写（面部/细节）",
+              "movement": "hold",
+              "speed": {
+                "value": 0.6,
+                "description": "快速"
+              },
+              "lighting": {
+                "intensity": 1,
+                "colorTemp": 5600,
+                "direction": "front_top",
+                "effect": "全面照亮"
+              },
+              "transition": null
+            }
+          ],
+          "summary": "【镜头时间轴 - 渐进式揭示】\n策略：从远景逐步推到特写，建立环境→发现主体→情感亲密\n灯光：晨曦渐亮 - 从黑暗中逐渐亮起，模拟日出效果\n速度：慢快慢 - 开始缓慢，中间加速，最后减速\n\n早期｜极端远景（环境全貌）｜缓慢｜orbit_360｜灯光：仅轮廓可见\n  → 转场：平滑渐变\n中期｜远景（环境+主体）｜很快｜push_in｜灯光：侧光渐强\n  → 转场：硬切\n后期｜中景（半身/双人）｜极限速度｜push_in｜灯光：主体清晰\n  → 转场：移焦过渡\n尾声｜特写（面部/细节）｜快速｜hold｜灯光：全面照亮\n"
+        },
+        "intraShotPrompt": "【运镜时间轴 - 一镜到底多段式】\n本镜头共4段，总时长5秒。\n景别切换策略：渐进式揭示（从远景逐步推到特写，建立环境→发现主体→情感亲密）\n灯光变化：晨曦渐亮（从黑暗中逐渐亮起，模拟日出效果）\n速度曲线：慢快慢（开始缓慢，中间加速，最后减速）\n\n早期：\n  景别：极端远景（环境全貌）\n  运镜：orbit_360\n  速度：缓慢（强度0.3）\n  灯光：仅轮廓可见，色温2000K，强度0.1\n  → 转场：平滑渐变（0.5-1秒平滑过渡）\n\n中期：\n  景别：远景（环境+主体）\n  运镜：push_in\n  速度：很快（强度0.8）\n  灯光：侧光渐强，色温2800K，强度0.3\n  → 转场：硬切（瞬间切换，无过渡）\n\n后期：\n  景别：中景（半身/双人）\n  运镜：push_in\n  速度：极限速度（强度1）\n  灯光：主体清晰，色温4500K，强度0.6\n  → 转场：移焦过渡（焦点从前景移到后景（或反之）实现切换）\n\n尾声：\n  景别：特写（面部/细节）\n  运镜：hold\n  速度：快速（强度0.6）\n  灯光：全面照亮，色温5600K，强度1\n\n",
+        "camera": "extreme_wide orbit_360, 50mm lens, normal speed",
+        "lighting": "low_back key 2000K, 仅轮廓可见",
+        "config": {
+          "transitionType": "progressive_reveal",
+          "lightingType": "dawn_break",
+          "speedCurve": "slow_fast_slow"
+        }
+      }
+    },
+    "AUDIO": "【环境音效】风声、风穿过物体声",
+    "_meta": {
+      "activatedSubsystems": [
+        "CameraMovementSystemV3Bridge",
+        "AmbientSoundDesignerBridge"
+      ],
+      "hasBeast": false,
+      "isOpening": true,
+      "isClimax": false
+    },
+    "NEGATIVE": "no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers"
+  },
+  "normalizedFields": {
+    "CHARACTER": "chen-zhuo",
+    "DIALOGUE": "今天我们来聊一个和运动密切相关的健康隐患——横纹肌溶解。",
+    "ACTION": "",
+    "SCENE": "开场介绍",
+    "MOOD": "establishing",
+    "CAMERA": "（一镜到底！），镜头时间轴：0-3s: 缓慢establish，远景→中景，氛围铺垫 → 3-5s: 微微定格，眼神/表情接触，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
+    "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K",
+    "NEGATIVE": "no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers",
+    "AUDIO": "【环境音效】风声、风穿过物体声",
+    "RENDER": "电影级、超写实、细节丰富",
+    "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow"
+  },
+  "finalPrompt": "{CHARACTER: chen-zhuo | DIALOGUE: 今天我们来聊一个和运动密切相关的健康隐患——横纹肌溶解。 | SCENE: 开场介绍 | MOOD: establishing | CAMERA: （一镜到底！），镜头时间轴：0-3s: 缓慢establish，远景→中景，氛围铺垫 → 3-5s: 微微定格，眼神/表情接触，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人） | LIGHTING: 仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K | NEGATIVE: no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers | AUDIO: 【环境音效】风声、风穿过物体声 | RENDER: 电影级、超写实、细节丰富 | DIRECTOR: 景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow}",
+  "validation": {
+    "valid": true,
+    "issues": [],
+    "warnings": [],
+    "stats": {
+      "length": 722,
+      "emptyFields": [
+        "ACTION"
+      ],
+      "filledFields": [
+        "CHARACTER",
+        "DIALOGUE",
+        "SCENE",
+        "MOOD",
+        "CAMERA",
+        "LIGHTING",
+        "NEGATIVE",
+        "AUDIO",
+        "RENDER",
+        "DIRECTOR"
+      ]
+    }
+  },
+  "meta": {
+    "builderVersion": "v3",
+    "timestamp": "2026-06-17T04:18:37.607Z"
+  }
+}

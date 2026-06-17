@@ -1,0 +1,58 @@
+{
+  "id": "jingwei-bird",
+  "name": "精卫鸟",
+  "type": "creature",
+  "firstAppearance": "EP07",
+  "visualIdentity": {
+    "style": "神性生物，写实与奇幻融合",
+    "appearance": {
+      "body": {
+        "description": "体型如老鹰大小，气质神性超凡",
+        "consistency": "strict",
+        "promptFragment": "体型如老鹰大小气质神性超凡"
+      },
+      "head": {
+        "description": "白色尖喙，喙部有细微裂纹，头部羽毛如火焰冠羽",
+        "consistency": "strict",
+        "promptFragment": "白色尖喙喙部细微裂纹头部火焰冠羽"
+      },
+      "eyes": {
+        "description": "深邃如远古海洋，瞳孔深褐色如暗流涌动，眼神坚定悲悯",
+        "consistency": "strict",
+        "promptFragment": "深邃远古海洋瞳孔深褐色暗流涌动眼神坚定悲悯"
+      },
+      "feathers": {
+        "description": "主体白色为底，花纹如烈焰般赤红与金黄交织，每片羽毛边缘有微光",
+        "consistency": "strict",
+        "promptFragment": "白色为底羽毛烈焰赤红金黄交织边缘微光"
+      },
+      "feet": {
+        "description": "赤红色爪子，锋利如火焰，爪垫有薄茧",
+        "consistency": "strict",
+        "promptFragment": "赤红色爪子锋利如火焰爪垫薄茧"
+      }
+    },
+    "angles": {
+      "front": "正面：白喙尖利，火焰冠羽张开，赤红金羽对称展开",
+      "side": "侧面：流线体型，喙部裂纹细节，翅膀折叠层次",
+      "flying": "飞翔：双翼展开火焰云海，光尾拖曳，三羽尾划出轨迹",
+      "closeup": "特写：瞳孔深褐色倒映远古海洋，喙部微光，羽毛纹理如烈焰",
+      "action": "衔石：喙部含发光石，眼神更盛，爪子微收准备投石"
+    }
+  },
+  "portraitConfig": {
+    "model": "seedream-5-0",
+    "size": "2K",
+    "style": "神性生物，写实与奇幻融合，电影质感"
+  },
+  "createdAt": "2026-05-19T08:55:12.495Z",
+  "updatedAt": "2026-05-19T08:56:22.192Z",
+  "version": "1.0",
+  "generatedAssets": {
+    "portraits": [],
+    "referenceImages": []
+  },
+  "appearances": [
+    "jingwei-v20.0"
+  ]
+}
