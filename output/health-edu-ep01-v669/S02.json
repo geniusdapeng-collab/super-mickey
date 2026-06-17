@@ -1,85 +1,86 @@
 {
   "shotId": "S02",
-  "recordedAt": "2026-06-17T04:18:37.611Z",
+  "recordedAt": "2026-06-17T04:40:43.988Z",
   "rawShot": {
     "id": "S02",
-    "scene": "核心机制解析",
-    "dialogue": "横纹肌溶解，就是肌肉细胞大面积坏死，肌红蛋白漏进血液，可能堵塞肾小管，引发急性肾衰竭。",
-    "narration": "横纹肌溶解，就是肌肉细胞大面积坏死，肌红蛋白漏进血液，可能堵塞肾小管，引发急性肾衰竭。",
-    "duration": 15,
+    "scene": "真实病例警示",
+    "dialogue": "去年夏天，一位28岁的健身爱好者连续做了三百个深蹲，第二天尿液变成了酱油色，被紧急送医——这就是横纹肌溶解的典型信号。",
+    "narration": "去年夏天，一位28岁的健身爱好者连续做了三百个深蹲，第二天尿液变成了酱油色，被紧急送医——这就是横纹肌溶解的典型信号。",
+    "duration": 13,
     "type": "content",
     "characters": [
-      "chen-zhuo"
+      "chen-zhuo",
+      "presenter"
     ],
-    "mouthAction": "speaking_normal",
+    "mouthAction": "speaking_emphasis",
     "importance": 5,
     "visualComplexity": 5,
     "emotionPhase": "tension",
-    "visualPrompt": "超写实纪录片风格，三甲医院肾内科诊室环境，陈卓身穿白大褂站在人体解剖示意图前，手持激光笔指向肾脏结构图，面向镜头进行专业讲解，表情沉稳专注，中近景构图，人物位于画面中央偏左，背景可见真实的医学书籍和诊疗设备，柔和顶光结合侧窗自然光，画面质感细腻真实，肤色自然，景深适中，镜头稳定无晃动，整体呈现权威可信的医疗科普氛围，竖屏构图人物比例协调。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
+    "visualPrompt": "超写实纪录片风格，陈卓位于画面中央偏左位置，面向镜头进行口语化讲解，神态专业且沉稳，左手自然抬起做手势辅助说明。中近景竖屏构图，胸部以上取景，人物占比约画面高度三分之一。背景为干净明亮的医疗科普演播室或诊室环境，浅灰色墙面，隐约可见人体解剖挂图或医疗模型。柔和自然光从左侧入射，面部明暗过渡自然，无夸张阴影。画面质感真实细腻，色彩克制偏冷调，镜头固定稳定，整体呈现可信、专业的医学科普纪录片氛围，适合短视频平台竖屏传播。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
     "fpvRecommended": false,
     "fpvScore": 58,
     "fpvReason": "建议传统运镜：情绪/视觉不适合FPV",
     "cameraMovement": {
       "timeline": {
-        "strategy": "渐进侵入式",
-        "reasoning": "通过逐步收紧的景别和加速的运动，将观众从观察者身份强行拉入医学恐怖的微观世界，用物理空间的压缩模拟病理机制对机体的入侵过程，配合专业术语的累积叙述制造认知压迫感。",
+        "strategy": "压迫式渐进逼近",
+        "reasoning": "医学科普台词涉及身体危机与病理警示，需通过景别压缩与空间逼近制造紧张感，让观众从安全距离逐步陷入被信息胁迫的感官体验，配合'酱油色尿液'这一具象恐怖细节，用物理空间的缩小映射生理系统的崩溃。",
         "segmentCount": 3,
         "segments": [
           {
             "index": 0,
             "timeRange": "0-5",
             "shotSize": "medium",
-            "movement": "轨道车向角色平滑推进65厘米，同时镜头向右横摇12度",
-            "speed": "3秒完成推进，后期加速至1.5秒完成剩余距离",
-            "reason": "建立对话空间的环境锚点，初始克制运动让观众稳定接收'横纹肌溶解'的诊断名词，中段加速暗示病情恶化速率超过预期。"
+            "movement": "轨道前移40厘米，机位高度从1.5米降至1.2米",
+            "speed": "2厘米/秒",
+            "reason": "开场建立讲述者存在但保持疏离感，缓慢前移暗示信息正在接近听众，高度下降形成潜在的俯视压迫，为病理细节做空间铺垫。"
           },
           {
             "index": 1,
-            "timeRange": "5-10",
+            "timeRange": "5-9",
             "shotSize": "close_up",
-            "movement": "斯坦尼康从角色肩膀上方下沉23厘米至胸部高度，同时镜头俯仰下调8度",
-            "speed": "5秒匀速完成，末端0.5秒微震颤2度",
-            "reason": "切入'肌红蛋白漏进血液'的具象化叙述，下沉动作模拟体液沉积的物理重力，末端震颤外化肾功能崩溃的不可逆性。"
+            "movement": "轨道前移35厘米，顺时针环绕被摄体15度",
+            "speed": "4厘米/秒",
+            "reason": "切至特写时加速逼近，将'三百个深蹲'的量化暴力转化为视觉压迫；环轨15度打破稳定构图，制造体检报告般的审视视角，暗示身体正在被医学目光解剖。"
           },
           {
             "index": 2,
-            "timeRange": "10-15",
+            "timeRange": "9-13",
             "shotSize": "close_up",
-            "movement": "轨道车向角色面部持续推进41厘米，镜头同步向左横摇5度、仰角抬升4度",
-            "speed": "4秒完成，最后1秒加速至0.5秒完成最后10厘米",
-            "reason": "直面'急性肾衰竭'的终极宣判，双重轴向运动打破构图平衡制造窒息感，最终逼近面部迫使观众承担与角色同等的死亡恐惧。"
+            "movement": "轨道微震模拟呼吸起伏，振幅3厘米/周期1.2秒，同时镜头下摇8度",
+            "speed": "2.5厘米/秒叠加振动",
+            "reason": "末段'酱油色尿液'与'紧急送医'需要生理级不适感，微震模拟患者当时的肌肉震颤，下摇8度让画面产生倾倒失衡，仿佛体液正在失控涌出，以残留画面的恶心感完成警示功能。"
           }
         ],
         "generatedBy": "LLM-v4",
-        "description": "渐进侵入式：从medium逐步过渡到close_up，共3段，强调内容驱动的细微推进。",
+        "description": "压迫式渐进逼近：从medium逐步过渡到close_up，共3段，强调内容驱动的细微推进。",
         "transitionType": "llm_v4",
         "timeline": {
-          "strategy": "渐进侵入式",
-          "reasoning": "通过逐步收紧的景别和加速的运动，将观众从观察者身份强行拉入医学恐怖的微观世界，用物理空间的压缩模拟病理机制对机体的入侵过程，配合专业术语的累积叙述制造认知压迫感。",
+          "strategy": "压迫式渐进逼近",
+          "reasoning": "医学科普台词涉及身体危机与病理警示，需通过景别压缩与空间逼近制造紧张感，让观众从安全距离逐步陷入被信息胁迫的感官体验，配合'酱油色尿液'这一具象恐怖细节，用物理空间的缩小映射生理系统的崩溃。",
           "segments": [
             {
               "index": 0,
               "timeRange": "0-5",
               "shotSize": "medium",
-              "movement": "轨道车向角色平滑推进65厘米，同时镜头向右横摇12度",
-              "speed": "3秒完成推进，后期加速至1.5秒完成剩余距离",
-              "reason": "建立对话空间的环境锚点，初始克制运动让观众稳定接收'横纹肌溶解'的诊断名词，中段加速暗示病情恶化速率超过预期。"
+              "movement": "轨道前移40厘米，机位高度从1.5米降至1.2米",
+              "speed": "2厘米/秒",
+              "reason": "开场建立讲述者存在但保持疏离感，缓慢前移暗示信息正在接近听众，高度下降形成潜在的俯视压迫，为病理细节做空间铺垫。"
             },
             {
               "index": 1,
-              "timeRange": "5-10",
+              "timeRange": "5-9",
               "shotSize": "close_up",
-              "movement": "斯坦尼康从角色肩膀上方下沉23厘米至胸部高度，同时镜头俯仰下调8度",
-              "speed": "5秒匀速完成，末端0.5秒微震颤2度",
-              "reason": "切入'肌红蛋白漏进血液'的具象化叙述，下沉动作模拟体液沉积的物理重力，末端震颤外化肾功能崩溃的不可逆性。"
+              "movement": "轨道前移35厘米，顺时针环绕被摄体15度",
+              "speed": "4厘米/秒",
+              "reason": "切至特写时加速逼近，将'三百个深蹲'的量化暴力转化为视觉压迫；环轨15度打破稳定构图，制造体检报告般的审视视角，暗示身体正在被医学目光解剖。"
             },
             {
               "index": 2,
-              "timeRange": "10-15",
+              "timeRange": "9-13",
               "shotSize": "close_up",
-              "movement": "轨道车向角色面部持续推进41厘米，镜头同步向左横摇5度、仰角抬升4度",
-              "speed": "4秒完成，最后1秒加速至0.5秒完成最后10厘米",
-              "reason": "直面'急性肾衰竭'的终极宣判，双重轴向运动打破构图平衡制造窒息感，最终逼近面部迫使观众承担与角色同等的死亡恐惧。"
+              "movement": "轨道微震模拟呼吸起伏，振幅3厘米/周期1.2秒，同时镜头下摇8度",
+              "speed": "2.5厘米/秒叠加振动",
+              "reason": "末段'酱油色尿液'与'紧急送医'需要生理级不适感，微震模拟患者当时的肌肉震颤，下摇8度让画面产生倾倒失衡，仿佛体液正在失控涌出，以残留画面的恶心感完成警示功能。"
             }
           ]
         }
@@ -103,10 +104,10 @@
           "defaultSize": "medium"
         },
         "movementStyle": "stable",
-        "characterCount": 1,
-        "duration": 15,
-        "shotId": "核心机制解析",
-        "dialogue": "横纹肌溶解，就是肌肉细胞大面积坏死，肌红蛋白漏进血液，可能堵塞肾小管，引发急性肾衰竭。",
+        "characterCount": 2,
+        "duration": 13,
+        "shotId": "真实病例警示",
+        "dialogue": "去年夏天，一位28岁的健身爱好者连续做了三百个深蹲，第二天尿液变成了酱油色，被紧急送医——这就是横纹肌溶解的典型信号。",
         "emotionPhase": "tension"
       },
       "v4Continuity": {
@@ -114,23 +115,23 @@
         "warnings": [],
         "fixes": []
       },
-      "description": "渐进侵入式：从medium逐步过渡到close_up，共3段精细运镜。首段：轨道车向角色平滑推进65厘米，同时镜头向右横摇12度。设计意图：通过逐步收紧的景别和加速的运动，将观众从观察者身份强行拉入医学恐怖的微观世界，用物理空间的压缩模拟病理机制对机体的入侵过程，配合专业术语的累积叙述制造认知压迫感",
+      "description": "压迫式渐进逼近：从medium逐步过渡到close_up，共3段精细运镜。首段：轨道前移40厘米，机位高度从1.5米降至1.2米。设计意图：医学科普台词涉及身体危机与病理警示，需通过景别压缩与空间逼近制造紧张感，让观众从安全距离逐步陷入被信息胁迫的感官体验，配合'酱油色尿液'这一具象恐怖细节，用物理",
       "shotSize": "medium",
       "position": "center",
-      "movement": "轨道车向角色平滑推进65厘米，同时镜头向右横摇12度",
-      "speed": "3秒完成推进，后期加速至1.5秒完成剩余距离",
+      "movement": "轨道前移40厘米，机位高度从1.5米降至1.2米",
+      "speed": "2厘米/秒",
       "timeRange": "0-5"
     },
-    "prompt": "16:9宽屏电影级镜头。【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic | 【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film | 【空间】golden hour, clear sky, atmospheric haze, depth layers, foreground to background | 【主体】陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业人像摄影，自然生活化场景 | 【动态】电影级镜头, 核心机制解析, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression, 轨道车向角色平滑推进65厘米，同时镜头向右横摇12度 | 【风格】color palette: natural earth shadows + daylight highlights + green foliage accents, cinematic atmosphere, 通用导演 aesthetic | 【音频】伴随白天环境音, 动作产生自然动作声, 氛围弥漫明亮日常氛围, 声画精准同步，嘴型与发音对齐 | 【质控】blurry, low resolution, pixelated, compression artifacts, cartoon, anime, illustration, 3D render look, CGI appearance, plastic look, distorted perspective, impossible geometry, floating objects, inconsistent scale, flat lighting, overexposed, crushed blacks, double shadows, wrong light direction, distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose, unnatural physics, fake water, static water, cardboard texture, plastic foliage 渐进侵入式：从medium逐步过渡到close_up，共3段精细运镜。首段：轨道车向角色平滑推进65厘米，同时镜头向右横摇12度。设计意图：通过逐步收紧的景别和加速的运动，将观众从观察者身份强行拉入医学恐怖的微观世界，用物理空间的压缩模拟病理机制对机体的入侵过程，配合专业术语的累积叙述制造认知压迫感 【负面约束】no blurry, no cartoon, no deformed hands, no extra fingers, no watermark, no text 【明亮约束】自然光或柔和室内照明,画面真实干净,禁止暗黑/灰暗。 【角色约束】画面中仅出现陈卓,禁止重复角色 speaking_normal",
+    "prompt": "16:9宽屏电影级镜头。【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic | 【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film | 【空间】golden hour, clear sky, atmospheric haze, depth layers, foreground to background | 【主体】陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业人像摄影，自然生活化场景, presenter | 【动态】电影级镜头, 真实病例警示, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression and presenter, natural expression, 轨道前移40厘米，机位高度从1.5米降至1.2米 | 【风格】color palette: natural earth shadows + daylight highlights + green foliage accents, cinematic atmosphere, 通用导演 aesthetic | 【音频】伴随白天环境音, 动作产生自然动作声, 氛围弥漫明亮日常氛围, 声画精准同步，嘴型与发音对齐 | 【质控】blurry, low resolution, pixelated, compression artifacts, cartoon, anime, illustration, 3D render look, CGI appearance, plastic look, distorted perspective, impossible geometry, floating objects, inconsistent scale, flat lighting, overexposed, crushed blacks, double shadows, wrong light direction, distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose, unnatural physics, fake water, static water, cardboard texture, plastic foliage 压迫式渐进逼近：从medium逐步过渡到close_up，共3段精细运镜。首段：轨道前移40厘米，机位高度从1.5米降至1.2米。设计意图：医学科普台词涉及身体危机与病理警示，需通过景别压缩与空间逼近制造紧张感，让观众从安全距离逐步陷入被信息胁迫的感官体验，配合'酱油色尿液'这一具象恐怖细节，用物理 【负面约束】no blurry, no cartoon, no deformed hands, no extra fingers, no watermark, no text 【明亮约束】自然光或柔和室内照明,画面真实干净,禁止暗黑/灰暗。 【角色约束】画面中仅出现陈卓、presenter,禁止重复角色;2人位置分布自然,避免重叠 speaking_emphasis",
     "qualityScore": {
-      "score": 88,
+      "score": 76,
       "grade": "A",
       "passed": true,
       "action": "放行",
       "scores": {
-        "tier1Completeness": 100,
+        "tier1Completeness": 50,
         "visualPurity": 100,
-        "utilization": 117,
+        "utilization": 121,
         "techValidity": 100,
         "emotionConsistency": 70,
         "negativeCompleteness": 0
@@ -138,16 +139,19 @@
       "details": [
         {
           "dimension": "Tier-1完整性",
-          "score": 100,
+          "score": 50,
           "weight": 25,
           "checks": {
-            "hasSubject": true,
-            "hasAction": true,
+            "hasSubject": false,
+            "hasAction": false,
             "hasScene": true,
             "hasCamera": true
           },
-          "missing": null,
-          "comment": "Tier-1完整"
+          "missing": [
+            "主体",
+            "动作"
+          ],
+          "comment": "缺失: 主体, 动作"
         },
         {
           "dimension": "视觉纯度",
@@ -158,11 +162,11 @@
         },
         {
           "dimension": "字符利用率",
-          "score": 117,
+          "score": 121,
           "weight": 15,
-          "length": 1168,
+          "length": 1211,
           "maxLength": 1500,
-          "utilization": 78,
+          "utilization": 81,
           "comment": "利用率良好"
         },
         {
@@ -193,17 +197,17 @@
           "comment": "缺失: no metallic shine, no traditional Chinese symbols, natural eye colors only"
         }
       ],
-      "duration": 0,
-      "report": "===== Prompt质量门禁报告 =====\n\n总分: 88/100 | 评级: A | 动作: 放行\n\n各维度评分:\n  Tier-1完整性: 100/100 (权重25% → 25分) — Tier-1完整\n  视觉纯度: 100/100 (权重20% → 20分) — 视觉纯净\n  字符利用率: 117/100 (权重15% → 18分) — 利用率良好\n  技术规格有效性: 100/100 (权重15% → 15分) — 技术声明有效\n  情绪-表情一致性: 70/100 (权重15% → 11分) — 未定义情绪阶段，默认评分\n  负面约束完整性: 0/100 (权重10% → 0分) — 缺失: no metallic shine, no traditional Chinese symbols, natural eye colors only\n\n综合: ✅ 通过门禁"
+      "duration": 1,
+      "report": "===== Prompt质量门禁报告 =====\n\n总分: 76/100 | 评级: A | 动作: 放行\n\n各维度评分:\n  Tier-1完整性: 50/100 (权重25% → 13分) — 缺失: 主体, 动作\n  视觉纯度: 100/100 (权重20% → 20分) — 视觉纯净\n  字符利用率: 121/100 (权重15% → 18分) — 利用率良好\n  技术规格有效性: 100/100 (权重15% → 15分) — 技术声明有效\n  情绪-表情一致性: 70/100 (权重15% → 11分) — 未定义情绪阶段，默认评分\n  负面约束完整性: 0/100 (权重10% → 0分) — 缺失: no metallic shine, no traditional Chinese symbols, natural eye colors only\n\n综合: ✅ 通过门禁"
     },
     "channelData": {
       "narration": {
-        "text": "横纹肌溶解，就是肌肉细胞大面积坏死，肌红蛋白漏进血液，可能堵塞肾小管，引发急性肾衰竭。",
+        "text": "去年夏天，一位28岁的健身爱好者连续做了三百个深蹲，第二天尿液变成了酱油色，被紧急送医——这就是横纹肌溶解的典型信号。",
         "ttsReady": true,
-        "duration": 9
+        "duration": 11
       },
       "visual": {
-        "text": "电影级镜头, 核心机制解析, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression",
+        "text": "电影级镜头, 真实病例警示, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression and presenter, natural expression",
         "hasLipSync": false
       },
       "lipSync": null
@@ -212,74 +216,74 @@
   "mappedShot": {
     "id": "S02",
     "type": "content",
-    "scene": "核心机制解析",
+    "scene": "真实病例警示",
     "sceneType": "nature_epic",
     "emotionPhase": "tension",
-    "narration": "横纹肌溶解，就是肌肉细胞大面积坏死，肌红蛋白漏进血液，可能堵塞肾小管，引发急性肾衰竭。",
+    "narration": "去年夏天，一位28岁的健身爱好者连续做了三百个深蹲，第二天尿液变成了酱油色，被紧急送医——这就是横纹肌溶解的典型信号。",
     "action": "",
-    "visualPrompt": "超写实纪录片风格，三甲医院肾内科诊室环境，陈卓身穿白大褂站在人体解剖示意图前，手持激光笔指向肾脏结构图，面向镜头进行专业讲解，表情沉稳专注，中近景构图，人物位于画面中央偏左，背景可见真实的医学书籍和诊疗设备，柔和顶光结合侧窗自然光，画面质感细腻真实，肤色自然，景深适中，镜头稳定无晃动，整体呈现权威可信的医疗科普氛围，竖屏构图人物比例协调。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
+    "visualPrompt": "超写实纪录片风格，陈卓位于画面中央偏左位置，面向镜头进行口语化讲解，神态专业且沉稳，左手自然抬起做手势辅助说明。中近景竖屏构图，胸部以上取景，人物占比约画面高度三分之一。背景为干净明亮的医疗科普演播室或诊室环境，浅灰色墙面，隐约可见人体解剖挂图或医疗模型。柔和自然光从左侧入射，面部明暗过渡自然，无夸张阴影。画面质感真实细腻，色彩克制偏冷调，镜头固定稳定，整体呈现可信、专业的医学科普纪录片氛围，适合短视频平台竖屏传播。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
     "camera": "",
     "cameraMovement": {
       "timeline": {
-        "strategy": "渐进侵入式",
-        "reasoning": "通过逐步收紧的景别和加速的运动，将观众从观察者身份强行拉入医学恐怖的微观世界，用物理空间的压缩模拟病理机制对机体的入侵过程，配合专业术语的累积叙述制造认知压迫感。",
+        "strategy": "压迫式渐进逼近",
+        "reasoning": "医学科普台词涉及身体危机与病理警示，需通过景别压缩与空间逼近制造紧张感，让观众从安全距离逐步陷入被信息胁迫的感官体验，配合'酱油色尿液'这一具象恐怖细节，用物理空间的缩小映射生理系统的崩溃。",
         "segmentCount": 3,
         "segments": [
           {
             "index": 0,
             "timeRange": "0-5",
             "shotSize": "medium",
-            "movement": "轨道车向角色平滑推进65厘米，同时镜头向右横摇12度",
-            "speed": "3秒完成推进，后期加速至1.5秒完成剩余距离",
-            "reason": "建立对话空间的环境锚点，初始克制运动让观众稳定接收'横纹肌溶解'的诊断名词，中段加速暗示病情恶化速率超过预期。"
+            "movement": "轨道前移40厘米，机位高度从1.5米降至1.2米",
+            "speed": "2厘米/秒",
+            "reason": "开场建立讲述者存在但保持疏离感，缓慢前移暗示信息正在接近听众，高度下降形成潜在的俯视压迫，为病理细节做空间铺垫。"
           },
           {
             "index": 1,
-            "timeRange": "5-10",
+            "timeRange": "5-9",
             "shotSize": "close_up",
-            "movement": "斯坦尼康从角色肩膀上方下沉23厘米至胸部高度，同时镜头俯仰下调8度",
-            "speed": "5秒匀速完成，末端0.5秒微震颤2度",
-            "reason": "切入'肌红蛋白漏进血液'的具象化叙述，下沉动作模拟体液沉积的物理重力，末端震颤外化肾功能崩溃的不可逆性。"
+            "movement": "轨道前移35厘米，顺时针环绕被摄体15度",
+            "speed": "4厘米/秒",
+            "reason": "切至特写时加速逼近，将'三百个深蹲'的量化暴力转化为视觉压迫；环轨15度打破稳定构图，制造体检报告般的审视视角，暗示身体正在被医学目光解剖。"
           },
           {
             "index": 2,
-            "timeRange": "10-15",
+            "timeRange": "9-13",
             "shotSize": "close_up",
-            "movement": "轨道车向角色面部持续推进41厘米，镜头同步向左横摇5度、仰角抬升4度",
-            "speed": "4秒完成，最后1秒加速至0.5秒完成最后10厘米",
-            "reason": "直面'急性肾衰竭'的终极宣判，双重轴向运动打破构图平衡制造窒息感，最终逼近面部迫使观众承担与角色同等的死亡恐惧。"
+            "movement": "轨道微震模拟呼吸起伏，振幅3厘米/周期1.2秒，同时镜头下摇8度",
+            "speed": "2.5厘米/秒叠加振动",
+            "reason": "末段'酱油色尿液'与'紧急送医'需要生理级不适感，微震模拟患者当时的肌肉震颤，下摇8度让画面产生倾倒失衡，仿佛体液正在失控涌出，以残留画面的恶心感完成警示功能。"
           }
         ],
         "generatedBy": "LLM-v4",
-        "description": "渐进侵入式：从medium逐步过渡到close_up，共3段，强调内容驱动的细微推进。",
+        "description": "压迫式渐进逼近：从medium逐步过渡到close_up，共3段，强调内容驱动的细微推进。",
         "transitionType": "llm_v4",
         "timeline": {
-          "strategy": "渐进侵入式",
-          "reasoning": "通过逐步收紧的景别和加速的运动，将观众从观察者身份强行拉入医学恐怖的微观世界，用物理空间的压缩模拟病理机制对机体的入侵过程，配合专业术语的累积叙述制造认知压迫感。",
+          "strategy": "压迫式渐进逼近",
+          "reasoning": "医学科普台词涉及身体危机与病理警示，需通过景别压缩与空间逼近制造紧张感，让观众从安全距离逐步陷入被信息胁迫的感官体验，配合'酱油色尿液'这一具象恐怖细节，用物理空间的缩小映射生理系统的崩溃。",
           "segments": [
             {
               "index": 0,
               "timeRange": "0-5",
               "shotSize": "medium",
-              "movement": "轨道车向角色平滑推进65厘米，同时镜头向右横摇12度",
-              "speed": "3秒完成推进，后期加速至1.5秒完成剩余距离",
-              "reason": "建立对话空间的环境锚点，初始克制运动让观众稳定接收'横纹肌溶解'的诊断名词，中段加速暗示病情恶化速率超过预期。"
+              "movement": "轨道前移40厘米，机位高度从1.5米降至1.2米",
+              "speed": "2厘米/秒",
+              "reason": "开场建立讲述者存在但保持疏离感，缓慢前移暗示信息正在接近听众，高度下降形成潜在的俯视压迫，为病理细节做空间铺垫。"
             },
             {
               "index": 1,
-              "timeRange": "5-10",
+              "timeRange": "5-9",
               "shotSize": "close_up",
-              "movement": "斯坦尼康从角色肩膀上方下沉23厘米至胸部高度，同时镜头俯仰下调8度",
-              "speed": "5秒匀速完成，末端0.5秒微震颤2度",
-              "reason": "切入'肌红蛋白漏进血液'的具象化叙述，下沉动作模拟体液沉积的物理重力，末端震颤外化肾功能崩溃的不可逆性。"
+              "movement": "轨道前移35厘米，顺时针环绕被摄体15度",
+              "speed": "4厘米/秒",
+              "reason": "切至特写时加速逼近，将'三百个深蹲'的量化暴力转化为视觉压迫；环轨15度打破稳定构图，制造体检报告般的审视视角，暗示身体正在被医学目光解剖。"
             },
             {
               "index": 2,
-              "timeRange": "10-15",
+              "timeRange": "9-13",
               "shotSize": "close_up",
-              "movement": "轨道车向角色面部持续推进41厘米，镜头同步向左横摇5度、仰角抬升4度",
-              "speed": "4秒完成，最后1秒加速至0.5秒完成最后10厘米",
-              "reason": "直面'急性肾衰竭'的终极宣判，双重轴向运动打破构图平衡制造窒息感，最终逼近面部迫使观众承担与角色同等的死亡恐惧。"
+              "movement": "轨道微震模拟呼吸起伏，振幅3厘米/周期1.2秒，同时镜头下摇8度",
+              "speed": "2.5厘米/秒叠加振动",
+              "reason": "末段'酱油色尿液'与'紧急送医'需要生理级不适感，微震模拟患者当时的肌肉震颤，下摇8度让画面产生倾倒失衡，仿佛体液正在失控涌出，以残留画面的恶心感完成警示功能。"
             }
           ]
         }
@@ -303,10 +307,10 @@
           "defaultSize": "medium"
         },
         "movementStyle": "stable",
-        "characterCount": 1,
-        "duration": 15,
-        "shotId": "核心机制解析",
-        "dialogue": "横纹肌溶解，就是肌肉细胞大面积坏死，肌红蛋白漏进血液，可能堵塞肾小管，引发急性肾衰竭。",
+        "characterCount": 2,
+        "duration": 13,
+        "shotId": "真实病例警示",
+        "dialogue": "去年夏天，一位28岁的健身爱好者连续做了三百个深蹲，第二天尿液变成了酱油色，被紧急送医——这就是横纹肌溶解的典型信号。",
         "emotionPhase": "tension"
       },
       "v4Continuity": {
@@ -314,11 +318,11 @@
         "warnings": [],
         "fixes": []
       },
-      "description": "渐进侵入式：从medium逐步过渡到close_up，共3段精细运镜。首段：轨道车向角色平滑推进65厘米，同时镜头向右横摇12度。设计意图：通过逐步收紧的景别和加速的运动，将观众从观察者身份强行拉入医学恐怖的微观世界，用物理空间的压缩模拟病理机制对机体的入侵过程，配合专业术语的累积叙述制造认知压迫感",
+      "description": "压迫式渐进逼近：从medium逐步过渡到close_up，共3段精细运镜。首段：轨道前移40厘米，机位高度从1.5米降至1.2米。设计意图：医学科普台词涉及身体危机与病理警示，需通过景别压缩与空间逼近制造紧张感，让观众从安全距离逐步陷入被信息胁迫的感官体验，配合'酱油色尿液'这一具象恐怖细节，用物理",
       "shotSize": "medium",
       "position": "center",
-      "movement": "轨道车向角色平滑推进65厘米，同时镜头向右横摇12度",
-      "speed": "3秒完成推进，后期加速至1.5秒完成剩余距离",
+      "movement": "轨道前移40厘米，机位高度从1.5米降至1.2米",
+      "speed": "2厘米/秒",
       "timeRange": "0-5"
     },
     "lighting": null,
@@ -326,9 +330,10 @@
     "renderStyle": "",
     "negativePrompt": "",
     "characters": [
-      "chen-zhuo"
+      "chen-zhuo",
+      "presenter"
     ],
-    "duration": 15,
+    "duration": 13,
     "beastId": "",
     "beastName": "",
     "tension": 0,
@@ -341,7 +346,7 @@
     "protagonistName": "主角",
     "beastId": "",
     "beastName": "",
-    "habitat": "核心机制解析",
+    "habitat": "真实病例警示",
     "episodeTheme": "",
     "sceneType": "nature_epic"
   },
@@ -351,22 +356,22 @@
     "warnings": []
   },
   "subsystemFields": {
-    "CHARACTER": "chen-zhuo",
-    "SCENE": "核心机制解析",
+    "CHARACTER": "chen-zhuo，presenter",
+    "SCENE": "真实病例警示",
     "MOOD": "tension",
     "RENDER": "电影级、超写实、细节丰富",
-    "DIALOGUE": "横纹肌溶解，就是肌肉细胞大面积坏死，肌红蛋白漏进血液，可能堵塞肾小管，引发急性肾衰竭。",
-    "CAMERA": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
+    "DIALOGUE": "去年夏天，一位28岁的健身爱好者连续做了三百个深蹲，第二天尿液变成了酱油色，被紧急送医——这就是横纹肌溶解的典型信号。",
+    "CAMERA": "（一镜到底！），镜头时间轴：0-4s: static (宁静) → 4-9s: push_in (聚焦) → 9-13s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
     "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K",
     "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow",
     "meta": {
       "source": "camera-movement-system-v3",
       "raw": {
-        "scene": "核心机制解析",
+        "scene": "真实病例警示",
         "emotionPhase": "tension",
-        "duration": 15,
+        "duration": 13,
         "baseMovement": {
-          "scene": "核心机制解析",
+          "scene": "真实病例警示",
           "physicsDriver": "generic",
           "primaryMovement": "smooth_track",
           "speed": "smooth",
@@ -405,33 +410,33 @@
           },
           "hasMultiSegment": true,
           "segmentCount": 3,
-          "comboDescription": "【运镜组合】开场建立：0-5秒：static → 5-10秒：push_in → 10-15秒：orbit_right",
+          "comboDescription": "【运镜组合】开场建立：0-4秒：static → 4-9秒：push_in → 9-13秒：orbit_right",
           "timeline": [
             {
-              "range": "0-5s",
+              "range": "0-4s",
               "action": "static (宁静)",
               "movement": "static",
               "lighting": "晨光侧射"
             },
             {
-              "range": "5-10s",
+              "range": "4-9s",
               "action": "push_in (聚焦)",
               "movement": "push_in",
               "lighting": "自然光"
             },
             {
-              "range": "10-15s",
+              "range": "9-13s",
               "action": "orbit_right (升华)",
               "movement": "orbit_right",
               "lighting": "自然光"
             }
           ],
           "timelineSource": "intra-shot-combo",
-          "description": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic"
+          "description": "（一镜到底！），镜头时间轴：0-4s: static (宁静) → 4-9s: push_in (聚焦) → 9-13s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic"
         },
-        "description": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic",
+        "description": "（一镜到底！），镜头时间轴：0-4s: static (宁静) → 4-9s: push_in (聚焦) → 9-13s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic",
         "intraShotTimeline": {
-          "totalDuration": 15,
+          "totalDuration": 13,
           "segmentCount": 4,
           "transitionName": "渐进式揭示",
           "transitionDesc": "从远景逐步推到特写，建立环境→发现主体→情感亲密",
@@ -443,7 +448,7 @@
             {
               "index": 0,
               "timeRange": "早期",
-              "duration": 3,
+              "duration": 2.6,
               "shotSize": "extreme_wide",
               "shotSizeDesc": "极端远景（环境全貌）",
               "movement": "orbit_360",
@@ -462,7 +467,7 @@
             {
               "index": 1,
               "timeRange": "中期",
-              "duration": 4.5,
+              "duration": 3.9,
               "shotSize": "wide",
               "shotSizeDesc": "远景（环境+主体）",
               "movement": "push_in",
@@ -481,7 +486,7 @@
             {
               "index": 2,
               "timeRange": "后期",
-              "duration": 4.5,
+              "duration": 3.9,
               "shotSize": "medium",
               "shotSizeDesc": "中景（半身/双人）",
               "movement": "push_in",
@@ -500,7 +505,7 @@
             {
               "index": 3,
               "timeRange": "尾声",
-              "duration": 3,
+              "duration": 2.6,
               "shotSize": "close_up",
               "shotSizeDesc": "特写（面部/细节）",
               "movement": "hold",
@@ -519,7 +524,7 @@
           ],
           "summary": "【镜头时间轴 - 渐进式揭示】\n策略：从远景逐步推到特写，建立环境→发现主体→情感亲密\n灯光：晨曦渐亮 - 从黑暗中逐渐亮起，模拟日出效果\n速度：慢快慢 - 开始缓慢，中间加速，最后减速\n\n早期｜极端远景（环境全貌）｜缓慢｜orbit_360｜灯光：仅轮廓可见\n  → 转场：平滑渐变\n中期｜远景（环境+主体）｜很快｜push_in｜灯光：侧光渐强\n  → 转场：硬切\n后期｜中景（半身/双人）｜极限速度｜push_in｜灯光：主体清晰\n  → 转场：移焦过渡\n尾声｜特写（面部/细节）｜快速｜hold｜灯光：全面照亮\n"
         },
-        "intraShotPrompt": "【运镜时间轴 - 一镜到底多段式】\n本镜头共4段，总时长15秒。\n景别切换策略：渐进式揭示（从远景逐步推到特写，建立环境→发现主体→情感亲密）\n灯光变化：晨曦渐亮（从黑暗中逐渐亮起，模拟日出效果）\n速度曲线：慢快慢（开始缓慢，中间加速，最后减速）\n\n早期：\n  景别：极端远景（环境全貌）\n  运镜：orbit_360\n  速度：缓慢（强度0.3）\n  灯光：仅轮廓可见，色温2000K，强度0.1\n  → 转场：平滑渐变（0.5-1秒平滑过渡）\n\n中期：\n  景别：远景（环境+主体）\n  运镜：push_in\n  速度：很快（强度0.8）\n  灯光：侧光渐强，色温2800K，强度0.3\n  → 转场：硬切（瞬间切换，无过渡）\n\n后期：\n  景别：中景（半身/双人）\n  运镜：push_in\n  速度：极限速度（强度1）\n  灯光：主体清晰，色温4500K，强度0.6\n  → 转场：移焦过渡（焦点从前景移到后景（或反之）实现切换）\n\n尾声：\n  景别：特写（面部/细节）\n  运镜：hold\n  速度：快速（强度0.6）\n  灯光：全面照亮，色温5600K，强度1\n\n",
+        "intraShotPrompt": "【运镜时间轴 - 一镜到底多段式】\n本镜头共4段，总时长13秒。\n景别切换策略：渐进式揭示（从远景逐步推到特写，建立环境→发现主体→情感亲密）\n灯光变化：晨曦渐亮（从黑暗中逐渐亮起，模拟日出效果）\n速度曲线：慢快慢（开始缓慢，中间加速，最后减速）\n\n早期：\n  景别：极端远景（环境全貌）\n  运镜：orbit_360\n  速度：缓慢（强度0.3）\n  灯光：仅轮廓可见，色温2000K，强度0.1\n  → 转场：平滑渐变（0.5-1秒平滑过渡）\n\n中期：\n  景别：远景（环境+主体）\n  运镜：push_in\n  速度：很快（强度0.8）\n  灯光：侧光渐强，色温2800K，强度0.3\n  → 转场：硬切（瞬间切换，无过渡）\n\n后期：\n  景别：中景（半身/双人）\n  运镜：push_in\n  速度：极限速度（强度1）\n  灯光：主体清晰，色温4500K，强度0.6\n  → 转场：移焦过渡（焦点从前景移到后景（或反之）实现切换）\n\n尾声：\n  景别：特写（面部/细节）\n  运镜：hold\n  速度：快速（强度0.6）\n  灯光：全面照亮，色温5600K，强度1\n\n",
         "camera": "extreme_wide orbit_360, 50mm lens, normal speed",
         "lighting": "low_back key 2000K, 仅轮廓可见",
         "config": {
@@ -529,7 +534,7 @@
         }
       }
     },
-    "AUDIO": "【环境音效】风声、风穿过物体声",
+    "AUDIO": "【环境音效】风穿过物体声、风声",
     "_meta": {
       "activatedSubsystems": [
         "CameraMovementSystemV3Bridge",
@@ -542,22 +547,22 @@
   },
   "llmFields": {},
   "mergedFields": {
-    "CHARACTER": "chen-zhuo",
-    "SCENE": "核心机制解析",
+    "CHARACTER": "chen-zhuo，presenter",
+    "SCENE": "真实病例警示",
     "MOOD": "tension",
     "RENDER": "电影级、超写实、细节丰富",
-    "DIALOGUE": "横纹肌溶解，就是肌肉细胞大面积坏死，肌红蛋白漏进血液，可能堵塞肾小管，引发急性肾衰竭。",
-    "CAMERA": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
+    "DIALOGUE": "去年夏天，一位28岁的健身爱好者连续做了三百个深蹲，第二天尿液变成了酱油色，被紧急送医——这就是横纹肌溶解的典型信号。",
+    "CAMERA": "（一镜到底！），镜头时间轴：0-4s: static (宁静) → 4-9s: push_in (聚焦) → 9-13s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
     "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K",
     "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow",
     "meta": {
       "source": "camera-movement-system-v3",
       "raw": {
-        "scene": "核心机制解析",
+        "scene": "真实病例警示",
         "emotionPhase": "tension",
-        "duration": 15,
+        "duration": 13,
         "baseMovement": {
-          "scene": "核心机制解析",
+          "scene": "真实病例警示",
           "physicsDriver": "generic",
           "primaryMovement": "smooth_track",
           "speed": "smooth",
@@ -596,33 +601,33 @@
           },
           "hasMultiSegment": true,
           "segmentCount": 3,
-          "comboDescription": "【运镜组合】开场建立：0-5秒：static → 5-10秒：push_in → 10-15秒：orbit_right",
+          "comboDescription": "【运镜组合】开场建立：0-4秒：static → 4-9秒：push_in → 9-13秒：orbit_right",
           "timeline": [
             {
-              "range": "0-5s",
+              "range": "0-4s",
               "action": "static (宁静)",
               "movement": "static",
               "lighting": "晨光侧射"
             },
             {
-              "range": "5-10s",
+              "range": "4-9s",
               "action": "push_in (聚焦)",
               "movement": "push_in",
               "lighting": "自然光"
             },
             {
-              "range": "10-15s",
+              "range": "9-13s",
               "action": "orbit_right (升华)",
               "movement": "orbit_right",
               "lighting": "自然光"
             }
           ],
           "timelineSource": "intra-shot-combo",
-          "description": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic"
+          "description": "（一镜到底！），镜头时间轴：0-4s: static (宁静) → 4-9s: push_in (聚焦) → 9-13s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic"
         },
-        "description": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic",
+        "description": "（一镜到底！），镜头时间轴：0-4s: static (宁静) → 4-9s: push_in (聚焦) → 9-13s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic",
         "intraShotTimeline": {
-          "totalDuration": 15,
+          "totalDuration": 13,
           "segmentCount": 4,
           "transitionName": "渐进式揭示",
           "transitionDesc": "从远景逐步推到特写，建立环境→发现主体→情感亲密",
@@ -634,7 +639,7 @@
             {
               "index": 0,
               "timeRange": "早期",
-              "duration": 3,
+              "duration": 2.6,
               "shotSize": "extreme_wide",
               "shotSizeDesc": "极端远景（环境全貌）",
               "movement": "orbit_360",
@@ -653,7 +658,7 @@
             {
               "index": 1,
               "timeRange": "中期",
-              "duration": 4.5,
+              "duration": 3.9,
               "shotSize": "wide",
               "shotSizeDesc": "远景（环境+主体）",
               "movement": "push_in",
@@ -672,7 +677,7 @@
             {
               "index": 2,
               "timeRange": "后期",
-              "duration": 4.5,
+              "duration": 3.9,
               "shotSize": "medium",
               "shotSizeDesc": "中景（半身/双人）",
               "movement": "push_in",
@@ -691,7 +696,7 @@
             {
               "index": 3,
               "timeRange": "尾声",
-              "duration": 3,
+              "duration": 2.6,
               "shotSize": "close_up",
               "shotSizeDesc": "特写（面部/细节）",
               "movement": "hold",
@@ -710,7 +715,7 @@
           ],
           "summary": "【镜头时间轴 - 渐进式揭示】\n策略：从远景逐步推到特写，建立环境→发现主体→情感亲密\n灯光：晨曦渐亮 - 从黑暗中逐渐亮起，模拟日出效果\n速度：慢快慢 - 开始缓慢，中间加速，最后减速\n\n早期｜极端远景（环境全貌）｜缓慢｜orbit_360｜灯光：仅轮廓可见\n  → 转场：平滑渐变\n中期｜远景（环境+主体）｜很快｜push_in｜灯光：侧光渐强\n  → 转场：硬切\n后期｜中景（半身/双人）｜极限速度｜push_in｜灯光：主体清晰\n  → 转场：移焦过渡\n尾声｜特写（面部/细节）｜快速｜hold｜灯光：全面照亮\n"
         },
-        "intraShotPrompt": "【运镜时间轴 - 一镜到底多段式】\n本镜头共4段，总时长15秒。\n景别切换策略：渐进式揭示（从远景逐步推到特写，建立环境→发现主体→情感亲密）\n灯光变化：晨曦渐亮（从黑暗中逐渐亮起，模拟日出效果）\n速度曲线：慢快慢（开始缓慢，中间加速，最后减速）\n\n早期：\n  景别：极端远景（环境全貌）\n  运镜：orbit_360\n  速度：缓慢（强度0.3）\n  灯光：仅轮廓可见，色温2000K，强度0.1\n  → 转场：平滑渐变（0.5-1秒平滑过渡）\n\n中期：\n  景别：远景（环境+主体）\n  运镜：push_in\n  速度：很快（强度0.8）\n  灯光：侧光渐强，色温2800K，强度0.3\n  → 转场：硬切（瞬间切换，无过渡）\n\n后期：\n  景别：中景（半身/双人）\n  运镜：push_in\n  速度：极限速度（强度1）\n  灯光：主体清晰，色温4500K，强度0.6\n  → 转场：移焦过渡（焦点从前景移到后景（或反之）实现切换）\n\n尾声：\n  景别：特写（面部/细节）\n  运镜：hold\n  速度：快速（强度0.6）\n  灯光：全面照亮，色温5600K，强度1\n\n",
+        "intraShotPrompt": "【运镜时间轴 - 一镜到底多段式】\n本镜头共4段，总时长13秒。\n景别切换策略：渐进式揭示（从远景逐步推到特写，建立环境→发现主体→情感亲密）\n灯光变化：晨曦渐亮（从黑暗中逐渐亮起，模拟日出效果）\n速度曲线：慢快慢（开始缓慢，中间加速，最后减速）\n\n早期：\n  景别：极端远景（环境全貌）\n  运镜：orbit_360\n  速度：缓慢（强度0.3）\n  灯光：仅轮廓可见，色温2000K，强度0.1\n  → 转场：平滑渐变（0.5-1秒平滑过渡）\n\n中期：\n  景别：远景（环境+主体）\n  运镜：push_in\n  速度：很快（强度0.8）\n  灯光：侧光渐强，色温2800K，强度0.3\n  → 转场：硬切（瞬间切换，无过渡）\n\n后期：\n  景别：中景（半身/双人）\n  运镜：push_in\n  速度：极限速度（强度1）\n  灯光：主体清晰，色温4500K，强度0.6\n  → 转场：移焦过渡（焦点从前景移到后景（或反之）实现切换）\n\n尾声：\n  景别：特写（面部/细节）\n  运镜：hold\n  速度：快速（强度0.6）\n  灯光：全面照亮，色温5600K，强度1\n\n",
         "camera": "extreme_wide orbit_360, 50mm lens, normal speed",
         "lighting": "low_back key 2000K, 仅轮廓可见",
         "config": {
@@ -720,7 +725,7 @@
         }
       }
     },
-    "AUDIO": "【环境音效】风声、风穿过物体声",
+    "AUDIO": "【环境音效】风穿过物体声、风声",
     "_meta": {
       "activatedSubsystems": [
         "CameraMovementSystemV3Bridge",
@@ -733,25 +738,25 @@
     "NEGATIVE": "no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers"
   },
   "normalizedFields": {
-    "CHARACTER": "chen-zhuo",
-    "DIALOGUE": "横纹肌溶解，就是肌肉细胞大面积坏死，肌红蛋白漏进血液，可能堵塞肾小管，引发急性肾衰竭。",
+    "CHARACTER": "chen-zhuo，presenter",
+    "DIALOGUE": "去年夏天，一位28岁的健身爱好者连续做了三百个深蹲，第二天尿液变成了酱油色，被紧急送医——这就是横纹肌溶解的典型信号。",
     "ACTION": "",
-    "SCENE": "核心机制解析",
+    "SCENE": "真实病例警示",
     "MOOD": "tension",
-    "CAMERA": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
+    "CAMERA": "（一镜到底！），镜头时间轴：0-4s: static (宁静) → 4-9s: push_in (聚焦) → 9-13s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
     "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K",
     "NEGATIVE": "no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers",
-    "AUDIO": "【环境音效】风声、风穿过物体声",
+    "AUDIO": "【环境音效】风穿过物体声、风声",
     "RENDER": "电影级、超写实、细节丰富",
     "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow"
   },
-  "finalPrompt": "{CHARACTER: chen-zhuo | DIALOGUE: 横纹肌溶解，就是肌肉细胞大面积坏死，肌红蛋白漏进血液，可能堵塞肾小管，引发急性肾衰竭。 | SCENE: 核心机制解析 | MOOD: tension | CAMERA: （一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人） | LIGHTING: 仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K | NEGATIVE: no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers | AUDIO: 【环境音效】风声、风穿过物体声 | RENDER: 电影级、超写实、细节丰富 | DIRECTOR: 景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow}",
+  "finalPrompt": "{CHARACTER: chen-zhuo，presenter | DIALOGUE: 去年夏天，一位28岁的健身爱好者连续做了三百个深蹲，第二天尿液变成了酱油色，被紧急送医——这就是横纹肌溶解的典型信号。 | SCENE: 真实病例警示 | MOOD: tension | CAMERA: （一镜到底！），镜头时间轴：0-4s: static (宁静) → 4-9s: push_in (聚焦) → 9-13s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人） | LIGHTING: 仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K | NEGATIVE: no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers | AUDIO: 【环境音效】风穿过物体声、风声 | RENDER: 电影级、超写实、细节丰富 | DIRECTOR: 景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow}",
   "validation": {
     "valid": true,
     "issues": [],
     "warnings": [],
     "stats": {
-      "length": 751,
+      "length": 775,
       "emptyFields": [
         "ACTION"
       ],
@@ -771,6 +776,6 @@
   },
   "meta": {
     "builderVersion": "v3",
-    "timestamp": "2026-06-17T04:18:37.611Z"
+    "timestamp": "2026-06-17T04:40:43.988Z"
   }
 }

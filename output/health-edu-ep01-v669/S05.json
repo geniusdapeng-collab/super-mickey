@@ -1,11 +1,11 @@
 {
   "shotId": "S05",
-  "recordedAt": "2026-06-17T04:18:37.619Z",
+  "recordedAt": "2026-06-17T04:40:43.997Z",
   "rawShot": {
     "id": "S05",
     "scene": "结尾总结",
-    "dialogue": "陈卓最后提醒大家：科学运动，量力而行，我们下期再见。",
-    "narration": "陈卓最后提醒大家：科学运动，量力而行，我们下期再见。",
+    "dialogue": "陈卓提醒：科学运动，远离横纹肌溶解。",
+    "narration": "陈卓提醒：科学运动，远离横纹肌溶解。",
     "duration": 5,
     "type": "closing",
     "characters": [
@@ -15,55 +15,55 @@
     "importance": 5,
     "visualComplexity": 5,
     "emotionPhase": "resolution",
-    "visualPrompt": "超写实纪录片风格，专业科普演播室环境，主持人陈卓站立于画面中央偏下位置，面向镜头做总结性陈述，双手自然交叠于身前，表情温和而坚定，中近景构图，人物占画面主体三分之二。背景为简洁明亮的医疗教育主题墙面，带有 subtle 的骨骼肌肉解剖图示装饰。柔和均匀的演播室灯光，无明显阴影，肤色还原真实。9比16竖屏构图，画面稳定无晃动，镜头略微仰视增强亲和力，整体呈现专业、可信、收尾有力的医学科普纪录片质感。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
+    "visualPrompt": "超写实纪录片风格，专业医疗科普演播室内，陈卓身着正装或白大褂面对镜头站立，神态沉稳亲和，单手自然抬起做提醒姿态，目光直视观众，中近景竖屏构图，人物位于画面中心，背景为简洁明亮的健康宣教墙与医学图示，柔和均匀的演播室灯光照亮面部，细节清晰真实，画面色调温暖专业，整体呈现权威可信的医学科普结尾总结质感。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
     "fpvRecommended": false,
     "fpvScore": 41,
     "fpvReason": "建议传统运镜：情绪/视觉不适合FPV",
     "cameraMovement": {
       "timeline": {
-        "strategy": "中近景切换收尾方案",
-        "reasoning": "resolution情绪需要稳定、确定的收尾感，对话内容强调提醒和告别，用medium建立权威可信感，close_up创造亲切告别氛围，两段式完成信息传递+情感收尾，避免extreme_wide保持聚焦和紧凑",
+        "strategy": "释然确认双段推轨",
+        "reasoning": "以resolution情绪为基底，通过中景建立语境至特写强调信息的递进式运镜，在5秒内完成科学运动提醒的视听闭环，避免极端景别以保持对话感与亲和力，使观众在安定氛围中接收关键警示。",
         "segmentCount": 2,
         "segments": [
           {
             "index": 0,
-            "timeRange": "0.00-3.00",
+            "timeRange": "0-2.5",
             "shotSize": "medium",
-            "movement": "机位固定高度120cm，镜头水平微俯8度，缓慢前推15cm/秒，共推进45cm",
-            "speed": "slow",
-            "reason": "以medium景别呈现主讲人完整上半身，微俯角度建立专业权威感，缓慢前推强化叮嘱的郑重感，让'科学运动，量力而行'的提醒具有分量"
+            "movement": "轨道向前匀速推进40厘米，同步下摇5度",
+            "speed": "缓慢",
+            "reason": "中景建立运动环境或提示载体，缓慢推进营造resolution情绪的安定与终结感，为陈卓的台词铺垫科学运动的语境。"
           },
           {
             "index": 1,
-            "timeRange": "3.00-5.00",
+            "timeRange": "2.5-5",
             "shotSize": "close_up",
-            "movement": "机位高度140cm，从眼部高度切入，水平静止后轻微右摇3度/秒，共6度，伴随1cm/秒前推进2cm",
-            "speed": "slow",
-            "reason": "切至close_up聚焦面部，'我们下期再见'需要亲切直接的连接感，轻微摇镜增加呼吸感，避免绝对静止的死板，以温暖注视完成resolution情绪的收束"
+            "movement": "轨道向前匀速推进25厘米，微仰上摇3度",
+            "speed": "匀速",
+            "reason": "切换至特写锁定核心警示标语或字幕，在稳定匀速中完成信息强调，使观众在释然情绪中清晰接收远离横纹肌溶解的关键提醒。"
           }
         ],
         "generatedBy": "LLM-v4",
-        "description": "中近景切换收尾方案：从medium逐步过渡到close_up，共2段，强调内容驱动的细微推进。",
+        "description": "释然确认双段推轨：从medium逐步过渡到close_up，共2段，强调内容驱动的细微推进。",
         "transitionType": "llm_v4",
         "timeline": {
-          "strategy": "中近景切换收尾方案",
-          "reasoning": "resolution情绪需要稳定、确定的收尾感，对话内容强调提醒和告别，用medium建立权威可信感，close_up创造亲切告别氛围，两段式完成信息传递+情感收尾，避免extreme_wide保持聚焦和紧凑",
+          "strategy": "释然确认双段推轨",
+          "reasoning": "以resolution情绪为基底，通过中景建立语境至特写强调信息的递进式运镜，在5秒内完成科学运动提醒的视听闭环，避免极端景别以保持对话感与亲和力，使观众在安定氛围中接收关键警示。",
           "segments": [
             {
               "index": 0,
-              "timeRange": "0.00-3.00",
+              "timeRange": "0-2.5",
               "shotSize": "medium",
-              "movement": "机位固定高度120cm，镜头水平微俯8度，缓慢前推15cm/秒，共推进45cm",
-              "speed": "slow",
-              "reason": "以medium景别呈现主讲人完整上半身，微俯角度建立专业权威感，缓慢前推强化叮嘱的郑重感，让'科学运动，量力而行'的提醒具有分量"
+              "movement": "轨道向前匀速推进40厘米，同步下摇5度",
+              "speed": "缓慢",
+              "reason": "中景建立运动环境或提示载体，缓慢推进营造resolution情绪的安定与终结感，为陈卓的台词铺垫科学运动的语境。"
             },
             {
               "index": 1,
-              "timeRange": "3.00-5.00",
+              "timeRange": "2.5-5",
               "shotSize": "close_up",
-              "movement": "机位高度140cm，从眼部高度切入，水平静止后轻微右摇3度/秒，共6度，伴随1cm/秒前推进2cm",
-              "speed": "slow",
-              "reason": "切至close_up聚焦面部，'我们下期再见'需要亲切直接的连接感，轻微摇镜增加呼吸感，避免绝对静止的死板，以温暖注视完成resolution情绪的收束"
+              "movement": "轨道向前匀速推进25厘米，微仰上摇3度",
+              "speed": "匀速",
+              "reason": "切换至特写锁定核心警示标语或字幕，在稳定匀速中完成信息强调，使观众在释然情绪中清晰接收远离横纹肌溶解的关键提醒。"
             }
           ]
         }
@@ -90,7 +90,7 @@
         "characterCount": 1,
         "duration": 5,
         "shotId": "结尾总结",
-        "dialogue": "陈卓最后提醒大家：科学运动，量力而行，我们下期再见。",
+        "dialogue": "陈卓提醒：科学运动，远离横纹肌溶解。",
         "emotionPhase": "resolution"
       },
       "v4Continuity": {
@@ -98,14 +98,14 @@
         "warnings": [],
         "fixes": []
       },
-      "description": "中近景切换收尾方案：从medium逐步过渡到close_up，共2段精细运镜。首段：机位固定高度120cm，镜头水平微俯8度，缓慢前推15cm/秒，共推进45cm。设计意图：resolution情绪需要稳定、确定的收尾感，对话内容强调提醒和告别，用medium建立权威可信感，close_up创造亲切告别氛围，两段式完成信息传递+情感",
+      "description": "释然确认双段推轨：从medium逐步过渡到close_up，共2段精细运镜。首段：轨道向前匀速推进40厘米，同步下摇5度。设计意图：以resolution情绪为基底，通过中景建立语境至特写强调信息的递进式运镜，在5秒内完成科学运动提醒的视听闭环，避免极端景别以保持对话感与亲和力，使观众在安定",
       "shotSize": "medium",
       "position": "center",
-      "movement": "机位固定高度120cm，镜头水平微俯8度，缓慢前推15cm/秒，共推进45cm",
-      "speed": "slow",
-      "timeRange": "0.00-3.00"
+      "movement": "轨道向前匀速推进40厘米，同步下摇5度",
+      "speed": "缓慢",
+      "timeRange": "0-2.5"
     },
-    "prompt": "情绪基调：温暖、治愈。16:9宽屏电影级镜头。【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic | 【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film | 【空间】golden hour, clear sky, atmospheric haze, depth layers, foreground to background | 【主体】陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业人像摄影，自然生活化场景 | 【动态】电影级镜头, 结尾总结, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression, 机位固定高度120cm，镜头水平微俯8度，缓慢前推15cm/秒，共推进45cm | 【风格】color palette: natural earth shadows + daylight highlights + green foliage accents, cinematic atmosphere, 通用导演 aesthetic | 【音频】伴随白天环境音, 动作产生自然动作声, 氛围弥漫明亮日常氛围, 声画精准同步，嘴型与发音对齐 | 【质控】blurry, low resolution, pixelated, compression artifacts, cartoon, anime, illustration, 3D render look, CGI appearance, plastic look, distorted perspective, impossible geometry, floating objects, inconsistent scale, flat lighting, overexposed, crushed blacks, double shadows, wrong light direction, distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose, unnatural physics, fake water, static water, cardboard texture, plastic foliage 中近景切换收尾方案：从medium逐步过渡到close_up，共2段精细运镜。首段：机位固定高度120cm，镜头水平微俯8度，缓慢前推15cm/秒，共推进45cm。设计意图：resolution情绪需要稳定、确定的收尾感，对话内容强调提醒和告别，用medium建立权威可信感，close_up创造亲切告别氛围，两段式完成信息传递+情感 【负面约束】no blurry, no cartoon, no deformed hands, no extra fingers, no watermark, no text 【明亮约束】\n【光影增强】环境光反射在角色瞳孔中，形成微小光斑\n自然光或柔和室内照明,画面真实干净,禁止暗黑/灰暗。 【角色约束】画面中仅出现陈卓,禁止重复角色\n【空间深度】远景环境呼应开场但已重生/改变，形成叙事闭环 speaking_normal",
+    "prompt": "情绪基调：温暖、治愈。16:9宽屏电影级镜头。【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic | 【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film | 【空间】golden hour, clear sky, atmospheric haze, depth layers, foreground to background | 【主体】陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业人像摄影，自然生活化场景 | 【动态】电影级镜头, 结尾总结, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression, 轨道向前匀速推进40厘米，同步下摇5度 | 【风格】color palette: natural earth shadows + daylight highlights + green foliage accents, cinematic atmosphere, 通用导演 aesthetic | 【音频】伴随白天环境音, 动作产生自然动作声, 氛围弥漫明亮日常氛围, 声画精准同步，嘴型与发音对齐 | 【质控】blurry, low resolution, pixelated, compression artifacts, cartoon, anime, illustration, 3D render look, CGI appearance, plastic look, distorted perspective, impossible geometry, floating objects, inconsistent scale, flat lighting, overexposed, crushed blacks, double shadows, wrong light direction, distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose, unnatural physics, fake water, static water, cardboard texture, plastic foliage 释然确认双段推轨：从medium逐步过渡到close_up，共2段精细运镜。首段：轨道向前匀速推进40厘米，同步下摇5度。设计意图：以resolution情绪为基底，通过中景建立语境至特写强调信息的递进式运镜，在5秒内完成科学运动提醒的视听闭环，避免极端景别以保持对话感与亲和力，使观众在安定 【负面约束】no blurry, no cartoon, no deformed hands, no extra fingers, no watermark, no text 【明亮约束】\n【光影增强】光影边缘柔和虚化，如梦境般朦胧\n自然光或柔和室内照明,画面真实干净,禁止暗黑/灰暗。 【角色约束】画面中仅出现陈卓,禁止重复角色\n【空间深度】环境从冷色调渐变为暖色调，暗示情感转变 speaking_normal",
     "qualityScore": {
       "score": 82,
       "grade": "A",
@@ -114,7 +114,7 @@
       "scores": {
         "tier1Completeness": 75,
         "visualPurity": 100,
-        "utilization": 118,
+        "utilization": 116,
         "techValidity": 100,
         "emotionConsistency": 70,
         "negativeCompleteness": 0
@@ -144,11 +144,11 @@
         },
         {
           "dimension": "字符利用率",
-          "score": 118,
+          "score": 116,
           "weight": 15,
-          "length": 1179,
+          "length": 1159,
           "maxLength": 1500,
-          "utilization": 79,
+          "utilization": 77,
           "comment": "利用率良好"
         },
         {
@@ -180,13 +180,13 @@
         }
       ],
       "duration": 0,
-      "report": "===== Prompt质量门禁报告 =====\n\n总分: 82/100 | 评级: A | 动作: 放行\n\n各维度评分:\n  Tier-1完整性: 75/100 (权重25% → 19分) — Tier-1完整\n  视觉纯度: 100/100 (权重20% → 20分) — 视觉纯净\n  字符利用率: 118/100 (权重15% → 18分) — 利用率良好\n  技术规格有效性: 100/100 (权重15% → 15分) — 技术声明有效\n  情绪-表情一致性: 70/100 (权重15% → 11分) — 未定义情绪阶段，默认评分\n  负面约束完整性: 0/100 (权重10% → 0分) — 缺失: no metallic shine, no traditional Chinese symbols, natural eye colors only\n\n综合: ✅ 通过门禁"
+      "report": "===== Prompt质量门禁报告 =====\n\n总分: 82/100 | 评级: A | 动作: 放行\n\n各维度评分:\n  Tier-1完整性: 75/100 (权重25% → 19分) — Tier-1完整\n  视觉纯度: 100/100 (权重20% → 20分) — 视觉纯净\n  字符利用率: 116/100 (权重15% → 17分) — 利用率良好\n  技术规格有效性: 100/100 (权重15% → 15分) — 技术声明有效\n  情绪-表情一致性: 70/100 (权重15% → 11分) — 未定义情绪阶段，默认评分\n  负面约束完整性: 0/100 (权重10% → 0分) — 缺失: no metallic shine, no traditional Chinese symbols, natural eye colors only\n\n综合: ✅ 通过门禁"
     },
     "channelData": {
       "narration": {
-        "text": "陈卓最后提醒大家：科学运动，量力而行，我们下期再见。",
+        "text": "陈卓提醒：科学运动，远离横纹肌溶解。",
         "ttsReady": true,
-        "duration": 5
+        "duration": 4
       },
       "visual": {
         "text": "电影级镜头, 结尾总结, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression",
@@ -201,55 +201,55 @@
     "scene": "结尾总结",
     "sceneType": "nature_epic",
     "emotionPhase": "resolution",
-    "narration": "陈卓最后提醒大家：科学运动，量力而行，我们下期再见。",
+    "narration": "陈卓提醒：科学运动，远离横纹肌溶解。",
     "action": "",
-    "visualPrompt": "超写实纪录片风格，专业科普演播室环境，主持人陈卓站立于画面中央偏下位置，面向镜头做总结性陈述，双手自然交叠于身前，表情温和而坚定，中近景构图，人物占画面主体三分之二。背景为简洁明亮的医疗教育主题墙面，带有 subtle 的骨骼肌肉解剖图示装饰。柔和均匀的演播室灯光，无明显阴影，肤色还原真实。9比16竖屏构图，画面稳定无晃动，镜头略微仰视增强亲和力，整体呈现专业、可信、收尾有力的医学科普纪录片质感。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
+    "visualPrompt": "超写实纪录片风格，专业医疗科普演播室内，陈卓身着正装或白大褂面对镜头站立，神态沉稳亲和，单手自然抬起做提醒姿态，目光直视观众，中近景竖屏构图，人物位于画面中心，背景为简洁明亮的健康宣教墙与医学图示，柔和均匀的演播室灯光照亮面部，细节清晰真实，画面色调温暖专业，整体呈现权威可信的医学科普结尾总结质感。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
     "camera": "",
     "cameraMovement": {
       "timeline": {
-        "strategy": "中近景切换收尾方案",
-        "reasoning": "resolution情绪需要稳定、确定的收尾感，对话内容强调提醒和告别，用medium建立权威可信感，close_up创造亲切告别氛围，两段式完成信息传递+情感收尾，避免extreme_wide保持聚焦和紧凑",
+        "strategy": "释然确认双段推轨",
+        "reasoning": "以resolution情绪为基底，通过中景建立语境至特写强调信息的递进式运镜，在5秒内完成科学运动提醒的视听闭环，避免极端景别以保持对话感与亲和力，使观众在安定氛围中接收关键警示。",
         "segmentCount": 2,
         "segments": [
           {
             "index": 0,
-            "timeRange": "0.00-3.00",
+            "timeRange": "0-2.5",
             "shotSize": "medium",
-            "movement": "机位固定高度120cm，镜头水平微俯8度，缓慢前推15cm/秒，共推进45cm",
-            "speed": "slow",
-            "reason": "以medium景别呈现主讲人完整上半身，微俯角度建立专业权威感，缓慢前推强化叮嘱的郑重感，让'科学运动，量力而行'的提醒具有分量"
+            "movement": "轨道向前匀速推进40厘米，同步下摇5度",
+            "speed": "缓慢",
+            "reason": "中景建立运动环境或提示载体，缓慢推进营造resolution情绪的安定与终结感，为陈卓的台词铺垫科学运动的语境。"
           },
           {
             "index": 1,
-            "timeRange": "3.00-5.00",
+            "timeRange": "2.5-5",
             "shotSize": "close_up",
-            "movement": "机位高度140cm，从眼部高度切入，水平静止后轻微右摇3度/秒，共6度，伴随1cm/秒前推进2cm",
-            "speed": "slow",
-            "reason": "切至close_up聚焦面部，'我们下期再见'需要亲切直接的连接感，轻微摇镜增加呼吸感，避免绝对静止的死板，以温暖注视完成resolution情绪的收束"
+            "movement": "轨道向前匀速推进25厘米，微仰上摇3度",
+            "speed": "匀速",
+            "reason": "切换至特写锁定核心警示标语或字幕，在稳定匀速中完成信息强调，使观众在释然情绪中清晰接收远离横纹肌溶解的关键提醒。"
           }
         ],
         "generatedBy": "LLM-v4",
-        "description": "中近景切换收尾方案：从medium逐步过渡到close_up，共2段，强调内容驱动的细微推进。",
+        "description": "释然确认双段推轨：从medium逐步过渡到close_up，共2段，强调内容驱动的细微推进。",
         "transitionType": "llm_v4",
         "timeline": {
-          "strategy": "中近景切换收尾方案",
-          "reasoning": "resolution情绪需要稳定、确定的收尾感，对话内容强调提醒和告别，用medium建立权威可信感，close_up创造亲切告别氛围，两段式完成信息传递+情感收尾，避免extreme_wide保持聚焦和紧凑",
+          "strategy": "释然确认双段推轨",
+          "reasoning": "以resolution情绪为基底，通过中景建立语境至特写强调信息的递进式运镜，在5秒内完成科学运动提醒的视听闭环，避免极端景别以保持对话感与亲和力，使观众在安定氛围中接收关键警示。",
           "segments": [
             {
               "index": 0,
-              "timeRange": "0.00-3.00",
+              "timeRange": "0-2.5",
               "shotSize": "medium",
-              "movement": "机位固定高度120cm，镜头水平微俯8度，缓慢前推15cm/秒，共推进45cm",
-              "speed": "slow",
-              "reason": "以medium景别呈现主讲人完整上半身，微俯角度建立专业权威感，缓慢前推强化叮嘱的郑重感，让'科学运动，量力而行'的提醒具有分量"
+              "movement": "轨道向前匀速推进40厘米，同步下摇5度",
+              "speed": "缓慢",
+              "reason": "中景建立运动环境或提示载体，缓慢推进营造resolution情绪的安定与终结感，为陈卓的台词铺垫科学运动的语境。"
             },
             {
               "index": 1,
-              "timeRange": "3.00-5.00",
+              "timeRange": "2.5-5",
               "shotSize": "close_up",
-              "movement": "机位高度140cm，从眼部高度切入，水平静止后轻微右摇3度/秒，共6度，伴随1cm/秒前推进2cm",
-              "speed": "slow",
-              "reason": "切至close_up聚焦面部，'我们下期再见'需要亲切直接的连接感，轻微摇镜增加呼吸感，避免绝对静止的死板，以温暖注视完成resolution情绪的收束"
+              "movement": "轨道向前匀速推进25厘米，微仰上摇3度",
+              "speed": "匀速",
+              "reason": "切换至特写锁定核心警示标语或字幕，在稳定匀速中完成信息强调，使观众在释然情绪中清晰接收远离横纹肌溶解的关键提醒。"
             }
           ]
         }
@@ -276,7 +276,7 @@
         "characterCount": 1,
         "duration": 5,
         "shotId": "结尾总结",
-        "dialogue": "陈卓最后提醒大家：科学运动，量力而行，我们下期再见。",
+        "dialogue": "陈卓提醒：科学运动，远离横纹肌溶解。",
         "emotionPhase": "resolution"
       },
       "v4Continuity": {
@@ -284,12 +284,12 @@
         "warnings": [],
         "fixes": []
       },
-      "description": "中近景切换收尾方案：从medium逐步过渡到close_up，共2段精细运镜。首段：机位固定高度120cm，镜头水平微俯8度，缓慢前推15cm/秒，共推进45cm。设计意图：resolution情绪需要稳定、确定的收尾感，对话内容强调提醒和告别，用medium建立权威可信感，close_up创造亲切告别氛围，两段式完成信息传递+情感",
+      "description": "释然确认双段推轨：从medium逐步过渡到close_up，共2段精细运镜。首段：轨道向前匀速推进40厘米，同步下摇5度。设计意图：以resolution情绪为基底，通过中景建立语境至特写强调信息的递进式运镜，在5秒内完成科学运动提醒的视听闭环，避免极端景别以保持对话感与亲和力，使观众在安定",
       "shotSize": "medium",
       "position": "center",
-      "movement": "机位固定高度120cm，镜头水平微俯8度，缓慢前推15cm/秒，共推进45cm",
-      "speed": "slow",
-      "timeRange": "0.00-3.00"
+      "movement": "轨道向前匀速推进40厘米，同步下摇5度",
+      "speed": "缓慢",
+      "timeRange": "0-2.5"
     },
     "lighting": null,
     "audio": "",
@@ -325,7 +325,7 @@
     "SCENE": "结尾总结",
     "MOOD": "resolution",
     "RENDER": "电影级、超写实、细节丰富",
-    "DIALOGUE": "陈卓最后提醒大家：科学运动，量力而行，我们下期再见。",
+    "DIALOGUE": "陈卓提醒：科学运动，远离横纹肌溶解。",
     "CAMERA": "（一镜到底！），镜头时间轴：0-3s: 缓慢establish，远景→中景，氛围铺垫 → 3-5s: 微微定格，眼神/表情接触，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
     "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K",
     "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow",
@@ -475,13 +475,13 @@
   "llmFields": {},
   "mergedFields": {
     "CHARACTER": "chen-zhuo",
-    "SCENE": "结尾总结；背景景物不再压迫，整体气氛转向释然与开放",
-    "MOOD": "resolution；柔和、治愈、静默震撼",
+    "SCENE": "结尾总结；空间恢复平静，空气中保留事件余波与情感回声",
+    "MOOD": "resolution；温柔、治愈、余韵",
     "RENDER": "电影级、超写实、细节丰富",
-    "DIALOGUE": "陈卓最后提醒大家：科学运动，量力而行，我们下期再见。",
+    "DIALOGUE": "陈卓提醒：科学运动，远离横纹肌溶解。",
     "CAMERA": "（一镜到底！），镜头时间轴：0-3s: 缓慢establish，远景→中景，氛围铺垫 → 3-5s: 微微定格，眼神/表情接触，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
-    "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K；光线从紧张高反差过渡为柔和包裹式暖光",
-    "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow；重点不是信息，而是情绪残留",
+    "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K；环境中残留温暖光晕，阴影被细腻填平",
+    "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow；镜头以余韵收束，而不是硬性结束",
     "meta": {
       "source": "camera-movement-system-v3",
       "raw": {
@@ -628,24 +628,24 @@
   },
   "normalizedFields": {
     "CHARACTER": "chen-zhuo",
-    "DIALOGUE": "陈卓最后提醒大家：科学运动，量力而行，我们下期再见。",
+    "DIALOGUE": "陈卓提醒：科学运动，远离横纹肌溶解。",
     "ACTION": "",
-    "SCENE": "结尾总结；背景景物不再压迫，整体气氛转向释然与开放",
-    "MOOD": "resolution；柔和、治愈、静默震撼",
+    "SCENE": "结尾总结；空间恢复平静，空气中保留事件余波与情感回声",
+    "MOOD": "resolution；温柔、治愈、余韵",
     "CAMERA": "（一镜到底！），镜头时间轴：0-3s: 缓慢establish，远景→中景，氛围铺垫 → 3-5s: 微微定格，眼神/表情接触，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
-    "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K；光线从紧张高反差过渡为柔和包裹式暖光",
+    "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K；环境中残留温暖光晕，阴影被细腻填平",
     "NEGATIVE": "no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers",
     "AUDIO": "【环境音效】风穿过物体声、风声",
     "RENDER": "电影级、超写实、细节丰富",
-    "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow；重点不是信息，而是情绪残留"
+    "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow；镜头以余韵收束，而不是硬性结束"
   },
-  "finalPrompt": "{CHARACTER: chen-zhuo | DIALOGUE: 陈卓最后提醒大家：科学运动，量力而行，我们下期再见。 | SCENE: 结尾总结；背景景物不再压迫，整体气氛转向释然与开放 | MOOD: resolution；柔和、治愈、静默震撼 | CAMERA: （一镜到底！），镜头时间轴：0-3s: 缓慢establish，远景→中景，氛围铺垫 → 3-5s: 微微定格，眼神/表情接触，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人） | LIGHTING: 仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K；光线从紧张高反差过渡为柔和包裹式暖光 | NEGATIVE: no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers | AUDIO: 【环境音效】风穿过物体声、风声 | RENDER: 电影级、超写实、细节丰富 | DIRECTOR: 景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow；重点不是信息，而是情绪残留}",
+  "finalPrompt": "{CHARACTER: chen-zhuo | DIALOGUE: 陈卓提醒：科学运动，远离横纹肌溶解。 | SCENE: 结尾总结；空间恢复平静，空气中保留事件余波与情感回声 | MOOD: resolution；温柔、治愈、余韵 | CAMERA: （一镜到底！），镜头时间轴：0-3s: 缓慢establish，远景→中景，氛围铺垫 → 3-5s: 微微定格，眼神/表情接触，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人） | LIGHTING: 仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K；环境中残留温暖光晕，阴影被细腻填平 | NEGATIVE: no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers | AUDIO: 【环境音效】风穿过物体声、风声 | RENDER: 电影级、超写实、细节丰富 | DIRECTOR: 景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow；镜头以余韵收束，而不是硬性结束}",
   "validation": {
     "valid": true,
     "issues": [],
     "warnings": [],
     "stats": {
-      "length": 783,
+      "length": 775,
       "emptyFields": [
         "ACTION"
       ],
@@ -665,6 +665,6 @@
   },
   "meta": {
     "builderVersion": "v3",
-    "timestamp": "2026-06-17T04:18:37.619Z"
+    "timestamp": "2026-06-17T04:40:43.997Z"
   }
 }
