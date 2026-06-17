@@ -23,12 +23,23 @@
     "appearance": {}
   },
   "personality": {
-    "core": "warm",
+    "core": "warm, energetic, approachable",
     "traits": [
       "kind",
-      "brave"
+      "brave",
+      "playful",
+      "lively",
+      "animated"
     ],
-    "mbti": "INFJ"
+    "mbti": "INFJ",
+    "mannerisms": [
+      "喜欢用手势辅助表达",
+      "会突然靠近镜头制造互动感",
+      "走动频繁，不喜欢呆站在原地",
+      "表情丰富，会挑眉、歪头、微笑",
+      "偶尔从画面边缘突然出现"
+    ],
+    "performanceStyle": "vlog-style, 朋友式分享, 拒绝呆板说教"
   },
   "visualAnchors": {
     "required": [
@@ -50,8 +61,8 @@
     "emotion": "neutral",
     "language": "zh-CN"
   },
-  "createdAt": "2026-06-17T04:35:29.853Z",
-  "updatedAt": "2026-06-17T04:35:29.854Z",
+  "createdAt": "2026-06-17T04:46:05.353Z",
+  "updatedAt": "2026-06-17T04:46:05.354Z",
   "version": "2.1",
   "generatedAssets": {
     "portraits": [

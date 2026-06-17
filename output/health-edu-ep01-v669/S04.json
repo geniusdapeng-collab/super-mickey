@@ -1,11 +1,11 @@
 {
   "shotId": "S04",
-  "recordedAt": "2026-06-17T04:40:43.994Z",
+  "recordedAt": "2026-06-17T04:52:33.109Z",
   "rawShot": {
     "id": "S04",
-    "scene": "典型症状识别",
-    "dialogue": "如果运动后出现肌肉剧烈疼痛、肿胀，尿液变成酱油色，千万别硬扛，这可能是横纹肌溶解的典型信号。",
-    "narration": "如果运动后出现肌肉剧烈疼痛、肿胀，尿液变成酱油色，千万别硬扛，这可能是横纹肌溶解的典型信号。",
+    "scene": "典型症状警示",
+    "dialogue": "陈卓在这里提醒大家，要是运动后肌肉持续剧痛，尿液还变成了深茶色，千万别不当回事，必须立刻就医。",
+    "narration": "陈卓在这里提醒大家，要是运动后肌肉持续剧痛，尿液还变成了深茶色，千万别不当回事，必须立刻就医。",
     "duration": 15,
     "type": "content",
     "characters": [
@@ -15,71 +15,71 @@
     "importance": 5,
     "visualComplexity": 5,
     "emotionPhase": "tension",
-    "visualPrompt": "超写实纪录片风格，真实的医疗科普演播环境中，主持人陈卓正面站立面向镜头，神情认真严肃，双手辅以自然讲解手势，位于竖屏中近景构图，背景为明亮整洁的医院健康宣教室或专业科普空间，墙面可见简洁医学图示，柔和自然光与专业照明结合，画面质感真实细腻，肤色与衣着纹理清晰自然，镜头稳定，整体氛围专业克制，传递医学科普的权威感与紧迫提醒。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
+    "visualPrompt": "超写实纪录片风格，明亮的医疗科普演播室内，陈卓身着白大褂或整洁正装，面向镜头站立讲解，神情严肃而关切，双手配合语言做出自然手势。画面采用竖屏中近景构图，人物位于画面中央，背景可见简洁的医疗教育展板或诊室内景。柔和自然光从侧面洒入，面部细节清晰真实，无明显滤镜。镜头稳定，景深适中，整体呈现专业、冷静、值得信赖的健康科普质感，突出医学警示的严肃性。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
     "fpvRecommended": false,
     "fpvScore": 58,
     "fpvReason": "建议传统运镜：情绪/视觉不适合FPV",
     "cameraMovement": {
       "timeline": {
-        "strategy": "临床压迫递进",
-        "reasoning": "通过由远及近的物理空间压缩，配合医疗警告内容，逐步剥夺观众的安全距离，将抽象病理转化为具象视觉压迫，使15秒画外音对话形成递进式心理紧逼。",
+        "strategy": "压迫式渐近",
+        "reasoning": "健康警告内容需要建立紧迫感，通过景别逐步收紧和镜头不安定运动传递身体危机的隐喻，最终锁定在面部信息让警示具有不可逃避的压迫力。",
         "segmentCount": 3,
         "segments": [
           {
             "index": 0,
             "timeRange": "0-5",
             "shotSize": "medium",
-            "movement": "摄影机以每秒0.4厘米的速度轻微前推2厘米，同时从低于视线3°抬升至平视，建立稳定进入感。",
-            "speed": "2厘米/秒",
-            "reason": "以中景建立临床场景的空间纵深感，极低速度的前推在观众潜意识中植入逼近危险的动势，为后续病理特写铺垫紧张基底。"
+            "movement": "手持向前推进15厘米，同时向右微摇3度模拟急促呼吸",
+            "speed": "0.3秒/厘米，伴随不规则0.5秒/度抖动",
+            "reason": "以中景建立说话者权威感，缓慢推进制造逼近紧张，微小角度偏移暗示生理系统的不稳定。"
           },
           {
             "index": 1,
             "timeRange": "5-10",
             "shotSize": "close_up",
-            "movement": "镜头保持人物主体在画面中心偏左5%，以每秒0.6厘米的速度向前推进3厘米，并微量右移4厘米，强化讲解重点。",
-            "speed": "3厘米/秒",
-            "reason": "切至匿名身体局部或体液样本特写，横向运动打破静态平衡，制造审视病理时的不安与游移，强化发现异常的窥探感。"
+            "movement": "从嘴角血迹暗示区域横摇至眼部，行程8厘米，配合垂直下坠2厘米模拟肌肉失控",
+            "speed": "横摇0.6秒/厘米，下坠停顿1.2秒制造坠落感",
+            "reason": "在'深茶色'台词时切换近景，横摇如尿液化验报告的视觉扫描，下坠运动对应身体垮塌的躯体记忆。"
           },
           {
             "index": 2,
             "timeRange": "10-15",
             "shotSize": "close_up",
-            "movement": "轨道前推15厘米配合下摇3度",
-            "speed": "1厘米/秒",
-            "reason": "在台词高潮处进一步压缩画框空间，极慢速推进形成视觉窒息感，下摇引导视线至关键病理载体，完成从信息传递到生理警觉的情绪升级。"
+            "movement": "固定机位下突然震颤前移3厘米后骤停，最终呼吸微颤0.5度往复",
+            "speed": "前移0.15秒/厘米爆发式，后续0.8秒/度濒死呼吸节律",
+            "reason": "'立刻就医'四字需要休克式冲击，爆发推进模拟急救警报，最终微颤如心电监护仪的残余波动，将警告刻入肌肉记忆。"
           }
         ],
         "generatedBy": "LLM-v4",
-        "description": "临床压迫递进：从medium逐步过渡到close_up，共3段，强调内容驱动的细微推进。",
+        "description": "压迫式渐近：从medium逐步过渡到close_up，共3段，强调内容驱动的细微推进。",
         "transitionType": "llm_v4",
         "timeline": {
-          "strategy": "临床压迫递进",
-          "reasoning": "通过由远及近的物理空间压缩，配合医疗警告内容，逐步剥夺观众的安全距离，将抽象病理转化为具象视觉压迫，使15秒画外音对话形成递进式心理紧逼。",
+          "strategy": "压迫式渐近",
+          "reasoning": "健康警告内容需要建立紧迫感，通过景别逐步收紧和镜头不安定运动传递身体危机的隐喻，最终锁定在面部信息让警示具有不可逃避的压迫力。",
           "segments": [
             {
               "index": 0,
               "timeRange": "0-5",
               "shotSize": "medium",
-              "movement": "摄影机以每秒0.4厘米的速度轻微前推2厘米，同时从低于视线3°抬升至平视，建立稳定进入感。",
-              "speed": "2厘米/秒",
-              "reason": "以中景建立临床场景的空间纵深感，极低速度的前推在观众潜意识中植入逼近危险的动势，为后续病理特写铺垫紧张基底。"
+              "movement": "手持向前推进15厘米，同时向右微摇3度模拟急促呼吸",
+              "speed": "0.3秒/厘米，伴随不规则0.5秒/度抖动",
+              "reason": "以中景建立说话者权威感，缓慢推进制造逼近紧张，微小角度偏移暗示生理系统的不稳定。"
             },
             {
               "index": 1,
               "timeRange": "5-10",
               "shotSize": "close_up",
-              "movement": "镜头保持人物主体在画面中心偏左5%，以每秒0.6厘米的速度向前推进3厘米，并微量右移4厘米，强化讲解重点。",
-              "speed": "3厘米/秒",
-              "reason": "切至匿名身体局部或体液样本特写，横向运动打破静态平衡，制造审视病理时的不安与游移，强化发现异常的窥探感。"
+              "movement": "从嘴角血迹暗示区域横摇至眼部，行程8厘米，配合垂直下坠2厘米模拟肌肉失控",
+              "speed": "横摇0.6秒/厘米，下坠停顿1.2秒制造坠落感",
+              "reason": "在'深茶色'台词时切换近景，横摇如尿液化验报告的视觉扫描，下坠运动对应身体垮塌的躯体记忆。"
             },
             {
               "index": 2,
               "timeRange": "10-15",
               "shotSize": "close_up",
-              "movement": "轨道前推15厘米配合下摇3度",
-              "speed": "1厘米/秒",
-              "reason": "在台词高潮处进一步压缩画框空间，极慢速推进形成视觉窒息感，下摇引导视线至关键病理载体，完成从信息传递到生理警觉的情绪升级。"
+              "movement": "固定机位下突然震颤前移3厘米后骤停，最终呼吸微颤0.5度往复",
+              "speed": "前移0.15秒/厘米爆发式，后续0.8秒/度濒死呼吸节律",
+              "reason": "'立刻就医'四字需要休克式冲击，爆发推进模拟急救警报，最终微颤如心电监护仪的残余波动，将警告刻入肌肉记忆。"
             }
           ]
         }
@@ -105,8 +105,8 @@
         "movementStyle": "stable",
         "characterCount": 1,
         "duration": 15,
-        "shotId": "典型症状识别",
-        "dialogue": "如果运动后出现肌肉剧烈疼痛、肿胀，尿液变成酱油色，千万别硬扛，这可能是横纹肌溶解的典型信号。",
+        "shotId": "典型症状警示",
+        "dialogue": "陈卓在这里提醒大家，要是运动后肌肉持续剧痛，尿液还变成了深茶色，千万别不当回事，必须立刻就医。",
         "emotionPhase": "tension"
       },
       "v4Continuity": {
@@ -114,14 +114,14 @@
         "warnings": [],
         "fixes": []
       },
-      "description": "临床压迫递进：从medium逐步过渡到close_up，共3段精细运镜。首段：摄影机以每秒0.4厘米的速度轻微前推2厘米，同时从低于视线3°抬升至平视，建立稳定进入感。。设计意图：通过由远及近的物理空间压缩，配合医疗警告内容，逐步剥夺观众的安全距离，将抽象病理转化为具象视觉压迫，使15秒画外音对话形成递进式心理紧逼。",
+      "description": "压迫式渐近：从medium逐步过渡到close_up，共3段精细运镜。首段：手持向前推进15厘米，同时向右微摇3度模拟急促呼吸。设计意图：健康警告内容需要建立紧迫感，通过景别逐步收紧和镜头不安定运动传递身体危机的隐喻，最终锁定在面部信息让警示具有不可逃避的压迫力。",
       "shotSize": "medium",
       "position": "center",
-      "movement": "摄影机以每秒0.4厘米的速度轻微前推2厘米，同时从低于视线3°抬升至平视，建立稳定进入感。",
-      "speed": "2厘米/秒",
+      "movement": "手持向前推进15厘米，同时向右微摇3度模拟急促呼吸",
+      "speed": "0.3秒/厘米，伴随不规则0.5秒/度抖动",
       "timeRange": "0-5"
     },
-    "prompt": "16:9宽屏电影级镜头。【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic | 【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film | 【空间】golden hour, clear sky, atmospheric haze, depth layers, foreground to background | 【主体】陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业人像摄影，自然生活化场景 | 【动态】电影级镜头, 典型症状识别, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression, 摄影机以每秒0.4厘米的速度轻微前推2厘米，同时从低于视线3°抬升至平视，建立稳定进入感。 | 【风格】color palette: natural earth shadows + daylight highlights + green foliage accents, cinematic atmosphere, 通用导演 aesthetic | 【音频】伴随白天环境音, 动作产生自然动作声, 氛围弥漫明亮日常氛围, 声画精准同步，嘴型与发音对齐 | 【质控】blurry, low resolution, pixelated, compression artifacts, cartoon, anime, illustration, 3D render look, CGI appearance, plastic look, distorted perspective, impossible geometry, floating objects, inconsistent scale, flat lighting, overexposed, crushed blacks, double shadows, wrong light direction, distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose, unnatural physics, fake water, static water, cardboard texture, plastic foliage 临床压迫递进：从medium逐步过渡到close_up，共3段精细运镜。首段：摄影机以每秒0.4厘米的速度轻微前推2厘米，同时从低于视线3°抬升至平视，建立稳定进入感。。设计意图：通过由远及近的物理空间压缩，配合医疗警告内容，逐步剥夺观众的安全距离，将抽象病理转化为具象视觉压迫，使15秒画外音对话形成递进式心理紧逼。 【负面约束】no blurry, no cartoon, no deformed hands, no extra fingers, no watermark, no text 【明亮约束】自然光或柔和室内照明,画面真实干净,禁止暗黑/灰暗。 【角色约束】画面中仅出现陈卓,禁止重复角色 speaking_emphasis",
+    "prompt": "16:9宽屏电影级镜头。【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic | 【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film | 【空间】golden hour, clear sky, atmospheric haze, depth layers, foreground to background | 【主体】陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业人像摄影，自然生活化场景 | 【动态】电影级镜头, 典型症状警示, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression, 手持向前推进15厘米，同时向右微摇3度模拟急促呼吸 | 【风格】color palette: natural earth shadows + daylight highlights + green foliage accents, cinematic atmosphere, 通用导演 aesthetic | 【音频】伴随白天环境音, 动作产生自然动作声, 氛围弥漫明亮日常氛围, 声画精准同步，嘴型与发音对齐 | 【质控】blurry, low resolution, pixelated, compression artifacts, cartoon, anime, illustration, 3D render look, CGI appearance, plastic look, distorted perspective, impossible geometry, floating objects, inconsistent scale, flat lighting, overexposed, crushed blacks, double shadows, wrong light direction, distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose, unnatural physics, fake water, static water, cardboard texture, plastic foliage 压迫式渐近：从medium逐步过渡到close_up，共3段精细运镜。首段：手持向前推进15厘米，同时向右微摇3度模拟急促呼吸。设计意图：健康警告内容需要建立紧迫感，通过景别逐步收紧和镜头不安定运动传递身体危机的隐喻，最终锁定在面部信息让警示具有不可逃避的压迫力。 【负面约束】no blurry, no cartoon, no deformed hands, no extra fingers, no watermark, no text 【明亮约束】自然光或柔和室内照明,画面真实干净,禁止暗黑/灰暗。 【角色约束】画面中仅出现陈卓,禁止重复角色 speaking_emphasis",
     "qualityScore": {
       "score": 82,
       "grade": "A",
@@ -130,7 +130,7 @@
       "scores": {
         "tier1Completeness": 75,
         "visualPurity": 100,
-        "utilization": 119,
+        "utilization": 117,
         "techValidity": 100,
         "emotionConsistency": 70,
         "negativeCompleteness": 0
@@ -160,11 +160,11 @@
         },
         {
           "dimension": "字符利用率",
-          "score": 119,
+          "score": 117,
           "weight": 15,
-          "length": 1187,
+          "length": 1167,
           "maxLength": 1500,
-          "utilization": 79,
+          "utilization": 78,
           "comment": "利用率良好"
         },
         {
@@ -196,16 +196,16 @@
         }
       ],
       "duration": 0,
-      "report": "===== Prompt质量门禁报告 =====\n\n总分: 82/100 | 评级: A | 动作: 放行\n\n各维度评分:\n  Tier-1完整性: 75/100 (权重25% → 19分) — Tier-1完整\n  视觉纯度: 100/100 (权重20% → 20分) — 视觉纯净\n  字符利用率: 119/100 (权重15% → 18分) — 利用率良好\n  技术规格有效性: 100/100 (权重15% → 15分) — 技术声明有效\n  情绪-表情一致性: 70/100 (权重15% → 11分) — 未定义情绪阶段，默认评分\n  负面约束完整性: 0/100 (权重10% → 0分) — 缺失: no metallic shine, no traditional Chinese symbols, natural eye colors only\n\n综合: ✅ 通过门禁"
+      "report": "===== Prompt质量门禁报告 =====\n\n总分: 82/100 | 评级: A | 动作: 放行\n\n各维度评分:\n  Tier-1完整性: 75/100 (权重25% → 19分) — Tier-1完整\n  视觉纯度: 100/100 (权重20% → 20分) — 视觉纯净\n  字符利用率: 117/100 (权重15% → 18分) — 利用率良好\n  技术规格有效性: 100/100 (权重15% → 15分) — 技术声明有效\n  情绪-表情一致性: 70/100 (权重15% → 11分) — 未定义情绪阶段，默认评分\n  负面约束完整性: 0/100 (权重10% → 0分) — 缺失: no metallic shine, no traditional Chinese symbols, natural eye colors only\n\n综合: ✅ 通过门禁"
     },
     "channelData": {
       "narration": {
-        "text": "如果运动后出现肌肉剧烈疼痛、肿胀，尿液变成酱油色，千万别硬扛，这可能是横纹肌溶解的典型信号。",
+        "text": "陈卓在这里提醒大家，要是运动后肌肉持续剧痛，尿液还变成了深茶色，千万别不当回事，必须立刻就医。",
         "ttsReady": true,
         "duration": 9
       },
       "visual": {
-        "text": "电影级镜头, 典型症状识别, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression",
+        "text": "电影级镜头, 典型症状警示, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression",
         "hasLipSync": false
       },
       "lipSync": null
@@ -214,74 +214,74 @@
   "mappedShot": {
     "id": "S04",
     "type": "content",
-    "scene": "典型症状识别",
+    "scene": "典型症状警示",
     "sceneType": "nature_epic",
     "emotionPhase": "tension",
-    "narration": "如果运动后出现肌肉剧烈疼痛、肿胀，尿液变成酱油色，千万别硬扛，这可能是横纹肌溶解的典型信号。",
+    "narration": "陈卓在这里提醒大家，要是运动后肌肉持续剧痛，尿液还变成了深茶色，千万别不当回事，必须立刻就医。",
     "action": "",
-    "visualPrompt": "超写实纪录片风格，真实的医疗科普演播环境中，主持人陈卓正面站立面向镜头，神情认真严肃，双手辅以自然讲解手势，位于竖屏中近景构图，背景为明亮整洁的医院健康宣教室或专业科普空间，墙面可见简洁医学图示，柔和自然光与专业照明结合，画面质感真实细腻，肤色与衣着纹理清晰自然，镜头稳定，整体氛围专业克制，传递医学科普的权威感与紧迫提醒。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
+    "visualPrompt": "超写实纪录片风格，明亮的医疗科普演播室内，陈卓身着白大褂或整洁正装，面向镜头站立讲解，神情严肃而关切，双手配合语言做出自然手势。画面采用竖屏中近景构图，人物位于画面中央，背景可见简洁的医疗教育展板或诊室内景。柔和自然光从侧面洒入，面部细节清晰真实，无明显滤镜。镜头稳定，景深适中，整体呈现专业、冷静、值得信赖的健康科普质感，突出医学警示的严肃性。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
     "camera": "",
     "cameraMovement": {
       "timeline": {
-        "strategy": "临床压迫递进",
-        "reasoning": "通过由远及近的物理空间压缩，配合医疗警告内容，逐步剥夺观众的安全距离，将抽象病理转化为具象视觉压迫，使15秒画外音对话形成递进式心理紧逼。",
+        "strategy": "压迫式渐近",
+        "reasoning": "健康警告内容需要建立紧迫感，通过景别逐步收紧和镜头不安定运动传递身体危机的隐喻，最终锁定在面部信息让警示具有不可逃避的压迫力。",
         "segmentCount": 3,
         "segments": [
           {
             "index": 0,
             "timeRange": "0-5",
             "shotSize": "medium",
-            "movement": "摄影机以每秒0.4厘米的速度轻微前推2厘米，同时从低于视线3°抬升至平视，建立稳定进入感。",
-            "speed": "2厘米/秒",
-            "reason": "以中景建立临床场景的空间纵深感，极低速度的前推在观众潜意识中植入逼近危险的动势，为后续病理特写铺垫紧张基底。"
+            "movement": "手持向前推进15厘米，同时向右微摇3度模拟急促呼吸",
+            "speed": "0.3秒/厘米，伴随不规则0.5秒/度抖动",
+            "reason": "以中景建立说话者权威感，缓慢推进制造逼近紧张，微小角度偏移暗示生理系统的不稳定。"
           },
           {
             "index": 1,
             "timeRange": "5-10",
             "shotSize": "close_up",
-            "movement": "镜头保持人物主体在画面中心偏左5%，以每秒0.6厘米的速度向前推进3厘米，并微量右移4厘米，强化讲解重点。",
-            "speed": "3厘米/秒",
-            "reason": "切至匿名身体局部或体液样本特写，横向运动打破静态平衡，制造审视病理时的不安与游移，强化发现异常的窥探感。"
+            "movement": "从嘴角血迹暗示区域横摇至眼部，行程8厘米，配合垂直下坠2厘米模拟肌肉失控",
+            "speed": "横摇0.6秒/厘米，下坠停顿1.2秒制造坠落感",
+            "reason": "在'深茶色'台词时切换近景，横摇如尿液化验报告的视觉扫描，下坠运动对应身体垮塌的躯体记忆。"
           },
           {
             "index": 2,
             "timeRange": "10-15",
             "shotSize": "close_up",
-            "movement": "轨道前推15厘米配合下摇3度",
-            "speed": "1厘米/秒",
-            "reason": "在台词高潮处进一步压缩画框空间，极慢速推进形成视觉窒息感，下摇引导视线至关键病理载体，完成从信息传递到生理警觉的情绪升级。"
+            "movement": "固定机位下突然震颤前移3厘米后骤停，最终呼吸微颤0.5度往复",
+            "speed": "前移0.15秒/厘米爆发式，后续0.8秒/度濒死呼吸节律",
+            "reason": "'立刻就医'四字需要休克式冲击，爆发推进模拟急救警报，最终微颤如心电监护仪的残余波动，将警告刻入肌肉记忆。"
           }
         ],
         "generatedBy": "LLM-v4",
-        "description": "临床压迫递进：从medium逐步过渡到close_up，共3段，强调内容驱动的细微推进。",
+        "description": "压迫式渐近：从medium逐步过渡到close_up，共3段，强调内容驱动的细微推进。",
         "transitionType": "llm_v4",
         "timeline": {
-          "strategy": "临床压迫递进",
-          "reasoning": "通过由远及近的物理空间压缩，配合医疗警告内容，逐步剥夺观众的安全距离，将抽象病理转化为具象视觉压迫，使15秒画外音对话形成递进式心理紧逼。",
+          "strategy": "压迫式渐近",
+          "reasoning": "健康警告内容需要建立紧迫感，通过景别逐步收紧和镜头不安定运动传递身体危机的隐喻，最终锁定在面部信息让警示具有不可逃避的压迫力。",
           "segments": [
             {
               "index": 0,
               "timeRange": "0-5",
               "shotSize": "medium",
-              "movement": "摄影机以每秒0.4厘米的速度轻微前推2厘米，同时从低于视线3°抬升至平视，建立稳定进入感。",
-              "speed": "2厘米/秒",
-              "reason": "以中景建立临床场景的空间纵深感，极低速度的前推在观众潜意识中植入逼近危险的动势，为后续病理特写铺垫紧张基底。"
+              "movement": "手持向前推进15厘米，同时向右微摇3度模拟急促呼吸",
+              "speed": "0.3秒/厘米，伴随不规则0.5秒/度抖动",
+              "reason": "以中景建立说话者权威感，缓慢推进制造逼近紧张，微小角度偏移暗示生理系统的不稳定。"
             },
             {
               "index": 1,
               "timeRange": "5-10",
               "shotSize": "close_up",
-              "movement": "镜头保持人物主体在画面中心偏左5%，以每秒0.6厘米的速度向前推进3厘米，并微量右移4厘米，强化讲解重点。",
-              "speed": "3厘米/秒",
-              "reason": "切至匿名身体局部或体液样本特写，横向运动打破静态平衡，制造审视病理时的不安与游移，强化发现异常的窥探感。"
+              "movement": "从嘴角血迹暗示区域横摇至眼部，行程8厘米，配合垂直下坠2厘米模拟肌肉失控",
+              "speed": "横摇0.6秒/厘米，下坠停顿1.2秒制造坠落感",
+              "reason": "在'深茶色'台词时切换近景，横摇如尿液化验报告的视觉扫描，下坠运动对应身体垮塌的躯体记忆。"
             },
             {
               "index": 2,
               "timeRange": "10-15",
               "shotSize": "close_up",
-              "movement": "轨道前推15厘米配合下摇3度",
-              "speed": "1厘米/秒",
-              "reason": "在台词高潮处进一步压缩画框空间，极慢速推进形成视觉窒息感，下摇引导视线至关键病理载体，完成从信息传递到生理警觉的情绪升级。"
+              "movement": "固定机位下突然震颤前移3厘米后骤停，最终呼吸微颤0.5度往复",
+              "speed": "前移0.15秒/厘米爆发式，后续0.8秒/度濒死呼吸节律",
+              "reason": "'立刻就医'四字需要休克式冲击，爆发推进模拟急救警报，最终微颤如心电监护仪的残余波动，将警告刻入肌肉记忆。"
             }
           ]
         }
@@ -307,8 +307,8 @@
         "movementStyle": "stable",
         "characterCount": 1,
         "duration": 15,
-        "shotId": "典型症状识别",
-        "dialogue": "如果运动后出现肌肉剧烈疼痛、肿胀，尿液变成酱油色，千万别硬扛，这可能是横纹肌溶解的典型信号。",
+        "shotId": "典型症状警示",
+        "dialogue": "陈卓在这里提醒大家，要是运动后肌肉持续剧痛，尿液还变成了深茶色，千万别不当回事，必须立刻就医。",
         "emotionPhase": "tension"
       },
       "v4Continuity": {
@@ -316,11 +316,11 @@
         "warnings": [],
         "fixes": []
       },
-      "description": "临床压迫递进：从medium逐步过渡到close_up，共3段精细运镜。首段：摄影机以每秒0.4厘米的速度轻微前推2厘米，同时从低于视线3°抬升至平视，建立稳定进入感。。设计意图：通过由远及近的物理空间压缩，配合医疗警告内容，逐步剥夺观众的安全距离，将抽象病理转化为具象视觉压迫，使15秒画外音对话形成递进式心理紧逼。",
+      "description": "压迫式渐近：从medium逐步过渡到close_up，共3段精细运镜。首段：手持向前推进15厘米，同时向右微摇3度模拟急促呼吸。设计意图：健康警告内容需要建立紧迫感，通过景别逐步收紧和镜头不安定运动传递身体危机的隐喻，最终锁定在面部信息让警示具有不可逃避的压迫力。",
       "shotSize": "medium",
       "position": "center",
-      "movement": "摄影机以每秒0.4厘米的速度轻微前推2厘米，同时从低于视线3°抬升至平视，建立稳定进入感。",
-      "speed": "2厘米/秒",
+      "movement": "手持向前推进15厘米，同时向右微摇3度模拟急促呼吸",
+      "speed": "0.3秒/厘米，伴随不规则0.5秒/度抖动",
       "timeRange": "0-5"
     },
     "lighting": null,
@@ -343,7 +343,7 @@
     "protagonistName": "主角",
     "beastId": "",
     "beastName": "",
-    "habitat": "典型症状识别",
+    "habitat": "典型症状警示",
     "episodeTheme": "",
     "sceneType": "nature_epic"
   },
@@ -354,21 +354,21 @@
   },
   "subsystemFields": {
     "CHARACTER": "chen-zhuo",
-    "SCENE": "典型症状识别",
+    "SCENE": "典型症状警示",
     "MOOD": "tension",
     "RENDER": "电影级、超写实、细节丰富",
-    "DIALOGUE": "如果运动后出现肌肉剧烈疼痛、肿胀，尿液变成酱油色，千万别硬扛，这可能是横纹肌溶解的典型信号。",
+    "DIALOGUE": "陈卓在这里提醒大家，要是运动后肌肉持续剧痛，尿液还变成了深茶色，千万别不当回事，必须立刻就医。",
     "CAMERA": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
     "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K",
     "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow",
     "meta": {
       "source": "camera-movement-system-v3",
       "raw": {
-        "scene": "典型症状识别",
+        "scene": "典型症状警示",
         "emotionPhase": "tension",
         "duration": 15,
         "baseMovement": {
-          "scene": "典型症状识别",
+          "scene": "典型症状警示",
           "physicsDriver": "generic",
           "primaryMovement": "smooth_track",
           "speed": "smooth",
@@ -531,7 +531,7 @@
         }
       }
     },
-    "AUDIO": "【环境音效】风声、风穿过物体声",
+    "AUDIO": "【环境音效】风穿过物体声、风声",
     "_meta": {
       "activatedSubsystems": [
         "CameraMovementSystemV3Bridge",
@@ -545,21 +545,21 @@
   "llmFields": {},
   "mergedFields": {
     "CHARACTER": "chen-zhuo",
-    "SCENE": "典型症状识别",
+    "SCENE": "典型症状警示",
     "MOOD": "tension",
     "RENDER": "电影级、超写实、细节丰富",
-    "DIALOGUE": "如果运动后出现肌肉剧烈疼痛、肿胀，尿液变成酱油色，千万别硬扛，这可能是横纹肌溶解的典型信号。",
+    "DIALOGUE": "陈卓在这里提醒大家，要是运动后肌肉持续剧痛，尿液还变成了深茶色，千万别不当回事，必须立刻就医。",
     "CAMERA": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
     "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K",
     "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow",
     "meta": {
       "source": "camera-movement-system-v3",
       "raw": {
-        "scene": "典型症状识别",
+        "scene": "典型症状警示",
         "emotionPhase": "tension",
         "duration": 15,
         "baseMovement": {
-          "scene": "典型症状识别",
+          "scene": "典型症状警示",
           "physicsDriver": "generic",
           "primaryMovement": "smooth_track",
           "speed": "smooth",
@@ -722,7 +722,7 @@
         }
       }
     },
-    "AUDIO": "【环境音效】风声、风穿过物体声",
+    "AUDIO": "【环境音效】风穿过物体声、风声",
     "_meta": {
       "activatedSubsystems": [
         "CameraMovementSystemV3Bridge",
@@ -736,24 +736,24 @@
   },
   "normalizedFields": {
     "CHARACTER": "chen-zhuo",
-    "DIALOGUE": "如果运动后出现肌肉剧烈疼痛、肿胀，尿液变成酱油色，千万别硬扛，这可能是横纹肌溶解的典型信号。",
+    "DIALOGUE": "陈卓在这里提醒大家，要是运动后肌肉持续剧痛，尿液还变成了深茶色，千万别不当回事，必须立刻就医。",
     "ACTION": "",
-    "SCENE": "典型症状识别",
+    "SCENE": "典型症状警示",
     "MOOD": "tension",
     "CAMERA": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
     "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K",
     "NEGATIVE": "no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers",
-    "AUDIO": "【环境音效】风声、风穿过物体声",
+    "AUDIO": "【环境音效】风穿过物体声、风声",
     "RENDER": "电影级、超写实、细节丰富",
     "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow"
   },
-  "finalPrompt": "{CHARACTER: chen-zhuo | DIALOGUE: 如果运动后出现肌肉剧烈疼痛、肿胀，尿液变成酱油色，千万别硬扛，这可能是横纹肌溶解的典型信号。 | SCENE: 典型症状识别 | MOOD: tension | CAMERA: （一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人） | LIGHTING: 仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K | NEGATIVE: no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers | AUDIO: 【环境音效】风声、风穿过物体声 | RENDER: 电影级、超写实、细节丰富 | DIRECTOR: 景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow}",
+  "finalPrompt": "{CHARACTER: chen-zhuo | DIALOGUE: 陈卓在这里提醒大家，要是运动后肌肉持续剧痛，尿液还变成了深茶色，千万别不当回事，必须立刻就医。 | SCENE: 典型症状警示 | MOOD: tension | CAMERA: （一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人） | LIGHTING: 仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K | NEGATIVE: no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers | AUDIO: 【环境音效】风穿过物体声、风声 | RENDER: 电影级、超写实、细节丰富 | DIRECTOR: 景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow}",
   "validation": {
     "valid": true,
     "issues": [],
     "warnings": [],
     "stats": {
-      "length": 754,
+      "length": 755,
       "emptyFields": [
         "ACTION"
       ],
@@ -773,6 +773,6 @@
   },
   "meta": {
     "builderVersion": "v3",
-    "timestamp": "2026-06-17T04:40:43.994Z"
+    "timestamp": "2026-06-17T04:52:33.109Z"
   }
 }

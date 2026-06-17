@@ -37,6 +37,18 @@ async function run() {
     presenterStyle: 'professional-with-natural-gestures',
     visualStyle: 'full-realistic-cinematic',
     quality: 'hollywood-film-grade',
+    // v6.6.9.4-patch12: 人物灵动感软性注入
+    directorNote: '陈卓表现要活泼灵动，像朋友一样亲切，拒绝呆板说教感',
+    performanceStyle: 'vlog-style-interactive',
+    mannerisms: [
+      '说话时习惯用手比划强调重点',
+      '讲到关键信息会身体前倾靠近镜头',
+      '偶尔从画面侧方突然进入镜头制造惊喜',
+      '允许快速走向镜头形成怼脸特写',
+      '表情丰富，会挑眉、歪头、微笑',
+      '不喜欢呆站在原地，会自然走动、转身'
+    ],
+    cameraStyle: 'dynamic-vlog',
     series: {
       episode: 1,
       totalEpisodes: 3
