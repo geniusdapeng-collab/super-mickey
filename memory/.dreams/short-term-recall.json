@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-17T01:42:28.573Z",
+  "updatedAt": "2026-06-17T08:26:06.716Z",
   "entries": {
     "memory:memory/2026-05-15.md:31:42": {
       "key": "memory:memory/2026-05-15.md:31:42",
@@ -4204,18 +4204,21 @@
       "endLine": 181,
       "source": "memory",
       "snippet": "1. **视觉场景**（按运动类型动态匹配：雪山/万米高空/热带海洋/城市滑板公园/岩壁/泥土赛道/都市建筑） 2. **运镜指令**（按视角动态匹配：POV/跟拍/侧拍/俯拍/仰拍，各视角专属运镜词库） 3. **技术参数**（8K/120fps/Log/HDR/ProRes/8-11mm鱼眼/1000fps高速/FPV穿越机） 4. **质感风格**（电影级/红牛/国家地理/IMAX/胶片质感/运动模糊/光晕） 5. **环境音效**（风声/引擎/水花/雪粉/心跳/观众欢呼/碰撞声） 6. **时间感知**（慢动作/时间凝固/关键帧/1/1000秒/时间膨胀/加速） 7. **氛围情绪**（肾上腺素/突破极限/自由飞翔/征服恐惧/心流状态/生命力量） - 强度>=9 时追加额外肾上腺素描述（15+关键词：生死一线/载入史册/品牌广告级） ### 核心函数 - `expandPrompt(basePrompt, sport, angle, intensity)` — 7维动态扩充，返回目标1450字符 - `truncateToLength(str, maxLength)` — 智能截断，优先保留完整句子（句号/逗号/空格处截断） - `checkPromptLength(prompt)` — 返回 { length, status, ratio }，status: ok/overflow/under - `qualityCheck(prompt)` — 质量门检查，检测溢出、包含关键词、是否中文 - `autoCompletePrompt(pr",
-      "recallCount": 1,
+      "recallCount": 3,
       "dailyCount": 0,
       "groundedCount": 0,
-      "totalScore": 0.44142425954341885,
-      "maxScore": 0.44142425954341885,
+      "totalScore": 1.3859225749969482,
+      "maxScore": 0.47751937806606287,
       "firstRecalledAt": "2026-06-10T07:01:08.832Z",
-      "lastRecalledAt": "2026-06-10T07:01:08.832Z",
+      "lastRecalledAt": "2026-06-17T08:26:06.716Z",
       "queryHashes": [
-        "286b2fdebcdf"
+        "286b2fdebcdf",
+        "64f8c473bd52",
+        "edb15457b261"
       ],
       "recallDays": [
-        "2026-06-10"
+        "2026-06-10",
+        "2026-06-17"
       ],
       "conceptTags": [
         "雪山/万米高空/热带海洋/城市滑板公园/岩壁/泥土赛道/都市建筑",
@@ -5683,15 +5686,16 @@
       "endLine": 441,
       "source": "memory",
       "snippet": "- 运镜方式：推/拉/横摇/纵摇/横移/升降/跟随/环绕/手持/斯坦尼康/极速穿梭/一镜到底/固定/缩放/甩镜头（15种） - 光学参数：焦距（16mm-200mm+）、光圈（f/1.4-f/16+）、画幅（IMAX/35mm/16mm/65mm） - 运动速度：极慢/慢/中速/快/极快/变速（6级） **色彩科学体系：** - 11种色彩方案：Teal&Orange/Earth Tones/Neon Noir/Pastel Dream/Monochrome/Monochrome Accent/Natural HDR/Warm Monochrome/Cool Monochrome/Complementary/Analogous/Triadic - 色温控制：2000K-8000K+（烛光→极冷蓝调） **场景类型适配器（重要创新）：** - 7种场景类型：自然史诗/人物叙事/产品商业/城市建筑/科幻未来/纪实纪录/抽象艺术 - 每种有独立维度权重、物理优先级、色彩方案、节奏模板、关键术语 - 示例：人物叙事类 SUBJECT权重1.0，ACTION权重0.9，SCENE仅0.5；自然史诗类 SCENE权重1.0，SUBJECT仅0.2 **叙事节奏引擎：** - 三幕式微叙事：SETUP(30-40%)→DEVELOPMENT(30-40%)→CLIMAX/RESOLUTION(20-30%) - 情绪曲线模板：低→中低→中→中高→高→凝固（6阶段） - 节拍设计：每2-3秒一个明确可感知的视觉变化（机位/动作/光影/揭示/情绪） - 动静对比：动主体+静环境/静主体+动",
-      "recallCount": 1,
+      "recallCount": 2,
       "dailyCount": 0,
       "groundedCount": 0,
-      "totalScore": 0.4153769552707672,
-      "maxScore": 0.4153769552707672,
+      "totalScore": 0.8831595242023467,
+      "maxScore": 0.46778256893157955,
       "firstRecalledAt": "2026-06-17T00:45:20.677Z",
-      "lastRecalledAt": "2026-06-17T00:45:20.677Z",
+      "lastRecalledAt": "2026-06-17T08:26:06.716Z",
       "queryHashes": [
-        "461e8894b8b1"
+        "461e8894b8b1",
+        "edb15457b261"
       ],
       "recallDays": [
         "2026-06-17"
@@ -5714,15 +5718,18 @@
       "endLine": 202,
       "source": "memory",
       "snippet": "- 景别约束：小空间禁用extreme_wide/wide；大空间开放所有 - 段数计算：根据时长自动计算（<5s=2段，5-10s=3段，10-15s=4段） **Layer 2 - LLM驱动生成器（LLMTimelineGenerator）**： - 使用LLMEngine（kimi-k2p6）调用真实LLM - Prompt包含：镜头信息+约束条件+连续性要求 - 返回JSON格式：strategy/reasoning/segments - 每个镜头独立调用LLM，确保个性化 **Layer 3 - 连续性引擎（ContinuityEngine）**： - 景别跳跃限制矩阵：extreme_close只能→close_up/extreme_close；close_up不能→wide/extreme_wide - 运动方向冲突检测：push_in→pull_out冲突 - 自动修复：调整下一段起始景别到允许范围 **Layer 4 - 可选开关（TimelineFeatureToggle）**： - 模式：auto/always/never - 场景类型→默认模式：action=complex, emotional=simple, monologue=standard - 时长→模式：短镜头自动简化 ### 测试结果 | 镜头 | 策略 | 效果 | 连续性 | |------|------|------|--------| | S01 开场5s | 渐进聚焦式 | 中景→中景→特写（非模板） | ✅ | | S02 病理13s | **递进揭示式** | 特写",
-      "recallCount": 1,
+      "recallCount": 4,
       "dailyCount": 0,
       "groundedCount": 0,
-      "totalScore": 0.41042959988117217,
-      "maxScore": 0.41042959988117217,
+      "totalScore": 1.8015157610177992,
+      "maxScore": 0.47812853753566736,
       "firstRecalledAt": "2026-06-17T00:45:20.677Z",
-      "lastRecalledAt": "2026-06-17T00:45:20.677Z",
+      "lastRecalledAt": "2026-06-17T08:26:06.716Z",
       "queryHashes": [
-        "461e8894b8b1"
+        "461e8894b8b1",
+        "833752fb3ba9",
+        "64f8c473bd52",
+        "edb15457b261"
       ],
       "recallDays": [
         "2026-06-17"
@@ -6017,6 +6024,165 @@
         "prompt-standard-v3.js",
         "香香/小卓",
         "stage"
+      ]
+    },
+    "memory:memory/2026-06-07.md:833:859": {
+      "key": "memory:memory/2026-06-07.md:833:859",
+      "path": "memory/2026-06-07.md",
+      "startLine": 833,
+      "endLine": 859,
+      "source": "memory",
+      "snippet": "| cinematic color grading | 电影级色彩分级 | ~3 | | film grain | 胶片颗粒 | ~4 | | ray-traced reflections | 光线追踪反射 | ~8 | | volumetric lighting | 体积光 | ~8 | | motion blur | 动态模糊 | ~4 | **预生产验证**（session: `nimble-s`，耗时 400 秒）： - 全链路：16/16 通过 - 镜头数：S00-S04 共 5 镜头 - Prompt 长度：973/969/974/978/979（全部在 980 硬上限内） - 英文术语残留：✅ 全部清除 - 中文等效词覆盖：✅ 5/5 镜头 - @Image 引用：✅ 全部包含 - 镜头时间轴：✅ 全部包含 **对比结论**：v6.5.12 信息密度提升。同长度下释放了约 200-300 字符空间，系统将其用于增强核心叙事内容（视觉描述、运镜、台词），而非浪费在冗余英文形容词上。 **Git commit**：`v6.5.12: 英文术语压缩优化 - 中文等效词替换提升信息密度`（6 files changed, 196 insertions, 105 deletions） **对比报告**：`/tmp/taotie-ep01-v6.5.12-comparison-report.md` ## 版本历史（2026-06-07 完整） v6.4.1 → v6.5.1 → v6.5.4 → v6.5.5 → v6.5.6 → v6.5.7 → v6.5.8",
+      "recallCount": 3,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 1.4279842019081115,
+      "maxScore": 0.4826800018548965,
+      "firstRecalledAt": "2026-06-17T08:14:57.156Z",
+      "lastRecalledAt": "2026-06-17T08:26:06.716Z",
+      "queryHashes": [
+        "833752fb3ba9",
+        "64f8c473bd52",
+        "edb15457b261"
+      ],
+      "recallDays": [
+        "2026-06-17"
+      ],
+      "conceptTags": [
+        "ray-traced",
+        "nimble-s",
+        "16/16",
+        "s00-s04",
+        "973/969/974/978/979",
+        "5/5",
+        "v6.5.12",
+        "200-300"
+      ]
+    },
+    "memory:memory/2026-06-04.md:282:310": {
+      "key": "memory:memory/2026-06-04.md:282:310",
+      "path": "memory/2026-06-04.md",
+      "startLine": 282,
+      "endLine": 310,
+      "source": "memory",
+      "snippet": "6. ✅ 二次压缩模式 — worker.js中自动触发 7. ✅ 网络重试 — batch.js中自动重试2次 8. ✅ 文件清理 — 多格式正则彻底清理旧数据 9. ✅ 质量防御 — 5层过滤（提取→过滤→评分→检查→兜底） **测试结果（6镜头）：** | 镜头 | 字符数 | 来源 | 质量 | |------|--------|------|------| | S00 | 378 | reasoning_content | 优秀 | | S01 | 547 | reasoning_content | 优秀 | | S02 | 480 | reasoning_content | 优秀 | | S03 | 556 | reasoning_content | 优秀 | | S04 | 346 | fallback | 合格（二次压缩未改善） | | S05 | 198 | reasoning_content | 合格（二次压缩78→198） | **OOM: 0 | 成功率: 6/6 | 平均耗时: ~2.5分钟** ### 40. v4.1影视规范文档（21:00-22:30） **队长行动：** 大鹏发送v4.1专业影视制作版镜头规范标准文档（20章） **核心差异：** - 当前系统：无Scene Card、Shot Card字段不完整、追求990字符、无五维评分 - v4.1系统：Scene Card上游控制、完整Shot Card、按需120-520字符、五维评分、导演六问 **融合方案（5阶段）：** 1. Phase 1: 系统常量层（Product",
+      "recallCount": 2,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.9134195834398269,
+      "maxScore": 0.46260648667812343,
+      "firstRecalledAt": "2026-06-17T08:14:57.156Z",
+      "lastRecalledAt": "2026-06-17T08:17:16.582Z",
+      "queryHashes": [
+        "833752fb3ba9",
+        "64f8c473bd52"
+      ],
+      "recallDays": [
+        "2026-06-17"
+      ],
+      "conceptTags": [
+        "网络",
+        "worker.js中自动触发",
+        "batch.js中自动重试2次",
+        "reasoning-content",
+        "6/6",
+        "2.5分钟",
+        "v4.1影视规范文档",
+        "00-22"
+      ]
+    },
+    "memory:memory/2026-06-10.md:197:218": {
+      "key": "memory:memory/2026-06-10.md:197:218",
+      "path": "memory/2026-06-10.md",
+      "startLine": 197,
+      "endLine": 218,
+      "source": "memory",
+      "snippet": "- 总计：31个镜头，0个溢出，0个低于1200，100%合规 - 扩充倍数：从平均 85 字符 → 1495 字符（**16.5倍提升**） ### 版本发布：SHORT-VIDEO-0.7.1-xtreme-expanded - 提交：`474cf18` \"SHORT-VIDEO-0.7.1-xtreme-expanded: Prompt扩充引擎16倍提升\" - 已推送到 `geniusdapeng-collab/short-video` 远程仓库 - 升级路径：v0.7.0-xtreme-integrated → v0.7.1-xtreme-expanded ### 关键设计决策 - **不硬编码到镜头库**：动态扩充保持 `xtreme-shot-library.js` 精简（18.3KB），扩充逻辑在引擎层 - **智能截断**：`truncateToLength` 在1500上限前寻找最近句号/逗号/空格，优先保留语义完整 - **分母管理**：`PROMPT_MAX=1500`、`PROMPT_MIN=1200`、`PROMPT_TARGET=1450`（留50余量防溢出） - **安全护栏**：`qualityCheck()` 检测溢出（`length > 1500` 即报错误），`autoCompletePrompt()` 自动补全不足 --- ## 2026-06-10 09:00 ~ 11:46 - 超短裙系统三大方案 + 5批次知识注入 v0.7.6 ### 队长核心需求：将 AI 视频生成提示词工程方案（5大块知识）分批次注入超短裙系统，用",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.4434228032827377,
+      "maxScore": 0.4434228032827377,
+      "firstRecalledAt": "2026-06-17T08:14:57.156Z",
+      "lastRecalledAt": "2026-06-17T08:14:57.156Z",
+      "queryHashes": [
+        "833752fb3ba9"
+      ],
+      "recallDays": [
+        "2026-06-17"
+      ],
+      "conceptTags": [
+        "16.5倍提升",
+        "geniusdapeng-collab/short-video",
+        "v0.7.0-xtreme-integrated",
+        "v0.7.1-xtreme-expanded",
+        "xtreme-shot-library.js",
+        "18.3kb",
+        "在1500上限前寻找最近句号/逗号/空格",
+        "prompt-max"
+      ]
+    },
+    "memory:memory/2026-06-10.md:177:202": {
+      "key": "memory:memory/2026-06-10.md:177:202",
+      "path": "memory/2026-06-10.md",
+      "startLine": 177,
+      "endLine": 202,
+      "source": "memory",
+      "snippet": "- `checkPromptLength(prompt)` — 返回 { length, status, ratio }，status: ok/overflow/under - `qualityCheck(prompt)` — 质量门检查，检测溢出、包含关键词、是否中文 - `autoCompletePrompt(prompt)` — 自动补全，若不足1200字符补充至目标 ### 生成流程集成 - `generateXtremeShort()` 和 `generateSingleAngleShort()` 默认启用 `expand: true` - 可选关闭：`expand: false` 保持原始基础prompt（兼容旧版） - 每个镜头在生成时自动扩充，输出含 `expandedPrompt` 和 `promptCheck`（字符数报告） ### 质量门验证结果（8种运动 × 全部视角 × 31个镜头） | 运动类型 | 平均长度 | 最大长度 | 合规 | |---------|---------|---------|------| | 高山滑雪 (alpine) | 1496 | 1500 | ✅ | | 跳伞/翼装 (skydiving) | 1497 | 1500 | ✅ | | 冲浪 (surfing) | 1495 | 1498 | ✅ | | 滑板 (skateboarding) | 1496 | 1500 | ✅ | | BMX (bmx) | 1496 | 1500 | ✅ | | 攀岩 (climbing) | 1488 | 1498 | ✅ |",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.4390762835741043,
+      "maxScore": 0.4390762835741043,
+      "firstRecalledAt": "2026-06-17T08:14:57.156Z",
+      "lastRecalledAt": "2026-06-17T08:14:57.156Z",
+      "queryHashes": [
+        "833752fb3ba9"
+      ],
+      "recallDays": [
+        "2026-06-17"
+      ],
+      "conceptTags": [
+        "ok/overflow/under",
+        "跳伞/翼装",
+        "checkpromptlength",
+        "prompt",
+        "返回",
+        "length",
+        "status",
+        "ratio"
+      ]
+    },
+    "memory:memory/2026-06-10.md:410:426": {
+      "key": "memory:memory/2026-06-10.md:410:426",
+      "path": "memory/2026-06-10.md",
+      "startLine": 410,
+      "endLine": 426,
+      "source": "memory",
+      "snippet": "- 水体物理（9种状态：平静/波纹/涌浪/碎浪/飞溅/激流/瀑布/水下/雨滴） - 大气物理（雾/体积雾/烟/尘埃/蒸汽/云/体积云/雨/雪/风） - 材质物理（基础材质/表面状态/光学反应/动态反应四维） - 布料与柔体物理（衣物/头发/旗帜/窗帘/水面覆盖物） **光影系统规范：** - 光源定义三要素：位置（顶/前/侧/逆/底/环境）+ 性质（硬/软/散射/直射）+ 效果（轮廓/填充/主光/背景） - 自然光时段词库：黎明前/日出/上午/正午/午后/日落前/日落/黄昏/夜晚/月光（含色温+特征+情绪） - 光影现象词库：体积光/焦散/轮廓光/光晕/散射/反射/折射/色散/光斑/暗影/半影 **镜头语言完整词库：** - 机位高度体系：地面以下→地面→膝部→腰部→眼部→肩部→高角度→极高角度→空中（9级） - 运镜方式：推/拉/横摇/纵摇/横移/升降/跟随/环绕/手持/斯坦尼康/极速穿梭/一镜到底/固定/缩放/甩镜头（15种） - 光学参数：焦距（16mm-200mm+）、光圈（f/1.4-f/16+）、画幅（IMAX/35mm/16mm/65mm） - 运动速度：极慢/慢/中速/快/极快/变速（6级） **色彩科学体系：**",
+      "recallCount": 2,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.9301196485757827,
+      "maxScore": 0.4696743637323379,
+      "firstRecalledAt": "2026-06-17T08:17:16.582Z",
+      "lastRecalledAt": "2026-06-17T08:26:06.716Z",
+      "queryHashes": [
+        "64f8c473bd52",
+        "edb15457b261"
+      ],
+      "recallDays": [
+        "2026-06-17"
+      ],
+      "conceptTags": [
+        "平静/波纹/涌浪/碎浪/飞溅/激流/瀑布/水下/雨滴",
+        "雾/体积雾/烟/尘埃/蒸汽/云/体积云/雨/雪/风",
+        "基础材质/表面状态/光学反应/动态反应四维",
+        "衣物/头发/旗帜/窗帘/水面覆盖物",
+        "顶/前/侧/逆/底/环境",
+        "硬/软/散射/直射",
+        "轮廓/填充/主光/背景",
+        "黎明前/日出/上午/正午/午后/日落前/日落/黄昏/夜晚/月光"
       ]
     }
   }

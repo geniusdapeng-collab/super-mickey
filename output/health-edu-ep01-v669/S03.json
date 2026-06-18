@@ -1,21 +1,21 @@
 {
   "shotId": "S03",
-  "recordedAt": "2026-06-17T04:52:33.106Z",
+  "recordedAt": "2026-06-18T02:02:22.423Z",
   "rawShot": {
     "id": "S03",
-    "scene": "症状警示",
-    "dialogue": "如果大家运动后肌肉剧烈酸痛，伴随全身无力，而且尿液变成了浓茶色或者酱油色，这时候千万别硬撑，这很可能是横纹肌溶解的典型信号。",
-    "narration": "如果大家运动后肌肉剧烈酸痛，伴随全身无力，而且尿液变成了浓茶色或者酱油色，这时候千万别硬撑，这很可能是横纹肌溶解的典型信号。",
-    "duration": 13,
+    "scene": "高危人群警示",
+    "dialogue": "有三类人特别要当心。第一是平时不运动、突然猛练的新手；第二是高温天还在户外拼命出汗的人；第三类，比如吃了他汀类降脂药的朋友，剧烈运动更容易诱发横纹肌溶解。",
+    "duration": 15,
     "type": "content",
     "characters": [
-      "chen-zhuo"
+      "chen-zhuo",
+      "presenter"
     ],
-    "mouthAction": "speaking_normal",
+    "mouthAction": "speaking_emphasis",
     "importance": 5,
     "visualComplexity": 5,
     "emotionPhase": "tension",
-    "visualPrompt": "超写实纪录片风格，专业医疗科普演播环境中，陈卓身穿白大褂或正式便装，正面面对镜头站立讲解，神态认真关切，双手自然配合讲解做出示意动作，位于中近景竖屏构图，人物占据画面主体，背景为简洁明亮的医院诊室或科普演播空间，墙面干净专业，光线采用柔和自然光，肤色与衣物纹理细节真实，镜头稳定微微仰拍，整体画面呈现权威、真实、克制的医学科普质感。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
+    "visualPrompt": "超写实纪录片风格，医院健康宣教室或专业科普演播室内，陈卓身穿整洁白大褂，正面站立面向镜头进行讲解，双手随着三类人群的说明做出自然手势，神态专业而亲切，中近景竖屏构图，人物位于画面视觉中心，背景为明亮简洁的医疗教育环境，可见模糊的人体肌肉解剖示意图或健康知识展板，柔和自然光配合均匀室内照明，人物肤色与衣物纹理真实细腻，焦点清晰锐利，镜头稳定不晃动，整体呈现权威、清晰、真实可信的医学科普质感。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
     "fpvRecommended": true,
     "fpvScore": 60,
     "fpvReason": "导演决策:无强烈FPV适配镜头，S03相对最佳(60分)，可选FPV增强",
@@ -32,16 +32,19 @@
       ],
       "physics": false
     },
-    "prompt": "16:9宽屏电影级镜头。【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic | 【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film | 【空间】golden hour, clear sky, atmospheric haze, depth layers, foreground to background | 【主体】陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业人像摄影，自然生活化场景 | 【动态】电影级镜头, 症状警示, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression, slide_left | 【风格】color palette: natural earth shadows + daylight highlights + green foliage accents, cinematic atmosphere, 通用导演 aesthetic | 【音频】伴随白天环境音, 动作产生自然动作声, 氛围弥漫明亮日常氛围, 声画精准同步，嘴型与发音对齐 | 【质控】blurry, low resolution, pixelated, compression artifacts, cartoon, anime, illustration, 3D render look, CGI appearance, plastic look, distorted perspective, impossible geometry, floating objects, inconsistent scale, flat lighting, overexposed, crushed blacks, double shadows, wrong light direction, distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose, unnatural physics, fake water, static water, cardboard texture, plastic foliage 平滑平稳左移，中景居中构图，纪录片场景。5秒内完成景别过渡，保持画面稳定流畅。通过精准的镜头运动引导观众视线，强化叙事节奏。 【负面约束】no blurry, no cartoon, no deformed hands, no extra fingers, no watermark, no text 【明亮约束】自然光或柔和室内照明,画面真实干净,禁止暗黑/灰暗。 【角色约束】画面中仅出现陈卓,禁止重复角色 speaking_normal\n[创意指数0.5][[LIGHTING:L2]] 电影级灯光：戏剧性光影、伦勃朗光、剪影、环境光填充\n[[COLOR:L2]] 电影级色彩：电影LUT、冷暖对比、单色调色\n[[VFX:L2]] 电影级特效：光效粒子、镜...[/创意指数]",
+    "prompt": "16:9宽屏电影级镜头。【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic | 【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film | 【空间】golden hour, clear sky, atmospheric haze, depth layers, foreground to background | 【主体】陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业人像摄影，自然生活化场景, presenter | 【动态】电影级镜头, 高危人群警示, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression and presenter, natural expression, slide_left | 【风格】color palette: natural earth shadows + daylight highlights + green foliage accents, cinematic atmosphere, 通用导演 aesthetic | 【音频】伴随白天环境音, 动作产生自然动作声, 氛围弥漫明亮日常氛围, 声画精准同步，嘴型与发音对齐 | 【质控】blurry, low resolution, pixelated, compression artifacts, cartoon, anime, illustration, 3D render look, CGI appearance, plastic look, distorted perspective, impossible geometry, floating objects, inconsistent scale, flat lighting, overexposed, crushed blacks, double shadows, wrong light direction, distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose, unnatural physics, fake water, static water, cardboard texture, plastic foliage 平滑平稳左移，中景居中构图，纪录片场景。5秒内完成景别过渡，保持画面稳定流畅。通过精准的镜头运动引导观众视线，强化叙事节奏。 【负面约束】no blurry, no cartoon, no deformed hands, no extra fingers, no watermark, no text 【明亮约束】自然光或柔和室内照明,画面真实干净,禁止暗黑/灰暗。 【角色约束】画面中仅出现陈卓、presenter,禁止重复角色;2人位置分布自然,避免重叠 speaking_emphasis",
+    "shotId": "S03",
+    "sceneName": "高危人群警示",
+    "sceneText": "高危人群警示",
     "qualityScore": {
-      "score": 75,
+      "score": 76,
       "grade": "A",
       "passed": true,
       "action": "放行",
       "scores": {
         "tier1Completeness": 50,
         "visualPurity": 100,
-        "utilization": 115,
+        "utilization": 120,
         "techValidity": 100,
         "emotionConsistency": 70,
         "negativeCompleteness": 0
@@ -72,11 +75,11 @@
         },
         {
           "dimension": "字符利用率",
-          "score": 115,
+          "score": 120,
           "weight": 15,
-          "length": 1150,
+          "length": 1197,
           "maxLength": 1500,
-          "utilization": 77,
+          "utilization": 80,
           "comment": "利用率良好"
         },
         {
@@ -108,16 +111,16 @@
         }
       ],
       "duration": 0,
-      "report": "===== Prompt质量门禁报告 =====\n\n总分: 75/100 | 评级: A | 动作: 放行\n\n各维度评分:\n  Tier-1完整性: 50/100 (权重25% → 13分) — 缺失: 主体, 动作\n  视觉纯度: 100/100 (权重20% → 20分) — 视觉纯净\n  字符利用率: 115/100 (权重15% → 17分) — 利用率良好\n  技术规格有效性: 100/100 (权重15% → 15分) — 技术声明有效\n  情绪-表情一致性: 70/100 (权重15% → 11分) — 未定义情绪阶段，默认评分\n  负面约束完整性: 0/100 (权重10% → 0分) — 缺失: no metallic shine, no traditional Chinese symbols, natural eye colors only\n\n综合: ✅ 通过门禁"
+      "report": "===== Prompt质量门禁报告 =====\n\n总分: 76/100 | 评级: A | 动作: 放行\n\n各维度评分:\n  Tier-1完整性: 50/100 (权重25% → 13分) — 缺失: 主体, 动作\n  视觉纯度: 100/100 (权重20% → 20分) — 视觉纯净\n  字符利用率: 120/100 (权重15% → 18分) — 利用率良好\n  技术规格有效性: 100/100 (权重15% → 15分) — 技术声明有效\n  情绪-表情一致性: 70/100 (权重15% → 11分) — 未定义情绪阶段，默认评分\n  负面约束完整性: 0/100 (权重10% → 0分) — 缺失: no metallic shine, no traditional Chinese symbols, natural eye colors only\n\n综合: ✅ 通过门禁"
     },
     "channelData": {
       "narration": {
-        "text": "如果大家运动后肌肉剧烈酸痛，伴随全身无力，而且尿液变成了浓茶色或者酱油色，这时候千万别硬撑，这很可能是横纹肌溶解的典型信号。",
+        "text": "",
         "ttsReady": true,
-        "duration": 12
+        "duration": 0
       },
       "visual": {
-        "text": "电影级镜头, 症状警示, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression",
+        "text": "电影级镜头, 高危人群警示, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression and presenter, natural expression",
         "hasLipSync": false
       },
       "lipSync": null
@@ -126,12 +129,12 @@
   "mappedShot": {
     "id": "S03",
     "type": "content",
-    "scene": "症状警示",
+    "scene": "高危人群警示",
     "sceneType": "nature_epic",
     "emotionPhase": "tension",
-    "narration": "如果大家运动后肌肉剧烈酸痛，伴随全身无力，而且尿液变成了浓茶色或者酱油色，这时候千万别硬撑，这很可能是横纹肌溶解的典型信号。",
+    "narration": "",
     "action": "",
-    "visualPrompt": "超写实纪录片风格，专业医疗科普演播环境中，陈卓身穿白大褂或正式便装，正面面对镜头站立讲解，神态认真关切，双手自然配合讲解做出示意动作，位于中近景竖屏构图，人物占据画面主体，背景为简洁明亮的医院诊室或科普演播空间，墙面干净专业，光线采用柔和自然光，肤色与衣物纹理细节真实，镜头稳定微微仰拍，整体画面呈现权威、真实、克制的医学科普质感。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
+    "visualPrompt": "超写实纪录片风格，医院健康宣教室或专业科普演播室内，陈卓身穿整洁白大褂，正面站立面向镜头进行讲解，双手随着三类人群的说明做出自然手势，神态专业而亲切，中近景竖屏构图，人物位于画面视觉中心，背景为明亮简洁的医疗教育环境，可见模糊的人体肌肉解剖示意图或健康知识展板，柔和自然光配合均匀室内照明，人物肤色与衣物纹理真实细腻，焦点清晰锐利，镜头稳定不晃动，整体呈现权威、清晰、真实可信的医学科普质感。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
     "camera": "",
     "cameraMovement": {
       "description": "平滑平稳左移，中景居中构图，纪录片场景。5秒内完成景别过渡，保持画面稳定流畅。通过精准的镜头运动引导观众视线，强化叙事节奏。",
@@ -151,9 +154,10 @@
     "renderStyle": "",
     "negativePrompt": "",
     "characters": [
-      "chen-zhuo"
+      "chen-zhuo",
+      "presenter"
     ],
-    "duration": 13,
+    "duration": 15,
     "beastId": "",
     "beastName": "",
     "tension": 0,
@@ -166,32 +170,33 @@
     "protagonistName": "主角",
     "beastId": "",
     "beastName": "",
-    "habitat": "症状警示",
+    "habitat": "高危人群警示",
     "episodeTheme": "",
     "sceneType": "nature_epic"
   },
   "schemaCheck": {
     "valid": true,
     "issues": [],
-    "warnings": []
+    "warnings": [
+      "shot.narration 与 shot.action 都为空"
+    ]
   },
   "subsystemFields": {
-    "CHARACTER": "chen-zhuo",
-    "SCENE": "症状警示",
+    "CHARACTER": "chen-zhuo，presenter",
+    "SCENE": "高危人群警示",
     "MOOD": "tension",
     "RENDER": "电影级、超写实、细节丰富",
-    "DIALOGUE": "如果大家运动后肌肉剧烈酸痛，伴随全身无力，而且尿液变成了浓茶色或者酱油色，这时候千万别硬撑，这很可能是横纹肌溶解的典型信号。",
-    "CAMERA": "（一镜到底！），镜头时间轴：0-4s: static (宁静) → 4-9s: push_in (聚焦) → 9-13s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
+    "CAMERA": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
     "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K",
     "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow",
     "meta": {
       "source": "camera-movement-system-v3",
       "raw": {
-        "scene": "症状警示",
+        "scene": "高危人群警示",
         "emotionPhase": "tension",
-        "duration": 13,
+        "duration": 15,
         "baseMovement": {
-          "scene": "症状警示",
+          "scene": "高危人群警示",
           "physicsDriver": "generic",
           "primaryMovement": "smooth_track",
           "speed": "smooth",
@@ -230,33 +235,33 @@
           },
           "hasMultiSegment": true,
           "segmentCount": 3,
-          "comboDescription": "【运镜组合】开场建立：0-4秒：static → 4-9秒：push_in → 9-13秒：orbit_right",
+          "comboDescription": "【运镜组合】开场建立：0-5秒：static → 5-10秒：push_in → 10-15秒：orbit_right",
           "timeline": [
             {
-              "range": "0-4s",
+              "range": "0-5s",
               "action": "static (宁静)",
               "movement": "static",
               "lighting": "晨光侧射"
             },
             {
-              "range": "4-9s",
+              "range": "5-10s",
               "action": "push_in (聚焦)",
               "movement": "push_in",
               "lighting": "自然光"
             },
             {
-              "range": "9-13s",
+              "range": "10-15s",
               "action": "orbit_right (升华)",
               "movement": "orbit_right",
               "lighting": "自然光"
             }
           ],
           "timelineSource": "intra-shot-combo",
-          "description": "（一镜到底！），镜头时间轴：0-4s: static (宁静) → 4-9s: push_in (聚焦) → 9-13s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic"
+          "description": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic"
         },
-        "description": "（一镜到底！），镜头时间轴：0-4s: static (宁静) → 4-9s: push_in (聚焦) → 9-13s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic",
+        "description": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic",
         "intraShotTimeline": {
-          "totalDuration": 13,
+          "totalDuration": 15,
           "segmentCount": 4,
           "transitionName": "渐进式揭示",
           "transitionDesc": "从远景逐步推到特写，建立环境→发现主体→情感亲密",
@@ -268,7 +273,7 @@
             {
               "index": 0,
               "timeRange": "早期",
-              "duration": 2.6,
+              "duration": 3,
               "shotSize": "extreme_wide",
               "shotSizeDesc": "极端远景（环境全貌）",
               "movement": "orbit_360",
@@ -287,7 +292,7 @@
             {
               "index": 1,
               "timeRange": "中期",
-              "duration": 3.9,
+              "duration": 4.5,
               "shotSize": "wide",
               "shotSizeDesc": "远景（环境+主体）",
               "movement": "push_in",
@@ -306,7 +311,7 @@
             {
               "index": 2,
               "timeRange": "后期",
-              "duration": 3.9,
+              "duration": 4.5,
               "shotSize": "medium",
               "shotSizeDesc": "中景（半身/双人）",
               "movement": "push_in",
@@ -325,7 +330,7 @@
             {
               "index": 3,
               "timeRange": "尾声",
-              "duration": 2.6,
+              "duration": 3,
               "shotSize": "close_up",
               "shotSizeDesc": "特写（面部/细节）",
               "movement": "hold",
@@ -344,7 +349,7 @@
           ],
           "summary": "【镜头时间轴 - 渐进式揭示】\n策略：从远景逐步推到特写，建立环境→发现主体→情感亲密\n灯光：晨曦渐亮 - 从黑暗中逐渐亮起，模拟日出效果\n速度：慢快慢 - 开始缓慢，中间加速，最后减速\n\n早期｜极端远景（环境全貌）｜缓慢｜orbit_360｜灯光：仅轮廓可见\n  → 转场：平滑渐变\n中期｜远景（环境+主体）｜很快｜push_in｜灯光：侧光渐强\n  → 转场：硬切\n后期｜中景（半身/双人）｜极限速度｜push_in｜灯光：主体清晰\n  → 转场：移焦过渡\n尾声｜特写（面部/细节）｜快速｜hold｜灯光：全面照亮\n"
         },
-        "intraShotPrompt": "【运镜时间轴 - 一镜到底多段式】\n本镜头共4段，总时长13秒。\n景别切换策略：渐进式揭示（从远景逐步推到特写，建立环境→发现主体→情感亲密）\n灯光变化：晨曦渐亮（从黑暗中逐渐亮起，模拟日出效果）\n速度曲线：慢快慢（开始缓慢，中间加速，最后减速）\n\n早期：\n  景别：极端远景（环境全貌）\n  运镜：orbit_360\n  速度：缓慢（强度0.3）\n  灯光：仅轮廓可见，色温2000K，强度0.1\n  → 转场：平滑渐变（0.5-1秒平滑过渡）\n\n中期：\n  景别：远景（环境+主体）\n  运镜：push_in\n  速度：很快（强度0.8）\n  灯光：侧光渐强，色温2800K，强度0.3\n  → 转场：硬切（瞬间切换，无过渡）\n\n后期：\n  景别：中景（半身/双人）\n  运镜：push_in\n  速度：极限速度（强度1）\n  灯光：主体清晰，色温4500K，强度0.6\n  → 转场：移焦过渡（焦点从前景移到后景（或反之）实现切换）\n\n尾声：\n  景别：特写（面部/细节）\n  运镜：hold\n  速度：快速（强度0.6）\n  灯光：全面照亮，色温5600K，强度1\n\n",
+        "intraShotPrompt": "【运镜时间轴 - 一镜到底多段式】\n本镜头共4段，总时长15秒。\n景别切换策略：渐进式揭示（从远景逐步推到特写，建立环境→发现主体→情感亲密）\n灯光变化：晨曦渐亮（从黑暗中逐渐亮起，模拟日出效果）\n速度曲线：慢快慢（开始缓慢，中间加速，最后减速）\n\n早期：\n  景别：极端远景（环境全貌）\n  运镜：orbit_360\n  速度：缓慢（强度0.3）\n  灯光：仅轮廓可见，色温2000K，强度0.1\n  → 转场：平滑渐变（0.5-1秒平滑过渡）\n\n中期：\n  景别：远景（环境+主体）\n  运镜：push_in\n  速度：很快（强度0.8）\n  灯光：侧光渐强，色温2800K，强度0.3\n  → 转场：硬切（瞬间切换，无过渡）\n\n后期：\n  景别：中景（半身/双人）\n  运镜：push_in\n  速度：极限速度（强度1）\n  灯光：主体清晰，色温4500K，强度0.6\n  → 转场：移焦过渡（焦点从前景移到后景（或反之）实现切换）\n\n尾声：\n  景别：特写（面部/细节）\n  运镜：hold\n  速度：快速（强度0.6）\n  灯光：全面照亮，色温5600K，强度1\n\n",
         "camera": "extreme_wide orbit_360, 50mm lens, normal speed",
         "lighting": "low_back key 2000K, 仅轮廓可见",
         "config": {
@@ -354,7 +359,7 @@
         }
       }
     },
-    "AUDIO": "【环境音效】风声、风穿过物体声",
+    "AUDIO": "【环境音效】风穿过物体声、风声",
     "_meta": {
       "activatedSubsystems": [
         "CameraMovementSystemV3Bridge",
@@ -367,22 +372,21 @@
   },
   "llmFields": {},
   "mergedFields": {
-    "CHARACTER": "chen-zhuo",
-    "SCENE": "症状警示",
+    "CHARACTER": "chen-zhuo，presenter",
+    "SCENE": "高危人群警示",
     "MOOD": "tension",
     "RENDER": "电影级、超写实、细节丰富",
-    "DIALOGUE": "如果大家运动后肌肉剧烈酸痛，伴随全身无力，而且尿液变成了浓茶色或者酱油色，这时候千万别硬撑，这很可能是横纹肌溶解的典型信号。",
-    "CAMERA": "（一镜到底！），镜头时间轴：0-4s: static (宁静) → 4-9s: push_in (聚焦) → 9-13s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
+    "CAMERA": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
     "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K",
     "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow",
     "meta": {
       "source": "camera-movement-system-v3",
       "raw": {
-        "scene": "症状警示",
+        "scene": "高危人群警示",
         "emotionPhase": "tension",
-        "duration": 13,
+        "duration": 15,
         "baseMovement": {
-          "scene": "症状警示",
+          "scene": "高危人群警示",
           "physicsDriver": "generic",
           "primaryMovement": "smooth_track",
           "speed": "smooth",
@@ -421,33 +425,33 @@
           },
           "hasMultiSegment": true,
           "segmentCount": 3,
-          "comboDescription": "【运镜组合】开场建立：0-4秒：static → 4-9秒：push_in → 9-13秒：orbit_right",
+          "comboDescription": "【运镜组合】开场建立：0-5秒：static → 5-10秒：push_in → 10-15秒：orbit_right",
           "timeline": [
             {
-              "range": "0-4s",
+              "range": "0-5s",
               "action": "static (宁静)",
               "movement": "static",
               "lighting": "晨光侧射"
             },
             {
-              "range": "4-9s",
+              "range": "5-10s",
               "action": "push_in (聚焦)",
               "movement": "push_in",
               "lighting": "自然光"
             },
             {
-              "range": "9-13s",
+              "range": "10-15s",
               "action": "orbit_right (升华)",
               "movement": "orbit_right",
               "lighting": "自然光"
             }
           ],
           "timelineSource": "intra-shot-combo",
-          "description": "（一镜到底！），镜头时间轴：0-4s: static (宁静) → 4-9s: push_in (聚焦) → 9-13s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic"
+          "description": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic"
         },
-        "description": "（一镜到底！），镜头时间轴：0-4s: static (宁静) → 4-9s: push_in (聚焦) → 9-13s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic",
+        "description": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic",
         "intraShotTimeline": {
-          "totalDuration": 13,
+          "totalDuration": 15,
           "segmentCount": 4,
           "transitionName": "渐进式揭示",
           "transitionDesc": "从远景逐步推到特写，建立环境→发现主体→情感亲密",
@@ -459,7 +463,7 @@
             {
               "index": 0,
               "timeRange": "早期",
-              "duration": 2.6,
+              "duration": 3,
               "shotSize": "extreme_wide",
               "shotSizeDesc": "极端远景（环境全貌）",
               "movement": "orbit_360",
@@ -478,7 +482,7 @@
             {
               "index": 1,
               "timeRange": "中期",
-              "duration": 3.9,
+              "duration": 4.5,
               "shotSize": "wide",
               "shotSizeDesc": "远景（环境+主体）",
               "movement": "push_in",
@@ -497,7 +501,7 @@
             {
               "index": 2,
               "timeRange": "后期",
-              "duration": 3.9,
+              "duration": 4.5,
               "shotSize": "medium",
               "shotSizeDesc": "中景（半身/双人）",
               "movement": "push_in",
@@ -516,7 +520,7 @@
             {
               "index": 3,
               "timeRange": "尾声",
-              "duration": 2.6,
+              "duration": 3,
               "shotSize": "close_up",
               "shotSizeDesc": "特写（面部/细节）",
               "movement": "hold",
@@ -535,7 +539,7 @@
           ],
           "summary": "【镜头时间轴 - 渐进式揭示】\n策略：从远景逐步推到特写，建立环境→发现主体→情感亲密\n灯光：晨曦渐亮 - 从黑暗中逐渐亮起，模拟日出效果\n速度：慢快慢 - 开始缓慢，中间加速，最后减速\n\n早期｜极端远景（环境全貌）｜缓慢｜orbit_360｜灯光：仅轮廓可见\n  → 转场：平滑渐变\n中期｜远景（环境+主体）｜很快｜push_in｜灯光：侧光渐强\n  → 转场：硬切\n后期｜中景（半身/双人）｜极限速度｜push_in｜灯光：主体清晰\n  → 转场：移焦过渡\n尾声｜特写（面部/细节）｜快速｜hold｜灯光：全面照亮\n"
         },
-        "intraShotPrompt": "【运镜时间轴 - 一镜到底多段式】\n本镜头共4段，总时长13秒。\n景别切换策略：渐进式揭示（从远景逐步推到特写，建立环境→发现主体→情感亲密）\n灯光变化：晨曦渐亮（从黑暗中逐渐亮起，模拟日出效果）\n速度曲线：慢快慢（开始缓慢，中间加速，最后减速）\n\n早期：\n  景别：极端远景（环境全貌）\n  运镜：orbit_360\n  速度：缓慢（强度0.3）\n  灯光：仅轮廓可见，色温2000K，强度0.1\n  → 转场：平滑渐变（0.5-1秒平滑过渡）\n\n中期：\n  景别：远景（环境+主体）\n  运镜：push_in\n  速度：很快（强度0.8）\n  灯光：侧光渐强，色温2800K，强度0.3\n  → 转场：硬切（瞬间切换，无过渡）\n\n后期：\n  景别：中景（半身/双人）\n  运镜：push_in\n  速度：极限速度（强度1）\n  灯光：主体清晰，色温4500K，强度0.6\n  → 转场：移焦过渡（焦点从前景移到后景（或反之）实现切换）\n\n尾声：\n  景别：特写（面部/细节）\n  运镜：hold\n  速度：快速（强度0.6）\n  灯光：全面照亮，色温5600K，强度1\n\n",
+        "intraShotPrompt": "【运镜时间轴 - 一镜到底多段式】\n本镜头共4段，总时长15秒。\n景别切换策略：渐进式揭示（从远景逐步推到特写，建立环境→发现主体→情感亲密）\n灯光变化：晨曦渐亮（从黑暗中逐渐亮起，模拟日出效果）\n速度曲线：慢快慢（开始缓慢，中间加速，最后减速）\n\n早期：\n  景别：极端远景（环境全貌）\n  运镜：orbit_360\n  速度：缓慢（强度0.3）\n  灯光：仅轮廓可见，色温2000K，强度0.1\n  → 转场：平滑渐变（0.5-1秒平滑过渡）\n\n中期：\n  景别：远景（环境+主体）\n  运镜：push_in\n  速度：很快（强度0.8）\n  灯光：侧光渐强，色温2800K，强度0.3\n  → 转场：硬切（瞬间切换，无过渡）\n\n后期：\n  景别：中景（半身/双人）\n  运镜：push_in\n  速度：极限速度（强度1）\n  灯光：主体清晰，色温4500K，强度0.6\n  → 转场：移焦过渡（焦点从前景移到后景（或反之）实现切换）\n\n尾声：\n  景别：特写（面部/细节）\n  运镜：hold\n  速度：快速（强度0.6）\n  灯光：全面照亮，色温5600K，强度1\n\n",
         "camera": "extreme_wide orbit_360, 50mm lens, normal speed",
         "lighting": "low_back key 2000K, 仅轮廓可见",
         "config": {
@@ -545,7 +549,7 @@
         }
       }
     },
-    "AUDIO": "【环境音效】风声、风穿过物体声",
+    "AUDIO": "【环境音效】风穿过物体声、风声",
     "_meta": {
       "activatedSubsystems": [
         "CameraMovementSystemV3Bridge",
@@ -558,31 +562,33 @@
     "NEGATIVE": "no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers"
   },
   "normalizedFields": {
-    "CHARACTER": "chen-zhuo",
-    "DIALOGUE": "如果大家运动后肌肉剧烈酸痛，伴随全身无力，而且尿液变成了浓茶色或者酱油色，这时候千万别硬撑，这很可能是横纹肌溶解的典型信号。",
+    "CHARACTER": "chen-zhuo，presenter",
+    "DIALOGUE": "",
     "ACTION": "",
-    "SCENE": "症状警示",
+    "SCENE": "高危人群警示",
     "MOOD": "tension",
-    "CAMERA": "（一镜到底！），镜头时间轴：0-4s: static (宁静) → 4-9s: push_in (聚焦) → 9-13s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
+    "CAMERA": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
     "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K",
     "NEGATIVE": "no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers",
-    "AUDIO": "【环境音效】风声、风穿过物体声",
+    "AUDIO": "【环境音效】风穿过物体声、风声",
     "RENDER": "电影级、超写实、细节丰富",
     "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow"
   },
-  "finalPrompt": "{CHARACTER: chen-zhuo | DIALOGUE: 如果大家运动后肌肉剧烈酸痛，伴随全身无力，而且尿液变成了浓茶色或者酱油色，这时候千万别硬撑，这很可能是横纹肌溶解的典型信号。 | SCENE: 症状警示 | MOOD: tension | CAMERA: （一镜到底！），镜头时间轴：0-4s: static (宁静) → 4-9s: push_in (聚焦) → 9-13s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人） | LIGHTING: 仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K | NEGATIVE: no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers | AUDIO: 【环境音效】风声、风穿过物体声 | RENDER: 电影级、超写实、细节丰富 | DIRECTOR: 景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow}",
+  "finalPrompt": "{CHARACTER: chen-zhuo，presenter | SCENE: 高危人群警示 | MOOD: tension | CAMERA: （一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人） | LIGHTING: 仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K | NEGATIVE: no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers | AUDIO: 【环境音效】风穿过物体声、风声 | RENDER: 电影级、超写实、细节丰富 | DIRECTOR: 景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow}",
   "validation": {
-    "valid": true,
-    "issues": [],
+    "valid": false,
+    "issues": [
+      "缺少必填字段: DIALOGUE"
+    ],
     "warnings": [],
     "stats": {
-      "length": 766,
+      "length": 705,
       "emptyFields": [
+        "DIALOGUE",
         "ACTION"
       ],
       "filledFields": [
         "CHARACTER",
-        "DIALOGUE",
         "SCENE",
         "MOOD",
         "CAMERA",
@@ -596,6 +602,6 @@
   },
   "meta": {
     "builderVersion": "v3",
-    "timestamp": "2026-06-17T04:52:33.106Z"
+    "timestamp": "2026-06-18T02:02:22.423Z"
   }
 }

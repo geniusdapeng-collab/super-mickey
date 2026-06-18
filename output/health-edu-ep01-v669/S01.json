@@ -1,69 +1,68 @@
 {
   "shotId": "S01",
-  "recordedAt": "2026-06-17T04:52:33.100Z",
+  "recordedAt": "2026-06-18T02:02:22.412Z",
   "rawShot": {
     "id": "S01",
-    "scene": "医院大厅开场",
-    "dialogue": "今天想和大家聊一个运动健身里可能遇到的健康隐患。",
-    "narration": "今天想和大家聊一个运动健身里可能遇到的健康隐患。",
-    "duration": 6,
+    "scene": "健康警示开场",
+    "dialogue": "",
+    "duration": 5,
     "type": "opening",
     "characters": [
       "chen-zhuo"
     ],
-    "mouthAction": "speaking_normal",
+    "mouthAction": "speaking_emphasis",
     "importance": 5,
     "visualComplexity": 5,
     "emotionPhase": "curiosity",
-    "visualPrompt": "超写实纪录片风格，专业健康科普演播室内，主讲人陈卓身穿整洁便装或白大褂，正面朝向镜头站立或端坐，神态亲和自然，双手适度配合讲解动作。竖屏中近景构图，人物占据画面主体，背景为明亮整洁的医疗咨询室或科普演播空间，墙面可有简约健康宣传元素。柔和自然光从侧前方漫射，面部明暗过渡细腻，肤色真实，镜头稳定，画面色调克制真实，整体呈现专业、亲切、可信的医学科普开场质感。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
+    "visualPrompt": "超写实纪录片风格，明亮的医疗科普演播室内，陈卓身穿整洁休闲正装，站立于画面中央，正对镜头以自然沉稳的神态向观众介绍主题，双手适度配合讲解动作。竖屏中近景构图，背景为简约专业的健康教育场景或医院咨询室环境，书架与医学图表隐约可见。画面采用柔和自然光与专业补光结合，肤色还原真实，景深适中，镜头稳定，整体呈现出权威、亲切且真实可信的医学科普质感。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
     "fpvRecommended": false,
     "fpvScore": 35,
     "fpvReason": "建议传统运镜：情绪/视觉不适合FPV",
     "cameraMovement": {
       "timeline": {
-        "strategy": "动态揭示推进",
-        "reasoning": "好奇心情绪需要通过空间信息的逐步揭露来构建，从环境全貌到核心细节的视觉递进，配合稳定的镜头运动形成探索感，让观众产生'接下来会发现什么'的期待",
+        "strategy": "悬念蓄势式空间建立",
+        "reasoning": "好奇心情绪需要'信息延迟满足'：前2.5秒快速建立空间框架制造悬念，后2.5秒在核心区域放慢停留，让观众主动追问'那里有什么'。首段压缩避免信息过载，尾段延展强化凝视张力。",
         "segmentCount": 2,
         "segments": [
           {
             "index": 0,
-            "timeRange": "0-3",
-            "shotSize": "wide",
-            "movement": "轨道向左平移90cm，机位高度从180cm匀速降至120cm",
-            "speed": "30cm/秒",
-            "reason": "宽幅建立空间环境，横向位移配合降镜制造窥探视角，避开extreme_wide限制，用动态wide模拟场景展开感"
+            "timeRange": "0.0-2.5",
+            "shotSize": "全景",
+            "movement": "摄影机从地面30cm高度以15度仰角向场景纵深方向推进240cm，同时向右横移120cm，镜头摇升8度",
+            "speed": "中速（0.8m/s）",
+            "reason": "快速建立空间纵深与垂直层次，低视角制造窥视感，横移规避正面全景的乏味，为后续悬念点预留视觉出口。2.5秒压缩完成框架搭建，避免过早暴露核心。"
           },
           {
             "index": 1,
-            "timeRange": "3-6",
-            "shotSize": "medium",
-            "movement": "向前推轨60cm同时向右摇摄15度",
-            "speed": "20cm/秒",
-            "reason": "中景锁定潜在运动区域（如器械/瑜伽垫），推轨加轻微摇摄形成主动探索姿态，将好奇心引导至具体健身隐患标的物"
+            "timeRange": "2.5-5.0",
+            "shotSize": "中景",
+            "movement": "摄影机在核心区域前60cm处固定机位，镜头以每秒3度速度缓慢左摇15度，同时焦点从前景虚像拉至后景清晰主体，形成3cm焦点位移",
+            "speed": "极慢（静止/微动）",
+            "reason": "好奇心高潮需延长时间：固定机位制造'被阻挡'的凝视张力，微幅摇镜模拟人眼扫视，焦点转移引导观众主动搜寻信息。2.5秒的长停留打破前段动势，形成'逼近—悬停'的节奏反差，收束为未解答的疑问。"
           }
         ],
         "generatedBy": "LLM-v4",
-        "description": "动态揭示推进：从wide逐步过渡到medium，共2段，强调内容驱动的细微推进。",
+        "description": "悬念蓄势式空间建立：从全景逐步过渡到中景，共2段，强调内容驱动的细微推进。",
         "transitionType": "llm_v4",
         "timeline": {
-          "strategy": "动态揭示推进",
-          "reasoning": "好奇心情绪需要通过空间信息的逐步揭露来构建，从环境全貌到核心细节的视觉递进，配合稳定的镜头运动形成探索感，让观众产生'接下来会发现什么'的期待",
+          "strategy": "悬念蓄势式空间建立",
+          "reasoning": "好奇心情绪需要'信息延迟满足'：前2.5秒快速建立空间框架制造悬念，后2.5秒在核心区域放慢停留，让观众主动追问'那里有什么'。首段压缩避免信息过载，尾段延展强化凝视张力。",
           "segments": [
             {
               "index": 0,
-              "timeRange": "0-3",
-              "shotSize": "wide",
-              "movement": "轨道向左平移90cm，机位高度从180cm匀速降至120cm",
-              "speed": "30cm/秒",
-              "reason": "宽幅建立空间环境，横向位移配合降镜制造窥探视角，避开extreme_wide限制，用动态wide模拟场景展开感"
+              "timeRange": "0.0-2.5",
+              "shotSize": "全景",
+              "movement": "摄影机从地面30cm高度以15度仰角向场景纵深方向推进240cm，同时向右横移120cm，镜头摇升8度",
+              "speed": "中速（0.8m/s）",
+              "reason": "快速建立空间纵深与垂直层次，低视角制造窥视感，横移规避正面全景的乏味，为后续悬念点预留视觉出口。2.5秒压缩完成框架搭建，避免过早暴露核心。"
             },
             {
               "index": 1,
-              "timeRange": "3-6",
-              "shotSize": "medium",
-              "movement": "向前推轨60cm同时向右摇摄15度",
-              "speed": "20cm/秒",
-              "reason": "中景锁定潜在运动区域（如器械/瑜伽垫），推轨加轻微摇摄形成主动探索姿态，将好奇心引导至具体健身隐患标的物"
+              "timeRange": "2.5-5.0",
+              "shotSize": "中景",
+              "movement": "摄影机在核心区域前60cm处固定机位，镜头以每秒3度速度缓慢左摇15度，同时焦点从前景虚像拉至后景清晰主体，形成3cm焦点位移",
+              "speed": "极慢（静止/微动）",
+              "reason": "好奇心高潮需延长时间：固定机位制造'被阻挡'的凝视张力，微幅摇镜模拟人眼扫视，焦点转移引导观众主动搜寻信息。2.5秒的长停留打破前段动势，形成'逼近—悬停'的节奏反差，收束为未解答的疑问。"
             }
           ]
         }
@@ -88,29 +87,32 @@
         },
         "movementStyle": "reveal",
         "characterCount": 1,
-        "duration": 6,
-        "shotId": "医院大厅开场",
-        "dialogue": "今天想和大家聊一个运动健身里可能遇到的健康隐患。",
+        "duration": 5,
+        "shotId": "健康警示开场",
+        "dialogue": "",
         "emotionPhase": "curiosity"
       },
       "v4Continuity": null,
-      "description": "动态揭示推进：从wide逐步过渡到medium，共2段精细运镜。首段：轨道向左平移90cm，机位高度从180cm匀速降至120cm。设计意图：好奇心情绪需要通过空间信息的逐步揭露来构建，从环境全貌到核心细节的视觉递进，配合稳定的镜头运动形成探索感，让观众产生'接下来会发现什么'的期待",
-      "shotSize": "wide",
+      "description": "悬念蓄势式空间建立：从全景逐步过渡到中景，共2段精细运镜。首段：摄影机从地面30cm高度以15度仰角向场景纵深方向推进240cm，同时向右横移120cm，镜头摇升8度。设计意图：好奇心情绪需要'信息延迟满足'：前2.5秒快速建立空间框架制造悬念，后2.5秒在核心区域放慢停留，让观众主动追问'那里有什么'。首段压缩避免信息过载，尾段延展强",
+      "shotSize": "全景",
       "position": "center",
-      "movement": "轨道向左平移90cm，机位高度从180cm匀速降至120cm",
-      "speed": "30cm/秒",
-      "timeRange": "0-3"
+      "movement": "摄影机从地面30cm高度以15度仰角向场景纵深方向推进240cm，同时向右横移120cm，镜头摇升8度",
+      "speed": "中速（0.8m/s）",
+      "timeRange": "0.0-2.5"
     },
-    "prompt": "16:9宽屏电影级镜头。【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic | 【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film | 【空间】golden hour, clear sky, atmospheric haze, depth layers, foreground to background | 【主体】陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业人像摄影，自然生活化场景 | 【动态】电影级镜头, 医院大厅开场, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression, 轨道向左平移90cm，机位高度从180cm匀速降至120cm | 【风格】color palette: natural earth shadows + daylight highlights + green foliage accents, cinematic atmosphere, 纪录片导演 aesthetic | 【音频】伴随白天环境音, 动作产生自然动作声, 氛围弥漫明亮日常氛围, 声画精准同步，嘴型与发音对齐 | 【质控】blurry, low resolution, pixelated, compression artifacts, cartoon, anime, illustration, 3D render look, CGI appearance, plastic look, distorted perspective, impossible geometry, floating objects, inconsistent scale, flat lighting, overexposed, crushed blacks, double shadows, wrong light direction, distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose, unnatural physics, fake water, static water, cardboard texture, plastic foliage 动态揭示推进：从wide逐步过渡到medium，共2段精细运镜。首段：轨道向左平移90cm，机位高度从180cm匀速降至120cm。设计意图：好奇心情绪需要通过空间信息的逐步揭露来构建，从环境全貌到核心细节的视觉递进，配合稳定的镜头运动形成探索感，让观众产生'接下来会发现什么'的期待 【负面约束】no blurry, no cartoon, no deformed hands, no extra fingers, no watermark, no text 【明亮约束】自然光或柔和室内照明,画面真实干净,禁止暗黑/灰暗。 【角色约束】画面中仅出现陈卓,禁止重复角色 speaking_normal",
+    "prompt": "16:9宽屏电影级镜头。【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic | 【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film | 【空间】golden hour, clear sky, atmospheric haze, depth layers, foreground to background | 【主体】陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业人像摄影，自然生活化场景 | 【动态】电影级镜头, 健康警示开场, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression, 摄影机从地面30cm高度以15度仰角向场景纵深方向推进240cm，同时向右横移120cm，镜头摇升8度 | 【风格】color palette: natural earth shadows + daylight highlights + green foliage accents, cinematic atmosphere, 纪录片导演 aesthetic | 【音频】伴随白天环境音, 动作产生自然动作声, 氛围弥漫明亮日常氛围, 声画精准同步，嘴型与发音对齐 | 【质控】blurry, low resolution, pixelated, compression artifacts, cartoon, anime, illustration, 3D render look, CGI appearance, plastic look, distorted perspective, impossible geometry, floating objects, inconsistent scale, flat lighting, overexposed, crushed blacks, double shadows, wrong light direction, distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose, unnatural physics, fake water, static water, cardboard texture, plastic foliage 悬念蓄势式空间建立：从全景逐步过渡到中景，共2段精细运镜。首段：摄影机从地面30cm高度以15度仰角向场景纵深方向推进240cm，同时向右横移120cm，镜头摇升8度。设计意图：好奇心情绪需要'信息延迟满足'：前2.5秒快速建立空间框架制造悬念，后2.5秒在核心区域放慢停留，让观众主动追问'那里有什么'。首段压缩避免信息过载，尾段延展强 【负面约束】no blurry, no cartoon, no deformed hands, no extra fingers, no watermark, no text 【明亮约束】自然光或柔和室内照明,画面真实干净,禁止暗黑/灰暗。 【角色约束】画面中仅出现陈卓,禁止重复角色 speaking_emphasis",
+    "shotId": "S01",
+    "sceneName": "健康警示开场",
+    "sceneText": "健康警示开场",
     "qualityScore": {
-      "score": 76,
+      "score": 82,
       "grade": "A",
       "passed": true,
       "action": "放行",
       "scores": {
-        "tier1Completeness": 50,
+        "tier1Completeness": 75,
         "visualPurity": 100,
-        "utilization": 118,
+        "utilization": 120,
         "techValidity": 100,
         "emotionConsistency": 70,
         "negativeCompleteness": 0
@@ -118,19 +120,18 @@
       "details": [
         {
           "dimension": "Tier-1完整性",
-          "score": 50,
+          "score": 75,
           "weight": 25,
           "checks": {
             "hasSubject": false,
-            "hasAction": false,
+            "hasAction": true,
             "hasScene": true,
             "hasCamera": true
           },
           "missing": [
-            "主体",
-            "动作"
+            "主体"
           ],
-          "comment": "缺失: 主体, 动作"
+          "comment": "Tier-1完整"
         },
         {
           "dimension": "视觉纯度",
@@ -141,11 +142,11 @@
         },
         {
           "dimension": "字符利用率",
-          "score": 118,
+          "score": 120,
           "weight": 15,
-          "length": 1183,
+          "length": 1204,
           "maxLength": 1500,
-          "utilization": 79,
+          "utilization": 80,
           "comment": "利用率良好"
         },
         {
@@ -177,16 +178,16 @@
         }
       ],
       "duration": 1,
-      "report": "===== Prompt质量门禁报告 =====\n\n总分: 76/100 | 评级: A | 动作: 放行\n\n各维度评分:\n  Tier-1完整性: 50/100 (权重25% → 13分) — 缺失: 主体, 动作\n  视觉纯度: 100/100 (权重20% → 20分) — 视觉纯净\n  字符利用率: 118/100 (权重15% → 18分) — 利用率良好\n  技术规格有效性: 100/100 (权重15% → 15分) — 技术声明有效\n  情绪-表情一致性: 70/100 (权重15% → 11分) — 未定义情绪阶段，默认评分\n  负面约束完整性: 0/100 (权重10% → 0分) — 缺失: no metallic shine, no traditional Chinese symbols, natural eye colors only\n\n综合: ✅ 通过门禁"
+      "report": "===== Prompt质量门禁报告 =====\n\n总分: 82/100 | 评级: A | 动作: 放行\n\n各维度评分:\n  Tier-1完整性: 75/100 (权重25% → 19分) — Tier-1完整\n  视觉纯度: 100/100 (权重20% → 20分) — 视觉纯净\n  字符利用率: 120/100 (权重15% → 18分) — 利用率良好\n  技术规格有效性: 100/100 (权重15% → 15分) — 技术声明有效\n  情绪-表情一致性: 70/100 (权重15% → 11分) — 未定义情绪阶段，默认评分\n  负面约束完整性: 0/100 (权重10% → 0分) — 缺失: no metallic shine, no traditional Chinese symbols, natural eye colors only\n\n综合: ✅ 通过门禁"
     },
     "channelData": {
       "narration": {
-        "text": "今天想和大家聊一个运动健身里可能遇到的健康隐患。",
+        "text": "",
         "ttsReady": true,
-        "duration": 5
+        "duration": 0
       },
       "visual": {
-        "text": "电影级镜头, 医院大厅开场, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression",
+        "text": "电影级镜头, 健康警示开场, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression",
         "hasLipSync": false
       },
       "lipSync": null
@@ -195,58 +196,58 @@
   "mappedShot": {
     "id": "S01",
     "type": "opening",
-    "scene": "医院大厅开场",
+    "scene": "健康警示开场",
     "sceneType": "nature_epic",
     "emotionPhase": "curiosity",
-    "narration": "今天想和大家聊一个运动健身里可能遇到的健康隐患。",
+    "narration": "",
     "action": "",
-    "visualPrompt": "超写实纪录片风格，专业健康科普演播室内，主讲人陈卓身穿整洁便装或白大褂，正面朝向镜头站立或端坐，神态亲和自然，双手适度配合讲解动作。竖屏中近景构图，人物占据画面主体，背景为明亮整洁的医疗咨询室或科普演播空间，墙面可有简约健康宣传元素。柔和自然光从侧前方漫射，面部明暗过渡细腻，肤色真实，镜头稳定，画面色调克制真实，整体呈现专业、亲切、可信的医学科普开场质感。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
+    "visualPrompt": "超写实纪录片风格，明亮的医疗科普演播室内，陈卓身穿整洁休闲正装，站立于画面中央，正对镜头以自然沉稳的神态向观众介绍主题，双手适度配合讲解动作。竖屏中近景构图，背景为简约专业的健康教育场景或医院咨询室环境，书架与医学图表隐约可见。画面采用柔和自然光与专业补光结合，肤色还原真实，景深适中，镜头稳定，整体呈现出权威、亲切且真实可信的医学科普质感。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
     "camera": "",
     "cameraMovement": {
       "timeline": {
-        "strategy": "动态揭示推进",
-        "reasoning": "好奇心情绪需要通过空间信息的逐步揭露来构建，从环境全貌到核心细节的视觉递进，配合稳定的镜头运动形成探索感，让观众产生'接下来会发现什么'的期待",
+        "strategy": "悬念蓄势式空间建立",
+        "reasoning": "好奇心情绪需要'信息延迟满足'：前2.5秒快速建立空间框架制造悬念，后2.5秒在核心区域放慢停留，让观众主动追问'那里有什么'。首段压缩避免信息过载，尾段延展强化凝视张力。",
         "segmentCount": 2,
         "segments": [
           {
             "index": 0,
-            "timeRange": "0-3",
-            "shotSize": "wide",
-            "movement": "轨道向左平移90cm，机位高度从180cm匀速降至120cm",
-            "speed": "30cm/秒",
-            "reason": "宽幅建立空间环境，横向位移配合降镜制造窥探视角，避开extreme_wide限制，用动态wide模拟场景展开感"
+            "timeRange": "0.0-2.5",
+            "shotSize": "全景",
+            "movement": "摄影机从地面30cm高度以15度仰角向场景纵深方向推进240cm，同时向右横移120cm，镜头摇升8度",
+            "speed": "中速（0.8m/s）",
+            "reason": "快速建立空间纵深与垂直层次，低视角制造窥视感，横移规避正面全景的乏味，为后续悬念点预留视觉出口。2.5秒压缩完成框架搭建，避免过早暴露核心。"
           },
           {
             "index": 1,
-            "timeRange": "3-6",
-            "shotSize": "medium",
-            "movement": "向前推轨60cm同时向右摇摄15度",
-            "speed": "20cm/秒",
-            "reason": "中景锁定潜在运动区域（如器械/瑜伽垫），推轨加轻微摇摄形成主动探索姿态，将好奇心引导至具体健身隐患标的物"
+            "timeRange": "2.5-5.0",
+            "shotSize": "中景",
+            "movement": "摄影机在核心区域前60cm处固定机位，镜头以每秒3度速度缓慢左摇15度，同时焦点从前景虚像拉至后景清晰主体，形成3cm焦点位移",
+            "speed": "极慢（静止/微动）",
+            "reason": "好奇心高潮需延长时间：固定机位制造'被阻挡'的凝视张力，微幅摇镜模拟人眼扫视，焦点转移引导观众主动搜寻信息。2.5秒的长停留打破前段动势，形成'逼近—悬停'的节奏反差，收束为未解答的疑问。"
           }
         ],
         "generatedBy": "LLM-v4",
-        "description": "动态揭示推进：从wide逐步过渡到medium，共2段，强调内容驱动的细微推进。",
+        "description": "悬念蓄势式空间建立：从全景逐步过渡到中景，共2段，强调内容驱动的细微推进。",
         "transitionType": "llm_v4",
         "timeline": {
-          "strategy": "动态揭示推进",
-          "reasoning": "好奇心情绪需要通过空间信息的逐步揭露来构建，从环境全貌到核心细节的视觉递进，配合稳定的镜头运动形成探索感，让观众产生'接下来会发现什么'的期待",
+          "strategy": "悬念蓄势式空间建立",
+          "reasoning": "好奇心情绪需要'信息延迟满足'：前2.5秒快速建立空间框架制造悬念，后2.5秒在核心区域放慢停留，让观众主动追问'那里有什么'。首段压缩避免信息过载，尾段延展强化凝视张力。",
           "segments": [
             {
               "index": 0,
-              "timeRange": "0-3",
-              "shotSize": "wide",
-              "movement": "轨道向左平移90cm，机位高度从180cm匀速降至120cm",
-              "speed": "30cm/秒",
-              "reason": "宽幅建立空间环境，横向位移配合降镜制造窥探视角，避开extreme_wide限制，用动态wide模拟场景展开感"
+              "timeRange": "0.0-2.5",
+              "shotSize": "全景",
+              "movement": "摄影机从地面30cm高度以15度仰角向场景纵深方向推进240cm，同时向右横移120cm，镜头摇升8度",
+              "speed": "中速（0.8m/s）",
+              "reason": "快速建立空间纵深与垂直层次，低视角制造窥视感，横移规避正面全景的乏味，为后续悬念点预留视觉出口。2.5秒压缩完成框架搭建，避免过早暴露核心。"
             },
             {
               "index": 1,
-              "timeRange": "3-6",
-              "shotSize": "medium",
-              "movement": "向前推轨60cm同时向右摇摄15度",
-              "speed": "20cm/秒",
-              "reason": "中景锁定潜在运动区域（如器械/瑜伽垫），推轨加轻微摇摄形成主动探索姿态，将好奇心引导至具体健身隐患标的物"
+              "timeRange": "2.5-5.0",
+              "shotSize": "中景",
+              "movement": "摄影机在核心区域前60cm处固定机位，镜头以每秒3度速度缓慢左摇15度，同时焦点从前景虚像拉至后景清晰主体，形成3cm焦点位移",
+              "speed": "极慢（静止/微动）",
+              "reason": "好奇心高潮需延长时间：固定机位制造'被阻挡'的凝视张力，微幅摇镜模拟人眼扫视，焦点转移引导观众主动搜寻信息。2.5秒的长停留打破前段动势，形成'逼近—悬停'的节奏反差，收束为未解答的疑问。"
             }
           ]
         }
@@ -271,18 +272,18 @@
         },
         "movementStyle": "reveal",
         "characterCount": 1,
-        "duration": 6,
-        "shotId": "医院大厅开场",
-        "dialogue": "今天想和大家聊一个运动健身里可能遇到的健康隐患。",
+        "duration": 5,
+        "shotId": "健康警示开场",
+        "dialogue": "",
         "emotionPhase": "curiosity"
       },
       "v4Continuity": null,
-      "description": "动态揭示推进：从wide逐步过渡到medium，共2段精细运镜。首段：轨道向左平移90cm，机位高度从180cm匀速降至120cm。设计意图：好奇心情绪需要通过空间信息的逐步揭露来构建，从环境全貌到核心细节的视觉递进，配合稳定的镜头运动形成探索感，让观众产生'接下来会发现什么'的期待",
-      "shotSize": "wide",
+      "description": "悬念蓄势式空间建立：从全景逐步过渡到中景，共2段精细运镜。首段：摄影机从地面30cm高度以15度仰角向场景纵深方向推进240cm，同时向右横移120cm，镜头摇升8度。设计意图：好奇心情绪需要'信息延迟满足'：前2.5秒快速建立空间框架制造悬念，后2.5秒在核心区域放慢停留，让观众主动追问'那里有什么'。首段压缩避免信息过载，尾段延展强",
+      "shotSize": "全景",
       "position": "center",
-      "movement": "轨道向左平移90cm，机位高度从180cm匀速降至120cm",
-      "speed": "30cm/秒",
-      "timeRange": "0-3"
+      "movement": "摄影机从地面30cm高度以15度仰角向场景纵深方向推进240cm，同时向右横移120cm，镜头摇升8度",
+      "speed": "中速（0.8m/s）",
+      "timeRange": "0.0-2.5"
     },
     "lighting": null,
     "audio": "",
@@ -291,7 +292,7 @@
     "characters": [
       "chen-zhuo"
     ],
-    "duration": 6,
+    "duration": 5,
     "beastId": "",
     "beastName": "",
     "tension": 0,
@@ -304,32 +305,33 @@
     "protagonistName": "主角",
     "beastId": "",
     "beastName": "",
-    "habitat": "医院大厅开场",
+    "habitat": "健康警示开场",
     "episodeTheme": "",
     "sceneType": "nature_epic"
   },
   "schemaCheck": {
     "valid": true,
     "issues": [],
-    "warnings": []
+    "warnings": [
+      "shot.narration 与 shot.action 都为空"
+    ]
   },
   "subsystemFields": {
     "CHARACTER": "chen-zhuo",
-    "SCENE": "医院大厅开场",
+    "SCENE": "健康警示开场",
     "MOOD": "establishing",
     "RENDER": "电影级、超写实、细节丰富",
-    "DIALOGUE": "今天想和大家聊一个运动健身里可能遇到的健康隐患。",
-    "CAMERA": "（一镜到底！），镜头时间轴：0-2s: static (宁静) → 2-4s: push_in (聚焦) → 4-6s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
+    "CAMERA": "（一镜到底！），镜头时间轴：0-3s: 缓慢establish，远景→中景，氛围铺垫 → 3-5s: 微微定格，眼神/表情接触，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
     "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K",
     "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow",
     "meta": {
       "source": "camera-movement-system-v3",
       "raw": {
-        "scene": "医院大厅开场",
+        "scene": "健康警示开场",
         "emotionPhase": "curiosity",
-        "duration": 6,
+        "duration": 5,
         "baseMovement": {
-          "scene": "医院大厅开场",
+          "scene": "健康警示开场",
           "physicsDriver": "generic",
           "primaryMovement": "smooth_track",
           "speed": "smooth",
@@ -342,59 +344,21 @@
           "lightSync": false,
           "bioPulseSync": false,
           "gravityFactor": 1,
-          "intraShotCombo": {
-            "name": "开场建立",
-            "segments": [
-              {
-                "camera": "static",
-                "duration": 2,
-                "lighting": "LIT-N02",
-                "emotion": "宁静"
-              },
-              {
-                "camera": "push_in",
-                "duration": 3,
-                "lighting": "LIT-D03",
-                "emotion": "聚焦"
-              },
-              {
-                "camera": "orbit_right",
-                "duration": 2,
-                "lighting": "LIT-D08",
-                "emotion": "升华"
-              }
-            ],
-            "description": "固定建立 → 推近聚焦 → 环绕升华"
-          },
-          "hasMultiSegment": true,
-          "segmentCount": 3,
-          "comboDescription": "【运镜组合】开场建立：0-2秒：static → 2-4秒：push_in → 4-6秒：orbit_right",
           "timeline": [
             {
-              "range": "0-2s",
-              "action": "static (宁静)",
-              "movement": "static",
-              "lighting": "晨光侧射"
+              "range": "0-3s",
+              "action": "缓慢establish，远景→中景，氛围铺垫"
             },
             {
-              "range": "2-4s",
-              "action": "push_in (聚焦)",
-              "movement": "push_in",
-              "lighting": "自然光"
-            },
-            {
-              "range": "4-6s",
-              "action": "orbit_right (升华)",
-              "movement": "orbit_right",
-              "lighting": "自然光"
+              "range": "3-5s",
+              "action": "微微定格，眼神/表情接触"
             }
           ],
-          "timelineSource": "intra-shot-combo",
-          "description": "（一镜到底！），镜头时间轴：0-2s: static (宁静) → 2-4s: push_in (聚焦) → 4-6s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic"
+          "description": "（一镜到底！），镜头时间轴：0-3s: 缓慢establish，远景→中景，氛围铺垫 → 3-5s: 微微定格，眼神/表情接触，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic"
         },
-        "description": "（一镜到底！），镜头时间轴：0-2s: static (宁静) → 2-4s: push_in (聚焦) → 4-6s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic",
+        "description": "（一镜到底！），镜头时间轴：0-3s: 缓慢establish，远景→中景，氛围铺垫 → 3-5s: 微微定格，眼神/表情接触，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic",
         "intraShotTimeline": {
-          "totalDuration": 6,
+          "totalDuration": 5,
           "segmentCount": 4,
           "transitionName": "渐进式揭示",
           "transitionDesc": "从远景逐步推到特写，建立环境→发现主体→情感亲密",
@@ -406,7 +370,7 @@
             {
               "index": 0,
               "timeRange": "早期",
-              "duration": 1.2000000000000002,
+              "duration": 1,
               "shotSize": "extreme_wide",
               "shotSizeDesc": "极端远景（环境全貌）",
               "movement": "orbit_360",
@@ -425,7 +389,7 @@
             {
               "index": 1,
               "timeRange": "中期",
-              "duration": 1.7999999999999998,
+              "duration": 1.5,
               "shotSize": "wide",
               "shotSizeDesc": "远景（环境+主体）",
               "movement": "push_in",
@@ -444,7 +408,7 @@
             {
               "index": 2,
               "timeRange": "后期",
-              "duration": 1.7999999999999998,
+              "duration": 1.5,
               "shotSize": "medium",
               "shotSizeDesc": "中景（半身/双人）",
               "movement": "push_in",
@@ -463,7 +427,7 @@
             {
               "index": 3,
               "timeRange": "尾声",
-              "duration": 1.2000000000000002,
+              "duration": 1,
               "shotSize": "close_up",
               "shotSizeDesc": "特写（面部/细节）",
               "movement": "hold",
@@ -482,7 +446,7 @@
           ],
           "summary": "【镜头时间轴 - 渐进式揭示】\n策略：从远景逐步推到特写，建立环境→发现主体→情感亲密\n灯光：晨曦渐亮 - 从黑暗中逐渐亮起，模拟日出效果\n速度：慢快慢 - 开始缓慢，中间加速，最后减速\n\n早期｜极端远景（环境全貌）｜缓慢｜orbit_360｜灯光：仅轮廓可见\n  → 转场：平滑渐变\n中期｜远景（环境+主体）｜很快｜push_in｜灯光：侧光渐强\n  → 转场：硬切\n后期｜中景（半身/双人）｜极限速度｜push_in｜灯光：主体清晰\n  → 转场：移焦过渡\n尾声｜特写（面部/细节）｜快速｜hold｜灯光：全面照亮\n"
         },
-        "intraShotPrompt": "【运镜时间轴 - 一镜到底多段式】\n本镜头共4段，总时长6秒。\n景别切换策略：渐进式揭示（从远景逐步推到特写，建立环境→发现主体→情感亲密）\n灯光变化：晨曦渐亮（从黑暗中逐渐亮起，模拟日出效果）\n速度曲线：慢快慢（开始缓慢，中间加速，最后减速）\n\n早期：\n  景别：极端远景（环境全貌）\n  运镜：orbit_360\n  速度：缓慢（强度0.3）\n  灯光：仅轮廓可见，色温2000K，强度0.1\n  → 转场：平滑渐变（0.5-1秒平滑过渡）\n\n中期：\n  景别：远景（环境+主体）\n  运镜：push_in\n  速度：很快（强度0.8）\n  灯光：侧光渐强，色温2800K，强度0.3\n  → 转场：硬切（瞬间切换，无过渡）\n\n后期：\n  景别：中景（半身/双人）\n  运镜：push_in\n  速度：极限速度（强度1）\n  灯光：主体清晰，色温4500K，强度0.6\n  → 转场：移焦过渡（焦点从前景移到后景（或反之）实现切换）\n\n尾声：\n  景别：特写（面部/细节）\n  运镜：hold\n  速度：快速（强度0.6）\n  灯光：全面照亮，色温5600K，强度1\n\n",
+        "intraShotPrompt": "【运镜时间轴 - 一镜到底多段式】\n本镜头共4段，总时长5秒。\n景别切换策略：渐进式揭示（从远景逐步推到特写，建立环境→发现主体→情感亲密）\n灯光变化：晨曦渐亮（从黑暗中逐渐亮起，模拟日出效果）\n速度曲线：慢快慢（开始缓慢，中间加速，最后减速）\n\n早期：\n  景别：极端远景（环境全貌）\n  运镜：orbit_360\n  速度：缓慢（强度0.3）\n  灯光：仅轮廓可见，色温2000K，强度0.1\n  → 转场：平滑渐变（0.5-1秒平滑过渡）\n\n中期：\n  景别：远景（环境+主体）\n  运镜：push_in\n  速度：很快（强度0.8）\n  灯光：侧光渐强，色温2800K，强度0.3\n  → 转场：硬切（瞬间切换，无过渡）\n\n后期：\n  景别：中景（半身/双人）\n  运镜：push_in\n  速度：极限速度（强度1）\n  灯光：主体清晰，色温4500K，强度0.6\n  → 转场：移焦过渡（焦点从前景移到后景（或反之）实现切换）\n\n尾声：\n  景别：特写（面部/细节）\n  运镜：hold\n  速度：快速（强度0.6）\n  灯光：全面照亮，色温5600K，强度1\n\n",
         "camera": "extreme_wide orbit_360, 50mm lens, normal speed",
         "lighting": "low_back key 2000K, 仅轮廓可见",
         "config": {
@@ -492,7 +456,7 @@
         }
       }
     },
-    "AUDIO": "【环境音效】风穿过物体声、风声",
+    "AUDIO": "【环境音效】风声、风穿过物体声",
     "_meta": {
       "activatedSubsystems": [
         "CameraMovementSystemV3Bridge",
@@ -506,21 +470,20 @@
   "llmFields": {},
   "mergedFields": {
     "CHARACTER": "chen-zhuo",
-    "SCENE": "医院大厅开场",
+    "SCENE": "健康警示开场",
     "MOOD": "establishing",
     "RENDER": "电影级、超写实、细节丰富",
-    "DIALOGUE": "今天想和大家聊一个运动健身里可能遇到的健康隐患。",
-    "CAMERA": "（一镜到底！），镜头时间轴：0-2s: static (宁静) → 2-4s: push_in (聚焦) → 4-6s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
+    "CAMERA": "（一镜到底！），镜头时间轴：0-3s: 缓慢establish，远景→中景，氛围铺垫 → 3-5s: 微微定格，眼神/表情接触，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
     "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K",
     "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow",
     "meta": {
       "source": "camera-movement-system-v3",
       "raw": {
-        "scene": "医院大厅开场",
+        "scene": "健康警示开场",
         "emotionPhase": "curiosity",
-        "duration": 6,
+        "duration": 5,
         "baseMovement": {
-          "scene": "医院大厅开场",
+          "scene": "健康警示开场",
           "physicsDriver": "generic",
           "primaryMovement": "smooth_track",
           "speed": "smooth",
@@ -533,59 +496,21 @@
           "lightSync": false,
           "bioPulseSync": false,
           "gravityFactor": 1,
-          "intraShotCombo": {
-            "name": "开场建立",
-            "segments": [
-              {
-                "camera": "static",
-                "duration": 2,
-                "lighting": "LIT-N02",
-                "emotion": "宁静"
-              },
-              {
-                "camera": "push_in",
-                "duration": 3,
-                "lighting": "LIT-D03",
-                "emotion": "聚焦"
-              },
-              {
-                "camera": "orbit_right",
-                "duration": 2,
-                "lighting": "LIT-D08",
-                "emotion": "升华"
-              }
-            ],
-            "description": "固定建立 → 推近聚焦 → 环绕升华"
-          },
-          "hasMultiSegment": true,
-          "segmentCount": 3,
-          "comboDescription": "【运镜组合】开场建立：0-2秒：static → 2-4秒：push_in → 4-6秒：orbit_right",
           "timeline": [
             {
-              "range": "0-2s",
-              "action": "static (宁静)",
-              "movement": "static",
-              "lighting": "晨光侧射"
+              "range": "0-3s",
+              "action": "缓慢establish，远景→中景，氛围铺垫"
             },
             {
-              "range": "2-4s",
-              "action": "push_in (聚焦)",
-              "movement": "push_in",
-              "lighting": "自然光"
-            },
-            {
-              "range": "4-6s",
-              "action": "orbit_right (升华)",
-              "movement": "orbit_right",
-              "lighting": "自然光"
+              "range": "3-5s",
+              "action": "微微定格，眼神/表情接触"
             }
           ],
-          "timelineSource": "intra-shot-combo",
-          "description": "（一镜到底！），镜头时间轴：0-2s: static (宁静) → 2-4s: push_in (聚焦) → 4-6s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic"
+          "description": "（一镜到底！），镜头时间轴：0-3s: 缓慢establish，远景→中景，氛围铺垫 → 3-5s: 微微定格，眼神/表情接触，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic"
         },
-        "description": "（一镜到底！），镜头时间轴：0-2s: static (宁静) → 2-4s: push_in (聚焦) → 4-6s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic",
+        "description": "（一镜到底！），镜头时间轴：0-3s: 缓慢establish，远景→中景，氛围铺垫 → 3-5s: 微微定格，眼神/表情接触，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic",
         "intraShotTimeline": {
-          "totalDuration": 6,
+          "totalDuration": 5,
           "segmentCount": 4,
           "transitionName": "渐进式揭示",
           "transitionDesc": "从远景逐步推到特写，建立环境→发现主体→情感亲密",
@@ -597,7 +522,7 @@
             {
               "index": 0,
               "timeRange": "早期",
-              "duration": 1.2000000000000002,
+              "duration": 1,
               "shotSize": "extreme_wide",
               "shotSizeDesc": "极端远景（环境全貌）",
               "movement": "orbit_360",
@@ -616,7 +541,7 @@
             {
               "index": 1,
               "timeRange": "中期",
-              "duration": 1.7999999999999998,
+              "duration": 1.5,
               "shotSize": "wide",
               "shotSizeDesc": "远景（环境+主体）",
               "movement": "push_in",
@@ -635,7 +560,7 @@
             {
               "index": 2,
               "timeRange": "后期",
-              "duration": 1.7999999999999998,
+              "duration": 1.5,
               "shotSize": "medium",
               "shotSizeDesc": "中景（半身/双人）",
               "movement": "push_in",
@@ -654,7 +579,7 @@
             {
               "index": 3,
               "timeRange": "尾声",
-              "duration": 1.2000000000000002,
+              "duration": 1,
               "shotSize": "close_up",
               "shotSizeDesc": "特写（面部/细节）",
               "movement": "hold",
@@ -673,7 +598,7 @@
           ],
           "summary": "【镜头时间轴 - 渐进式揭示】\n策略：从远景逐步推到特写，建立环境→发现主体→情感亲密\n灯光：晨曦渐亮 - 从黑暗中逐渐亮起，模拟日出效果\n速度：慢快慢 - 开始缓慢，中间加速，最后减速\n\n早期｜极端远景（环境全貌）｜缓慢｜orbit_360｜灯光：仅轮廓可见\n  → 转场：平滑渐变\n中期｜远景（环境+主体）｜很快｜push_in｜灯光：侧光渐强\n  → 转场：硬切\n后期｜中景（半身/双人）｜极限速度｜push_in｜灯光：主体清晰\n  → 转场：移焦过渡\n尾声｜特写（面部/细节）｜快速｜hold｜灯光：全面照亮\n"
         },
-        "intraShotPrompt": "【运镜时间轴 - 一镜到底多段式】\n本镜头共4段，总时长6秒。\n景别切换策略：渐进式揭示（从远景逐步推到特写，建立环境→发现主体→情感亲密）\n灯光变化：晨曦渐亮（从黑暗中逐渐亮起，模拟日出效果）\n速度曲线：慢快慢（开始缓慢，中间加速，最后减速）\n\n早期：\n  景别：极端远景（环境全貌）\n  运镜：orbit_360\n  速度：缓慢（强度0.3）\n  灯光：仅轮廓可见，色温2000K，强度0.1\n  → 转场：平滑渐变（0.5-1秒平滑过渡）\n\n中期：\n  景别：远景（环境+主体）\n  运镜：push_in\n  速度：很快（强度0.8）\n  灯光：侧光渐强，色温2800K，强度0.3\n  → 转场：硬切（瞬间切换，无过渡）\n\n后期：\n  景别：中景（半身/双人）\n  运镜：push_in\n  速度：极限速度（强度1）\n  灯光：主体清晰，色温4500K，强度0.6\n  → 转场：移焦过渡（焦点从前景移到后景（或反之）实现切换）\n\n尾声：\n  景别：特写（面部/细节）\n  运镜：hold\n  速度：快速（强度0.6）\n  灯光：全面照亮，色温5600K，强度1\n\n",
+        "intraShotPrompt": "【运镜时间轴 - 一镜到底多段式】\n本镜头共4段，总时长5秒。\n景别切换策略：渐进式揭示（从远景逐步推到特写，建立环境→发现主体→情感亲密）\n灯光变化：晨曦渐亮（从黑暗中逐渐亮起，模拟日出效果）\n速度曲线：慢快慢（开始缓慢，中间加速，最后减速）\n\n早期：\n  景别：极端远景（环境全貌）\n  运镜：orbit_360\n  速度：缓慢（强度0.3）\n  灯光：仅轮廓可见，色温2000K，强度0.1\n  → 转场：平滑渐变（0.5-1秒平滑过渡）\n\n中期：\n  景别：远景（环境+主体）\n  运镜：push_in\n  速度：很快（强度0.8）\n  灯光：侧光渐强，色温2800K，强度0.3\n  → 转场：硬切（瞬间切换，无过渡）\n\n后期：\n  景别：中景（半身/双人）\n  运镜：push_in\n  速度：极限速度（强度1）\n  灯光：主体清晰，色温4500K，强度0.6\n  → 转场：移焦过渡（焦点从前景移到后景（或反之）实现切换）\n\n尾声：\n  景别：特写（面部/细节）\n  运镜：hold\n  速度：快速（强度0.6）\n  灯光：全面照亮，色温5600K，强度1\n\n",
         "camera": "extreme_wide orbit_360, 50mm lens, normal speed",
         "lighting": "low_back key 2000K, 仅轮廓可见",
         "config": {
@@ -683,7 +608,7 @@
         }
       }
     },
-    "AUDIO": "【环境音效】风穿过物体声、风声",
+    "AUDIO": "【环境音效】风声、风穿过物体声",
     "_meta": {
       "activatedSubsystems": [
         "CameraMovementSystemV3Bridge",
@@ -697,30 +622,32 @@
   },
   "normalizedFields": {
     "CHARACTER": "chen-zhuo",
-    "DIALOGUE": "今天想和大家聊一个运动健身里可能遇到的健康隐患。",
+    "DIALOGUE": "",
     "ACTION": "",
-    "SCENE": "医院大厅开场",
+    "SCENE": "健康警示开场",
     "MOOD": "establishing",
-    "CAMERA": "（一镜到底！），镜头时间轴：0-2s: static (宁静) → 2-4s: push_in (聚焦) → 4-6s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
+    "CAMERA": "（一镜到底！），镜头时间轴：0-3s: 缓慢establish，远景→中景，氛围铺垫 → 3-5s: 微微定格，眼神/表情接触，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
     "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K",
     "NEGATIVE": "no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers",
-    "AUDIO": "【环境音效】风穿过物体声、风声",
+    "AUDIO": "【环境音效】风声、风穿过物体声",
     "RENDER": "电影级、超写实、细节丰富",
     "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow"
   },
-  "finalPrompt": "{CHARACTER: chen-zhuo | DIALOGUE: 今天想和大家聊一个运动健身里可能遇到的健康隐患。 | SCENE: 医院大厅开场 | MOOD: establishing | CAMERA: （一镜到底！），镜头时间轴：0-2s: static (宁静) → 2-4s: push_in (聚焦) → 4-6s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人） | LIGHTING: 仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K | NEGATIVE: no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers | AUDIO: 【环境音效】风穿过物体声、风声 | RENDER: 电影级、超写实、细节丰富 | DIRECTOR: 景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow}",
+  "finalPrompt": "{CHARACTER: chen-zhuo | SCENE: 健康警示开场 | MOOD: establishing | CAMERA: （一镜到底！），镜头时间轴：0-3s: 缓慢establish，远景→中景，氛围铺垫 → 3-5s: 微微定格，眼神/表情接触，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人） | LIGHTING: 仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K | NEGATIVE: no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers | AUDIO: 【环境音效】风声、风穿过物体声 | RENDER: 电影级、超写实、细节丰富 | DIRECTOR: 景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow}",
   "validation": {
-    "valid": true,
-    "issues": [],
+    "valid": false,
+    "issues": [
+      "缺少必填字段: DIALOGUE"
+    ],
     "warnings": [],
     "stats": {
-      "length": 734,
+      "length": 683,
       "emptyFields": [
+        "DIALOGUE",
         "ACTION"
       ],
       "filledFields": [
         "CHARACTER",
-        "DIALOGUE",
         "SCENE",
         "MOOD",
         "CAMERA",
@@ -734,6 +661,6 @@
   },
   "meta": {
     "builderVersion": "v3",
-    "timestamp": "2026-06-17T04:52:33.100Z"
+    "timestamp": "2026-06-18T02:02:22.412Z"
   }
 }

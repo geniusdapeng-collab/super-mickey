@@ -1,86 +1,84 @@
 {
   "shotId": "S02",
-  "recordedAt": "2026-06-17T04:52:33.104Z",
+  "recordedAt": "2026-06-18T02:02:22.420Z",
   "rawShot": {
     "id": "S02",
-    "scene": "症状警示",
-    "dialogue": "很多人觉得肌肉酸痛就是练到位了，但如果尿色变深、全身无力，这可能是横纹肌溶解的信号，必须立刻就医。",
-    "narration": "很多人觉得肌肉酸痛就是练到位了，但如果尿色变深、全身无力，这可能是横纹肌溶解的信号，必须立刻就医。",
-    "duration": 10,
+    "scene": "常见诱因解析",
+    "dialogue": "横纹肌溶解不会无缘无故发生，剧烈运动、肌肉挤压伤，还有部分药物，都是临床上最常见的诱因。",
+    "duration": 15,
     "type": "content",
     "characters": [
-      "chen-zhuo",
-      "presenter"
+      "chen-zhuo"
     ],
-    "mouthAction": "speaking_emphasis",
+    "mouthAction": "speaking_normal",
     "importance": 5,
     "visualComplexity": 5,
-    "emotionPhase": "tension",
-    "visualPrompt": "超写实纪录片风格，真实医疗科普演播室内，陈卓身着专业正装立于简洁医学背景前，面向镜头进行清晰讲解，左手自然垂放，右手辅以适度手势强调重点，神情专注而平和。竖屏中近景构图，人物占据画面主体，背景可见真实的人体模型或医学挂图与整洁的白色墙面。画面采用柔和均匀的自然光与室内照明混合，肤色真实细腻，无明显滤镜，镜头稳定，整体呈现权威、可信且贴近现实的医疗教育质感。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
+    "emotionPhase": "curiosity",
+    "visualPrompt": "超写实纪录片风格，医院示教室或医学科普演播空间，主持人陈卓身穿白大褂或得体正装，正面朝向镜头站立，双手自然交叠于身前或辅以克制手势，表情专业平和，中近景竖屏构图，人物占据画面中心偏上位置，背景可见简洁医学图表或医院走廊虚化景深，柔和自然光从侧前方照入，面部明暗过渡细腻，肤色真实，画面质感干净通透，镜头稳定无晃动，整体呈现权威可信的医学科普氛围。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
     "fpvRecommended": false,
-    "fpvScore": 58,
+    "fpvScore": 38,
     "fpvReason": "建议传统运镜：情绪/视觉不适合FPV",
     "cameraMovement": {
       "timeline": {
-        "strategy": "张力递进式推切镜",
-        "reasoning": "针对医疗警示台词，前半段用缓慢推近制造潜伏危机，中段用急速推切特写放大生理恐惧，末段用微震颤强化病理严重性与紧迫感。全程在无人物空镜中通过景别紧缩和速度变化传递情绪转折。",
+        "strategy": "悬念堆叠式医学揭秘",
+        "reasoning": "curiosity情绪需要通过信息递进建立。首段快速建立权威空间感，中段用最长时长在核心诱因处制造认知停顿与悬念张力，尾段加速收束并抛出'部分药物'这一开放性钩子，让观众主动追问。时间分配呈橄榄型：2.5秒铺垫，9.5秒核心展开，3秒余韵收束。",
         "segmentCount": 3,
         "segments": [
           {
             "index": 0,
-            "timeRange": "0-3.3",
-            "shotSize": "medium",
-            "movement": "摄影机以每秒0.4厘米的速度轻微前推2厘米，同时从低于视线3°抬升至平视，建立稳定进入感。",
-            "speed": "slow",
-            "reason": "台词前半段为日常误区叙述，中景缓慢推近建立表面平静下暗藏隐患的视觉基调。"
+            "timeRange": "0.0-2.5",
+            "shotSize": "全景",
+            "movement": "摄影机从机位高度90cm缓慢升至120cm，同时向前推进40cm，2.5秒完成",
+            "speed": "慢",
+            "reason": "快速建立诊室/实验室的专业空间权威感，低起点高度暗示即将从基础层面展开，2.5秒压缩铺垫不消耗观众耐心"
           },
           {
             "index": 1,
-            "timeRange": "3.3-6.7",
-            "shotSize": "close_up",
-            "movement": "镜头保持人物主体在画面中心偏左5%，以每秒0.6厘米的速度向前推进3厘米，并微量右移4厘米，强化讲解重点。",
-            "speed": "fast",
-            "reason": "转折词触发节奏突变，快速切入特写对准病理对象，制造信息冲击与生理不安。"
+            "timeRange": "2.5-12.0",
+            "shotSize": "特写",
+            "movement": "摄影机从主讲人面部30cm处，在'剧烈运动'时横移8cm至左侧，'肌肉挤压伤'时回移12cm至右侧，'部分药物'时再次左移6cm，总位移三次累计26cm，9.5秒内完成，每次移动伴随0.8秒停顿",
+            "speed": "中-慢-中",
+            "reason": "最长时段分配核心信息区，面部特写制造压迫式专注。三次横移配合三个诱因的列举，每个词组后0.8秒停顿形成认知节拍，让医学术语在观众脑中逐层沉淀，curiosity在'还有'的转折处被推向高点"
           },
           {
             "index": 2,
-            "timeRange": "6.7-10",
-            "shotSize": "close_up",
-            "movement": "微震2cm/s叠加横摇4度/秒",
-            "speed": "medium",
-            "reason": "揭示重症病名，手持微震模拟身体失控感，强化必须立刻就医的紧迫命令。"
+            "timeRange": "12.0-15.0",
+            "shotSize": "极特写",
+            "movement": "摄影机从主讲人瞳孔反射处急速后拉15cm至整只眼睛，同时焦点从角膜表面转移至虹膜纹理，1.2秒完成移动，剩余1.8秒保持静止",
+            "speed": "快-静止",
+            "reason": "尾段加速制造信息收束的'咔哒'感，瞳孔反射到眼睛的急速后拉模拟从微观病理抽离到宏观审视的顿悟瞬间。最后1.8秒静止在眼睛上，让'部分药物'的开放性悬念悬停，curiosity转化为持续追问"
           }
         ],
         "generatedBy": "LLM-v4",
-        "description": "张力递进式推切镜：从medium逐步过渡到close_up，共3段，强调内容驱动的细微推进。",
+        "description": "悬念堆叠式医学揭秘：从全景逐步过渡到极特写，共3段，强调内容驱动的细微推进。",
         "transitionType": "llm_v4",
         "timeline": {
-          "strategy": "张力递进式推切镜",
-          "reasoning": "针对医疗警示台词，前半段用缓慢推近制造潜伏危机，中段用急速推切特写放大生理恐惧，末段用微震颤强化病理严重性与紧迫感。全程在无人物空镜中通过景别紧缩和速度变化传递情绪转折。",
+          "strategy": "悬念堆叠式医学揭秘",
+          "reasoning": "curiosity情绪需要通过信息递进建立。首段快速建立权威空间感，中段用最长时长在核心诱因处制造认知停顿与悬念张力，尾段加速收束并抛出'部分药物'这一开放性钩子，让观众主动追问。时间分配呈橄榄型：2.5秒铺垫，9.5秒核心展开，3秒余韵收束。",
           "segments": [
             {
               "index": 0,
-              "timeRange": "0-3.3",
-              "shotSize": "medium",
-              "movement": "摄影机以每秒0.4厘米的速度轻微前推2厘米，同时从低于视线3°抬升至平视，建立稳定进入感。",
-              "speed": "slow",
-              "reason": "台词前半段为日常误区叙述，中景缓慢推近建立表面平静下暗藏隐患的视觉基调。"
+              "timeRange": "0.0-2.5",
+              "shotSize": "全景",
+              "movement": "摄影机从机位高度90cm缓慢升至120cm，同时向前推进40cm，2.5秒完成",
+              "speed": "慢",
+              "reason": "快速建立诊室/实验室的专业空间权威感，低起点高度暗示即将从基础层面展开，2.5秒压缩铺垫不消耗观众耐心"
             },
             {
               "index": 1,
-              "timeRange": "3.3-6.7",
-              "shotSize": "close_up",
-              "movement": "镜头保持人物主体在画面中心偏左5%，以每秒0.6厘米的速度向前推进3厘米，并微量右移4厘米，强化讲解重点。",
-              "speed": "fast",
-              "reason": "转折词触发节奏突变，快速切入特写对准病理对象，制造信息冲击与生理不安。"
+              "timeRange": "2.5-12.0",
+              "shotSize": "特写",
+              "movement": "摄影机从主讲人面部30cm处，在'剧烈运动'时横移8cm至左侧，'肌肉挤压伤'时回移12cm至右侧，'部分药物'时再次左移6cm，总位移三次累计26cm，9.5秒内完成，每次移动伴随0.8秒停顿",
+              "speed": "中-慢-中",
+              "reason": "最长时段分配核心信息区，面部特写制造压迫式专注。三次横移配合三个诱因的列举，每个词组后0.8秒停顿形成认知节拍，让医学术语在观众脑中逐层沉淀，curiosity在'还有'的转折处被推向高点"
             },
             {
               "index": 2,
-              "timeRange": "6.7-10",
-              "shotSize": "close_up",
-              "movement": "微震2cm/s叠加横摇4度/秒",
-              "speed": "medium",
-              "reason": "揭示重症病名，手持微震模拟身体失控感，强化必须立刻就医的紧迫命令。"
+              "timeRange": "12.0-15.0",
+              "shotSize": "极特写",
+              "movement": "摄影机从主讲人瞳孔反射处急速后拉15cm至整只眼睛，同时焦点从角膜表面转移至虹膜纹理，1.2秒完成移动，剩余1.8秒保持静止",
+              "speed": "快-静止",
+              "reason": "尾段加速制造信息收束的'咔哒'感，瞳孔反射到眼睛的急速后拉模拟从微观病理抽离到宏观审视的顿悟瞬间。最后1.8秒静止在眼睛上，让'部分药物'的开放性悬念悬停，curiosity转化为持续追问"
             }
           ]
         }
@@ -104,34 +102,37 @@
           "defaultSize": "medium"
         },
         "movementStyle": "stable",
-        "characterCount": 2,
-        "duration": 10,
-        "shotId": "症状警示",
-        "dialogue": "很多人觉得肌肉酸痛就是练到位了，但如果尿色变深、全身无力，这可能是横纹肌溶解的信号，必须立刻就医。",
-        "emotionPhase": "tension"
+        "characterCount": 1,
+        "duration": 15,
+        "shotId": "常见诱因解析",
+        "dialogue": "横纹肌溶解不会无缘无故发生，剧烈运动、肌肉挤压伤，还有部分药物，都是临床上最常见的诱因。",
+        "emotionPhase": "curiosity"
       },
       "v4Continuity": {
         "valid": true,
         "warnings": [],
         "fixes": []
       },
-      "description": "张力递进式推切镜：从medium逐步过渡到close_up，共3段精细运镜。首段：摄影机以每秒0.4厘米的速度轻微前推2厘米，同时从低于视线3°抬升至平视，建立稳定进入感。。设计意图：针对医疗警示台词，前半段用缓慢推近制造潜伏危机，中段用急速推切特写放大生理恐惧，末段用微震颤强化病理严重性与紧迫感。全程在无人物空镜中通过景别紧缩和速度变化传递",
-      "shotSize": "medium",
+      "description": "悬念堆叠式医学揭秘：从全景逐步过渡到极特写，共3段精细运镜。首段：摄影机从机位高度90cm缓慢升至120cm，同时向前推进40cm，2.5秒完成。设计意图：curiosity情绪需要通过信息递进建立。首段快速建立权威空间感，中段用最长时长在核心诱因处制造认知停顿与悬念张力，尾段加速收束并抛出'部分药物'这一开放性钩",
+      "shotSize": "全景",
       "position": "center",
-      "movement": "摄影机以每秒0.4厘米的速度轻微前推2厘米，同时从低于视线3°抬升至平视，建立稳定进入感。",
-      "speed": "slow",
-      "timeRange": "0-3.3"
+      "movement": "摄影机从机位高度90cm缓慢升至120cm，同时向前推进40cm，2.5秒完成",
+      "speed": "慢",
+      "timeRange": "0.0-2.5"
     },
-    "prompt": "16:9宽屏电影级镜头。【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic | 【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film | 【空间】golden hour, clear sky, atmospheric haze, depth layers, foreground to background | 【主体】陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业人像摄影，自然生活化场景, presenter | 【动态】电影级镜头, 症状警示, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression and presenter, natural expression, 摄影机以每秒0.4厘米的速度轻微前推2厘米，同时从低于视线3°抬升至平视，建立稳定进入感。 | 【风格】color palette: natural earth shadows + daylight highlights + green foliage accents, cinematic atmosphere, 通用导演 aesthetic | 【音频】伴随白天环境音, 动作产生自然动作声, 氛围弥漫明亮日常氛围, 声画精准同步，嘴型与发音对齐 | 【质控】blurry, low resolution, pixelated, compression artifacts, cartoon, anime, illustration, 3D render look, CGI appearance, plastic look, distorted perspective, impossible geometry, floating objects, inconsistent scale, flat lighting, overexposed, crushed blacks, double shadows, wrong light direction, distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose, unnatural physics, fake water, static water, cardboard texture, plastic foliage 张力递进式推切镜：从medium逐步过渡到close_up，共3段精细运镜。首段：摄影机以每秒0.4厘米的速度轻微前推2厘米，同时从低于视线3°抬升至平视，建立稳定进入感。。设计意图：针对医疗警示台词，前半段用缓慢推近制造潜伏危机，中段用急速推切特写放大生理恐惧，末段用微震颤强化病理严重性与紧迫感。全程在无人物空镜中通过景别紧缩和速度变化传递 【负面约束】no blurry, no cartoon, no deformed hands, no extra fingers, no watermark, no text 【明亮约束】自然光或柔和室内照明,画面真实干净,禁止暗黑/灰暗。 【角色约束】画面中仅出现陈卓、presenter,禁止重复角色;2人位置分布自然,避免重叠 speaking_emphasis",
+    "prompt": "16:9宽屏电影级镜头。【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic | 【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film | 【空间】golden hour, clear sky, atmospheric haze, depth layers, foreground to background | 【主体】陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业人像摄影，自然生活化场景 | 【动态】电影级镜头, 常见诱因解析, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression, 摄影机从机位高度90cm缓慢升至120cm，同时向前推进40cm，2.5秒完成 | 【风格】color palette: natural earth shadows + daylight highlights + green foliage accents, cinematic atmosphere, 通用导演 aesthetic | 【音频】伴随白天环境音, 动作产生自然动作声, 氛围弥漫明亮日常氛围, 声画精准同步，嘴型与发音对齐 | 【质控】blurry, low resolution, pixelated, compression artifacts, cartoon, anime, illustration, 3D render look, CGI appearance, plastic look, distorted perspective, impossible geometry, floating objects, inconsistent scale, flat lighting, overexposed, crushed blacks, double shadows, wrong light direction, distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose, unnatural physics, fake water, static water, cardboard texture, plastic foliage 悬念堆叠式医学揭秘：从全景逐步过渡到极特写，共3段精细运镜。首段：摄影机从机位高度90cm缓慢升至120cm，同时向前推进40cm，2.5秒完成。设计意图：curiosity情绪需要通过信息递进建立。首段快速建立权威空间感，中段用最长时长在核心诱因处制造认知停顿与悬念张力，尾段加速收束并抛出'部分药物'这一开放性钩 【负面约束】no blurry, no cartoon, no deformed hands, no extra fingers, no watermark, no text 【明亮约束】自然光或柔和室内照明,画面真实干净,禁止暗黑/灰暗。 【角色约束】画面中仅出现陈卓,禁止重复角色 speaking_normal",
+    "shotId": "S02",
+    "sceneName": "常见诱因解析",
+    "sceneText": "常见诱因解析",
     "qualityScore": {
-      "score": 83,
+      "score": 82,
       "grade": "A",
       "passed": true,
       "action": "放行",
       "scores": {
         "tier1Completeness": 75,
         "visualPurity": 100,
-        "utilization": 123,
+        "utilization": 118,
         "techValidity": 100,
         "emotionConsistency": 70,
         "negativeCompleteness": 0
@@ -161,11 +162,11 @@
         },
         {
           "dimension": "字符利用率",
-          "score": 123,
+          "score": 118,
           "weight": 15,
-          "length": 1230,
+          "length": 1181,
           "maxLength": 1500,
-          "utilization": 82,
+          "utilization": 79,
           "comment": "利用率良好"
         },
         {
@@ -196,17 +197,17 @@
           "comment": "缺失: no metallic shine, no traditional Chinese symbols, natural eye colors only"
         }
       ],
-      "duration": 0,
-      "report": "===== Prompt质量门禁报告 =====\n\n总分: 83/100 | 评级: A | 动作: 放行\n\n各维度评分:\n  Tier-1完整性: 75/100 (权重25% → 19分) — Tier-1完整\n  视觉纯度: 100/100 (权重20% → 20分) — 视觉纯净\n  字符利用率: 123/100 (权重15% → 18分) — 利用率良好\n  技术规格有效性: 100/100 (权重15% → 15分) — 技术声明有效\n  情绪-表情一致性: 70/100 (权重15% → 11分) — 未定义情绪阶段，默认评分\n  负面约束完整性: 0/100 (权重10% → 0分) — 缺失: no metallic shine, no traditional Chinese symbols, natural eye colors only\n\n综合: ✅ 通过门禁"
+      "duration": 1,
+      "report": "===== Prompt质量门禁报告 =====\n\n总分: 82/100 | 评级: A | 动作: 放行\n\n各维度评分:\n  Tier-1完整性: 75/100 (权重25% → 19分) — Tier-1完整\n  视觉纯度: 100/100 (权重20% → 20分) — 视觉纯净\n  字符利用率: 118/100 (权重15% → 18分) — 利用率良好\n  技术规格有效性: 100/100 (权重15% → 15分) — 技术声明有效\n  情绪-表情一致性: 70/100 (权重15% → 11分) — 未定义情绪阶段，默认评分\n  负面约束完整性: 0/100 (权重10% → 0分) — 缺失: no metallic shine, no traditional Chinese symbols, natural eye colors only\n\n综合: ✅ 通过门禁"
     },
     "channelData": {
       "narration": {
-        "text": "很多人觉得肌肉酸痛就是练到位了，但如果尿色变深、全身无力，这可能是横纹肌溶解的信号，必须立刻就医。",
+        "text": "",
         "ttsReady": true,
-        "duration": 10
+        "duration": 0
       },
       "visual": {
-        "text": "电影级镜头, 症状警示, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression and presenter, natural expression",
+        "text": "电影级镜头, 常见诱因解析, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression",
         "hasLipSync": false
       },
       "lipSync": null
@@ -215,74 +216,74 @@
   "mappedShot": {
     "id": "S02",
     "type": "content",
-    "scene": "症状警示",
+    "scene": "常见诱因解析",
     "sceneType": "nature_epic",
-    "emotionPhase": "tension",
-    "narration": "很多人觉得肌肉酸痛就是练到位了，但如果尿色变深、全身无力，这可能是横纹肌溶解的信号，必须立刻就医。",
+    "emotionPhase": "curiosity",
+    "narration": "",
     "action": "",
-    "visualPrompt": "超写实纪录片风格，真实医疗科普演播室内，陈卓身着专业正装立于简洁医学背景前，面向镜头进行清晰讲解，左手自然垂放，右手辅以适度手势强调重点，神情专注而平和。竖屏中近景构图，人物占据画面主体，背景可见真实的人体模型或医学挂图与整洁的白色墙面。画面采用柔和均匀的自然光与室内照明混合，肤色真实细腻，无明显滤镜，镜头稳定，整体呈现权威、可信且贴近现实的医疗教育质感。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
+    "visualPrompt": "超写实纪录片风格，医院示教室或医学科普演播空间，主持人陈卓身穿白大褂或得体正装，正面朝向镜头站立，双手自然交叠于身前或辅以克制手势，表情专业平和，中近景竖屏构图，人物占据画面中心偏上位置，背景可见简洁医学图表或医院走廊虚化景深，柔和自然光从侧前方照入，面部明暗过渡细腻，肤色真实，画面质感干净通透，镜头稳定无晃动，整体呈现权威可信的医学科普氛围。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
     "camera": "",
     "cameraMovement": {
       "timeline": {
-        "strategy": "张力递进式推切镜",
-        "reasoning": "针对医疗警示台词，前半段用缓慢推近制造潜伏危机，中段用急速推切特写放大生理恐惧，末段用微震颤强化病理严重性与紧迫感。全程在无人物空镜中通过景别紧缩和速度变化传递情绪转折。",
+        "strategy": "悬念堆叠式医学揭秘",
+        "reasoning": "curiosity情绪需要通过信息递进建立。首段快速建立权威空间感，中段用最长时长在核心诱因处制造认知停顿与悬念张力，尾段加速收束并抛出'部分药物'这一开放性钩子，让观众主动追问。时间分配呈橄榄型：2.5秒铺垫，9.5秒核心展开，3秒余韵收束。",
         "segmentCount": 3,
         "segments": [
           {
             "index": 0,
-            "timeRange": "0-3.3",
-            "shotSize": "medium",
-            "movement": "摄影机以每秒0.4厘米的速度轻微前推2厘米，同时从低于视线3°抬升至平视，建立稳定进入感。",
-            "speed": "slow",
-            "reason": "台词前半段为日常误区叙述，中景缓慢推近建立表面平静下暗藏隐患的视觉基调。"
+            "timeRange": "0.0-2.5",
+            "shotSize": "全景",
+            "movement": "摄影机从机位高度90cm缓慢升至120cm，同时向前推进40cm，2.5秒完成",
+            "speed": "慢",
+            "reason": "快速建立诊室/实验室的专业空间权威感，低起点高度暗示即将从基础层面展开，2.5秒压缩铺垫不消耗观众耐心"
           },
           {
             "index": 1,
-            "timeRange": "3.3-6.7",
-            "shotSize": "close_up",
-            "movement": "镜头保持人物主体在画面中心偏左5%，以每秒0.6厘米的速度向前推进3厘米，并微量右移4厘米，强化讲解重点。",
-            "speed": "fast",
-            "reason": "转折词触发节奏突变，快速切入特写对准病理对象，制造信息冲击与生理不安。"
+            "timeRange": "2.5-12.0",
+            "shotSize": "特写",
+            "movement": "摄影机从主讲人面部30cm处，在'剧烈运动'时横移8cm至左侧，'肌肉挤压伤'时回移12cm至右侧，'部分药物'时再次左移6cm，总位移三次累计26cm，9.5秒内完成，每次移动伴随0.8秒停顿",
+            "speed": "中-慢-中",
+            "reason": "最长时段分配核心信息区，面部特写制造压迫式专注。三次横移配合三个诱因的列举，每个词组后0.8秒停顿形成认知节拍，让医学术语在观众脑中逐层沉淀，curiosity在'还有'的转折处被推向高点"
           },
           {
             "index": 2,
-            "timeRange": "6.7-10",
-            "shotSize": "close_up",
-            "movement": "微震2cm/s叠加横摇4度/秒",
-            "speed": "medium",
-            "reason": "揭示重症病名，手持微震模拟身体失控感，强化必须立刻就医的紧迫命令。"
+            "timeRange": "12.0-15.0",
+            "shotSize": "极特写",
+            "movement": "摄影机从主讲人瞳孔反射处急速后拉15cm至整只眼睛，同时焦点从角膜表面转移至虹膜纹理，1.2秒完成移动，剩余1.8秒保持静止",
+            "speed": "快-静止",
+            "reason": "尾段加速制造信息收束的'咔哒'感，瞳孔反射到眼睛的急速后拉模拟从微观病理抽离到宏观审视的顿悟瞬间。最后1.8秒静止在眼睛上，让'部分药物'的开放性悬念悬停，curiosity转化为持续追问"
           }
         ],
         "generatedBy": "LLM-v4",
-        "description": "张力递进式推切镜：从medium逐步过渡到close_up，共3段，强调内容驱动的细微推进。",
+        "description": "悬念堆叠式医学揭秘：从全景逐步过渡到极特写，共3段，强调内容驱动的细微推进。",
         "transitionType": "llm_v4",
         "timeline": {
-          "strategy": "张力递进式推切镜",
-          "reasoning": "针对医疗警示台词，前半段用缓慢推近制造潜伏危机，中段用急速推切特写放大生理恐惧，末段用微震颤强化病理严重性与紧迫感。全程在无人物空镜中通过景别紧缩和速度变化传递情绪转折。",
+          "strategy": "悬念堆叠式医学揭秘",
+          "reasoning": "curiosity情绪需要通过信息递进建立。首段快速建立权威空间感，中段用最长时长在核心诱因处制造认知停顿与悬念张力，尾段加速收束并抛出'部分药物'这一开放性钩子，让观众主动追问。时间分配呈橄榄型：2.5秒铺垫，9.5秒核心展开，3秒余韵收束。",
           "segments": [
             {
               "index": 0,
-              "timeRange": "0-3.3",
-              "shotSize": "medium",
-              "movement": "摄影机以每秒0.4厘米的速度轻微前推2厘米，同时从低于视线3°抬升至平视，建立稳定进入感。",
-              "speed": "slow",
-              "reason": "台词前半段为日常误区叙述，中景缓慢推近建立表面平静下暗藏隐患的视觉基调。"
+              "timeRange": "0.0-2.5",
+              "shotSize": "全景",
+              "movement": "摄影机从机位高度90cm缓慢升至120cm，同时向前推进40cm，2.5秒完成",
+              "speed": "慢",
+              "reason": "快速建立诊室/实验室的专业空间权威感，低起点高度暗示即将从基础层面展开，2.5秒压缩铺垫不消耗观众耐心"
             },
             {
               "index": 1,
-              "timeRange": "3.3-6.7",
-              "shotSize": "close_up",
-              "movement": "镜头保持人物主体在画面中心偏左5%，以每秒0.6厘米的速度向前推进3厘米，并微量右移4厘米，强化讲解重点。",
-              "speed": "fast",
-              "reason": "转折词触发节奏突变，快速切入特写对准病理对象，制造信息冲击与生理不安。"
+              "timeRange": "2.5-12.0",
+              "shotSize": "特写",
+              "movement": "摄影机从主讲人面部30cm处，在'剧烈运动'时横移8cm至左侧，'肌肉挤压伤'时回移12cm至右侧，'部分药物'时再次左移6cm，总位移三次累计26cm，9.5秒内完成，每次移动伴随0.8秒停顿",
+              "speed": "中-慢-中",
+              "reason": "最长时段分配核心信息区，面部特写制造压迫式专注。三次横移配合三个诱因的列举，每个词组后0.8秒停顿形成认知节拍，让医学术语在观众脑中逐层沉淀，curiosity在'还有'的转折处被推向高点"
             },
             {
               "index": 2,
-              "timeRange": "6.7-10",
-              "shotSize": "close_up",
-              "movement": "微震2cm/s叠加横摇4度/秒",
-              "speed": "medium",
-              "reason": "揭示重症病名，手持微震模拟身体失控感，强化必须立刻就医的紧迫命令。"
+              "timeRange": "12.0-15.0",
+              "shotSize": "极特写",
+              "movement": "摄影机从主讲人瞳孔反射处急速后拉15cm至整只眼睛，同时焦点从角膜表面转移至虹膜纹理，1.2秒完成移动，剩余1.8秒保持静止",
+              "speed": "快-静止",
+              "reason": "尾段加速制造信息收束的'咔哒'感，瞳孔反射到眼睛的急速后拉模拟从微观病理抽离到宏观审视的顿悟瞬间。最后1.8秒静止在眼睛上，让'部分药物'的开放性悬念悬停，curiosity转化为持续追问"
             }
           ]
         }
@@ -306,33 +307,32 @@
           "defaultSize": "medium"
         },
         "movementStyle": "stable",
-        "characterCount": 2,
-        "duration": 10,
-        "shotId": "症状警示",
-        "dialogue": "很多人觉得肌肉酸痛就是练到位了，但如果尿色变深、全身无力，这可能是横纹肌溶解的信号，必须立刻就医。",
-        "emotionPhase": "tension"
+        "characterCount": 1,
+        "duration": 15,
+        "shotId": "常见诱因解析",
+        "dialogue": "横纹肌溶解不会无缘无故发生，剧烈运动、肌肉挤压伤，还有部分药物，都是临床上最常见的诱因。",
+        "emotionPhase": "curiosity"
       },
       "v4Continuity": {
         "valid": true,
         "warnings": [],
         "fixes": []
       },
-      "description": "张力递进式推切镜：从medium逐步过渡到close_up，共3段精细运镜。首段：摄影机以每秒0.4厘米的速度轻微前推2厘米，同时从低于视线3°抬升至平视，建立稳定进入感。。设计意图：针对医疗警示台词，前半段用缓慢推近制造潜伏危机，中段用急速推切特写放大生理恐惧，末段用微震颤强化病理严重性与紧迫感。全程在无人物空镜中通过景别紧缩和速度变化传递",
-      "shotSize": "medium",
+      "description": "悬念堆叠式医学揭秘：从全景逐步过渡到极特写，共3段精细运镜。首段：摄影机从机位高度90cm缓慢升至120cm，同时向前推进40cm，2.5秒完成。设计意图：curiosity情绪需要通过信息递进建立。首段快速建立权威空间感，中段用最长时长在核心诱因处制造认知停顿与悬念张力，尾段加速收束并抛出'部分药物'这一开放性钩",
+      "shotSize": "全景",
       "position": "center",
-      "movement": "摄影机以每秒0.4厘米的速度轻微前推2厘米，同时从低于视线3°抬升至平视，建立稳定进入感。",
-      "speed": "slow",
-      "timeRange": "0-3.3"
+      "movement": "摄影机从机位高度90cm缓慢升至120cm，同时向前推进40cm，2.5秒完成",
+      "speed": "慢",
+      "timeRange": "0.0-2.5"
     },
     "lighting": null,
     "audio": "",
     "renderStyle": "",
     "negativePrompt": "",
     "characters": [
-      "chen-zhuo",
-      "presenter"
+      "chen-zhuo"
     ],
-    "duration": 10,
+    "duration": 15,
     "beastId": "",
     "beastName": "",
     "tension": 0,
@@ -345,32 +345,33 @@
     "protagonistName": "主角",
     "beastId": "",
     "beastName": "",
-    "habitat": "症状警示",
+    "habitat": "常见诱因解析",
     "episodeTheme": "",
     "sceneType": "nature_epic"
   },
   "schemaCheck": {
     "valid": true,
     "issues": [],
-    "warnings": []
+    "warnings": [
+      "shot.narration 与 shot.action 都为空"
+    ]
   },
   "subsystemFields": {
-    "CHARACTER": "chen-zhuo，presenter",
-    "SCENE": "症状警示",
-    "MOOD": "tension",
+    "CHARACTER": "chen-zhuo",
+    "SCENE": "常见诱因解析",
+    "MOOD": "curiosity",
     "RENDER": "电影级、超写实、细节丰富",
-    "DIALOGUE": "很多人觉得肌肉酸痛就是练到位了，但如果尿色变深、全身无力，这可能是横纹肌溶解的信号，必须立刻就医。",
-    "CAMERA": "（一镜到底！），镜头时间轴：0-3s: static (宁静) → 3-7s: push_in (聚焦) → 7-10s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
+    "CAMERA": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
     "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K",
     "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow",
     "meta": {
       "source": "camera-movement-system-v3",
       "raw": {
-        "scene": "症状警示",
-        "emotionPhase": "tension",
-        "duration": 10,
+        "scene": "常见诱因解析",
+        "emotionPhase": "curiosity",
+        "duration": 15,
         "baseMovement": {
-          "scene": "症状警示",
+          "scene": "常见诱因解析",
           "physicsDriver": "generic",
           "primaryMovement": "smooth_track",
           "speed": "smooth",
@@ -409,33 +410,33 @@
           },
           "hasMultiSegment": true,
           "segmentCount": 3,
-          "comboDescription": "【运镜组合】开场建立：0-3秒：static → 3-7秒：push_in → 7-10秒：orbit_right",
+          "comboDescription": "【运镜组合】开场建立：0-5秒：static → 5-10秒：push_in → 10-15秒：orbit_right",
           "timeline": [
             {
-              "range": "0-3s",
+              "range": "0-5s",
               "action": "static (宁静)",
               "movement": "static",
               "lighting": "晨光侧射"
             },
             {
-              "range": "3-7s",
+              "range": "5-10s",
               "action": "push_in (聚焦)",
               "movement": "push_in",
               "lighting": "自然光"
             },
             {
-              "range": "7-10s",
+              "range": "10-15s",
               "action": "orbit_right (升华)",
               "movement": "orbit_right",
               "lighting": "自然光"
             }
           ],
           "timelineSource": "intra-shot-combo",
-          "description": "（一镜到底！），镜头时间轴：0-3s: static (宁静) → 3-7s: push_in (聚焦) → 7-10s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic"
+          "description": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic"
         },
-        "description": "（一镜到底！），镜头时间轴：0-3s: static (宁静) → 3-7s: push_in (聚焦) → 7-10s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic",
+        "description": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic",
         "intraShotTimeline": {
-          "totalDuration": 10,
+          "totalDuration": 15,
           "segmentCount": 4,
           "transitionName": "渐进式揭示",
           "transitionDesc": "从远景逐步推到特写，建立环境→发现主体→情感亲密",
@@ -447,7 +448,7 @@
             {
               "index": 0,
               "timeRange": "早期",
-              "duration": 2,
+              "duration": 3,
               "shotSize": "extreme_wide",
               "shotSizeDesc": "极端远景（环境全貌）",
               "movement": "orbit_360",
@@ -466,7 +467,7 @@
             {
               "index": 1,
               "timeRange": "中期",
-              "duration": 3,
+              "duration": 4.5,
               "shotSize": "wide",
               "shotSizeDesc": "远景（环境+主体）",
               "movement": "push_in",
@@ -485,7 +486,7 @@
             {
               "index": 2,
               "timeRange": "后期",
-              "duration": 3,
+              "duration": 4.5,
               "shotSize": "medium",
               "shotSizeDesc": "中景（半身/双人）",
               "movement": "push_in",
@@ -504,7 +505,7 @@
             {
               "index": 3,
               "timeRange": "尾声",
-              "duration": 2,
+              "duration": 3,
               "shotSize": "close_up",
               "shotSizeDesc": "特写（面部/细节）",
               "movement": "hold",
@@ -523,7 +524,7 @@
           ],
           "summary": "【镜头时间轴 - 渐进式揭示】\n策略：从远景逐步推到特写，建立环境→发现主体→情感亲密\n灯光：晨曦渐亮 - 从黑暗中逐渐亮起，模拟日出效果\n速度：慢快慢 - 开始缓慢，中间加速，最后减速\n\n早期｜极端远景（环境全貌）｜缓慢｜orbit_360｜灯光：仅轮廓可见\n  → 转场：平滑渐变\n中期｜远景（环境+主体）｜很快｜push_in｜灯光：侧光渐强\n  → 转场：硬切\n后期｜中景（半身/双人）｜极限速度｜push_in｜灯光：主体清晰\n  → 转场：移焦过渡\n尾声｜特写（面部/细节）｜快速｜hold｜灯光：全面照亮\n"
         },
-        "intraShotPrompt": "【运镜时间轴 - 一镜到底多段式】\n本镜头共4段，总时长10秒。\n景别切换策略：渐进式揭示（从远景逐步推到特写，建立环境→发现主体→情感亲密）\n灯光变化：晨曦渐亮（从黑暗中逐渐亮起，模拟日出效果）\n速度曲线：慢快慢（开始缓慢，中间加速，最后减速）\n\n早期：\n  景别：极端远景（环境全貌）\n  运镜：orbit_360\n  速度：缓慢（强度0.3）\n  灯光：仅轮廓可见，色温2000K，强度0.1\n  → 转场：平滑渐变（0.5-1秒平滑过渡）\n\n中期：\n  景别：远景（环境+主体）\n  运镜：push_in\n  速度：很快（强度0.8）\n  灯光：侧光渐强，色温2800K，强度0.3\n  → 转场：硬切（瞬间切换，无过渡）\n\n后期：\n  景别：中景（半身/双人）\n  运镜：push_in\n  速度：极限速度（强度1）\n  灯光：主体清晰，色温4500K，强度0.6\n  → 转场：移焦过渡（焦点从前景移到后景（或反之）实现切换）\n\n尾声：\n  景别：特写（面部/细节）\n  运镜：hold\n  速度：快速（强度0.6）\n  灯光：全面照亮，色温5600K，强度1\n\n",
+        "intraShotPrompt": "【运镜时间轴 - 一镜到底多段式】\n本镜头共4段，总时长15秒。\n景别切换策略：渐进式揭示（从远景逐步推到特写，建立环境→发现主体→情感亲密）\n灯光变化：晨曦渐亮（从黑暗中逐渐亮起，模拟日出效果）\n速度曲线：慢快慢（开始缓慢，中间加速，最后减速）\n\n早期：\n  景别：极端远景（环境全貌）\n  运镜：orbit_360\n  速度：缓慢（强度0.3）\n  灯光：仅轮廓可见，色温2000K，强度0.1\n  → 转场：平滑渐变（0.5-1秒平滑过渡）\n\n中期：\n  景别：远景（环境+主体）\n  运镜：push_in\n  速度：很快（强度0.8）\n  灯光：侧光渐强，色温2800K，强度0.3\n  → 转场：硬切（瞬间切换，无过渡）\n\n后期：\n  景别：中景（半身/双人）\n  运镜：push_in\n  速度：极限速度（强度1）\n  灯光：主体清晰，色温4500K，强度0.6\n  → 转场：移焦过渡（焦点从前景移到后景（或反之）实现切换）\n\n尾声：\n  景别：特写（面部/细节）\n  运镜：hold\n  速度：快速（强度0.6）\n  灯光：全面照亮，色温5600K，强度1\n\n",
         "camera": "extreme_wide orbit_360, 50mm lens, normal speed",
         "lighting": "low_back key 2000K, 仅轮廓可见",
         "config": {
@@ -546,22 +547,21 @@
   },
   "llmFields": {},
   "mergedFields": {
-    "CHARACTER": "chen-zhuo，presenter",
-    "SCENE": "症状警示",
-    "MOOD": "tension",
+    "CHARACTER": "chen-zhuo",
+    "SCENE": "常见诱因解析",
+    "MOOD": "curiosity",
     "RENDER": "电影级、超写实、细节丰富",
-    "DIALOGUE": "很多人觉得肌肉酸痛就是练到位了，但如果尿色变深、全身无力，这可能是横纹肌溶解的信号，必须立刻就医。",
-    "CAMERA": "（一镜到底！），镜头时间轴：0-3s: static (宁静) → 3-7s: push_in (聚焦) → 7-10s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
+    "CAMERA": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
     "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K",
     "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow",
     "meta": {
       "source": "camera-movement-system-v3",
       "raw": {
-        "scene": "症状警示",
-        "emotionPhase": "tension",
-        "duration": 10,
+        "scene": "常见诱因解析",
+        "emotionPhase": "curiosity",
+        "duration": 15,
         "baseMovement": {
-          "scene": "症状警示",
+          "scene": "常见诱因解析",
           "physicsDriver": "generic",
           "primaryMovement": "smooth_track",
           "speed": "smooth",
@@ -600,33 +600,33 @@
           },
           "hasMultiSegment": true,
           "segmentCount": 3,
-          "comboDescription": "【运镜组合】开场建立：0-3秒：static → 3-7秒：push_in → 7-10秒：orbit_right",
+          "comboDescription": "【运镜组合】开场建立：0-5秒：static → 5-10秒：push_in → 10-15秒：orbit_right",
           "timeline": [
             {
-              "range": "0-3s",
+              "range": "0-5s",
               "action": "static (宁静)",
               "movement": "static",
               "lighting": "晨光侧射"
             },
             {
-              "range": "3-7s",
+              "range": "5-10s",
               "action": "push_in (聚焦)",
               "movement": "push_in",
               "lighting": "自然光"
             },
             {
-              "range": "7-10s",
+              "range": "10-15s",
               "action": "orbit_right (升华)",
               "movement": "orbit_right",
               "lighting": "自然光"
             }
           ],
           "timelineSource": "intra-shot-combo",
-          "description": "（一镜到底！），镜头时间轴：0-3s: static (宁静) → 3-7s: push_in (聚焦) → 7-10s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic"
+          "description": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic"
         },
-        "description": "（一镜到底！），镜头时间轴：0-3s: static (宁静) → 3-7s: push_in (聚焦) → 7-10s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic",
+        "description": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic",
         "intraShotTimeline": {
-          "totalDuration": 10,
+          "totalDuration": 15,
           "segmentCount": 4,
           "transitionName": "渐进式揭示",
           "transitionDesc": "从远景逐步推到特写，建立环境→发现主体→情感亲密",
@@ -638,7 +638,7 @@
             {
               "index": 0,
               "timeRange": "早期",
-              "duration": 2,
+              "duration": 3,
               "shotSize": "extreme_wide",
               "shotSizeDesc": "极端远景（环境全貌）",
               "movement": "orbit_360",
@@ -657,7 +657,7 @@
             {
               "index": 1,
               "timeRange": "中期",
-              "duration": 3,
+              "duration": 4.5,
               "shotSize": "wide",
               "shotSizeDesc": "远景（环境+主体）",
               "movement": "push_in",
@@ -676,7 +676,7 @@
             {
               "index": 2,
               "timeRange": "后期",
-              "duration": 3,
+              "duration": 4.5,
               "shotSize": "medium",
               "shotSizeDesc": "中景（半身/双人）",
               "movement": "push_in",
@@ -695,7 +695,7 @@
             {
               "index": 3,
               "timeRange": "尾声",
-              "duration": 2,
+              "duration": 3,
               "shotSize": "close_up",
               "shotSizeDesc": "特写（面部/细节）",
               "movement": "hold",
@@ -714,7 +714,7 @@
           ],
           "summary": "【镜头时间轴 - 渐进式揭示】\n策略：从远景逐步推到特写，建立环境→发现主体→情感亲密\n灯光：晨曦渐亮 - 从黑暗中逐渐亮起，模拟日出效果\n速度：慢快慢 - 开始缓慢，中间加速，最后减速\n\n早期｜极端远景（环境全貌）｜缓慢｜orbit_360｜灯光：仅轮廓可见\n  → 转场：平滑渐变\n中期｜远景（环境+主体）｜很快｜push_in｜灯光：侧光渐强\n  → 转场：硬切\n后期｜中景（半身/双人）｜极限速度｜push_in｜灯光：主体清晰\n  → 转场：移焦过渡\n尾声｜特写（面部/细节）｜快速｜hold｜灯光：全面照亮\n"
         },
-        "intraShotPrompt": "【运镜时间轴 - 一镜到底多段式】\n本镜头共4段，总时长10秒。\n景别切换策略：渐进式揭示（从远景逐步推到特写，建立环境→发现主体→情感亲密）\n灯光变化：晨曦渐亮（从黑暗中逐渐亮起，模拟日出效果）\n速度曲线：慢快慢（开始缓慢，中间加速，最后减速）\n\n早期：\n  景别：极端远景（环境全貌）\n  运镜：orbit_360\n  速度：缓慢（强度0.3）\n  灯光：仅轮廓可见，色温2000K，强度0.1\n  → 转场：平滑渐变（0.5-1秒平滑过渡）\n\n中期：\n  景别：远景（环境+主体）\n  运镜：push_in\n  速度：很快（强度0.8）\n  灯光：侧光渐强，色温2800K，强度0.3\n  → 转场：硬切（瞬间切换，无过渡）\n\n后期：\n  景别：中景（半身/双人）\n  运镜：push_in\n  速度：极限速度（强度1）\n  灯光：主体清晰，色温4500K，强度0.6\n  → 转场：移焦过渡（焦点从前景移到后景（或反之）实现切换）\n\n尾声：\n  景别：特写（面部/细节）\n  运镜：hold\n  速度：快速（强度0.6）\n  灯光：全面照亮，色温5600K，强度1\n\n",
+        "intraShotPrompt": "【运镜时间轴 - 一镜到底多段式】\n本镜头共4段，总时长15秒。\n景别切换策略：渐进式揭示（从远景逐步推到特写，建立环境→发现主体→情感亲密）\n灯光变化：晨曦渐亮（从黑暗中逐渐亮起，模拟日出效果）\n速度曲线：慢快慢（开始缓慢，中间加速，最后减速）\n\n早期：\n  景别：极端远景（环境全貌）\n  运镜：orbit_360\n  速度：缓慢（强度0.3）\n  灯光：仅轮廓可见，色温2000K，强度0.1\n  → 转场：平滑渐变（0.5-1秒平滑过渡）\n\n中期：\n  景别：远景（环境+主体）\n  运镜：push_in\n  速度：很快（强度0.8）\n  灯光：侧光渐强，色温2800K，强度0.3\n  → 转场：硬切（瞬间切换，无过渡）\n\n后期：\n  景别：中景（半身/双人）\n  运镜：push_in\n  速度：极限速度（强度1）\n  灯光：主体清晰，色温4500K，强度0.6\n  → 转场：移焦过渡（焦点从前景移到后景（或反之）实现切换）\n\n尾声：\n  景别：特写（面部/细节）\n  运镜：hold\n  速度：快速（强度0.6）\n  灯光：全面照亮，色温5600K，强度1\n\n",
         "camera": "extreme_wide orbit_360, 50mm lens, normal speed",
         "lighting": "low_back key 2000K, 仅轮廓可见",
         "config": {
@@ -737,31 +737,33 @@
     "NEGATIVE": "no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers"
   },
   "normalizedFields": {
-    "CHARACTER": "chen-zhuo，presenter",
-    "DIALOGUE": "很多人觉得肌肉酸痛就是练到位了，但如果尿色变深、全身无力，这可能是横纹肌溶解的信号，必须立刻就医。",
+    "CHARACTER": "chen-zhuo",
+    "DIALOGUE": "",
     "ACTION": "",
-    "SCENE": "症状警示",
-    "MOOD": "tension",
-    "CAMERA": "（一镜到底！），镜头时间轴：0-3s: static (宁静) → 3-7s: push_in (聚焦) → 7-10s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
+    "SCENE": "常见诱因解析",
+    "MOOD": "curiosity",
+    "CAMERA": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
     "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K",
     "NEGATIVE": "no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers",
     "AUDIO": "【环境音效】风穿过物体声、风声",
     "RENDER": "电影级、超写实、细节丰富",
     "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow"
   },
-  "finalPrompt": "{CHARACTER: chen-zhuo，presenter | DIALOGUE: 很多人觉得肌肉酸痛就是练到位了，但如果尿色变深、全身无力，这可能是横纹肌溶解的信号，必须立刻就医。 | SCENE: 症状警示 | MOOD: tension | CAMERA: （一镜到底！），镜头时间轴：0-3s: static (宁静) → 3-7s: push_in (聚焦) → 7-10s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人） | LIGHTING: 仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K | NEGATIVE: no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers | AUDIO: 【环境音效】风穿过物体声、风声 | RENDER: 电影级、超写实、细节丰富 | DIRECTOR: 景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow}",
+  "finalPrompt": "{CHARACTER: chen-zhuo | SCENE: 常见诱因解析 | MOOD: curiosity | CAMERA: （一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人） | LIGHTING: 仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K | NEGATIVE: no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers | AUDIO: 【环境音效】风穿过物体声、风声 | RENDER: 电影级、超写实、细节丰富 | DIRECTOR: 景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow}",
   "validation": {
-    "valid": true,
-    "issues": [],
+    "valid": false,
+    "issues": [
+      "缺少必填字段: DIALOGUE"
+    ],
     "warnings": [],
     "stats": {
-      "length": 763,
+      "length": 697,
       "emptyFields": [
+        "DIALOGUE",
         "ACTION"
       ],
       "filledFields": [
         "CHARACTER",
-        "DIALOGUE",
         "SCENE",
         "MOOD",
         "CAMERA",
@@ -775,6 +777,6 @@
   },
   "meta": {
     "builderVersion": "v3",
-    "timestamp": "2026-06-17T04:52:33.104Z"
+    "timestamp": "2026-06-18T02:02:22.420Z"
   }
 }

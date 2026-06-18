@@ -1,85 +1,70 @@
 {
   "shotId": "S05",
-  "recordedAt": "2026-06-17T04:52:33.112Z",
+  "recordedAt": "2026-06-18T02:02:22.430Z",
   "rawShot": {
     "id": "S05",
-    "scene": "结尾总结与号召",
-    "dialogue": "记住，运动是好事，但科学运动更重要。如果出现肌肉剧痛、尿液变色，请立即就医。健康第一，我们下期再见。",
-    "narration": "记住，运动是好事，但科学运动更重要。如果出现肌肉剧痛、尿液变色，请立即就医。健康第一，我们下期再见。",
-    "duration": 11,
+    "scene": "结尾总结",
+    "dialogue": "记住：倾听身体，科学运动。",
+    "duration": 5,
     "type": "closing",
     "characters": [
       "chen-zhuo"
     ],
-    "mouthAction": "speaking_emphasis",
+    "mouthAction": "speaking_normal",
     "importance": 5,
     "visualComplexity": 5,
     "emotionPhase": "resolution",
-    "visualPrompt": "超写实纪录片风格，专业医疗科普演播环境中，主持人陈卓正面对镜头站立，以沉稳自然的表情直接向观众进行总结性讲解，双手可自然交叠或做适度手势强调重点。画面采用竖屏中近景构图，人物位于画面中心偏上位置，背景为简洁明亮的医疗科普空间。整体光线柔和均匀，肤色与衣物纹理细节真实，镜头稳定，营造出专业、亲切且值得信赖的医学科普氛围，结尾传递健康第一的核心信息。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
+    "visualPrompt": "超写实纪录片风格，结尾总结场景，陈卓身穿白大褂或专业休闲装，站在简洁明亮的医疗科普演播室中央，正面直视镜头，姿态端正自信，双手自然交叠于身前或轻做手势强调要点，中近景构图，人物面部清晰可辨，表情真挚平和，背景为低饱和度的纯色墙面或医院走廊局部，环境整洁专业，柔光箱照明形成均匀面光，无阴影杂乱，画面色调干净通透，镜头稳定，整体呈现权威可信、温和有力的医学科普收尾质感。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
     "fpvRecommended": false,
     "fpvScore": 41,
     "fpvReason": "建议传统运镜：情绪/视觉不适合FPV",
     "cameraMovement": {
       "timeline": {
-        "strategy": "渐进式聚焦健康警示",
-        "reasoning": "resolution情绪需要平稳、可信赖的收尾感。台词前半段为温和建议，后半段转为紧急警示，最后回归温暖告别。通过景别从medium渐进到close_up再回落，配合缓慢稳定的运动，建立信任感，在警示处通过微距特写强化信息权重，最终温和收尾。",
-        "segmentCount": 3,
+        "strategy": "沉锚式箴言收束",
+        "reasoning": "resolution阶段的核心任务是将箴言沉淀为观众记忆，因此时间分配必须向尾段大幅倾斜。首段以短时长完成空间锚定，尾段则用超过60%的时长执行推近-静止的复合动作，使'倾听身体，科学运动'在视觉停滞中获得语义重量，形成情绪落点。",
+        "segmentCount": 2,
         "segments": [
           {
             "index": 0,
-            "timeRange": "0.00-4.00",
-            "shotSize": "medium",
-            "movement": "轨道右移30厘米，机位高度下降10厘米，持续4秒",
-            "speed": "5厘米/秒",
-            "reason": "开场'运动是好事'语气平和，medium景别建立宽松安全的对话空间，缓慢轨道右移营造陪伴感，让观众自然进入倾听状态"
+            "timeRange": "0.0-1.8",
+            "shotSize": "close_up",
+            "movement": "轨道向右横移40厘米，机位垂直下降12厘米，云台俯仰角上抬3度，动作持续1.8秒",
+            "speed": "0.4",
+            "reason": "以较短时长建立空间秩序，缓慢下沉与微仰的组合营造平和而专注的resolution基调，为箴言出现铺垫视觉重心",
+            "shotSizeDesc": "特写（面部/细节）"
           },
           {
             "index": 1,
-            "timeRange": "4.00-8.50",
-            "shotSize": "close_up",
-            "movement": "镜头前推15厘米，焦点从面部眼睛区域过渡至嘴唇，持续4.5秒",
-            "speed": "3.3厘米/秒",
-            "reason": "'肌肉剧痛、尿液变色'为关键警示信息，close_up压缩空间制造紧迫感，缓慢前推强化信息侵入性，让观众无法回避健康警告，3.3厘米/秒的低速与内容的严重性形成张力，加深记忆锚点"
-          },
-          {
-            "index": 2,
-            "timeRange": "8.50-11.00",
-            "shotSize": "medium",
-            "movement": "轨道复位后撤20厘米，机位微抬5度，持续2.5秒",
-            "speed": "缓慢",
-            "reason": "'健康第一，下期再见'回归温暖和解，medium景别释放压迫感，后撤运动制造呼吸空间，微仰角度重建平等对话关系，2.5秒的短暂收束让resolution情绪干净落地，不拖沓"
+            "timeRange": "1.8-5.0",
+            "shotSize": "近景",
+            "movement": "沿光轴向前推进18厘米，耗时1.2秒完成位移；随后云台锁死，保持0厘米位移与0度偏转的绝对静止1.0秒",
+            "speed": "0.3转0",
+            "reason": "占用更长时长聚焦核心台词，极慢推进后骤然静止形成语义标点，在resolution高潮处以画面凝固强化'记住'的指令感，留给观众内化空间"
           }
         ],
         "generatedBy": "LLM-v4",
-        "description": "渐进式聚焦健康警示：从medium逐步过渡到medium，共3段，强调内容驱动的细微推进。",
+        "description": "沉锚式箴言收束：从中景逐步过渡到近景，共2段，强调内容驱动的细微推进。",
         "transitionType": "llm_v4",
         "timeline": {
-          "strategy": "渐进式聚焦健康警示",
-          "reasoning": "resolution情绪需要平稳、可信赖的收尾感。台词前半段为温和建议，后半段转为紧急警示，最后回归温暖告别。通过景别从medium渐进到close_up再回落，配合缓慢稳定的运动，建立信任感，在警示处通过微距特写强化信息权重，最终温和收尾。",
+          "strategy": "沉锚式箴言收束",
+          "reasoning": "resolution阶段的核心任务是将箴言沉淀为观众记忆，因此时间分配必须向尾段大幅倾斜。首段以短时长完成空间锚定，尾段则用超过60%的时长执行推近-静止的复合动作，使'倾听身体，科学运动'在视觉停滞中获得语义重量，形成情绪落点。",
           "segments": [
             {
               "index": 0,
-              "timeRange": "0.00-4.00",
-              "shotSize": "medium",
-              "movement": "轨道右移30厘米，机位高度下降10厘米，持续4秒",
-              "speed": "5厘米/秒",
-              "reason": "开场'运动是好事'语气平和，medium景别建立宽松安全的对话空间，缓慢轨道右移营造陪伴感，让观众自然进入倾听状态"
+              "timeRange": "0.0-1.8",
+              "shotSize": "close_up",
+              "movement": "轨道向右横移40厘米，机位垂直下降12厘米，云台俯仰角上抬3度，动作持续1.8秒",
+              "speed": "0.4",
+              "reason": "以较短时长建立空间秩序，缓慢下沉与微仰的组合营造平和而专注的resolution基调，为箴言出现铺垫视觉重心",
+              "shotSizeDesc": "特写（面部/细节）"
             },
             {
               "index": 1,
-              "timeRange": "4.00-8.50",
-              "shotSize": "close_up",
-              "movement": "镜头前推15厘米，焦点从面部眼睛区域过渡至嘴唇，持续4.5秒",
-              "speed": "3.3厘米/秒",
-              "reason": "'肌肉剧痛、尿液变色'为关键警示信息，close_up压缩空间制造紧迫感，缓慢前推强化信息侵入性，让观众无法回避健康警告，3.3厘米/秒的低速与内容的严重性形成张力，加深记忆锚点"
-            },
-            {
-              "index": 2,
-              "timeRange": "8.50-11.00",
-              "shotSize": "medium",
-              "movement": "轨道复位后撤20厘米，机位微抬5度，持续2.5秒",
-              "speed": "缓慢",
-              "reason": "'健康第一，下期再见'回归温暖和解，medium景别释放压迫感，后撤运动制造呼吸空间，微仰角度重建平等对话关系，2.5秒的短暂收束让resolution情绪干净落地，不拖沓"
+              "timeRange": "1.8-5.0",
+              "shotSize": "近景",
+              "movement": "沿光轴向前推进18厘米，耗时1.2秒完成位移；随后云台锁死，保持0厘米位移与0度偏转的绝对静止1.0秒",
+              "speed": "0.3转0",
+              "reason": "占用更长时长聚焦核心台词，极慢推进后骤然静止形成语义标点，在resolution高潮处以画面凝固强化'记住'的指令感，留给观众内化空间"
             }
           ]
         }
@@ -104,33 +89,42 @@
         },
         "movementStyle": "stable",
         "characterCount": 1,
-        "duration": 11,
-        "shotId": "结尾总结与号召",
-        "dialogue": "记住，运动是好事，但科学运动更重要。如果出现肌肉剧痛、尿液变色，请立即就医。健康第一，我们下期再见。",
+        "duration": 5,
+        "shotId": "结尾总结",
+        "dialogue": "记住：倾听身体，科学运动。",
         "emotionPhase": "resolution"
       },
       "v4Continuity": {
-        "valid": true,
-        "warnings": [],
+        "valid": false,
+        "warnings": [
+          {
+            "type": "shot_size_jump",
+            "message": "undefined → undefined: 视觉跳跃大",
+            "severity": "warning"
+          }
+        ],
         "fixes": []
       },
-      "description": "渐进式聚焦健康警示：从medium逐步过渡到medium，共3段精细运镜。首段：轨道右移30厘米，机位高度下降10厘米，持续4秒。设计意图：resolution情绪需要平稳、可信赖的收尾感。台词前半段为温和建议，后半段转为紧急警示，最后回归温暖告别。通过景别从medium渐进到close_up再回落",
-      "shotSize": "medium",
+      "description": "沉锚式箴言收束：从close_up逐步过渡到近景，共2段精细运镜。首段：轨道向右横移40厘米，机位垂直下降12厘米，云台俯仰角上抬3度，动作持续1.8秒。设计意图：resolution阶段的核心任务是将箴言沉淀为观众记忆，因此时间分配必须向尾段大幅倾斜。首段以短时长完成空间锚定，尾段则用超过60%的时长执行推近-静止的复合",
+      "shotSize": "close_up",
       "position": "center",
-      "movement": "轨道右移30厘米，机位高度下降10厘米，持续4秒",
-      "speed": "5厘米/秒",
-      "timeRange": "0.00-4.00"
+      "movement": "轨道向右横移40厘米，机位垂直下降12厘米，云台俯仰角上抬3度，动作持续1.8秒",
+      "speed": "0.4",
+      "timeRange": "0.0-1.8"
     },
-    "prompt": "情绪基调：温暖、治愈。16:9宽屏电影级镜头。【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic | 【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film | 【空间】golden hour, clear sky, atmospheric haze, depth layers, foreground to background | 【主体】陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业人像摄影，自然生活化场景 | 【动态】电影级镜头, 结尾总结与号召, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression, 轨道右移30厘米，机位高度下降10厘米，持续4秒 | 【风格】color palette: natural earth shadows + daylight highlights + green foliage accents, cinematic atmosphere, 通用导演 aesthetic | 【音频】伴随白天环境音, 动作产生自然动作声, 氛围弥漫明亮日常氛围, 声画精准同步，嘴型与发音对齐 | 【质控】blurry, low resolution, pixelated, compression artifacts, cartoon, anime, illustration, 3D render look, CGI appearance, plastic look, distorted perspective, impossible geometry, floating objects, inconsistent scale, flat lighting, overexposed, crushed blacks, double shadows, wrong light direction, distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose, unnatural physics, fake water, static water, cardboard texture, plastic foliage 渐进式聚焦健康警示：从medium逐步过渡到medium，共3段精细运镜。首段：轨道右移30厘米，机位高度下降10厘米，持续4秒。设计意图：resolution情绪需要平稳、可信赖的收尾感。台词前半段为温和建议，后半段转为紧急警示，最后回归温暖告别。通过景别从medium渐进到close_up再回落 【负面约束】no blurry, no cartoon, no deformed hands, no extra fingers, no watermark, no text 【明亮约束】\n【光影增强】光影边缘柔和虚化，如梦境般朦胧\n自然光或柔和室内照明,画面真实干净,禁止暗黑/灰暗。 【角色约束】画面中仅出现陈卓,禁止重复角色\n【空间深度】环境从冷色调渐变为暖色调，暗示情感转变 speaking_emphasis",
+    "prompt": "情绪基调：温暖、治愈。16:9宽屏电影级镜头。【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic | 【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film | 【空间】golden hour, clear sky, atmospheric haze, depth layers, foreground to background | 【主体】陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业人像摄影，自然生活化场景 | 【动态】电影级镜头, 结尾总结, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression, 轨道向右横移40厘米，机位垂直下降12厘米，云台俯仰角上抬3度，动作持续1.8秒 | 【风格】color palette: natural earth shadows + daylight highlights + green foliage accents, cinematic atmosphere, 通用导演 aesthetic | 【音频】伴随白天环境音, 动作产生自然动作声, 氛围弥漫明亮日常氛围, 声画精准同步，嘴型与发音对齐 | 【质控】blurry, low resolution, pixelated, compression artifacts, cartoon, anime, illustration, 3D render look, CGI appearance, plastic look, distorted perspective, impossible geometry, floating objects, inconsistent scale, flat lighting, overexposed, crushed blacks, double shadows, wrong light direction, distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose, unnatural physics, fake water, static water, cardboard texture, plastic foliage 沉锚式箴言收束：从close_up逐步过渡到近景，共2段精细运镜。首段：轨道向右横移40厘米，机位垂直下降12厘米，云台俯仰角上抬3度，动作持续1.8秒。设计意图：resolution阶段的核心任务是将箴言沉淀为观众记忆，因此时间分配必须向尾段大幅倾斜。首段以短时长完成空间锚定，尾段则用超过60%的时长执行推近-静止的复合 【负面约束】no blurry, no cartoon, no deformed hands, no extra fingers, no watermark, no text 【明亮约束】\n【光影增强】逆光轮廓光勾勒角色边缘，神圣而温暖\n自然光或柔和室内照明,画面真实干净,禁止暗黑/灰暗。 【角色约束】画面中仅出现陈卓,禁止重复角色\n【空间深度】背景细节暗示时间的流逝和变化 speaking_normal",
+    "shotId": "S05",
+    "sceneName": "结尾总结",
+    "sceneText": "结尾总结",
     "qualityScore": {
-      "score": 76,
+      "score": 82,
       "grade": "A",
       "passed": true,
       "action": "放行",
       "scores": {
-        "tier1Completeness": 50,
+        "tier1Completeness": 75,
         "visualPurity": 100,
-        "utilization": 117,
+        "utilization": 118,
         "techValidity": 100,
         "emotionConsistency": 70,
         "negativeCompleteness": 0
@@ -138,19 +132,18 @@
       "details": [
         {
           "dimension": "Tier-1完整性",
-          "score": 50,
+          "score": 75,
           "weight": 25,
           "checks": {
             "hasSubject": false,
-            "hasAction": false,
+            "hasAction": true,
             "hasScene": true,
             "hasCamera": true
           },
           "missing": [
-            "主体",
-            "动作"
+            "主体"
           ],
-          "comment": "缺失: 主体, 动作"
+          "comment": "Tier-1完整"
         },
         {
           "dimension": "视觉纯度",
@@ -161,11 +154,11 @@
         },
         {
           "dimension": "字符利用率",
-          "score": 117,
+          "score": 118,
           "weight": 15,
-          "length": 1167,
+          "length": 1180,
           "maxLength": 1500,
-          "utilization": 78,
+          "utilization": 79,
           "comment": "利用率良好"
         },
         {
@@ -196,17 +189,17 @@
           "comment": "缺失: no metallic shine, no traditional Chinese symbols, natural eye colors only"
         }
       ],
-      "duration": 1,
-      "report": "===== Prompt质量门禁报告 =====\n\n总分: 76/100 | 评级: A | 动作: 放行\n\n各维度评分:\n  Tier-1完整性: 50/100 (权重25% → 13分) — 缺失: 主体, 动作\n  视觉纯度: 100/100 (权重20% → 20分) — 视觉纯净\n  字符利用率: 117/100 (权重15% → 18分) — 利用率良好\n  技术规格有效性: 100/100 (权重15% → 15分) — 技术声明有效\n  情绪-表情一致性: 70/100 (权重15% → 11分) — 未定义情绪阶段，默认评分\n  负面约束完整性: 0/100 (权重10% → 0分) — 缺失: no metallic shine, no traditional Chinese symbols, natural eye colors only\n\n综合: ✅ 通过门禁"
+      "duration": 0,
+      "report": "===== Prompt质量门禁报告 =====\n\n总分: 82/100 | 评级: A | 动作: 放行\n\n各维度评分:\n  Tier-1完整性: 75/100 (权重25% → 19分) — Tier-1完整\n  视觉纯度: 100/100 (权重20% → 20分) — 视觉纯净\n  字符利用率: 118/100 (权重15% → 18分) — 利用率良好\n  技术规格有效性: 100/100 (权重15% → 15分) — 技术声明有效\n  情绪-表情一致性: 70/100 (权重15% → 11分) — 未定义情绪阶段，默认评分\n  负面约束完整性: 0/100 (权重10% → 0分) — 缺失: no metallic shine, no traditional Chinese symbols, natural eye colors only\n\n综合: ✅ 通过门禁"
     },
     "channelData": {
       "narration": {
-        "text": "记住，运动是好事，但科学运动更重要。如果出现肌肉剧痛、尿液变色，请立即就医。健康第一，我们下期再见。",
+        "text": "",
         "ttsReady": true,
-        "duration": 10
+        "duration": 0
       },
       "visual": {
-        "text": "电影级镜头, 结尾总结与号召, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression",
+        "text": "电影级镜头, 结尾总结, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression",
         "hasLipSync": false
       },
       "lipSync": null
@@ -215,74 +208,60 @@
   "mappedShot": {
     "id": "S05",
     "type": "closing",
-    "scene": "结尾总结与号召",
+    "scene": "结尾总结",
     "sceneType": "nature_epic",
     "emotionPhase": "resolution",
-    "narration": "记住，运动是好事，但科学运动更重要。如果出现肌肉剧痛、尿液变色，请立即就医。健康第一，我们下期再见。",
+    "narration": "",
     "action": "",
-    "visualPrompt": "超写实纪录片风格，专业医疗科普演播环境中，主持人陈卓正面对镜头站立，以沉稳自然的表情直接向观众进行总结性讲解，双手可自然交叠或做适度手势强调重点。画面采用竖屏中近景构图，人物位于画面中心偏上位置，背景为简洁明亮的医疗科普空间。整体光线柔和均匀，肤色与衣物纹理细节真实，镜头稳定，营造出专业、亲切且值得信赖的医学科普氛围，结尾传递健康第一的核心信息。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
+    "visualPrompt": "超写实纪录片风格，结尾总结场景，陈卓身穿白大褂或专业休闲装，站在简洁明亮的医疗科普演播室中央，正面直视镜头，姿态端正自信，双手自然交叠于身前或轻做手势强调要点，中近景构图，人物面部清晰可辨，表情真挚平和，背景为低饱和度的纯色墙面或医院走廊局部，环境整洁专业，柔光箱照明形成均匀面光，无阴影杂乱，画面色调干净通透，镜头稳定，整体呈现权威可信、温和有力的医学科普收尾质感。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
     "camera": "",
     "cameraMovement": {
       "timeline": {
-        "strategy": "渐进式聚焦健康警示",
-        "reasoning": "resolution情绪需要平稳、可信赖的收尾感。台词前半段为温和建议，后半段转为紧急警示，最后回归温暖告别。通过景别从medium渐进到close_up再回落，配合缓慢稳定的运动，建立信任感，在警示处通过微距特写强化信息权重，最终温和收尾。",
-        "segmentCount": 3,
+        "strategy": "沉锚式箴言收束",
+        "reasoning": "resolution阶段的核心任务是将箴言沉淀为观众记忆，因此时间分配必须向尾段大幅倾斜。首段以短时长完成空间锚定，尾段则用超过60%的时长执行推近-静止的复合动作，使'倾听身体，科学运动'在视觉停滞中获得语义重量，形成情绪落点。",
+        "segmentCount": 2,
         "segments": [
           {
             "index": 0,
-            "timeRange": "0.00-4.00",
-            "shotSize": "medium",
-            "movement": "轨道右移30厘米，机位高度下降10厘米，持续4秒",
-            "speed": "5厘米/秒",
-            "reason": "开场'运动是好事'语气平和，medium景别建立宽松安全的对话空间，缓慢轨道右移营造陪伴感，让观众自然进入倾听状态"
+            "timeRange": "0.0-1.8",
+            "shotSize": "close_up",
+            "movement": "轨道向右横移40厘米，机位垂直下降12厘米，云台俯仰角上抬3度，动作持续1.8秒",
+            "speed": "0.4",
+            "reason": "以较短时长建立空间秩序，缓慢下沉与微仰的组合营造平和而专注的resolution基调，为箴言出现铺垫视觉重心",
+            "shotSizeDesc": "特写（面部/细节）"
           },
           {
             "index": 1,
-            "timeRange": "4.00-8.50",
-            "shotSize": "close_up",
-            "movement": "镜头前推15厘米，焦点从面部眼睛区域过渡至嘴唇，持续4.5秒",
-            "speed": "3.3厘米/秒",
-            "reason": "'肌肉剧痛、尿液变色'为关键警示信息，close_up压缩空间制造紧迫感，缓慢前推强化信息侵入性，让观众无法回避健康警告，3.3厘米/秒的低速与内容的严重性形成张力，加深记忆锚点"
-          },
-          {
-            "index": 2,
-            "timeRange": "8.50-11.00",
-            "shotSize": "medium",
-            "movement": "轨道复位后撤20厘米，机位微抬5度，持续2.5秒",
-            "speed": "缓慢",
-            "reason": "'健康第一，下期再见'回归温暖和解，medium景别释放压迫感，后撤运动制造呼吸空间，微仰角度重建平等对话关系，2.5秒的短暂收束让resolution情绪干净落地，不拖沓"
+            "timeRange": "1.8-5.0",
+            "shotSize": "近景",
+            "movement": "沿光轴向前推进18厘米，耗时1.2秒完成位移；随后云台锁死，保持0厘米位移与0度偏转的绝对静止1.0秒",
+            "speed": "0.3转0",
+            "reason": "占用更长时长聚焦核心台词，极慢推进后骤然静止形成语义标点，在resolution高潮处以画面凝固强化'记住'的指令感，留给观众内化空间"
           }
         ],
         "generatedBy": "LLM-v4",
-        "description": "渐进式聚焦健康警示：从medium逐步过渡到medium，共3段，强调内容驱动的细微推进。",
+        "description": "沉锚式箴言收束：从中景逐步过渡到近景，共2段，强调内容驱动的细微推进。",
         "transitionType": "llm_v4",
         "timeline": {
-          "strategy": "渐进式聚焦健康警示",
-          "reasoning": "resolution情绪需要平稳、可信赖的收尾感。台词前半段为温和建议，后半段转为紧急警示，最后回归温暖告别。通过景别从medium渐进到close_up再回落，配合缓慢稳定的运动，建立信任感，在警示处通过微距特写强化信息权重，最终温和收尾。",
+          "strategy": "沉锚式箴言收束",
+          "reasoning": "resolution阶段的核心任务是将箴言沉淀为观众记忆，因此时间分配必须向尾段大幅倾斜。首段以短时长完成空间锚定，尾段则用超过60%的时长执行推近-静止的复合动作，使'倾听身体，科学运动'在视觉停滞中获得语义重量，形成情绪落点。",
           "segments": [
             {
               "index": 0,
-              "timeRange": "0.00-4.00",
-              "shotSize": "medium",
-              "movement": "轨道右移30厘米，机位高度下降10厘米，持续4秒",
-              "speed": "5厘米/秒",
-              "reason": "开场'运动是好事'语气平和，medium景别建立宽松安全的对话空间，缓慢轨道右移营造陪伴感，让观众自然进入倾听状态"
+              "timeRange": "0.0-1.8",
+              "shotSize": "close_up",
+              "movement": "轨道向右横移40厘米，机位垂直下降12厘米，云台俯仰角上抬3度，动作持续1.8秒",
+              "speed": "0.4",
+              "reason": "以较短时长建立空间秩序，缓慢下沉与微仰的组合营造平和而专注的resolution基调，为箴言出现铺垫视觉重心",
+              "shotSizeDesc": "特写（面部/细节）"
             },
             {
               "index": 1,
-              "timeRange": "4.00-8.50",
-              "shotSize": "close_up",
-              "movement": "镜头前推15厘米，焦点从面部眼睛区域过渡至嘴唇，持续4.5秒",
-              "speed": "3.3厘米/秒",
-              "reason": "'肌肉剧痛、尿液变色'为关键警示信息，close_up压缩空间制造紧迫感，缓慢前推强化信息侵入性，让观众无法回避健康警告，3.3厘米/秒的低速与内容的严重性形成张力，加深记忆锚点"
-            },
-            {
-              "index": 2,
-              "timeRange": "8.50-11.00",
-              "shotSize": "medium",
-              "movement": "轨道复位后撤20厘米，机位微抬5度，持续2.5秒",
-              "speed": "缓慢",
-              "reason": "'健康第一，下期再见'回归温暖和解，medium景别释放压迫感，后撤运动制造呼吸空间，微仰角度重建平等对话关系，2.5秒的短暂收束让resolution情绪干净落地，不拖沓"
+              "timeRange": "1.8-5.0",
+              "shotSize": "近景",
+              "movement": "沿光轴向前推进18厘米，耗时1.2秒完成位移；随后云台锁死，保持0厘米位移与0度偏转的绝对静止1.0秒",
+              "speed": "0.3转0",
+              "reason": "占用更长时长聚焦核心台词，极慢推进后骤然静止形成语义标点，在resolution高潮处以画面凝固强化'记住'的指令感，留给观众内化空间"
             }
           ]
         }
@@ -307,22 +286,28 @@
         },
         "movementStyle": "stable",
         "characterCount": 1,
-        "duration": 11,
-        "shotId": "结尾总结与号召",
-        "dialogue": "记住，运动是好事，但科学运动更重要。如果出现肌肉剧痛、尿液变色，请立即就医。健康第一，我们下期再见。",
+        "duration": 5,
+        "shotId": "结尾总结",
+        "dialogue": "记住：倾听身体，科学运动。",
         "emotionPhase": "resolution"
       },
       "v4Continuity": {
-        "valid": true,
-        "warnings": [],
+        "valid": false,
+        "warnings": [
+          {
+            "type": "shot_size_jump",
+            "message": "undefined → undefined: 视觉跳跃大",
+            "severity": "warning"
+          }
+        ],
         "fixes": []
       },
-      "description": "渐进式聚焦健康警示：从medium逐步过渡到medium，共3段精细运镜。首段：轨道右移30厘米，机位高度下降10厘米，持续4秒。设计意图：resolution情绪需要平稳、可信赖的收尾感。台词前半段为温和建议，后半段转为紧急警示，最后回归温暖告别。通过景别从medium渐进到close_up再回落",
-      "shotSize": "medium",
+      "description": "沉锚式箴言收束：从close_up逐步过渡到近景，共2段精细运镜。首段：轨道向右横移40厘米，机位垂直下降12厘米，云台俯仰角上抬3度，动作持续1.8秒。设计意图：resolution阶段的核心任务是将箴言沉淀为观众记忆，因此时间分配必须向尾段大幅倾斜。首段以短时长完成空间锚定，尾段则用超过60%的时长执行推近-静止的复合",
+      "shotSize": "close_up",
       "position": "center",
-      "movement": "轨道右移30厘米，机位高度下降10厘米，持续4秒",
-      "speed": "5厘米/秒",
-      "timeRange": "0.00-4.00"
+      "movement": "轨道向右横移40厘米，机位垂直下降12厘米，云台俯仰角上抬3度，动作持续1.8秒",
+      "speed": "0.4",
+      "timeRange": "0.0-1.8"
     },
     "lighting": null,
     "audio": "",
@@ -331,7 +316,7 @@
     "characters": [
       "chen-zhuo"
     ],
-    "duration": 11,
+    "duration": 5,
     "beastId": "",
     "beastName": "",
     "tension": 0,
@@ -344,32 +329,33 @@
     "protagonistName": "主角",
     "beastId": "",
     "beastName": "",
-    "habitat": "结尾总结与号召",
+    "habitat": "结尾总结",
     "episodeTheme": "",
     "sceneType": "nature_epic"
   },
   "schemaCheck": {
     "valid": true,
     "issues": [],
-    "warnings": []
+    "warnings": [
+      "shot.narration 与 shot.action 都为空"
+    ]
   },
   "subsystemFields": {
     "CHARACTER": "chen-zhuo",
-    "SCENE": "结尾总结与号召",
+    "SCENE": "结尾总结",
     "MOOD": "resolution",
     "RENDER": "电影级、超写实、细节丰富",
-    "DIALOGUE": "记住，运动是好事，但科学运动更重要。如果出现肌肉剧痛、尿液变色，请立即就医。健康第一，我们下期再见。",
-    "CAMERA": "（一镜到底！），镜头时间轴：0-4s: static (宁静) → 4-7s: push_in (聚焦) → 7-11s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
+    "CAMERA": "（一镜到底！），镜头时间轴：0-3s: 缓慢establish，远景→中景，氛围铺垫 → 3-5s: 微微定格，眼神/表情接触，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
     "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K",
     "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow",
     "meta": {
       "source": "camera-movement-system-v3",
       "raw": {
-        "scene": "结尾总结与号召",
+        "scene": "结尾总结",
         "emotionPhase": "resolution",
-        "duration": 11,
+        "duration": 5,
         "baseMovement": {
-          "scene": "结尾总结与号召",
+          "scene": "结尾总结",
           "physicsDriver": "generic",
           "primaryMovement": "smooth_track",
           "speed": "smooth",
@@ -382,59 +368,21 @@
           "lightSync": false,
           "bioPulseSync": false,
           "gravityFactor": 1,
-          "intraShotCombo": {
-            "name": "开场建立",
-            "segments": [
-              {
-                "camera": "static",
-                "duration": 2,
-                "lighting": "LIT-N02",
-                "emotion": "宁静"
-              },
-              {
-                "camera": "push_in",
-                "duration": 3,
-                "lighting": "LIT-D03",
-                "emotion": "聚焦"
-              },
-              {
-                "camera": "orbit_right",
-                "duration": 2,
-                "lighting": "LIT-D08",
-                "emotion": "升华"
-              }
-            ],
-            "description": "固定建立 → 推近聚焦 → 环绕升华"
-          },
-          "hasMultiSegment": true,
-          "segmentCount": 3,
-          "comboDescription": "【运镜组合】开场建立：0-4秒：static → 4-7秒：push_in → 7-11秒：orbit_right",
           "timeline": [
             {
-              "range": "0-4s",
-              "action": "static (宁静)",
-              "movement": "static",
-              "lighting": "晨光侧射"
+              "range": "0-3s",
+              "action": "缓慢establish，远景→中景，氛围铺垫"
             },
             {
-              "range": "4-7s",
-              "action": "push_in (聚焦)",
-              "movement": "push_in",
-              "lighting": "自然光"
-            },
-            {
-              "range": "7-11s",
-              "action": "orbit_right (升华)",
-              "movement": "orbit_right",
-              "lighting": "自然光"
+              "range": "3-5s",
+              "action": "微微定格，眼神/表情接触"
             }
           ],
-          "timelineSource": "intra-shot-combo",
-          "description": "（一镜到底！），镜头时间轴：0-4s: static (宁静) → 4-7s: push_in (聚焦) → 7-11s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic"
+          "description": "（一镜到底！），镜头时间轴：0-3s: 缓慢establish，远景→中景，氛围铺垫 → 3-5s: 微微定格，眼神/表情接触，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic"
         },
-        "description": "（一镜到底！），镜头时间轴：0-4s: static (宁静) → 4-7s: push_in (聚焦) → 7-11s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic",
+        "description": "（一镜到底！），镜头时间轴：0-3s: 缓慢establish，远景→中景，氛围铺垫 → 3-5s: 微微定格，眼神/表情接触，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic",
         "intraShotTimeline": {
-          "totalDuration": 11,
+          "totalDuration": 5,
           "segmentCount": 4,
           "transitionName": "渐进式揭示",
           "transitionDesc": "从远景逐步推到特写，建立环境→发现主体→情感亲密",
@@ -446,7 +394,7 @@
             {
               "index": 0,
               "timeRange": "早期",
-              "duration": 2.2,
+              "duration": 1,
               "shotSize": "extreme_wide",
               "shotSizeDesc": "极端远景（环境全貌）",
               "movement": "orbit_360",
@@ -465,7 +413,7 @@
             {
               "index": 1,
               "timeRange": "中期",
-              "duration": 3.3,
+              "duration": 1.5,
               "shotSize": "wide",
               "shotSizeDesc": "远景（环境+主体）",
               "movement": "push_in",
@@ -484,7 +432,7 @@
             {
               "index": 2,
               "timeRange": "后期",
-              "duration": 3.3,
+              "duration": 1.5,
               "shotSize": "medium",
               "shotSizeDesc": "中景（半身/双人）",
               "movement": "push_in",
@@ -503,7 +451,7 @@
             {
               "index": 3,
               "timeRange": "尾声",
-              "duration": 2.2,
+              "duration": 1,
               "shotSize": "close_up",
               "shotSizeDesc": "特写（面部/细节）",
               "movement": "hold",
@@ -522,7 +470,7 @@
           ],
           "summary": "【镜头时间轴 - 渐进式揭示】\n策略：从远景逐步推到特写，建立环境→发现主体→情感亲密\n灯光：晨曦渐亮 - 从黑暗中逐渐亮起，模拟日出效果\n速度：慢快慢 - 开始缓慢，中间加速，最后减速\n\n早期｜极端远景（环境全貌）｜缓慢｜orbit_360｜灯光：仅轮廓可见\n  → 转场：平滑渐变\n中期｜远景（环境+主体）｜很快｜push_in｜灯光：侧光渐强\n  → 转场：硬切\n后期｜中景（半身/双人）｜极限速度｜push_in｜灯光：主体清晰\n  → 转场：移焦过渡\n尾声｜特写（面部/细节）｜快速｜hold｜灯光：全面照亮\n"
         },
-        "intraShotPrompt": "【运镜时间轴 - 一镜到底多段式】\n本镜头共4段，总时长11秒。\n景别切换策略：渐进式揭示（从远景逐步推到特写，建立环境→发现主体→情感亲密）\n灯光变化：晨曦渐亮（从黑暗中逐渐亮起，模拟日出效果）\n速度曲线：慢快慢（开始缓慢，中间加速，最后减速）\n\n早期：\n  景别：极端远景（环境全貌）\n  运镜：orbit_360\n  速度：缓慢（强度0.3）\n  灯光：仅轮廓可见，色温2000K，强度0.1\n  → 转场：平滑渐变（0.5-1秒平滑过渡）\n\n中期：\n  景别：远景（环境+主体）\n  运镜：push_in\n  速度：很快（强度0.8）\n  灯光：侧光渐强，色温2800K，强度0.3\n  → 转场：硬切（瞬间切换，无过渡）\n\n后期：\n  景别：中景（半身/双人）\n  运镜：push_in\n  速度：极限速度（强度1）\n  灯光：主体清晰，色温4500K，强度0.6\n  → 转场：移焦过渡（焦点从前景移到后景（或反之）实现切换）\n\n尾声：\n  景别：特写（面部/细节）\n  运镜：hold\n  速度：快速（强度0.6）\n  灯光：全面照亮，色温5600K，强度1\n\n",
+        "intraShotPrompt": "【运镜时间轴 - 一镜到底多段式】\n本镜头共4段，总时长5秒。\n景别切换策略：渐进式揭示（从远景逐步推到特写，建立环境→发现主体→情感亲密）\n灯光变化：晨曦渐亮（从黑暗中逐渐亮起，模拟日出效果）\n速度曲线：慢快慢（开始缓慢，中间加速，最后减速）\n\n早期：\n  景别：极端远景（环境全貌）\n  运镜：orbit_360\n  速度：缓慢（强度0.3）\n  灯光：仅轮廓可见，色温2000K，强度0.1\n  → 转场：平滑渐变（0.5-1秒平滑过渡）\n\n中期：\n  景别：远景（环境+主体）\n  运镜：push_in\n  速度：很快（强度0.8）\n  灯光：侧光渐强，色温2800K，强度0.3\n  → 转场：硬切（瞬间切换，无过渡）\n\n后期：\n  景别：中景（半身/双人）\n  运镜：push_in\n  速度：极限速度（强度1）\n  灯光：主体清晰，色温4500K，强度0.6\n  → 转场：移焦过渡（焦点从前景移到后景（或反之）实现切换）\n\n尾声：\n  景别：特写（面部/细节）\n  运镜：hold\n  速度：快速（强度0.6）\n  灯光：全面照亮，色温5600K，强度1\n\n",
         "camera": "extreme_wide orbit_360, 50mm lens, normal speed",
         "lighting": "low_back key 2000K, 仅轮廓可见",
         "config": {
@@ -532,7 +480,7 @@
         }
       }
     },
-    "AUDIO": "【环境音效】风声、风穿过物体声",
+    "AUDIO": "【环境音效】风穿过物体声、风声",
     "_meta": {
       "activatedSubsystems": [
         "CameraMovementSystemV3Bridge",
@@ -546,21 +494,20 @@
   "llmFields": {},
   "mergedFields": {
     "CHARACTER": "chen-zhuo",
-    "SCENE": "结尾总结与号召；背景景物不再压迫，整体气氛转向释然与开放",
-    "MOOD": "resolution；轻盈、安定、新生",
+    "SCENE": "结尾总结；环境呼应前文，但细节已悄然改变，形成完成后的余韵",
+    "MOOD": "resolution；轻盈、温暖、新生",
     "RENDER": "电影级、超写实、细节丰富",
-    "DIALOGUE": "记住，运动是好事，但科学运动更重要。如果出现肌肉剧痛、尿液变色，请立即就医。健康第一，我们下期再见。",
-    "CAMERA": "（一镜到底！），镜头时间轴：0-4s: static (宁静) → 4-7s: push_in (聚焦) → 7-11s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
+    "CAMERA": "（一镜到底！），镜头时间轴：0-3s: 缓慢establish，远景→中景，氛围铺垫 → 3-5s: 微微定格，眼神/表情接触，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
     "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K；环境中残留温暖光晕，阴影被细腻填平",
-    "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow；结尾不要急着收，给观众1秒情绪停留",
+    "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow；重点不是信息，而是情绪残留",
     "meta": {
       "source": "camera-movement-system-v3",
       "raw": {
-        "scene": "结尾总结与号召",
+        "scene": "结尾总结",
         "emotionPhase": "resolution",
-        "duration": 11,
+        "duration": 5,
         "baseMovement": {
-          "scene": "结尾总结与号召",
+          "scene": "结尾总结",
           "physicsDriver": "generic",
           "primaryMovement": "smooth_track",
           "speed": "smooth",
@@ -573,59 +520,21 @@
           "lightSync": false,
           "bioPulseSync": false,
           "gravityFactor": 1,
-          "intraShotCombo": {
-            "name": "开场建立",
-            "segments": [
-              {
-                "camera": "static",
-                "duration": 2,
-                "lighting": "LIT-N02",
-                "emotion": "宁静"
-              },
-              {
-                "camera": "push_in",
-                "duration": 3,
-                "lighting": "LIT-D03",
-                "emotion": "聚焦"
-              },
-              {
-                "camera": "orbit_right",
-                "duration": 2,
-                "lighting": "LIT-D08",
-                "emotion": "升华"
-              }
-            ],
-            "description": "固定建立 → 推近聚焦 → 环绕升华"
-          },
-          "hasMultiSegment": true,
-          "segmentCount": 3,
-          "comboDescription": "【运镜组合】开场建立：0-4秒：static → 4-7秒：push_in → 7-11秒：orbit_right",
           "timeline": [
             {
-              "range": "0-4s",
-              "action": "static (宁静)",
-              "movement": "static",
-              "lighting": "晨光侧射"
+              "range": "0-3s",
+              "action": "缓慢establish，远景→中景，氛围铺垫"
             },
             {
-              "range": "4-7s",
-              "action": "push_in (聚焦)",
-              "movement": "push_in",
-              "lighting": "自然光"
-            },
-            {
-              "range": "7-11s",
-              "action": "orbit_right (升华)",
-              "movement": "orbit_right",
-              "lighting": "自然光"
+              "range": "3-5s",
+              "action": "微微定格，眼神/表情接触"
             }
           ],
-          "timelineSource": "intra-shot-combo",
-          "description": "（一镜到底！），镜头时间轴：0-4s: static (宁静) → 4-7s: push_in (聚焦) → 7-11s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic"
+          "description": "（一镜到底！），镜头时间轴：0-3s: 缓慢establish，远景→中景，氛围铺垫 → 3-5s: 微微定格，眼神/表情接触，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic"
         },
-        "description": "（一镜到底！），镜头时间轴：0-4s: static (宁静) → 4-7s: push_in (聚焦) → 7-11s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic",
+        "description": "（一镜到底！），镜头时间轴：0-3s: 缓慢establish，远景→中景，氛围铺垫 → 3-5s: 微微定格，眼神/表情接触，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic",
         "intraShotTimeline": {
-          "totalDuration": 11,
+          "totalDuration": 5,
           "segmentCount": 4,
           "transitionName": "渐进式揭示",
           "transitionDesc": "从远景逐步推到特写，建立环境→发现主体→情感亲密",
@@ -637,7 +546,7 @@
             {
               "index": 0,
               "timeRange": "早期",
-              "duration": 2.2,
+              "duration": 1,
               "shotSize": "extreme_wide",
               "shotSizeDesc": "极端远景（环境全貌）",
               "movement": "orbit_360",
@@ -656,7 +565,7 @@
             {
               "index": 1,
               "timeRange": "中期",
-              "duration": 3.3,
+              "duration": 1.5,
               "shotSize": "wide",
               "shotSizeDesc": "远景（环境+主体）",
               "movement": "push_in",
@@ -675,7 +584,7 @@
             {
               "index": 2,
               "timeRange": "后期",
-              "duration": 3.3,
+              "duration": 1.5,
               "shotSize": "medium",
               "shotSizeDesc": "中景（半身/双人）",
               "movement": "push_in",
@@ -694,7 +603,7 @@
             {
               "index": 3,
               "timeRange": "尾声",
-              "duration": 2.2,
+              "duration": 1,
               "shotSize": "close_up",
               "shotSizeDesc": "特写（面部/细节）",
               "movement": "hold",
@@ -713,7 +622,7 @@
           ],
           "summary": "【镜头时间轴 - 渐进式揭示】\n策略：从远景逐步推到特写，建立环境→发现主体→情感亲密\n灯光：晨曦渐亮 - 从黑暗中逐渐亮起，模拟日出效果\n速度：慢快慢 - 开始缓慢，中间加速，最后减速\n\n早期｜极端远景（环境全貌）｜缓慢｜orbit_360｜灯光：仅轮廓可见\n  → 转场：平滑渐变\n中期｜远景（环境+主体）｜很快｜push_in｜灯光：侧光渐强\n  → 转场：硬切\n后期｜中景（半身/双人）｜极限速度｜push_in｜灯光：主体清晰\n  → 转场：移焦过渡\n尾声｜特写（面部/细节）｜快速｜hold｜灯光：全面照亮\n"
         },
-        "intraShotPrompt": "【运镜时间轴 - 一镜到底多段式】\n本镜头共4段，总时长11秒。\n景别切换策略：渐进式揭示（从远景逐步推到特写，建立环境→发现主体→情感亲密）\n灯光变化：晨曦渐亮（从黑暗中逐渐亮起，模拟日出效果）\n速度曲线：慢快慢（开始缓慢，中间加速，最后减速）\n\n早期：\n  景别：极端远景（环境全貌）\n  运镜：orbit_360\n  速度：缓慢（强度0.3）\n  灯光：仅轮廓可见，色温2000K，强度0.1\n  → 转场：平滑渐变（0.5-1秒平滑过渡）\n\n中期：\n  景别：远景（环境+主体）\n  运镜：push_in\n  速度：很快（强度0.8）\n  灯光：侧光渐强，色温2800K，强度0.3\n  → 转场：硬切（瞬间切换，无过渡）\n\n后期：\n  景别：中景（半身/双人）\n  运镜：push_in\n  速度：极限速度（强度1）\n  灯光：主体清晰，色温4500K，强度0.6\n  → 转场：移焦过渡（焦点从前景移到后景（或反之）实现切换）\n\n尾声：\n  景别：特写（面部/细节）\n  运镜：hold\n  速度：快速（强度0.6）\n  灯光：全面照亮，色温5600K，强度1\n\n",
+        "intraShotPrompt": "【运镜时间轴 - 一镜到底多段式】\n本镜头共4段，总时长5秒。\n景别切换策略：渐进式揭示（从远景逐步推到特写，建立环境→发现主体→情感亲密）\n灯光变化：晨曦渐亮（从黑暗中逐渐亮起，模拟日出效果）\n速度曲线：慢快慢（开始缓慢，中间加速，最后减速）\n\n早期：\n  景别：极端远景（环境全貌）\n  运镜：orbit_360\n  速度：缓慢（强度0.3）\n  灯光：仅轮廓可见，色温2000K，强度0.1\n  → 转场：平滑渐变（0.5-1秒平滑过渡）\n\n中期：\n  景别：远景（环境+主体）\n  运镜：push_in\n  速度：很快（强度0.8）\n  灯光：侧光渐强，色温2800K，强度0.3\n  → 转场：硬切（瞬间切换，无过渡）\n\n后期：\n  景别：中景（半身/双人）\n  运镜：push_in\n  速度：极限速度（强度1）\n  灯光：主体清晰，色温4500K，强度0.6\n  → 转场：移焦过渡（焦点从前景移到后景（或反之）实现切换）\n\n尾声：\n  景别：特写（面部/细节）\n  运镜：hold\n  速度：快速（强度0.6）\n  灯光：全面照亮，色温5600K，强度1\n\n",
         "camera": "extreme_wide orbit_360, 50mm lens, normal speed",
         "lighting": "low_back key 2000K, 仅轮廓可见",
         "config": {
@@ -723,7 +632,7 @@
         }
       }
     },
-    "AUDIO": "【环境音效】风声、风穿过物体声",
+    "AUDIO": "【环境音效】风穿过物体声、风声",
     "_meta": {
       "activatedSubsystems": [
         "CameraMovementSystemV3Bridge",
@@ -737,30 +646,32 @@
   },
   "normalizedFields": {
     "CHARACTER": "chen-zhuo",
-    "DIALOGUE": "记住，运动是好事，但科学运动更重要。如果出现肌肉剧痛、尿液变色，请立即就医。健康第一，我们下期再见。",
+    "DIALOGUE": "",
     "ACTION": "",
-    "SCENE": "结尾总结与号召；背景景物不再压迫，整体气氛转向释然与开放",
-    "MOOD": "resolution；轻盈、安定、新生",
-    "CAMERA": "（一镜到底！），镜头时间轴：0-4s: static (宁静) → 4-7s: push_in (聚焦) → 7-11s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
+    "SCENE": "结尾总结；环境呼应前文，但细节已悄然改变，形成完成后的余韵",
+    "MOOD": "resolution；轻盈、温暖、新生",
+    "CAMERA": "（一镜到底！），镜头时间轴：0-3s: 缓慢establish，远景→中景，氛围铺垫 → 3-5s: 微微定格，眼神/表情接触，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
     "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K；环境中残留温暖光晕，阴影被细腻填平",
     "NEGATIVE": "no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers",
-    "AUDIO": "【环境音效】风声、风穿过物体声",
+    "AUDIO": "【环境音效】风穿过物体声、风声",
     "RENDER": "电影级、超写实、细节丰富",
-    "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow；结尾不要急着收，给观众1秒情绪停留"
+    "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow；重点不是信息，而是情绪残留"
   },
-  "finalPrompt": "{CHARACTER: chen-zhuo | DIALOGUE: 记住，运动是好事，但科学运动更重要。如果出现肌肉剧痛、尿液变色，请立即就医。健康第一，我们下期再见。 | SCENE: 结尾总结与号召；背景景物不再压迫，整体气氛转向释然与开放 | MOOD: resolution；轻盈、安定、新生 | CAMERA: （一镜到底！），镜头时间轴：0-4s: static (宁静) → 4-7s: push_in (聚焦) → 7-11s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人） | LIGHTING: 仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K；环境中残留温暖光晕，阴影被细腻填平 | NEGATIVE: no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers | AUDIO: 【环境音效】风声、风穿过物体声 | RENDER: 电影级、超写实、细节丰富 | DIRECTOR: 景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow；结尾不要急着收，给观众1秒情绪停留}",
+  "finalPrompt": "{CHARACTER: chen-zhuo | SCENE: 结尾总结；环境呼应前文，但细节已悄然改变，形成完成后的余韵 | MOOD: resolution；轻盈、温暖、新生 | CAMERA: （一镜到底！），镜头时间轴：0-3s: 缓慢establish，远景→中景，氛围铺垫 → 3-5s: 微微定格，眼神/表情接触，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人） | LIGHTING: 仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K；环境中残留温暖光晕，阴影被细腻填平 | NEGATIVE: no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers | AUDIO: 【环境音效】风穿过物体声、风声 | RENDER: 电影级、超写实、细节丰富 | DIRECTOR: 景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow；重点不是信息，而是情绪残留}",
   "validation": {
-    "valid": true,
-    "issues": [],
+    "valid": false,
+    "issues": [
+      "缺少必填字段: DIALOGUE"
+    ],
     "warnings": [],
     "stats": {
-      "length": 826,
+      "length": 745,
       "emptyFields": [
+        "DIALOGUE",
         "ACTION"
       ],
       "filledFields": [
         "CHARACTER",
-        "DIALOGUE",
         "SCENE",
         "MOOD",
         "CAMERA",
@@ -774,6 +685,6 @@
   },
   "meta": {
     "builderVersion": "v3",
-    "timestamp": "2026-06-17T04:52:33.112Z"
+    "timestamp": "2026-06-18T02:02:22.430Z"
   }
 }

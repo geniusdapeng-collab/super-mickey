@@ -1,0 +1,59 @@
+{
+  "time": "2026-06-17T07:54:09.326Z",
+  "sceneAnalysis": {
+    "spaceSize": "medium",
+    "sceneType": "dialogue",
+    "sceneTypeName": "对话",
+    "segmentCount": 3,
+    "constraints": {
+      "minSize": "medium",
+      "maxSize": "wide",
+      "forbidden": [
+        "extreme_wide"
+      ],
+      "preferred": [
+        "medium",
+        "close_up"
+      ],
+      "defaultSize": "medium"
+    },
+    "movementStyle": "stable",
+    "characterCount": 1,
+    "duration": 15,
+    "shotId": "尿液颜色警示",
+    "dialogue": "大家注意，如果运动后尿液变成这种茶色或者可乐色，千万别忍，这是肌肉损伤在报警。",
+    "emotionPhase": "tension"
+  },
+  "result": {
+    "success": true,
+    "content": "Segment 3:\n- timeRange: \"10-15s\"\n- shotSize: \"close_up\"\n- movement: \"微距镜头以1厘米/秒向后撤离5厘米，叠加每秒1次幅度2厘米的垂直微颤\"\n- speed: \"1厘米/秒\"\n- reason: \"在'报警'关键词处制造视觉后撤与生理震颤感，外化紧张峰值\"",
+    "reasoning_content": "用户要求输出一个合法的JSON对象，不能有markdown，不能解释，不能有额外文本。\n\n要求：\n1. 为镜头生成3段运镜方案\n2. 场景:未命名\n3. 类型:对话\n4. 时长:15秒\n5. 情绪:tension（紧张）\n6. 人物:无\n7. 台词:大家注意，如果运动后尿液变成这种茶色或者可乐色，千万别忍，这是肌肉损伤在报警。\n8. 限制:可用景别[medium,close_up],禁用[extreme_wide]\n9. JSON字段: strategy, reasoning, segments\n10. segments每项字段: timeRange, shotSize, movement, speed, reason\n11. movement必须含具体数字(厘米/度/秒)\n12. strategy必须是具体名称，不得写\"策略名\"\n\n台词是关于健康警告的，情绪是紧张。没有人物，但是对话类型（可能是解说、旁白或独白）。\n\n需要设计3个segment，总时长15秒。每个segment需要timeRange（时间范围），shotSize（景别，只能是medium或close_up），movement（运镜，必须包含具体数字如厘米/度/秒），speed（速度），reason（原因）。\n\nstrategy必须是具体名称，比如\"压迫式推进\"或\"警示性聚焦\"等。\n\n由于是对话/解说，且没有人物，可能是对着镜头说话或者展示讲解对象。台词提到\"尿液变成这种茶色或者可乐色\"，所以可能是展示尿液样本或者对着镜头讲解。\n\n景别限制：medium（中景）, close_up（特写）。不能用extreme_wide。\n\n情绪tension：需要通过运镜营造紧张感，比如缓慢推镜、轻微晃动、焦点转移等。\n\n让我设计3个segments：\n\nSegment 1: 0-5秒\n- timeRange: \"0-5s\"\n- shotSize: \"medium\"\n- movement: \"手持稳定器向前推进30厘米，焦点从背景转移至模拟尿液样本\"\n- speed: \"2厘米/秒\"\n- reason: \"以中景建立讲解者与样本的空间关系，缓慢推进制造不安预感\"\n\nSegment 2: 5-10秒\n- timeRange: \"5-10s\"\n- shotSize: \"close_up\"\n- movement: \"环绕样本主体顺时针旋转15度，同时横向移动10厘米\"\n- speed: \"3度/秒，2厘米/秒\"\n- reason: \"特写强调茶色液体细节，环绕运动增强审视与压迫感\"\n\nSegment 3: 10-15秒\n- timeRange: \"10-15s\"\n- shotSize: \"close_up\"\n- movement: \"微距镜头向后急拉5厘米，伴随垂直上下晃动2厘米\"\n- speed: \"1厘米/秒（拉），0.5厘米/秒（晃动）\"\n- reason: \"在'报警'台词处制造视觉冲击与生理不适，强化紧张情绪\"\n\n但需要注意movement必须含具体数字(厘米/度/秒)，且要合法JSON。\n\nstrategy名称：\"渐进压迫式运镜\" 或 \"警示聚焦环绕策略\"。选一个具体的，比如\"压迫式三级聚焦\"。\n\nreasoning: \"通过景别从medium向close_up的递进，配合带有具体速度参数的推近、环绕与微晃运动，在无人物出场的情况下，以生理样本为视觉锚点，利用逐渐收紧的构图和不安定的机位运动，外化台词中暗含的健康威胁与紧迫感。\"\n\n再检查每个segment的movement是否都有数字和单位：\n- Segment 1: \"稳定器前推40厘米，焦点转移\" -> 需要包含 /秒。应该是动作描述中包含速度或幅度。用户说\"movement必须含具体数字(厘米/度/秒)\"，可能指movement字段要包含如\"5厘米/秒\"这样的速率，或者至少包含具体数字和单位。为了保险，我可以在movement里明确写入速度相关的数字和单位，比如\"以2厘米/秒速度前推40厘米\"。\n\n让我重新设计：\n\nStrategy: \"生理警示压迫运镜\"\n\n reasoning: \"基于台词中'茶色/可乐色'与'肌肉损伤报警'的病理暗示，采用从medium到close_up的景别收缩，结合带有精确速率参数的推近、环绕与微颤动作，在无人物场景中通过视觉本体制造被审视的紧张感与生理焦虑。\"\n\nSegments:\n1. 0-5s, medium, \"稳定器以2厘米/秒匀速前推40厘米，焦点从讲解者面部向样本容器转移\", speed: \"慢速\", reason: \"...\"\n   但speed字段是单独要求的。speed可以写\"2厘米/秒\"吗？还是speed写描述？用户没有限定speed的格式，但movement必须有具体数字(厘米/度/秒)。为了清晰，speed可以写\"缓慢\"或具体速度。但用户说\"movement必须含具体数字(厘米/度/秒)\"，所以重点在movement。\n\nSegment 1:\n- timeRange: \"0-5s\"\n- shotSize: \"medium\"\n- movement: \"稳定器以2厘米/秒向前推进40厘米，同步完成焦点从背景至样本容器的转移\"\n- speed: \"2厘米/秒\"\n- reason: \"中景建立空间关系，缓慢前推营造逼近真相的不安情绪\"\n\nSegment 2:\n- timeRange: \"5-10s\"\n- shotSize: \"close_up\"\n- movement: \"机位以4度/秒绕样本容器顺时针旋转20度，配合水平横移10厘米\"\n- speed: \"复合运动\"\n- reason: \"特写锁定病理样本，环绕运动强化审视感与不可逃避的压迫氛围\"\n\nSegment 3:\n- timeRange: \"10-15s\"\n- shotSize: \"close_up\"\n- movement: \"微距镜头以1厘米/秒向后撤离5厘米，叠加每秒1次幅度2厘米的垂直微颤\"\n- speed: \"1厘米/秒\"\n- reason: \"在'报警'关键词处制造视觉后撤与生理震颤感，外化紧张峰值\"\n\n等等，Segment 3的movement：\"微距镜头以1厘米/秒向后撤离5厘米，叠加每秒1次幅度2厘米的垂直微颤\" - 这里包含了\"1厘米/秒\"，\"5厘米\"，\"2厘米\"。但\"每秒1次\"不是厘米/度/秒，不过\"2厘米\"是。可能有点模糊。改成：\"微距镜头以1厘米/秒向后撤离5厘米，同步施加振幅2厘米、频率1赫兹的垂直晃动\"。这样有\"1厘米/秒\"，\"2厘米\"。\n\n或者更明确：\nmovement: \"以1厘米/秒后拉5厘米，叠加振幅2厘米/秒 vertical jitter\" - 不，应该是中文。\n\n用中文：\n\"以1厘米/秒速度后拉5厘米，并施加2厘米/秒的垂直方向高频抖动\"\n\n实际上\"2厘米/秒的垂直方向高频抖动\"意味着每秒移动2厘米？有点怪。可以说\"振幅2厘米的垂直晃动，频率为1次/秒\"，但这包含了2厘米和1次/秒。\n\n再想想。用户要求movement必须含具体数字(厘米/度/秒)。这意味着字符串中应该出现如\"5厘米\"、\"30度\"、\"2秒\"这样的内容。速度和距离都可以。\n\n让我确保每个movement都有清晰的数字和单位：\n\nSegment 1 movement: \"稳定器以2厘米/秒匀速前推40厘米，焦点同步转移至样本容器\"\n包含：2厘米/秒，40厘米\n\nSegment 2 movement: \"机位以3度/秒环绕样本顺时针旋转15度，并配合2厘米/秒横向滑轨移动10厘米\"\n包含：3度/秒，15度，2厘米/秒，10厘米\n\nSegment 3 movement: \"镜头以1厘米/秒后撤5厘米，同时施加振幅2厘米、频率1次/秒的垂直震颤\"\n包含：1厘米/秒，5厘米，2厘米，1次/秒（虽然1次/秒不是厘米/度/秒，但2厘米是）\n\n为了更严格，把频率也换成厘米相关：\n\"镜头以1厘米/秒后撤5厘米，同时沿Y轴以2厘米/秒振幅进行上下震荡\"\n包含：1厘米/秒，5厘米，2厘米/秒\n\n这样每个movement都含多个具体数字和单位。\n\nSpeed字段可以写中文描述或数值。用户没有特别限制speed格式，但保持一致性可以写数值或描述。我写具体数值或者\"慢速/中速/快速\"。但既然movement已经包含速度，speed字段可以写总体的速度描述。不过为了JSON的整洁，speed写如\"2厘米/秒\"也可以。\n\n重新梳理：\n\n```json\n{\n  \"strategy\": \"病理样本压迫式聚焦\",\n  \"reasoning\": \"针对无人物的健康警示台词，通过景别从medium至close_up的递进收缩，配合具有精确速率参数的推近、环绕与震颤动作，将视觉压迫施加于生理样本本身，以外化的机位运动替代人物表演，传递肌肉损伤隐含的生理恐惧与紧迫感。\",\n  \"segments\": [\n    {\n      \"timeRange\": \"0-5s\",\n      \"shotSize\": \"medium\",\n      \"movement\": \"稳定器以2厘米/秒匀速向前推进40厘米，焦点同步由背景转移至样本容器\",\n      \"speed\": \"2厘米/秒\",\n      \"reason\": \"中景建立讲解者与病理样本的空间关系，缓慢推进在平静台词中预埋不安张力\"\n    },\n    {\n      \"timeRange\": \"5-10s\",\n      \"shotSize\": \"close_up\",\n      \"movement\": \"机位以3度/秒绕样本容器顺时针旋转15度，并配合2厘米/秒",
+    "source": "content-only-json-mode",
+    "tokenCount": 2209,
+    "raw": {
+      "id": "chatcmpl-kjNkDdixWZhKH4c4pE7Oq2Af",
+      "object": "chat.completion",
+      "created": 1781682795,
+      "model": "kimi-for-coding",
+      "choices": [
+        {
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "",
+            "reasoning_content": "用户要求输出一个合法的JSON对象，不能有markdown，不能解释，不能有额外文本。\n\n要求：\n1. 为镜头生成3段运镜方案\n2. 场景:未命名\n3. 类型:对话\n4. 时长:15秒\n5. 情绪:tension（紧张）\n6. 人物:无\n7. 台词:大家注意，如果运动后尿液变成这种茶色或者可乐色，千万别忍，这是肌肉损伤在报警。\n8. 限制:可用景别[medium,close_up],禁用[extreme_wide]\n9. JSON字段: strategy, reasoning, segments\n10. segments每项字段: timeRange, shotSize, movement, speed, reason\n11. movement必须含具体数字(厘米/度/秒)\n12. strategy必须是具体名称，不得写\"策略名\"\n\n台词是关于健康警告的，情绪是紧张。没有人物，但是对话类型（可能是解说、旁白或独白）。\n\n需要设计3个segment，总时长15秒。每个segment需要timeRange（时间范围），shotSize（景别，只能是medium或close_up），movement（运镜，必须包含具体数字如厘米/度/秒），speed（速度），reason（原因）。\n\nstrategy必须是具体名称，比如\"压迫式推进\"或\"警示性聚焦\"等。\n\n由于是对话/解说，且没有人物，可能是对着镜头说话或者展示讲解对象。台词提到\"尿液变成这种茶色或者可乐色\"，所以可能是展示尿液样本或者对着镜头讲解。\n\n景别限制：medium（中景）, close_up（特写）。不能用extreme_wide。\n\n情绪tension：需要通过运镜营造紧张感，比如缓慢推镜、轻微晃动、焦点转移等。\n\n让我设计3个segments：\n\nSegment 1: 0-5秒\n- timeRange: \"0-5s\"\n- shotSize: \"medium\"\n- movement: \"手持稳定器向前推进30厘米，焦点从背景转移至模拟尿液样本\"\n- speed: \"2厘米/秒\"\n- reason: \"以中景建立讲解者与样本的空间关系，缓慢推进制造不安预感\"\n\nSegment 2: 5-10秒\n- timeRange: \"5-10s\"\n- shotSize: \"close_up\"\n- movement: \"环绕样本主体顺时针旋转15度，同时横向移动10厘米\"\n- speed: \"3度/秒，2厘米/秒\"\n- reason: \"特写强调茶色液体细节，环绕运动增强审视与压迫感\"\n\nSegment 3: 10-15秒\n- timeRange: \"10-15s\"\n- shotSize: \"close_up\"\n- movement: \"微距镜头向后急拉5厘米，伴随垂直上下晃动2厘米\"\n- speed: \"1厘米/秒（拉），0.5厘米/秒（晃动）\"\n- reason: \"在'报警'台词处制造视觉冲击与生理不适，强化紧张情绪\"\n\n但需要注意movement必须含具体数字(厘米/度/秒)，且要合法JSON。\n\nstrategy名称：\"渐进压迫式运镜\" 或 \"警示聚焦环绕策略\"。选一个具体的，比如\"压迫式三级聚焦\"。\n\nreasoning: \"通过景别从medium向close_up的递进，配合带有具体速度参数的推近、环绕与微晃运动，在无人物出场的情况下，以生理样本为视觉锚点，利用逐渐收紧的构图和不安定的机位运动，外化台词中暗含的健康威胁与紧迫感。\"\n\n再检查每个segment的movement是否都有数字和单位：\n- Segment 1: \"稳定器前推40厘米，焦点转移\" -> 需要包含 /秒。应该是动作描述中包含速度或幅度。用户说\"movement必须含具体数字(厘米/度/秒)\"，可能指movement字段要包含如\"5厘米/秒\"这样的速率，或者至少包含具体数字和单位。为了保险，我可以在movement里明确写入速度相关的数字和单位，比如\"以2厘米/秒速度前推40厘米\"。\n\n让我重新设计：\n\nStrategy: \"生理警示压迫运镜\"\n\n reasoning: \"基于台词中'茶色/可乐色'与'肌肉损伤报警'的病理暗示，采用从medium到close_up的景别收缩，结合带有精确速率参数的推近、环绕与微颤动作，在无人物场景中通过视觉本体制造被审视的紧张感与生理焦虑。\"\n\nSegments:\n1. 0-5s, medium, \"稳定器以2厘米/秒匀速前推40厘米，焦点从讲解者面部向样本容器转移\", speed: \"慢速\", reason: \"...\"\n   但speed字段是单独要求的。speed可以写\"2厘米/秒\"吗？还是speed写描述？用户没有限定speed的格式，但movement必须有具体数字(厘米/度/秒)。为了清晰，speed可以写\"缓慢\"或具体速度。但用户说\"movement必须含具体数字(厘米/度/秒)\"，所以重点在movement。\n\nSegment 1:\n- timeRange: \"0-5s\"\n- shotSize: \"medium\"\n- movement: \"稳定器以2厘米/秒向前推进40厘米，同步完成焦点从背景至样本容器的转移\"\n- speed: \"2厘米/秒\"\n- reason: \"中景建立空间关系，缓慢前推营造逼近真相的不安情绪\"\n\nSegment 2:\n- timeRange: \"5-10s\"\n- shotSize: \"close_up\"\n- movement: \"机位以4度/秒绕样本容器顺时针旋转20度，配合水平横移10厘米\"\n- speed: \"复合运动\"\n- reason: \"特写锁定病理样本，环绕运动强化审视感与不可逃避的压迫氛围\"\n\nSegment 3:\n- timeRange: \"10-15s\"\n- shotSize: \"close_up\"\n- movement: \"微距镜头以1厘米/秒向后撤离5厘米，叠加每秒1次幅度2厘米的垂直微颤\"\n- speed: \"1厘米/秒\"\n- reason: \"在'报警'关键词处制造视觉后撤与生理震颤感，外化紧张峰值\"\n\n等等，Segment 3的movement：\"微距镜头以1厘米/秒向后撤离5厘米，叠加每秒1次幅度2厘米的垂直微颤\" - 这里包含了\"1厘米/秒\"，\"5厘米\"，\"2厘米\"。但\"每秒1次\"不是厘米/度/秒，不过\"2厘米\"是。可能有点模糊。改成：\"微距镜头以1厘米/秒向后撤离5厘米，同步施加振幅2厘米、频率1赫兹的垂直晃动\"。这样有\"1厘米/秒\"，\"2厘米\"。\n\n或者更明确：\nmovement: \"以1厘米/秒后拉5厘米，叠加振幅2厘米/秒 vertical jitter\" - 不，应该是中文。\n\n用中文：\n\"以1厘米/秒速度后拉5厘米，并施加2厘米/秒的垂直方向高频抖动\"\n\n实际上\"2厘米/秒的垂直方向高频抖动\"意味着每秒移动2厘米？有点怪。可以说\"振幅2厘米的垂直晃动，频率为1次/秒\"，但这包含了2厘米和1次/秒。\n\n再想想。用户要求movement必须含具体数字(厘米/度/秒)。这意味着字符串中应该出现如\"5厘米\"、\"30度\"、\"2秒\"这样的内容。速度和距离都可以。\n\n让我确保每个movement都有清晰的数字和单位：\n\nSegment 1 movement: \"稳定器以2厘米/秒匀速前推40厘米，焦点同步转移至样本容器\"\n包含：2厘米/秒，40厘米\n\nSegment 2 movement: \"机位以3度/秒环绕样本顺时针旋转15度，并配合2厘米/秒横向滑轨移动10厘米\"\n包含：3度/秒，15度，2厘米/秒，10厘米\n\nSegment 3 movement: \"镜头以1厘米/秒后撤5厘米，同时施加振幅2厘米、频率1次/秒的垂直震颤\"\n包含：1厘米/秒，5厘米，2厘米，1次/秒（虽然1次/秒不是厘米/度/秒，但2厘米是）\n\n为了更严格，把频率也换成厘米相关：\n\"镜头以1厘米/秒后撤5厘米，同时沿Y轴以2厘米/秒振幅进行上下震荡\"\n包含：1厘米/秒，5厘米，2厘米/秒\n\n这样每个movement都含多个具体数字和单位。\n\nSpeed字段可以写中文描述或数值。用户没有特别限制speed格式，但保持一致性可以写数值或描述。我写具体数值或者\"慢速/中速/快速\"。但既然movement已经包含速度，speed字段可以写总体的速度描述。不过为了JSON的整洁，speed写如\"2厘米/秒\"也可以。\n\n重新梳理：\n\n```json\n{\n  \"strategy\": \"病理样本压迫式聚焦\",\n  \"reasoning\": \"针对无人物的健康警示台词，通过景别从medium至close_up的递进收缩，配合具有精确速率参数的推近、环绕与震颤动作，将视觉压迫施加于生理样本本身，以外化的机位运动替代人物表演，传递肌肉损伤隐含的生理恐惧与紧迫感。\",\n  \"segments\": [\n    {\n      \"timeRange\": \"0-5s\",\n      \"shotSize\": \"medium\",\n      \"movement\": \"稳定器以2厘米/秒匀速向前推进40厘米，焦点同步由背景转移至样本容器\",\n      \"speed\": \"2厘米/秒\",\n      \"reason\": \"中景建立讲解者与病理样本的空间关系，缓慢推进在平静台词中预埋不安张力\"\n    },\n    {\n      \"timeRange\": \"5-10s\",\n      \"shotSize\": \"close_up\",\n      \"movement\": \"机位以3度/秒绕样本容器顺时针旋转15度，并配合2厘米/秒"
+          },
+          "finish_reason": "length"
+        }
+      ],
+      "usage": {
+        "prompt_tokens": 161,
+        "completion_tokens": 2048,
+        "total_tokens": 2209,
+        "completion_tokens_details": {
+          "reasoning_tokens": 2048
+        }
+      }
+    }
+  }
+}
