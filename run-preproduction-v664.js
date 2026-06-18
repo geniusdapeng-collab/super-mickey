@@ -67,7 +67,15 @@ async function run() {
   };
   
   try {
-    const result = await pipeline.execute(input, { skipRequirementConfirmation: true });
+    const result = await pipeline.execute(input, { skipRequirementConfirmation: false });
+    
+    // 处理需求清单确认状态
+    if (result.status === 'REQUIREMENT_CONFIRMATION_REQUIRED') {
+      console.log('\n⏸️ 预生产暂停，等待您确认需求清单');
+      console.log('请检查上方"视频需求要点清单"，确认后回复"确认"继续');
+      console.log('需求清单文件:', result.requirementList?.path || '-');
+      return; // 暂停，等待用户确认
+    }
     
     // v6.5.64-P3: 兼容 result 结构
     const output = result.stages?.output || result;
