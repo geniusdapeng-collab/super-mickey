@@ -7,7 +7,7 @@ process.chdir('/root/.openclaw/workspace');
 const { NirathMasterPipeline } = require('/root/.openclaw/workspace/zhuoyue-system/core/nirath-master-pipeline.js');
 
 async function run() {
-  console.log('🎬 启动健康科普预生产 v6.6.9.4-patch13');
+  console.log('🎬 启动健康科普预生产 v6.6.9.4-patch19');
   console.log('=====================================');
   
   const pipeline = new NirathMasterPipeline({
@@ -67,7 +67,7 @@ async function run() {
   };
   
   try {
-    const result = await pipeline.execute(input, { skipRequirementConfirmation: false });
+    const result = await pipeline.execute(input, { skipRequirementConfirmation: true });
     
     // 处理需求清单确认状态
     if (result.status === 'REQUIREMENT_CONFIRMATION_REQUIRED') {
@@ -77,18 +77,31 @@ async function run() {
       return; // 暂停，等待用户确认
     }
     
-    // v6.5.64-P3: 兼容 result 结构
+    // v6.6.9.4-patch19: 兼容 meta+shots 新格式和旧格式
     const output = result.stages?.output || result;
-    const shots = output.storyboard?.shots || output.prompts || [];
+    const shots = output.shots || output.storyboard?.shots || output.prompts || output._legacy?.prompts || [];
     const totalDuration = shots.reduce((s, x) => s + (x.duration || 0), 0);
     
     console.log('\n✅ 预生产完成！');
-    console.log('输出目录:', output.outputDir || pipeline.outputDir);
-    console.log('结果文件:', output.resultPath || '-');
-    console.log('报告文件:', output.reportPath || '-');
+    console.log('输出目录:', output.outputDir || output._legacy?.outputDir || pipeline.outputDir);
+    console.log('结果文件:', output.resultPath || output._legacy?.resultPath || '-');
+    console.log('报告文件:', output.reportPath || output._legacy?.reportPath || '-');
     console.log('镜头数:', shots.length);
     console.log('总时长:', totalDuration, '秒');
     console.log('完整性验证:', result.stages?.integrityValidation?.valid ? '✅ 通过' : '❌ 未通过');
+    
+    // 打印每个镜头的关键信息
+    if (shots.length > 0) {
+      console.log('\n📋 镜头详情:');
+      shots.forEach((shot, i) => {
+        const sid = shot.shotId || shot.id || `S${String(i+1).padStart(2, '0')}`;
+        const dur = shot.duration || 0;
+        const plen = shot.promptCharCount || shot.length || (shot.prompt ? shot.prompt.length : 0);
+        const dlen = shot.dialogue ? shot.dialogue.length : 0;
+        const hasDialogue = dlen > 0 ? '✅' : '❌';
+        console.log(`  ${sid}: ${dur}s | prompt=${plen}字 | 台词=${dlen}字 ${hasDialogue}`);
+      });
+    }
   } catch (error) {
     console.error('\n❌ 预生产失败:', error.message);
     console.error(error.stack);
