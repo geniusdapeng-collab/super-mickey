@@ -817,7 +817,9 @@ class ProductionEngine {
       const standardOutput = {
         // === 核心字段（参考文档 v6.37-Peng）===
         shotId: shot.shotId,
-        duration: shot.timing.duration,
+        sceneType: shot.sceneType || 'establishing',
+        timing: shot.timing || { duration: 20, start: 0, end: 20 },
+        duration: shot.timing?.duration || 20,
         scene: shot.scene,
         mood: shot.mood,
         // 结构化对象 + 字符串

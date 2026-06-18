@@ -18,7 +18,7 @@ class HyperrealitySystem {
     this.productionEngine = new ProductionEngine(options.productionEngine);
     this.renderingEngine = new RenderingEngine(options.renderingEngine);
     this.postProductionEngine = new PostProductionEngine(options.postProductionEngine);
-    this.version = '1.2.1';
+    this.version = '1.2.3';
   }
 
   /**
@@ -233,11 +233,13 @@ class HyperrealitySystem {
       }
 
       // ========== Layer 3: 渲染引擎 ==========
+      let renderResult = null; // 声明在作用域顶部，避免 skipRender 时 undefined
+      
       if (!options.skipRender) {
         console.log('\n🎨 [Layer 3] 渲染引擎 - 提交 Seedance...');
         const stage3Start = Date.now();
 
-        const renderResult = await this.renderingEngine.render(productionResult.prompts, {
+        renderResult = await this.renderingEngine.render(productionResult.prompts, {
           dryRun: options.dryRun || !this.renderingEngine.config.apiKey
         });
 
