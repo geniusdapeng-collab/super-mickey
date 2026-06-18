@@ -7,7 +7,7 @@ process.chdir('/root/.openclaw/workspace');
 const { NirathMasterPipeline } = require('/root/.openclaw/workspace/zhuoyue-system/core/nirath-master-pipeline.js');
 
 async function run() {
-  console.log('🎬 启动健康科普预生产 v6.6.9.4-patch19');
+  console.log('🎬 启动健康科普预生产 v6.6.9.4-patch20');
   console.log('=====================================');
   
   const pipeline = new NirathMasterPipeline({
