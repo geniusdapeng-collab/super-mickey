@@ -9,6 +9,7 @@ const { RenderingEngine } = require('./engines/rendering-engine/rendering-engine
 const { PostProductionEngine } = require('./engines/post-production-engine/post-production-engine');
 const { RequirementListBuilder } = require('./engines/script-engine/core/requirement-list-builder');
 const { CreativeIntensityEngine } = require('./engines/script-engine/core/creative-intensity-engine');
+const { FieldGuard } = require('./engines/field-guard');
 
 class HyperrealitySystem {
   constructor(options = {}) {
@@ -18,6 +19,7 @@ class HyperrealitySystem {
     this.productionEngine = new ProductionEngine(options.productionEngine);
     this.renderingEngine = new RenderingEngine(options.renderingEngine);
     this.postProductionEngine = new PostProductionEngine(options.postProductionEngine);
+    this.fieldGuard = new FieldGuard({ strict: true, logPrefix: '[Hyperreality]' });
     this.version = '1.2.3';
   }
 
@@ -208,6 +210,23 @@ class HyperrealitySystem {
       console.log(`      镜头: ${productionResult.shots.length} | Prompts: ${productionResult.prompts.length}`);
       console.log(`      质量门: ${productionResult.stages.qualityGate?.passed ? '通过' : '失败'}`);
 
+      // ========== 🆕 字段标准化与守门（专家诊断建议）==========
+      console.log('\n🛡️ [FieldGuard] Layer 2 输出标准化与校验...');
+      try {
+        const normalized = this.fieldGuard.normalizeAndValidate(productionResult.shots, 'Layer2-Production');
+        productionResult.shots = normalized.shots;
+        productionResult.prompts = normalized.shots; // Prompts 即 shots 的引用
+        console.log(`   ✅ 字段标准化通过 (${normalized.report.warnings.length} 警告)`);
+        this.fieldGuard.printShotSummary(normalized.shots, 'Layer2-Production');
+      } catch (err) {
+        console.error(`   ❌ 字段校验失败: ${err.message}`);
+        if (err.report) {
+          console.error(`      错误: ${err.report.errors.join(' | ')}`);
+        }
+        // 非严格模式下继续，但记录错误
+        result.errors.push({ stage: 'FieldGuard-Layer2', message: err.message });
+      }
+
       // ========== 🆕 提示词审核确认环节 ==========
       if (!options.skipPromptReview) {
         console.log('\n📝 [提示词审核] 等待人工确认...');
@@ -292,6 +311,28 @@ class HyperrealitySystem {
 
       // 生成最终报告
       result.finalReport = this._generateFinalReport(scriptResult, productionResult, result.stages.renderingEngine, result.stages.postProductionEngine, result.timing.total, result.confirmations);
+
+      // ========== 🆕 最终导出前字段标准化（专家诊断建议）==========
+      if (productionResult && productionResult.shots) {
+        console.log('\n🛡️ [FieldGuard] 最终导出前标准化...');
+        try {
+          const normalized = this.fieldGuard.normalizeAndValidate(productionResult.shots, 'Final-Export');
+          productionResult.shots = normalized.shots;
+          productionResult.prompts = normalized.shots;
+          result.stages.productionEngine.shots = normalized.shots.map(s => ({
+            shotId: s.shotId,
+            sceneType: s.sceneType,
+            timing: s.timing,
+            promptLength: s.prompt?.length,
+            status: s.status
+          }));
+          console.log('   ✅ 最终导出字段标准化通过');
+          this.fieldGuard.printShotSummary(normalized.shots, 'Final-Export');
+        } catch (err) {
+          console.error(`   ❌ 最终字段校验失败: ${err.message}`);
+          result.errors.push({ stage: 'FieldGuard-Final', message: err.message });
+        }
+      }
 
     } catch (error) {
       result.success = false;
