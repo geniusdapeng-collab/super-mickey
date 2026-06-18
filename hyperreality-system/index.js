@@ -7,9 +7,11 @@ const { ScriptEngine } = require('./engines/script-engine');
 const { ProductionEngine } = require('./engines/production-engine/production-engine');
 const { RenderingEngine } = require('./engines/rendering-engine/rendering-engine');
 const { PostProductionEngine } = require('./engines/post-production-engine/post-production-engine');
+const { RequirementListBuilder } = require('./engines/script-engine/core/requirement-list-builder');
 
 class HyperrealitySystem {
   constructor(options = {}) {
+    this.requirementListBuilder = new RequirementListBuilder(options.requirementListBuilder);
     this.scriptEngine = new ScriptEngine(options.scriptEngine);
     this.productionEngine = new ProductionEngine(options.productionEngine);
     this.renderingEngine = new RenderingEngine(options.renderingEngine);
@@ -42,6 +44,65 @@ class HyperrealitySystem {
     const totalStart = Date.now();
 
     try {
+      // ========== 🆕 Layer 0: 需求清单生成确认 ==========
+      if (!options.skipRequirementList) {
+        console.log('📋 [Layer 0] 需求清单生成 - 解析用户意图...');
+        const stage0Start = Date.now();
+
+        const requirementList = await this.requirementListBuilder.build(intent, metadata);
+
+        result.stages.requirementList = {
+          data: requirementList,
+          timing: Date.now() - stage0Start
+        };
+
+        console.log(`   ✅ 需求清单生成完成 (${result.stages.requirementList.timing}ms)`);
+        console.log(`      类型: ${requirementList.videoTypeName} | 时长: ${requirementList.targetDuration}s | 风格: ${requirementList.style.primary}`);
+        console.log(`      角色: ${requirementList.characters.length}个 | 置信度: ${(requirementList._analysis.confidence * 100).toFixed(0)}%`);
+
+        // 生成 Markdown 供人工确认
+        if (!options.skipRequirementConfirmation) {
+          console.log('\n📋 [需求清单确认] 等待人工确认...');
+
+          const markdown = this.requirementListBuilder.generateMarkdown(requirementList);
+          const requirementConfirmation = await this._confirmRequirementList(markdown, requirementList);
+          result.confirmations.requirementList = requirementConfirmation;
+
+          if (!requirementConfirmation.approved) {
+            console.log('   ❌ 需求清单未确认，流程中止');
+            result.success = false;
+            result.stages.requirementReview = {
+              status: 'rejected',
+              reason: requirementConfirmation.reason || '用户未确认需求清单',
+              suggestions: requirementConfirmation.suggestions || []
+            };
+            return result;
+          }
+
+          console.log('   ✅ 需求清单已确认，继续创作');
+
+          // 如果用户提供了修改意见，重新生成
+          if (requirementConfirmation.suggestions?.length > 0) {
+            console.log(`   🔄 根据用户反馈重新生成...`);
+            requirementList.contentConstraints = requirementList.contentConstraints || [];
+            requirementList.contentConstraints.push(...requirementConfirmation.suggestions.map(s => `用户要求: ${s}`));
+          }
+        } else {
+          console.log('\n⚠️ [需求清单确认] 跳过（调试模式）');
+          result.confirmations.requirementList = { approved: true, skipped: true };
+        }
+
+        // 将需求清单转换为 ScriptEngine 可用的 metadata
+        const enhancedMetadata = {
+          ...metadata,
+          ...this.requirementListBuilder.toScriptEngineMetadata(requirementList)
+        };
+        metadata = enhancedMetadata;
+      } else {
+        console.log('\n⚠️ [Layer 0] 需求清单生成跳过（调试模式）');
+        result.stages.requirementList = { skipped: true };
+      }
+
       // ========== Layer 1: 剧本引擎 ==========
       console.log('📖 [Layer 1] 剧本引擎 - 生成结构化剧本...');
       const stage1Start = Date.now();
@@ -204,6 +265,25 @@ class HyperrealitySystem {
     }
 
     return result;
+  }
+
+  /**
+   * 🆕 需求清单确认（Layer 0）
+   * 在真实环境中，这里会等待用户输入确认
+   */
+  async _confirmRequirementList(markdown, requirementList) {
+    console.log('\n--- 📋 需求清单确认 ---');
+    console.log(markdown);
+    console.log('\n---');
+    
+    // 调试模式：自动确认
+    console.log('   ⚠️ [调试模式] 自动确认需求清单');
+    
+    return {
+      approved: true, // 生产环境中应改为 false，等待用户确认
+      reviewedAt: new Date().toISOString(),
+      requirementList: requirementList
+    };
   }
 
   /**
