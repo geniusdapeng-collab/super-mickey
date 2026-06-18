@@ -8,15 +8,17 @@ const { ProductionEngine } = require('./engines/production-engine/production-eng
 const { RenderingEngine } = require('./engines/rendering-engine/rendering-engine');
 const { PostProductionEngine } = require('./engines/post-production-engine/post-production-engine');
 const { RequirementListBuilder } = require('./engines/script-engine/core/requirement-list-builder');
+const { CreativeIntensityEngine } = require('./engines/script-engine/core/creative-intensity-engine');
 
 class HyperrealitySystem {
   constructor(options = {}) {
     this.requirementListBuilder = new RequirementListBuilder(options.requirementListBuilder);
+    this.creativeIntensityEngine = new CreativeIntensityEngine(options.creativeIntensityEngine);
     this.scriptEngine = new ScriptEngine(options.scriptEngine);
     this.productionEngine = new ProductionEngine(options.productionEngine);
     this.renderingEngine = new RenderingEngine(options.renderingEngine);
     this.postProductionEngine = new PostProductionEngine(options.postProductionEngine);
-    this.version = '1.2.0';
+    this.version = '1.2.1';
   }
 
   /**
@@ -98,6 +100,41 @@ class HyperrealitySystem {
           ...this.requirementListBuilder.toScriptEngineMetadata(requirementList)
         };
         metadata = enhancedMetadata;
+
+        // ========== 🆕 创意指数解析与配置注入 ==========
+        const intensity = this.creativeIntensityEngine.parse(requirementList);
+        const narrativeMode = requirementList.narrativeMode || 'dialogue';
+        const worldSetting = requirementList._analysis?.worldSetting || 'default';
+
+        console.log(`\n💡 [创意指数] 解析结果: ${intensity} (${this.creativeIntensityEngine.getLevel(intensity).name})`);
+        console.log(`   叙事模式: ${narrativeMode} | 世界设定: ${worldSetting}`);
+
+        const engineConfigs = this.creativeIntensityEngine.generateEngineConfigs(intensity, narrativeMode, worldSetting);
+
+        result.stages.creativeIntensity = {
+          intensity,
+          level: engineConfigs.level,
+          activeCapabilities: engineConfigs._metadata.activeCapabilities,
+          report: this.creativeIntensityEngine.generateReport(intensity, narrativeMode, worldSetting)
+        };
+
+        // 将创意指数配置注入到各引擎选项
+        metadata._creativeIntensity = {
+          intensity,
+          engineConfigs,
+          instructions: {
+            script: engineConfigs.scriptEngine?.creativeInstructions || '',
+            production: engineConfigs.productionEngine?.creativeInstructions || '',
+            rendering: engineConfigs.renderingEngine?.creativeInstructions || '',
+            postProduction: engineConfigs.postProductionEngine?.creativeInstructions || ''
+          }
+        };
+
+        console.log(`   ✅ 创意指数配置已生成，${engineConfigs._metadata.activeCapabilities}个能力激活`);
+        console.log(`      Layer 1: ${Object.keys(engineConfigs.scriptEngine).length > 0 ? '✅' : '❌'} 叙事结构配置`);
+        console.log(`      Layer 2: ${Object.keys(engineConfigs.productionEngine).length > 0 ? '✅' : '❌'} 视觉表现配置`);
+        console.log(`      Layer 3: ${Object.keys(engineConfigs.renderingEngine).length > 0 ? '✅' : '❌'} 渲染质感配置`);
+        console.log(`      Layer 4: ${Object.keys(engineConfigs.postProductionEngine).length > 0 ? '✅' : '❌'} 后期风格配置`);
       } else {
         console.log('\n⚠️ [Layer 0] 需求清单生成跳过（调试模式）');
         result.stages.requirementList = { skipped: true };
