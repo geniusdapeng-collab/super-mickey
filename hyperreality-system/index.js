@@ -453,7 +453,7 @@ class HyperrealitySystem {
     console.log('   格式: {"approved": true} 或 {"approved": false, "reason": "..."}');
     
     // 轮询等待确认文件（最多30分钟）
-    const maxWait = 30 * 60 * 1000; // 30分钟
+    const maxWait = 120 * 60 * 1000; // 30分钟
     const checkInterval = 3000; // 3秒
     const startTime = Date.now();
     
