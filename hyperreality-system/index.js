@@ -22,7 +22,7 @@ class HyperrealitySystem {
     this.renderingEngine = new RenderingEngine(options.renderingEngine);
     this.postProductionEngine = new PostProductionEngine(options.postProductionEngine);
     this.fieldGuard = new FieldGuard({ strict: true, logPrefix: '[Hyperreality]' });
-    this.version = '1.2.5';
+    this.version = '2.0.0';
   }
 
   /**
