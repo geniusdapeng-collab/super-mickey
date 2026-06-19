@@ -38,7 +38,10 @@ class LLMEngine {
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     try {
       const res = await fetch(url, { ...options, signal: controller.signal });
-      return res;
+      // 将 response.text() 也包进超时控制，防止网络半开时挂死
+      const textPromise = res.text();
+      const text = await textPromise;
+      return { ...res, text: () => Promise.resolve(text) };
     } finally {
       clearTimeout(timer);
     }

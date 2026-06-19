@@ -7,7 +7,11 @@ const fs = require('fs').promises;
 const path = require('path');
 const https = require('https');
 
-const API_KEY = 'ark-0e6994f7-bf34-4f3a-9e78-0fc02aa5fc92-42751';
+const API_KEY = process.env.VOLCENGINE_ARK_API_KEY;
+if (!API_KEY) {
+  console.error('❌ 错误：环境变量 VOLCENGINE_ARK_API_KEY 未设置');
+  process.exit(1);
+}
 const ENDPOINT = 'ark.cn-beijing.volces.com';
 const MODEL = 'ep-20260518004750-lz76f'; // Seedream-5.0-lite
 

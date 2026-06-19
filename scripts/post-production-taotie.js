@@ -2,7 +2,11 @@ const https = require('https');
 const fs = require('fs');
 const { execSync } = require('child_process');
 
-const API_KEY = 'ark-0e6994f7-bf34-4f3a-9e78-0fc02aa5fc92-42751';
+const API_KEY = process.env.VOLCENGINE_ARK_API_KEY;
+if (!API_KEY) {
+  console.error('❌ 错误：环境变量 VOLCENGINE_ARK_API_KEY 未设置');
+  process.exit(1);
+}
 const OUTPUT_DIR = '/root/.openclaw/workspace/taotie-ep01-production';
 const FINAL_OUTPUT = '/root/.openclaw/workspace/taotie-ep01-final.mp4';
 

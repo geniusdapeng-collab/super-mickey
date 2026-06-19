@@ -27,10 +27,13 @@ const DEFAULT_AGENT_CONFIG = {
 const SYSTEMS_PATH = path.join(__dirname, '../../../systems');
 
 // 动态加载现有模块
-function loadModule(name) {
+function loadModule(name, required = false) {
   try {
     return require(path.join(SYSTEMS_PATH, name));
   } catch (e) {
+    if (required) {
+      throw new Error(`[ProductionEngine] 关键模块加载失败: ${name} - ${e.message}`);
+    }
     console.warn(`[ProductionEngine] 模块加载失败: ${name} - ${e.message}`);
     return null;
   }
