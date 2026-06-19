@@ -549,7 +549,7 @@ class HyperrealitySystem {
     lines.push(`| 镜头ID | 类型 | 时长 | Prompt长度 | 状态 |`);
     lines.push(`|--------|------|------|------------|------|`);
     for (const shot of production.shots) {
-      lines.push(`| ${shot.shotId} | ${shot.sceneType} | ${shot.timing.duration}s | ${shot.prompt?.length || 0} | ${shot.status} |`);
+      lines.push(`| ${shot.shotId} | ${shot.sceneType} | ${shot.duration || shot.timing?.duration || 0}s | ${shot.prompt?.length || 0} | ${shot.status || 'ok'} |`);
     }
     lines.push('');
 

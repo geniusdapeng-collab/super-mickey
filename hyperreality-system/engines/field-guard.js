@@ -107,9 +107,8 @@ class FieldGuard {
         subtitle: shot.subtitle || '',
         scene: shot.scene || '',
         dialogueCount: Array.isArray(shot.dialogue) ? shot.dialogue.length : 0,
-        portraitCount: Array.isArray(shot.portraits) ? shot.portraits.length : 0,
-        timelineCount: Array.isArray(shot.timeline) ? shot.timeline.length : 0,
-        cardCount: Array.isArray(shot.characterCards) ? shot.characterCards.length : 0,
+        timelineType: shot.timeline ? (typeof shot.timeline === 'object' ? 'object' : typeof shot.timeline) : 'none',
+        characterRef: shot.characterRef || '',
         degraded: !!shot.degraded,
         degradeReason: shot.degradeReason || ''
       };

@@ -1496,16 +1496,16 @@ class ProductionEngine {
         shotId: p.shotId,
         promptLength: p.promptCharCount || p.length || 0,
         
-        // v6.37-P2: 核心字段检查（适配结构化对象）
+        // v6.37-P2: 核心字段检查（适配结构化对象 + 独立字符串字段）
         hasScene: !!p.scene && p.scene.length > 10,
         hasMood: !!p.mood && p.mood.split(',').length >= 3,
-        hasCamera: !!(p.camera?.string || p.camera) && (p.camera?.string || p.camera).toString().length > 10,
-        hasLighting: !!(p.lighting?.string || p.lighting) && (p.lighting?.string || p.lighting).toString().includes('K'),
+        hasCamera: !!(p.cameraString || p.camera) && (p.cameraString || p.camera).toString().length > 10,
+        hasLighting: !!(p.lightingString) && p.lightingString.includes('K'),
         hasCharacter: !!p.character && p.character !== 'NONE',
         hasAction: !!p.action && p.action.length > 5,
         hasDialogue: !!p.dialogue && p.dialogue !== 'NONE',
-        hasTimeline: !!(p.timeline?.string || p.timeline) && (p.timeline?.string || p.timeline).toString().includes('T00:'),
-        hasBackgroundSound: !!(p.backgroundSound?.string || p.backgroundSound) && (p.backgroundSound?.string || p.backgroundSound).toString().includes('AMBIENT:'),
+        hasTimeline: !!(p.timelineString) && p.timelineString.includes('T00:'),
+        hasBackgroundSound: !!(p.backgroundSoundString) && p.backgroundSoundString.includes('AMBIENT:'),
         
         // 片头专属检查
         isOpening: p.shotId === 'S00',
@@ -1518,7 +1518,7 @@ class ProductionEngine {
         // 格式检查
         characterRefFormat: p.characterRef === 'NONE' || p.characterRef.includes('image://'),
         dialogueFormat: p.dialogue === 'NONE' || p.dialogue.includes('|'),
-        timelineFormat: (p.timeline?.string || p.timeline) === 'NONE' || (p.timeline?.string || p.timeline).toString().includes('T00:'),
+        timelineFormat: p.timelineString === 'NONE' || (p.timelineString && p.timelineString.includes('T00:')),
         
         // 通用检查
         noForbidden: !p.prompt.includes('暗黑风') || p.prompt.includes('暗黑风') && p.prompt.indexOf('暗黑风') > p.prompt.length - 50

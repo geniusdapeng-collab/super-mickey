@@ -136,7 +136,7 @@ const FIELD_ALIAS_MAP = {
 };
 
 const CRITICAL_FIELDS = {
-  common: ['shotId', 'sceneType', 'prompt', 'dialogue', 'portraits', 'timeline', 'characterCards'],
+  common: ['shotId', 'sceneType', 'prompt', 'dialogue', 'timeline', 'characterRef'],
   opening: ['title', 'subtitle'],
   content: ['scene']
 };
@@ -214,8 +214,8 @@ function createEmptyShot() {
     cameraMovement: {},
     timeline: [],
     characters: [],
-    portraits: [],
-    characterCards: [],
+    portraits: [],  // v6.37-deprecated: 保留兼容但不再使用
+    characterCards: [],  // v6.37-deprecated: 保留兼容但不再使用
     mood: '',
     action: '',
     character: '',
