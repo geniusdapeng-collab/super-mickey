@@ -297,7 +297,8 @@ class ProductionEngine {
     const worldSetting = adaptedBlueprint.worldSetting || {};
     
     // v1.2.5: 系列作品非第一集处理
-    const _metadata = adaptedBlueprint.config?._metadata || {};
+    // 修复：兼容adapter返回的顶层_metadata和config._metadata
+    const _metadata = adaptedBlueprint.config?._metadata || adaptedBlueprint._metadata || {};
     const isSeriesNonFirst = _metadata.isSeries && _metadata.episodeNumber > 1;
     
     let shots = scenes.map((scene, index) => {
@@ -943,8 +944,10 @@ class ProductionEngine {
       
       // 片头专属字段
       // v1.2.5: 系列片头逻辑——只有第一集才有片头titleOverlay
-      const isSeries = blueprint.config?._metadata?.isSeries || false;
-      const episodeNumber = blueprint.config?._metadata?.episodeNumber || 1;
+      // 修复：兼容顶层_metadata和config._metadata
+      const _meta = blueprint.config?._metadata || blueprint._metadata || {};
+      const isSeries = _meta.isSeries || false;
+      const episodeNumber = _meta.episodeNumber || 1;
       const hasOpening = isSeries ? (episodeNumber === 1) : true;
       
       if (shot.sceneType === 'opening' && hasOpening) {
@@ -1060,7 +1063,8 @@ class ProductionEngine {
   _buildTitleOverlay(blueprint) {
     const config = blueprint.config || {};
     const worldSetting = blueprint.worldSetting || {};
-    const _metadata = config._metadata || {};
+    // v1.2.5-fix: 兼容顶层_metadata和config._metadata
+    const _metadata = config._metadata || blueprint._metadata || {};
     
     // v1.2.5: 系列作品片头逻辑
     const isSeries = _metadata.isSeries || false;
@@ -1187,9 +1191,11 @@ class ProductionEngine {
     const { cameraStr, lightingStr, timelineStr } = structuredStrings;
     
     // v1.2.5: 从blueprint metadata中提取系列信息，控制片头和结尾
-    const isSeries = blueprint._metadata?.isSeries || false;
-    const episodeNumber = blueprint._metadata?.episodeNumber || 1;
-    const hasOpening = blueprint._metadata?.hasOpening !== false; // 默认true
+    // 修复：兼容顶层_metadata和config._metadata
+    const _meta = blueprint._metadata || blueprint.config?._metadata || {};
+    const isSeries = _meta.isSeries || false;
+    const episodeNumber = _meta.episodeNumber || 1;
+    const hasOpening = _meta.hasOpening !== false; // 默认true
     const noNextEpisodePreview = blueprint._metadata?.noNextEpisodePreview || false;
     
     // 检查当前镜头是否为片头/结尾，根据系列规则调整
