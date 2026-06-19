@@ -300,7 +300,7 @@ class ProductionEngine {
     const _metadata = adaptedBlueprint.config?._metadata || {};
     const isSeriesNonFirst = _metadata.isSeries && _metadata.episodeNumber > 1;
     
-    const shots = scenes.map((scene, index) => {
+    let shots = scenes.map((scene, index) => {
       // v1.2.5: 非第一集将opening类型改为establishing
       let sceneType = scene.scene_type || 'establishing';
       if (isSeriesNonFirst && sceneType === 'opening') {
