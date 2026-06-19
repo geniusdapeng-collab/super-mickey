@@ -291,10 +291,11 @@ ${meta.noNextEpisodePreview ? '- **结尾禁止预告下一集**（不提及后�
     if (this.llmEngine) {
       try {
         console.log('[ScriptGenerator] 使用LLMEngine调用...');
-        // v1.2.5: 增加maxTokens到16000，防止长推理导致JSON截断
+        // v1.2.5: 增加maxTokens到32000，防止长推理导致JSON截断
+        // 同时要求紧凑输出以减少token消耗
         const result = await this.llmEngine.generate(prompt, {
-          systemPrompt: '你是一位专业的AI视频编剧，只输出严格格式的JSON。不要输出思考过程，直接输出JSON。',
-          maxTokens: 16000,
+          systemPrompt: '你是一位专业的AI视频编剧。只输出严格格式的JSON，不要markdown代码块，不要解释，不要思考过程。使用最紧凑的JSON格式（不要换行和缩进）。',
+          maxTokens: 32000,
           timeoutMs: this.config.timeout
         });
         
