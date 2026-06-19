@@ -882,69 +882,31 @@ class ProductionEngine {
       // 字符计数
       const promptLength = this._countChars(prompt.fullPrompt);
       
-      // v6.37-P1+: 构建标准输出对象（结构化对象 + 字符串）
+      // v6.37-P1+: 构建标准输出对象（严格按 v6.37 标准字段）
+      // 正片 S01+: 14 核心字段 | 片头 S00: + audioLayer + titleOverlay
       const standardOutput = {
-        // === 核心字段（参考文档 v6.37-Peng）===
+        // === 标准字段（v6.37-production+）===
         shotId: shot.shotId,
-        sceneType: shot.sceneType || 'establishing',
-        timing: shot.timing || { duration: 20, start: 0, end: 20 },
         duration: shot.timing?.duration || 20,
-        scene: shot.scene,
-        mood: shot.mood,
-        // 结构化对象 + 字符串
-        camera: shot.camera?.object || shot.camera,
+        scene: shot.scene || '',
+        mood: shot.mood || '',
+        camera: shot.camera?.object || shot.camera || '',
         cameraString: cameraStr,
-        lighting: shot.lighting?.object || shot.lighting,
+        lighting: shot.lighting?.object || shot.lighting || '',
         lightingString: lightingStr,
-        characterRef: shot.characterRef,
-        character: shot.character,
-        action: shot.action,
-        dialogue: shot.dialogue,
-        // v6.37+: timeline 标准化为数组格式（FieldGuard 要求）
-        timeline: Array.isArray(shot.timeline) ? shot.timeline : (shot.timeline?.object ? [shot.timeline.object] : []),
+        characterRef: shot.characterRef || 'NONE',
+        character: shot.character || 'NONE',
+        action: shot.action || '',
+        dialogue: shot.dialogue || 'NONE',
+        timeline: shot.timeline?.object || shot.timeline || {},
         timelineString: timelineStr,
         backgroundSound: this._buildBackgroundSound(shot).object,
         backgroundSoundString: this._buildBackgroundSound(shot).string,
         prompt: prompt.fullPrompt,
-        promptCharCount: promptLength,
-        
-        // === 卓越系统保留字段 ===
-        mouthAction: shot.mouthAction || this._buildMouthAction(shot),
-        importance: shot.importance || 5,
-        visualComplexity: shot.visualComplexity || 5,
-        qualityScore: shot.qualityScore || { totalScore: 75 },
-        enhanced: true,
-        
-        // === 内部字段（扩展接口）===
-        physicsLayer: shot.physicsLayer || '',
-        colorScience: shot.colorScience || '',
-        negativePrompt: shot.negativePrompt || '',
-        renderStyle: shot.renderStyle || '',
-        directorStyle: shot.directorStyle || '',
-        
-        // === 优先级元数据（专家反馈）===
-        priorities: {
-          characterRef: 'P0-never',
-          dialogue: 'P0-keep_core',
-          character: 'P0-minimal_anchor',
-          camera: 'P1-keep_core_movement',
-          action: 'P1-keep_core_verb',
-          scene: 'P1-keep_core_location',
-          lighting: 'P1-keep_main_light',
-          backgroundSound: 'P1-keep_core_sound',
-          mood: 'P2-keyword_list',
-          timeline: 'P2-keep_duration_type'
-        },
-        
-        // === 兼容性字段 ===
-        length: promptLength,
-        utilization: Math.round(promptLength / 1500 * 100),
-        utilizationStatus: promptLength >= 970 && promptLength <= 1500 ? '🔥理想' : (promptLength > 1500 ? '❌超标' : '⚠️空间浪费')
+        promptCharCount: promptLength
       };
       
-      // 片头专属字段
-      // v1.2.5: 系列片头逻辑——只有第一集才有片头titleOverlay
-      // 修复：兼容顶层_metadata和config._metadata
+      // 片头专属字段（仅 S00）
       const _meta = blueprint.config?._metadata || blueprint._metadata || {};
       const isSeries = _meta.isSeries || false;
       const episodeNumber = _meta.episodeNumber || 1;
@@ -957,14 +919,7 @@ class ProductionEngine {
         standardOutput.audioLayerString = audioLayer.string;
         standardOutput.titleOverlay = titleOverlay.object;
         standardOutput.titleOverlayString = titleOverlay.string;
-        // FieldGuard 要求的片头必填字段
-        standardOutput.title = titleOverlay.object?.mainTitle || blueprint.config?.title || '';
-        standardOutput.subtitle = titleOverlay.object?.subtitle || blueprint.config?.seriesTitle || '';
       }
-      
-      // v6.37+: 生成 portraits 和 characterCards（FieldGuard 要求的关键字段）
-      standardOutput.portraits = this._buildPortraits(shot, blueprint);
-      standardOutput.characterCards = this._buildCharacterCards(shot, blueprint);
       
       engineeredShots.push(standardOutput);
       prompts.push(standardOutput);

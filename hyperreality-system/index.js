@@ -459,8 +459,8 @@ class HyperrealitySystem {
     lines.push('|------|------|----------|----------|--------|');
     
     for (const p of prompts) {
-      const hasImages = (p.portraits || []).length > 0;
-      const hasTimeline = p.timeline && (p.timeline.start !== undefined || p.timeline.text) ? true : false;
+      const hasImages = p.characterRef && p.characterRef !== 'NONE';
+      const hasTimeline = p.timeline && (p.timeline.start !== undefined) ? true : false;
       const hasConstraints = p.prompt?.includes('角色一致性') || false;
       lines.push(`| ${p.shotId} | ${p.prompt?.length || 0} | ${hasImages ? '✓' : '✗'} | ${hasTimeline ? '✓' : '✗'} | ${hasConstraints ? '✓' : '✗'} |`);
     }
@@ -471,7 +471,7 @@ class HyperrealitySystem {
     
     for (const p of prompts) {
       lines.push(`### ${p.shotId}`);
-      lines.push(`**长度**: ${p.prompt?.length || 0} 字符 | **定妆照**: ${p.portraits?.length || 0} 张`);
+      lines.push(`**长度**: ${p.prompt?.length || 0} 字符 | **定妆照**: ${p.characterRef && p.characterRef !== 'NONE' ? '有' : '无'}`);
       lines.push('');
       lines.push('```');
       lines.push(p.prompt || '(空)');
