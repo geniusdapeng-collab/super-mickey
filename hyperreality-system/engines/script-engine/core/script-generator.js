@@ -291,9 +291,10 @@ ${meta.noNextEpisodePreview ? '- **结尾禁止预告下一集**（不提及后�
     if (this.llmEngine) {
       try {
         console.log('[ScriptGenerator] 使用LLMEngine调用...');
+        // v1.2.5: 增加maxTokens到16000，防止长推理导致JSON截断
         const result = await this.llmEngine.generate(prompt, {
-          systemPrompt: '你是一位专业的AI视频编剧，只输出严格格式的JSON。',
-          maxTokens: this.config.maxTokens,
+          systemPrompt: '你是一位专业的AI视频编剧，只输出严格格式的JSON。不要输出思考过程，直接输出JSON。',
+          maxTokens: 16000,
           timeoutMs: this.config.timeout
         });
         
@@ -379,8 +380,18 @@ ${meta.noNextEpisodePreview ? '- **结尾禁止预告下一集**（不提及后�
         jsonStr = jsonStr.split('```')[1].split('```')[0].trim();
       }
 
-      // 解析 JSON
-      const parsed = JSON.parse(jsonStr);
+      // v1.2.5: 尝试解析JSON，失败则尝试从截断文本中提取
+      let parsed = this._tryParseJson(jsonStr);
+      
+      // 如果主解析失败，尝试从文本中提取最长有效JSON
+      if (!parsed) {
+        console.warn('[ScriptGenerator] 主JSON解析失败，尝试提取有效JSON...');
+        parsed = this._extractValidJson(jsonStr);
+      }
+      
+      if (!parsed) {
+        throw new Error('无法从响应中提取有效JSON');
+      }
 
       // v1.2.5: 从metadata注入角色信息（覆盖LLM生成的错误角色）
       const metadataChars = userIntent.metadata?.characters || [];
@@ -483,6 +494,104 @@ ${meta.noNextEpisodePreview ? '- **结尾禁止预告下一集**（不提及后�
 
       return fallbackBlueprint;
     }
+  }
+
+  /**
+   * v1.2.5: 尝试解析JSON字符串
+   * @returns {object|null} 解析成功返回对象，失败返回null
+   */
+  _tryParseJson(str) {
+    try {
+      return JSON.parse(str);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /**
+   * v1.2.5: 从可能截断的文本中提取最长有效JSON
+   * 策略：从字符串末尾逐步截断，尝试找到能解析的最长前缀
+   */
+  _extractValidJson(str) {
+    // 先找到最外层的大括号范围
+    let start = str.indexOf('{');
+    if (start === -1) return null;
+    
+    // 从字符串末尾开始，逐步向前尝试解析
+    // 步长：先尝试大步长，再精细搜索
+    const stepSizes = [1000, 500, 100, 50, 10, 5, 1];
+    let bestEnd = -1;
+    
+    for (const step of stepSizes) {
+      for (let end = str.length; end > start; end -= step) {
+        const candidate = str.substring(start, end);
+        try {
+          const parsed = JSON.parse(candidate);
+          // 确保解析结果至少包含meta和structure
+          if (parsed.meta && parsed.structure) {
+            bestEnd = end;
+            // 记录这次成功的解析
+            console.log(`[ScriptGenerator] 从截断文本提取JSON成功，使用 ${end}/${str.length} 字符`);
+            return parsed;
+          }
+        } catch (e) {
+          // 继续尝试
+        }
+      }
+      
+      // 如果已经找到有效JSON，停止搜索
+      if (bestEnd > 0) break;
+    }
+    
+    // 最后的尝试：直接找第一个完整的JSON对象
+    if (bestEnd === -1) {
+      // 尝试使用更暴力的方法：找到匹配的最后一个右大括号
+      let braceCount = 0;
+      let inString = false;
+      let escaped = false;
+      let lastValidEnd = -1;
+      
+      for (let i = start; i < str.length; i++) {
+        const ch = str[i];
+        
+        if (inString) {
+          if (escaped) {
+            escaped = false;
+          } else if (ch === '\\') {
+            escaped = true;
+          } else if (ch === '"') {
+            inString = false;
+          }
+          continue;
+        }
+        
+        if (ch === '"') {
+          inString = true;
+        } else if (ch === '{') {
+          braceCount++;
+        } else if (ch === '}') {
+          braceCount--;
+          if (braceCount === 0) {
+            lastValidEnd = i + 1;
+          }
+        }
+      }
+      
+      if (lastValidEnd > start) {
+        const candidate = str.substring(start, lastValidEnd);
+        try {
+          const parsed = JSON.parse(candidate);
+          if (parsed.meta && parsed.structure) {
+            console.log(`[ScriptGenerator] 通过括号匹配提取JSON成功，使用 ${lastValidEnd}/${str.length} 字符`);
+            return parsed;
+          }
+        } catch (e) {
+          // 失败
+        }
+      }
+    }
+    
+    return null;
   }
 
   /**
