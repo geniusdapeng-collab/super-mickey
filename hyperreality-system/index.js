@@ -10,6 +10,8 @@ const { PostProductionEngine } = require('./engines/post-production-engine/post-
 const { RequirementListBuilder } = require('./engines/script-engine/core/requirement-list-builder');
 const { CreativeIntensityEngine } = require('./engines/script-engine/core/creative-intensity-engine');
 const { FieldGuard } = require('./engines/field-guard');
+const fs = require('fs');
+const path = require('path');
 
 class HyperrealitySystem {
   constructor(options = {}) {
@@ -349,57 +351,140 @@ class HyperrealitySystem {
 
   /**
    * 🆕 需求清单确认（Layer 0）
-   * 在真实环境中，这里会等待用户输入确认
+   * v1.2.5: 支持外部确认——输出文件后等待队长确认
    */
   async _confirmRequirementList(markdown, requirementList) {
     console.log('\n--- 📋 需求清单确认 ---');
     console.log(markdown);
     console.log('\n---');
     
-    // 调试模式：自动确认
-    console.log('   ⚠️ [调试模式] 自动确认需求清单');
+    // v1.2.5: 写入文件并等待外部确认
+    const confirmPath = await this._waitForExternalConfirmation('requirement', markdown);
+    
+    if (confirmPath.approved) {
+      console.log('   ✅ 需求清单已确认');
+    } else {
+      console.log('   ❌ 需求清单被拒绝:', confirmPath.reason);
+    }
     
     return {
-      approved: true, // 生产环境中应改为 false，等待用户确认
+      approved: confirmPath.approved,
       reviewedAt: new Date().toISOString(),
-      requirementList: requirementList
+      requirementList: requirementList,
+      reason: confirmPath.reason,
+      suggestions: confirmPath.suggestions
     };
   }
 
   /**
    * 剧本确认环节
-   * 在真实环境中，这里会等待用户输入
-   * 在自动化测试中，可以传入预置确认
+   * v1.2.5: 支持外部确认
    */
   async _confirmScript(blueprint) {
     // 生成剧本报告供审阅
     const scriptReport = this._generateScriptReport(blueprint);
     
-    // 模拟确认流程（实际环境中应该等待用户输入）
-    // 这里默认通过，但在生产环境中需要人工确认
+    // v1.2.5: 写入文件并等待外部确认
+    const confirmPath = await this._waitForExternalConfirmation('script', scriptReport);
+    
+    if (confirmPath.approved) {
+      console.log('   ✅ 剧本已确认');
+    } else {
+      console.log('   ❌ 剧本被拒绝:', confirmPath.reason);
+    }
+    
     return {
-      approved: true, // 生产环境中应改为 false，等待用户确认
+      approved: confirmPath.approved,
       reviewedAt: new Date().toISOString(),
       report: scriptReport,
-      // 生产环境需要：
-      // - 飞书/消息通知用户审阅剧本
-      // - 等待用户回复 "确认" 或 "修改"
-      // - 记录审阅人、审阅时间、修改意见
+      reason: confirmPath.reason,
+      suggestions: confirmPath.suggestions
     };
   }
 
   /**
    * 提示词确认环节
+   * v1.2.5: 支持外部确认
    */
   async _confirmPrompts(prompts) {
     // 生成提示词报告供审阅
     const promptReport = this._generatePromptsReport(prompts);
     
+    // v1.2.5: 写入文件并等待外部确认
+    const confirmPath = await this._waitForExternalConfirmation('prompt', promptReport);
+    
+    if (confirmPath.approved) {
+      console.log('   ✅ 提示词已确认');
+    } else {
+      console.log('   ❌ 提示词被拒绝:', confirmPath.reason);
+    }
+    
     return {
-      approved: true, // 生产环境中应改为 false
+      approved: confirmPath.approved,
       reviewedAt: new Date().toISOString(),
-      report: promptReport
+      report: promptReport,
+      reason: confirmPath.reason,
+      suggestions: confirmPath.suggestions
     };
+  }
+
+  /**
+   * v1.2.5: 等待外部确认
+   * 将内容写入文件，轮询等待确认文件
+   */
+  async _waitForExternalConfirmation(type, content) {
+    const outputDir = './output/confirmations';
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir, { recursive: true });
+    }
+    
+    // 写入待确认内容
+    const contentPath = path.join(outputDir, `confirmation-${type}.md`);
+    fs.writeFileSync(contentPath, content, 'utf8');
+    
+    // 删除旧的确认文件（如果存在）
+    const confirmPath = path.join(outputDir, `confirmation-${type}.json`);
+    if (fs.existsSync(confirmPath)) {
+      fs.unlinkSync(confirmPath);
+    }
+    
+    console.log(`\n⏳ [等待确认] ${type} 已输出到: ${contentPath}`);
+    console.log(`   请审阅内容后，创建确认文件: ${confirmPath}`);
+    console.log('   格式: {"approved": true} 或 {"approved": false, "reason": "..."}');
+    
+    // 轮询等待确认文件（最多30分钟）
+    const maxWait = 30 * 60 * 1000; // 30分钟
+    const checkInterval = 3000; // 3秒
+    const startTime = Date.now();
+    
+    while (Date.now() - startTime < maxWait) {
+      if (fs.existsSync(confirmPath)) {
+        try {
+          const confirmData = JSON.parse(fs.readFileSync(confirmPath, 'utf8'));
+          console.log(`   ✅ 收到确认: approved=${confirmData.approved}`);
+          return {
+            approved: confirmData.approved !== false,
+            reason: confirmData.reason || '',
+            suggestions: confirmData.suggestions || []
+          };
+        } catch (e) {
+          console.log('   ⚠️ 确认文件解析失败，继续等待...');
+        }
+      }
+      
+      // 每10秒打印一次等待提示
+      const elapsed = Date.now() - startTime;
+      if (elapsed % 10000 < checkInterval) {
+        const mins = Math.floor(elapsed / 60000);
+        console.log(`   ⏳ 等待确认中... (${mins}分钟)`);
+      }
+      
+      await new Promise(resolve => setTimeout(resolve, checkInterval));
+    }
+    
+    // 超时
+    console.log('   ⏰ 确认超时，默认拒绝');
+    return { approved: false, reason: '等待确认超时', suggestions: [] };
   }
 
   /**

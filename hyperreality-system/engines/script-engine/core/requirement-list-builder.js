@@ -535,7 +535,8 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
         '抖音': '9:16', '快手': '9:16', '小红书': '9:16', '视频号': '9:16',
         'B站/YouTube': '16:9', '朋友圈': '9:16', '户外大屏': '16:9'
       };
-      completed.aspectRatio = platformToRatio[completed.platform] || '9:16';
+      // v1.2.5-fix: 默认横屏16:9，队长明确要求所有内容为横屏
+      completed.aspectRatio = platformToRatio[completed.platform] || '16:9';
       completed.aspectRatioInferred = true;
     }
 
@@ -680,7 +681,7 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
         secondary: result.style.secondary || [],
         description: result.styleDescription
       },
-      aspectRatio: result.aspectRatio || '9:16',
+      aspectRatio: result.aspectRatio || '16:9',
       platform: result.platform || '视频号/抖音',
       creativeIntensity: result.creativeIntensity,
 
