@@ -87,28 +87,29 @@ class VisualLanguageAgent extends BaseAgent {
   _buildPrompt(shots, blueprint) {
     const shotsInfo = shots.map(s => {
       const dialogue = s.dialogue?.lines?.map(l => `"${l.content}"`).join('; ') || s.dialogue || '';
-      return `镜头 ${s.shotId}: 时长${s.duration || s.timing?.duration || '?'}s\n  场景: ${s.scene || ''}\n  情绪: ${s.mood || ''}\n  动作: ${s.action || ''}\n  台词: ${dialogue}`;
-    }).join('\n\n');
+      return `镜头 ${s.shotId}: ${s.duration || '?'}s | 场景: ${(s.scene || '').substring(0, 60)} | 情绪: ${s.mood || ''} | 台词: ${dialogue.substring(0, 80)}`;
+    }).join('\n');
 
-    return `## 镜头列表（含场景/情绪/动作/台词）
+    return `## 镜头信息
 ${shotsInfo}
 
 ## 任务
-为每个镜头设计:
-1. camera: 运镜方案（景别、运动方式、角度、镜头、速度）
-2. cameraString: 运镜描述文本（用于Prompt融合）
-3. lighting: 灯光方案（主光、辅光、时间、氛围）
-4. lightingString: 灯光描述文本（场景化描述，用于Prompt融合）
-5. timeline: 运镜时间轴（动态切分2-6段，不等分，每段有具体运镜描述）
+为每个镜头设计运镜+灯光+时间轴。
+
+输出每个镜头的:
+1. camera: {shot_size, movement, angle, lens, speed}
+2. cameraString: 运镜描述文本（30-50字，动态描述）
+3. lighting: {key_light, fill_light, time_of_day, atmosphere}
+4. lightingString: 灯光场景化描述（30-50字）
+5. timeline: 运镜时间轴（动态切分2-4段，不等分）
 
 设计要点:
-- 台词密集处：短切+手持/快速推近
-- 情绪铺垫处：长镜头+稳定机位+缓慢推近
-- 情绪爆发处：特写+ handheld+快速运动
-- 景别过渡：相邻镜头景别不要跳跃太大
-- 时间轴切分依据：台词断句、情绪转折点、动作节点
+- 台词密集处：短切+手持
+- 情绪铺垫处：长镜头+缓慢推近
+- 景别过渡：相邻镜头不要跳跃太大
+- 灯光场景化：不用技术术语，用自然描述
 
-直接输出JSON。`;
+输出JSON: {"shots": [{"shotId":"SC01","camera":{},"cameraString":"...","lighting":{},"lightingString":"...","timeline":[]}]}`;
   }
 
   _fallback(shots) {

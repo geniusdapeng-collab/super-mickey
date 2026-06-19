@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-18T16:14:44.184Z",
+  "updatedAt": "2026-06-19T12:00:27.431Z",
   "entries": {
     "memory:memory/2026-05-15.md:31:42": {
       "key": "memory:memory/2026-05-15.md:31:42",
@@ -3985,20 +3985,22 @@
       "endLine": 21,
       "source": "memory",
       "snippet": "# 2026-06-08 记忆日志 ## 横纹肌溶解健康科普视频预生产（双系统并行验证） ### 老系统（Seedance v6.5.13）状态 - 四轮修复迭代完成，v6.5.13 已提交生产 - 核心修复：`_buildScriptPrompt` 动态模板（generic/Nirath 分支）、角色回退逻辑、场景名过滤 undefined、Nirath 视觉元素条件注入、导演风格分支、运镜对象返回格式 - 仍有问题：S02/S03 场景名回退 default、运镜 description 过短（5字符）、Stage 14 generic 模式仍检查 Nirath 锚点 - 已追加修复 batch 回退逻辑和 Stage 14 条件检查，尚未重跑验证 ### 超现实系统（Hyperreality System）发现 - 用户明确要求：超现实系统也需要跑这个 case，通过实战演练找出问题 - 系统路径：`/root/.openclaw/workspace/hyperreality-system/` - 架构确认：剧本引擎 → 适配层 → 制作引擎 → 渲染引擎 → 后期引擎 - 已创建运行脚本：`/root/.openclaw/workspace/scripts/run-health-edu-hyperreality.js` - 用户等待确认执行顺序：先超现实系统还是先验证老系统修复？ ### 待办 - [ ] 决定执行顺序（老系统修复验证 vs 超现实系统首次运行） - [ ] 超现实系统运行健康科普 case（跳过确认环节，dryRun模式） - [ ] 对比两个",
-      "recallCount": 2,
+      "recallCount": 3,
       "dailyCount": 0,
       "groundedCount": 0,
-      "totalScore": 0.8413801342248917,
+      "totalScore": 1.237500849366188,
       "maxScore": 0.431944465637207,
       "firstRecalledAt": "2026-06-08T23:17:31.787Z",
-      "lastRecalledAt": "2026-06-12T14:21:05.628Z",
+      "lastRecalledAt": "2026-06-19T12:00:27.431Z",
       "queryHashes": [
         "63e3856b195b",
-        "4d1bedc7a3f3"
+        "4d1bedc7a3f3",
+        "2fd5291fe870"
       ],
       "recallDays": [
         "2026-06-09",
-        "2026-06-12"
+        "2026-06-12",
+        "2026-06-19"
       ],
       "conceptTags": [
         "v6.5.13",
@@ -6346,6 +6348,130 @@
         "v6.6.6",
         "short-video",
         "修复s01/s04边界case"
+      ]
+    },
+    "memory:memory/2026-06-16.md:389:422": {
+      "key": "memory:memory/2026-06-16.md:389:422",
+      "path": "memory/2026-06-16.md",
+      "startLine": 389,
+      "endLine": 422,
+      "source": "memory",
+      "snippet": "- ✅ 60个系统模块全部在内部 systems/ 目录 - ✅ 唯一外部链接是 characters（角色图片资源，非代码） **注意**：workspace 根目录 systems/ 仍保留在 short-video 远程，后续需要清理或迁移超短裙/超现实的独立副本。 --- ## 2026-06-16 14:55-15:12 【横纹肌溶解科普视频】完整预生产 v6.6.7 **队长指令**：确认启动完整预生产链路 **项目**：health-edu-ep01-横纹肌溶解症状及检查 **配置**： - 时长：59-65秒（实际输出74秒） - 主角：陈卓（穿警服女士，健康科普讲解员） - 创意指数：0.8 - 风格：写实 + 好莱坞电影质感 - 平台：抖音/小红书/视频号 - 片头：专业纪录片风格 - 不预告下一集 **预生产结果**： - 镜头数：6（S00片头 + S01-S05内容） - 总时长：74秒 - 完整性验证：15/17 通过 **⚠️ 失败项**： 1. **STAGE-9: 运镜系统输出有效性（核心）** — FAIL - 6个镜头中仅 S05 通过 v4（递进式凝视强化 | 3段） - 其余5镜头可能降级或异常 2. **STAGE-16.5: 标准字段完整性** — FAIL - 类型字段异常 **通过项**：",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.46251517534255976,
+      "maxScore": 0.46251517534255976,
+      "firstRecalledAt": "2026-06-19T12:00:27.431Z",
+      "lastRecalledAt": "2026-06-19T12:00:27.431Z",
+      "queryHashes": [
+        "2fd5291fe870"
+      ],
+      "recallDays": [
+        "2026-06-19"
+      ],
+      "conceptTags": [
+        "short-video",
+        "后续需要清理或迁移超短裙/超现实的独立副本",
+        "55-15",
+        "v6.6.7",
+        "health-edu-ep01-横纹肌溶解症状及检查",
+        "59-65秒",
+        "0.8",
+        "抖音/小红书/视频号"
+      ]
+    },
+    "memory:memory/2026-06-16.md:39:68": {
+      "key": "memory:memory/2026-06-16.md:39:68",
+      "path": "memory/2026-06-16.md",
+      "startLine": 39,
+      "endLine": 68,
+      "source": "memory",
+      "snippet": "- 台词清洗函数（正则匹配） - `shanhaijing-render-engine/orient-primordial-core-v24.js` - buildPromptV3: 人物卡片注入逻辑 - `SOUL.md` - 人物出场卡片系统规则焊死 ### 预期效果（健康科普EP01重跑后） | 镜头 | 优化前 | 优化后 | |------|--------|--------| | S01 | \"大家好，我是陈卓。今天我们来认识横纹肌溶解。\" | \"今天我们来认识横纹肌溶解。\"（画面下方展示卡片「陈卓 | 健康教育主讲人」） | | S02 | \"我是陈卓。横纹肌溶解的本质...\" | \"横纹肌溶解的本质，是肌肉细胞...\" | | S05 | \"我是陈卓，科学运动...\" | \"科学运动，倾听身体信号...\" | ### 设计原则 - 系统级解决，非硬编码 - 让人物出场自然、专业、不抢戏 - 与Nirath模式兼容（Nirath模式已有角色出场动效，卡片作为补充） - Generic模式：卡片是主要出场方式，替代硬编码自我介绍 ### 开发状态 - 系统代码已开发完成 - 生产版本发布：1554b0c v6.5.64-P3-prod-v2（人物出场卡片系统） - GitHub已推送：short-video/master - **待验证**：健康科普EP01重跑验证（需要实际跑Pipeline） --- ## 其他修复（同日） ### 1. Generic片头修复（opening-system-v3.js）",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.44536527097225187,
+      "maxScore": 0.44536527097225187,
+      "firstRecalledAt": "2026-06-19T12:00:27.431Z",
+      "lastRecalledAt": "2026-06-19T12:00:27.431Z",
+      "queryHashes": [
+        "2fd5291fe870"
+      ],
+      "recallDays": [
+        "2026-06-19"
+      ],
+      "conceptTags": [
+        "soul.md",
+        "v6.5.64-p3-prod-v2",
+        "short-video/master",
+        "opening-system-v3.js",
+        "台词",
+        "清洗",
+        "函数",
+        "正则"
+      ]
+    },
+    "memory:memory/2026-06-18.md:31:54": {
+      "key": "memory:memory/2026-06-18.md:31:54",
+      "path": "memory/2026-06-18.md",
+      "startLine": 31,
+      "endLine": 54,
+      "source": "memory",
+      "snippet": "## 2026-06-18 20:41 横纹肌溶解科普视频预生产执行 ### 执行状态: ✅ 全链路跑通，但有已知问题 ### 背景 队长要求重跑健康科普视频预生产（第一集：横纹肌溶解的症状以及实验室检查）。 ### 修复的bug - `run-preproduction-v2.js` runner脚本中 `reporter.error()` → `reporter.fail()`（StatusReporter无.error方法） ### 执行结果 - **总耗时**: 419秒（约7分钟） - **QualityGate**: 81分 / 等级B / 状态PASS（blockerCount: 0） - **镜头数**: 5个（S01开场5s → S02-S04内容各15s → S05结尾5s） - **输出文件**: - `chenzhuo-health-ep01-preproduction-2026-06-18T12-41-29-749Z.json` - `chenzhuo-health-ep01-report-2026-06-18T12-41-29-754Z.md`（仅\"TODO\"占位符） ### 严重问题 1. **Stage 5B visualPrompt优化全部失败**：5个镜头全部报错 `invalid temperature: only 1 is allowed for this model`。系统传了非1的temperature值，LLM拒绝。最终用fallback prompt，但质量受影响。 2. **PromptForge子进程**：批",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.44242186248302456,
+      "maxScore": 0.44242186248302456,
+      "firstRecalledAt": "2026-06-19T12:00:27.431Z",
+      "lastRecalledAt": "2026-06-19T12:00:27.431Z",
+      "queryHashes": [
+        "2fd5291fe870"
+      ],
+      "recallDays": [
+        "2026-06-19"
+      ],
+      "conceptTags": [
+        "run-preproduction-v2.js",
+        "reporter.error",
+        "reporter.fail",
+        "statusreporter无.error方法",
+        "s02-s04内容各15s",
+        "横纹肌",
+        "溶解",
+        "科普"
+      ]
+    },
+    "memory:memory/2026-06-18.md:1:38": {
+      "key": "memory:memory/2026-06-18.md:1:38",
+      "path": "memory/2026-06-18.md",
+      "startLine": 1,
+      "endLine": 38,
+      "source": "memory",
+      "snippet": "## 2026-06-18 19:45 v6.6.9.4-patch21 专家方案全部落地 ### 实施状态: ✅ 核心收口器全部完成 ### 提交记录 1. **6776d2d** - 第一批：角色/定妆照/裁剪/子进程/进程稳定性收口器 2. **fae98a2** - 第二批：全局Prompt标准收口器 + Stage 16兜底 + PromptForge心跳 ### 完成清单（8项） - ✅ 角色/定妆照收口器 (`systems/prompt-reference-fix.js`) - ✅ 结构安全裁剪收口器 (`safeTrimStructuredPrompt` 增强) - ✅ 子进程活性收口器 (Worker心跳+进度落盘) - ✅ 进程稳定性收口器 (温和退出) - ✅ 全局Prompt标准收口器 (`systems/prompt-output-standard.js`) - ✅ Stage 11 角色缓存 (`this._characterCache`) - ✅ Stage 16 最终兜底 (referenceImages重建) - ✅ PromptForge merge后全局标准化 ### 待优化（3项，非阻塞） - `toStandardPrompt` 改用 `buildCharacterCardText` - Stage 12 标准检查走新校验器 - Stage 16 `repairedRenderShots` 改走新模块 ### 下一步 - 等待队长确认是否重跑预生产验证 --- ## 2026-06-18 20:41 横纹肌溶解科普视",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.40739571452140805,
+      "maxScore": 0.40739571452140805,
+      "firstRecalledAt": "2026-06-19T12:00:27.431Z",
+      "lastRecalledAt": "2026-06-19T12:00:27.431Z",
+      "queryHashes": [
+        "2fd5291fe870"
+      ],
+      "recallDays": [
+        "2026-06-19"
+      ],
+      "conceptTags": [
+        "v6.6.9.4-patch21",
+        "角色/定妆照/裁剪/子进程/进程稳定性收口器",
+        "角色/定妆照收口器",
+        "systems/prompt-reference-fix.js",
+        "v6.6.9.4",
+        "patch21",
+        "专家",
+        "方案"
       ]
     }
   }

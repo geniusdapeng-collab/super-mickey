@@ -47,7 +47,7 @@ class SceneDesignAgent extends BaseAgent {
     });
 
     if (llmResult.degraded) {
-      return { shots: llmResult.result, degraded: true, degradeReason: llmResult.degradeReason };
+      return { shots: llmResult.result?.shots || shots, degraded: true, degradeReason: llmResult.degradeReason };
     }
 
     // 合并LLM结果回原shots
@@ -74,29 +74,25 @@ class SceneDesignAgent extends BaseAgent {
 
     const shotsInfo = shots.map(s => {
       const dialogue = s.dialogue?.lines?.map(l => `"${l.content}"`).join('; ') || s.dialogue || '';
-      return `镜头 ${s.shotId}: 时长${s.duration || s.timing?.duration || '?'}s, 类型${s.sceneType || '?'}\n  台词: ${dialogue}`;
-    }).join('\n\n');
+      return `镜头 ${s.shotId}: ${s.duration || '?'}s | 台词: ${dialogue.substring(0, 80)}`;
+    }).join('\n');
 
-    return `## 角色信息
-${characterDesc || '无角色信息'}
+    return `## 角色
+${characterDesc || '无'}
 
-## 镜头列表
+## 镜头
 ${shotsInfo}
 
 ## 任务
 为每个镜头设计:
-1. scene: 完整场景描述（环境+时间+光线+氛围，50-100字）
-2. mood: 情绪氛围描述（20-30字）
-3. action: 角色动作（含肢体语言、走位、手势，30-50字）
-4. emotional_target: 场景情绪目标（1个关键词）
+1. scene: 场景描述（环境+时间+光线，50-80字）
+2. mood: 情绪氛围（15-25字）
+3. action: 角色动作（肢体语言、走位、手势，30-50字）
+4. emotional_target: 情绪目标（1个词）
 
-要求:
-- 场景要写实、具体、有画面感
-- 情绪要与台词内容匹配
-- 动作要自然流畅
-- 相邻镜头要有环境连续性
+要求: 写实具体、与台词情绪匹配、动作自然、相邻镜头环境连续。
 
-直接输出JSON。`;
+输出JSON: {"shots": [{"shotId":"SC01","scene":"...","mood":"...","action":"...","emotional_target":"..."}]}`;
   }
 
   _fallback(shots) {

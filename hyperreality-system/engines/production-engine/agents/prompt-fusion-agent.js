@@ -7,7 +7,7 @@ const { BaseAgent } = require('./base-agent');
 
 class PromptFusionAgent extends BaseAgent {
   constructor(options = {}) {
-    super({ name: 'PromptFusionAgent', ...options });
+    super({ name: 'PromptFusionAgent', enabled: true, llmTimeout: 600000, ...options });
     this.maxPromptLength = options.maxPromptLength || 1500;
   }
 
@@ -40,57 +40,48 @@ class PromptFusionAgent extends BaseAgent {
   }
 
   async process(shots, blueprint) {
-    console.log(`[PromptFusionAgent] 开始处理 ${shots.length} 个镜头...`);
+    console.log(`[PromptFusionAgent] 开始处理 ${shots.length} 个镜头（全量模式）...`);
 
-    // 获取画幅比例（用于L1约束）
     const ratio = blueprint.config?.aspectRatio || '16:9';
-
-    // 获取角色信息（用于L9约束）
     const characters = blueprint.character_system?.characters || [];
 
-    // 逐镜头融合（核心质量环节，每个镜头精修）
-    const results = [];
+    const prompt = this._buildBatchPrompt(shots, ratio, characters);
+    const schema = { shots: [{ shotId: 'SC01', fusionText: '...' }] };
 
-    for (const shot of shots) {
-      const prompt = this._buildPrompt(shot, ratio, characters);
+    const llmResult = await this._callLLM(prompt, schema, () => {
+      return this._fallbackBatch(shots, ratio);
+    });
 
-      const schema = {
-        required: ['fusionText']
-      };
-
-      const llmResult = await this._callLLM(prompt, schema, () => {
-        return this._fallback(shot, ratio);
-      });
-
-      if (llmResult.degraded) {
-        // 降级：使用原规则拼接的prompt
-        results.push({
+    const results = shots.map((shot) => {
+      const fusionEntry = llmResult.result?.shots?.find(s => s.shotId === shot.shotId);
+      const fusionText = fusionEntry?.fusionText || '';
+      
+      if (!fusionText && llmResult.degraded) {
+        const fallbackPrompt = this._assembleFullPrompt(shot, '', ratio);
+        return {
           ...shot,
           fusionText: '',
-          prompt: shot.prompt || '',
-          promptCharCount: this._countChars(shot.prompt || ''),
+          prompt: fallbackPrompt,
+          promptCharCount: this._countChars(fallbackPrompt),
           degraded: true,
           degradeReason: llmResult.degradeReason
-        });
-      } else {
-        // LLM融合成功，组装最终Prompt
-        const fusionText = llmResult.result?.fusionText || '';
-        const fullPrompt = this._assembleFullPrompt(shot, fusionText, ratio);
-        const charCount = this._countChars(fullPrompt);
-
-        results.push({
-          ...shot,
-          fusionText,
-          prompt: fullPrompt,
-          promptCharCount: charCount,
-          degraded: false,
-          degradeReason: null
-        });
+        };
       }
-    }
+      
+      const fullPrompt = this._assembleFullPrompt(shot, fusionText, ratio);
+      return {
+        ...shot,
+        fusionText,
+        prompt: fullPrompt,
+        promptCharCount: this._countChars(fullPrompt),
+        degraded: false,
+        degradeReason: null
+      };
+    });
 
-    console.log(`[PromptFusionAgent] 完成 ✓`);
-    return { shots: results, degraded: results.some(s => s.degraded), degradeReason: null };
+    const degradedCount = results.filter(s => s.degraded).length;
+    console.log(`[PromptFusionAgent] 完成 ✓ | 降级: ${degradedCount}/${shots.length}`);
+    return { shots: results, degraded: degradedCount > 0, degradeReason: null };
   }
 
   /**
@@ -158,54 +149,30 @@ class PromptFusionAgent extends BaseAgent {
     return Math.ceil(count);
   }
 
-  _buildPrompt(shot, ratio, characters) {
-    const characterInfo = characters.map(c =>
-      `- ${c.name}: ${c.description || ''}${c.portraitPaths ? ' [定妆照]' : ''}`
-    ).join('\n');
+  _buildBatchPrompt(shots, ratio, characters) {
+    const characterInfo = characters.map(c => `- ${c.name}: ${c.description || ''}`).join('\n');
 
-    const dialogue = shot.dialogue?.lines?.map(l => `"${l.content}"`).join('; ') || shot.dialogue || '';
+    const shotsInfo = shots.map(s => {
+      const dialogue = s.dialogue?.lines?.map(l => l.content).join('; ') || s.dialogue || '';
+      return `${s.shotId}(${s.duration || '?'}s): ${(s.scene || '').substring(0, 50)} | ${s.mood || ''} | ${dialogue.substring(0, 50)} | 运镜:${(s.cameraString || '').substring(0, 30)} | 灯光:${(s.lightingString || '').substring(0, 30)}`;
+    }).join('\n');
 
-    return `## 镜头信息
-镜头ID: ${shot.shotId}
-时长: ${shot.duration || shot.timing?.duration || '?'}s
-场景: ${shot.scene || ''}
-情绪: ${shot.mood || ''}
-动作: ${shot.action || ''}
-台词: ${dialogue}
-运镜: ${shot.cameraString || JSON.stringify(shot.camera) || ''}
-灯光: ${shot.lightingString || JSON.stringify(shot.lighting) || ''}
-音效: ${shot.backgroundSoundString || ''}
+    return `画幅:${ratio}
+角色:${characterInfo || '无'}
+镜头:\n${shotsInfo}
 
-## 角色信息
-${characterInfo || '无'}
+任务:为每个镜头写fusionText(80-120字导演分镜描述)。叙事化、动态运镜、场景化灯光。不要长推理，直接输出JSON。
 
-## 约束（不可违反）
-- 画幅: ${ratio}
-- 无文本/字幕/水印
-- 保持角色形象一致
-
-## 任务
-请将以上信息融合成一段流畅的导演分镜描述（80-150字）。
-
-要求:
-1. 像在给摄影师讲戏一样描述
-2. 运镜要动态描述（不说"dolly in"，说"镜头缓缓推近"）
-3. 灯光要场景化（不说"key light"，说"阳光从侧面照来"）
-4. 角色动作与镜头要配合
-5. 情绪通过画面传达
-6. 如果角色有定妆照，要引用"[character:角色名]"
-
-输出格式:
-{"fusionText": "融合后的导演分镜描述"}`;
+输出:{"shots":[{"shotId":"SC01","fusionText":"..."},...]}`;
   }
 
-  _fallback(shot, ratio) {
-    console.log(`[PromptFusionAgent] 镜头 ${shot.shotId} 使用降级规则...`);
-    // 返回空fusionText，让外层使用原规则拼接
+  _fallbackBatch(shots, ratio) {
+    console.log(`[PromptFusionAgent] 批量降级...`);
     return {
-      fusionText: '',
-      prompt: shot.prompt || '',
-      promptCharCount: this._countChars(shot.prompt || '')
+      shots: shots.map(shot => ({
+        shotId: shot.shotId,
+        fusionText: ''
+      }))
     };
   }
 }

@@ -65,25 +65,19 @@ class AudioDesignAgent extends BaseAgent {
 
   _buildPrompt(shots, blueprint) {
     const shotsInfo = shots.map(s => {
-      return `镜头 ${s.shotId}: 场景"${s.scene || ''}", 情绪"${s.mood || ''}"`;
+      return `镜头 ${s.shotId}: 场景"${(s.scene || '').substring(0, 50)}", 情绪"${s.mood || ''}"`;
     }).join('\n');
 
-    return `## 镜头场景信息
+    return `## 镜头场景
 ${shotsInfo}
 
 ## 任务
 为每个镜头设计环境音效:
-1. backgroundSound.environment: 环境音类型（如：outdoor_urban, indoor_office, hospital, park）
-2. backgroundSound.description: 详细音效描述（20-40字）
-3. backgroundSound.intensity: 强度（low/medium/high）
-4. backgroundSoundString: 用于Prompt融合的文本描述
+1. environment: 环境音类型（outdoor_urban/indoor_office/hospital/park等）
+2. description: 音效描述（15-30字）
+3. intensity: 强度（low/medium/high，与情绪匹配）
 
-要求:
-- 音效要与场景环境完全匹配
-- 强度要与情绪匹配（紧张=high，平静=low/medium）
-- 相邻镜头音效要有连贯性
-
-直接输出JSON。`;
+输出JSON: {"shots": [{"shotId":"SC01","backgroundSound":{"environment":"...","description":"...","intensity":"..."}}]}`;
   }
 
   _fallback(shots) {

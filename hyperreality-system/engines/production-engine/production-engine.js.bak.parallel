@@ -16,12 +16,9 @@ const { ContinuityReviewAgent } = require('./agents/continuity-review-agent');
 // v2.0.0-LLM-Agent: Agent配置
 const DEFAULT_AGENT_CONFIG = {
   enableLLMAgents: true,
-  llmTimeout: 300000, // 单次调用上限 5 分钟（覆盖最慢的 VisualLanguage 258s）
-  llmMaxRetries: 2, // 重试收敛到 2 次（原 3 次 × 200s = 隐藏 10 分钟炸弹）
-  llmModel: 'kimi-k2p6', // 深度模型：SceneDesign / VisualLanguage / PromptFusion
-  fastModel: 'kimi-k2p6', // 快速模型：AudioDesign / OpeningDesign / ContinuityReview
-  // 建议替换为非推理模型（如 'kimi-k2'）以进一步省 30~50% 时间
-  totalDeadlineMs: 660000 // 全局预算 11 分钟（对齐系统 SIGTERM 上限）
+  llmTimeout: 300000,
+  llmMaxRetries: 3,
+  llmModel: 'kimi-k2p6'
 };
 // 注：实际部署时这些模块会从 systems/ 复制到 production-engine/modules/
 const SYSTEMS_PATH = path.join(__dirname, '../../../systems');
@@ -65,27 +62,23 @@ class ProductionEngine {
    * v2.0.0-LLM-Agent: 初始化所有Agent
    */
   _initAgents() {
-    const base = {
+    const agentOptions = {
       llmTimeout: this.agentConfig.llmTimeout,
       llmMaxRetries: this.agentConfig.llmMaxRetries,
+      llmModel: this.agentConfig.llmModel,
       enabled: this.agentConfig.enableLLMAgents
     };
-    const deepModel = this.agentConfig.llmModel || 'kimi-k2p6';
-    const fastModel = this.agentConfig.fastModel || deepModel;
 
     this.agents = {
-      // 深度模型：创造性主任务
-      sceneDesign: new SceneDesignAgent({ ...base, llmModel: deepModel }),
-      visualLanguage: new VisualLanguageAgent({ ...base, llmModel: deepModel }),
-      promptFusion: new PromptFusionAgent({ ...base, llmModel: deepModel, maxPromptLength: this.config.maxPromptLength }),
-
-      // 快速模型：结构化小任务（音效/片头/审查），可用非推理模型加速
-      audioDesign: new AudioDesignAgent({ ...base, llmModel: fastModel, llmMaxTokens: 8000 }),
-      openingDesign: new OpeningDesignAgent({ ...base, llmModel: fastModel, llmMaxTokens: 8000 }),
-      continuityReview: new ContinuityReviewAgent({ ...base, llmModel: fastModel, llmMaxTokens: 8000 })
+      sceneDesign: new SceneDesignAgent(agentOptions),
+      visualLanguage: new VisualLanguageAgent(agentOptions),
+      audioDesign: new AudioDesignAgent(agentOptions),
+      promptFusion: new PromptFusionAgent({ ...agentOptions, maxPromptLength: this.config.maxPromptLength }),
+      openingDesign: new OpeningDesignAgent(agentOptions),
+      continuityReview: new ContinuityReviewAgent(agentOptions)
     };
 
-    console.log(`[ProductionEngine v2.0] LLM Agents ${this.agentConfig.enableLLMAgents ? '已启用' : '已禁用'} | deep=${deepModel} fast=${fastModel}`);
+    console.log(`[ProductionEngine v2.0] LLM Agents ${this.agentConfig.enableLLMAgents ? '已启用' : '已禁用'}`);
   }
 
   _initModules() {
@@ -152,108 +145,137 @@ class ProductionEngine {
    */
   async produce(adaptedBlueprint) {
     const startTime = Date.now();
-
-    // === 全局时间预算 ===
-    const HARD_BUDGET_MS = this.config.totalDeadlineMs || this.agentConfig.totalDeadlineMs || 660000;
-    const SAFETY_MARGIN_MS = 90000; // 90s 收尾余量，确保在系统 SIGTERM 前完成
-    const globalDeadline = startTime + HARD_BUDGET_MS - SAFETY_MARGIN_MS;
-    this._globalDeadline = globalDeadline;
-    this._setAgentDeadline(globalDeadline);
-
-    this.log('PRODUCE', `🎬 ProductionEngine 启动 | 深度融合+并行模式 | 预算 ${Math.round(HARD_BUDGET_MS / 1000)}s | 余量 ${Math.round(SAFETY_MARGIN_MS / 1000)}s`);
-
-    const result = { success: false, shots: [], prompts: [], stages: {}, errors: [], logs: this.logs, timing: {} };
-    const llmStats = {};
+    this.log('PRODUCE', '🎬 ProductionEngine 启动 | 深度融合模式');
+    
+    const result = {
+      success: false,
+      shots: [],
+      prompts: [],
+      stages: {},
+      errors: [],
+      logs: this.logs,
+      timing: {}
+    };
 
     try {
-      // ===== Stage 1-2：规则阶段（快）=====
-      result.stages.sceneExtraction = await this._runStage('scene-extraction', () => this._extractScenes(adaptedBlueprint));
-      result.stages.durationAllocation = await this._runStage('duration-allocation', () => this._allocateDuration(result.stages.sceneExtraction.shots));
+      // v2.0.0-LLM-Agent: 8 Stage 流程
+      // Stage 1: 场景提取（规则）
+      result.stages.sceneExtraction = await this._runStage('scene-extraction', () =>
+        this._extractScenes(adaptedBlueprint)
+      );
+      
+      // Stage 2: 时长分配（规则，精确计算）
+      result.stages.durationAllocation = await this._runStage('duration-allocation', () =>
+        this._allocateDuration(result.stages.sceneExtraction.shots)
+      );
+      
       let currentShots = result.stages.durationAllocation.shots;
+      const llmStats = {};
 
-      // 规则降级路径（保留原行为）
-      if (!this.agentConfig.enableLLMAgents) {
-        result.stages.promptEngineering = await this._runStage('prompt-engineering', () => this._engineerPrompts(currentShots, adaptedBlueprint));
+      // Stage 3: SceneDesignAgent（LLM 场景五维/情绪/动作）
+      if (this.agentConfig.enableLLMAgents) {
+        const sdResult = await this._runStage('scene-design-agent', () =>
+          this.agents.sceneDesign.process(currentShots, adaptedBlueprint)
+        );
+        currentShots = sdResult.shots;
+        llmStats.sceneDesign = { degraded: sdResult.degraded, degradeReason: sdResult.degradeReason };
+      }
+      
+      // Stage 4: VisualLanguageAgent（LLM 运镜+灯光+动态时间轴）
+      if (this.agentConfig.enableLLMAgents) {
+        const vlResult = await this._runStage('visual-language-agent', () =>
+          this.agents.visualLanguage.process(currentShots, adaptedBlueprint)
+        );
+        currentShots = vlResult.shots;
+        llmStats.visualLanguage = { degraded: vlResult.degraded, degradeReason: vlResult.degradeReason };
+      }
+      
+      // Stage 5: AudioDesignAgent（LLM 音效） + PromptFusionAgent（LLM 逐镜头Prompt融合）
+      if (this.agentConfig.enableLLMAgents) {
+        const adResult = await this._runStage('audio-design-agent', () =>
+          this.agents.audioDesign.process(currentShots, adaptedBlueprint)
+        );
+        currentShots = adResult.shots;
+        llmStats.audioDesign = { degraded: adResult.degraded, degradeReason: adResult.degradeReason };
+
+        const pfResult = await this._runStage('prompt-fusion-agent', () =>
+          this.agents.promptFusion.process(currentShots, adaptedBlueprint)
+        );
+        currentShots = pfResult.shots;
+        llmStats.promptFusion = { degraded: pfResult.degraded, degradeReason: pfResult.degradeReason };
+      } else {
+        // 降级：原规则Prompt工程
+        result.stages.promptEngineering = await this._runStage('prompt-engineering', () =>
+          this._engineerPrompts(currentShots, adaptedBlueprint)
+        );
         currentShots = result.stages.promptEngineering.shots;
-        result.stages.qualityGate = await this._runStage('quality-gate', () => this._runQualityGate(currentShots));
-
-        if (this._shouldGenerateOpening(adaptedBlueprint)) {
-          result.stages.opening = await this._runStage('opening', () => this._generateOpening(adaptedBlueprint));
-        }
-        result.stages.continuity = await this._runStage('continuity', () => this._checkContinuity(currentShots));
-
-        result.shots = currentShots; result.prompts = currentShots;
-        result.meta = this._buildMeta(adaptedBlueprint);
-        result.opening = result.stages.opening?.openingData || null;
-        result.success = true; result.timing.total = Date.now() - startTime;
-        return result;
       }
+      
+      // Stage 6: 质量门校验（规则+增强）
+      result.stages.qualityGate = await this._runStage('quality-gate', () =>
+        this._runQualityGate(currentShots)
+      );
+      
+      // Stage 7: OpeningDesignAgent（LLM 片头S00）
+      const _meta = adaptedBlueprint.config?._metadata || adaptedBlueprint._metadata || {};
+      const shouldGenerateOpening = _meta.isSeries
+        ? (_meta.episodeNumber === 1)
+        : (_meta.hasOpening !== false);
 
-      // ===== Phase 1：SceneDesign ∥ OpeningDesign =====
-      // OpeningDesign 仅依赖 blueprint，与 SceneDesign 完全独立
-      this.log('PHASE-1', 'SceneDesign + OpeningDesign 并行启动...');
-      const phase1Start = Date.now();
-      const [sdResult, odResult] = await this._runParallel({
-        'scene-design-agent': this.agents.sceneDesign.process(this._cloneShots(currentShots), adaptedBlueprint),
-        'opening-design-agent': this._shouldGenerateOpening(adaptedBlueprint)
-          ? this.agents.openingDesign.process(adaptedBlueprint)
-          : Promise.resolve(null)
-      }, 'PHASE-1');
-
-      currentShots = this._mergeShotsByShotId(currentShots, sdResult.shots, ['scene', 'mood', 'action', 'emotional_target']);
-      llmStats.sceneDesign = { degraded: sdResult.degraded, degradeReason: sdResult.degradeReason };
-      if (odResult) {
-        llmStats.openingDesign = { degraded: odResult.degraded, degradeReason: odResult.degradeReason };
-        result.stages.opening = { openingData: odResult.opening };
-        if (currentShots[0] && odResult.opening) {
-          currentShots[0].title = odResult.opening.titleOverlay?.mainTitle || odResult.opening.title || '';
-          currentShots[0].subtitle = odResult.opening.titleOverlay?.subTitle || odResult.opening.subtitle || '';
+      if (shouldGenerateOpening) {
+        if (this.agentConfig.enableLLMAgents) {
+          const odResult = await this._runStage('opening-design-agent', () =>
+            this.agents.openingDesign.process(adaptedBlueprint)
+          );
+          result.stages.opening = { openingData: odResult.opening };
+          llmStats.openingDesign = { degraded: odResult.degraded, degradeReason: odResult.degradeReason };
+          // 将title/subtitle合并到片头shot（满足FieldGuard检查）
+          if (currentShots[0] && odResult.opening) {
+            currentShots[0].title = odResult.opening.titleOverlay?.mainTitle || odResult.opening.title || '';
+            currentShots[0].subtitle = odResult.opening.titleOverlay?.subTitle || odResult.opening.subtitle || '';
+          }
+        } else {
+          result.stages.opening = await this._runStage('opening', () =>
+            this._generateOpening(adaptedBlueprint)
+          );
         }
       }
-      this.log('PHASE-1', `完成 (${Date.now() - phase1Start}ms)`);
-
-      // ===== Phase 2：VisualLanguage ∥ AudioDesign ∥ ContinuityReview =====
-      // 三者都只依赖 SceneDesign 的 scene/mood/action，输出字段互不冲突
-      this.log('PHASE-2', 'VisualLanguage + AudioDesign + ContinuityReview 并行启动...');
-      const phase2Start = Date.now();
-      const phase2Base = this._cloneShots(currentShots);
-      const [vlResult, adResult, crResult] = await this._runParallel({
-        'visual-language-agent': this.agents.visualLanguage.process(this._cloneShots(phase2Base), adaptedBlueprint),
-        'audio-design-agent': this.agents.audioDesign.process(this._cloneShots(phase2Base), adaptedBlueprint),
-        'continuity-review-agent': this.agents.continuityReview.process(this._cloneShots(phase2Base), adaptedBlueprint)
-      }, 'PHASE-2');
-
-      currentShots = this._mergeShotsByShotId(currentShots, vlResult.shots, ['camera', 'cameraString', 'lighting', 'lightingString', 'timeline', 'cameraMovement']);
-      currentShots = this._mergeShotsByShotId(currentShots, adResult.shots, ['backgroundSound', 'backgroundSoundString']);
-      llmStats.visualLanguage = { degraded: vlResult.degraded, degradeReason: vlResult.degradeReason };
-      llmStats.audioDesign = { degraded: adResult.degraded, degradeReason: adResult.degradeReason };
-      llmStats.continuityReview = { degraded: crResult.degraded, degradeReason: crResult.degradeReason };
-      result.stages.continuity = { review: crResult.review };
-      this.log('PHASE-2', `完成 (${Date.now() - phase2Start}ms)`);
-
-      // ===== Phase 3：PromptFusion（依赖 VisualLanguage 的 cameraString/lightingString）=====
-      const pfResult = await this._runStage('prompt-fusion-agent', () => this.agents.promptFusion.process(currentShots, adaptedBlueprint));
-      currentShots = pfResult.shots;
-      llmStats.promptFusion = { degraded: pfResult.degraded, degradeReason: pfResult.degradeReason };
-
-      // ===== Stage 6：质量门（规则，快）=====
-      result.stages.qualityGate = await this._runStage('quality-gate', () => this._runQualityGate(currentShots));
-
-      // ===== 汇总 =====
+      
+      // Stage 8: ContinuityReviewAgent（LLM 连续性审查，新增环节）
+      if (this.agentConfig.enableLLMAgents) {
+        const crResult = await this._runStage('continuity-review-agent', () =>
+          this.agents.continuityReview.process(currentShots, adaptedBlueprint)
+        );
+        result.stages.continuity = { review: crResult.review };
+        llmStats.continuityReview = { degraded: crResult.degraded, degradeReason: crResult.degradeReason };
+      } else {
+        result.stages.continuity = await this._runStage('continuity', () =>
+          this._checkContinuity(currentShots)
+        );
+      }
+      
+      // 汇总
       result.shots = currentShots;
-      result.prompts = currentShots;
+      result.prompts = currentShots; // shots now contain prompts
       result.llmStats = llmStats;
+      
+      // v6.37-P0: 构建标准输出结构
       result.meta = this._buildMeta(adaptedBlueprint);
       result.opening = result.stages.opening?.openingData || null;
+      
       result.success = true;
       result.timing.total = Date.now() - startTime;
-
+      
       const degradedCount = Object.values(llmStats).filter(s => s?.degraded).length;
-      this.log('PRODUCE', `✅ 制作完成: ${result.shots.length} 镜头 | LLM Agent降级: ${degradedCount}个 | 总耗时 ${result.timing.total}ms`);
-
+      this.log('PRODUCE', `✅ 制作完成: ${result.shots.length} 镜头 | LLM Agent降级: ${degradedCount}个`);
+      
     } catch (error) {
       result.success = false;
-      result.errors.push({ stage: 'PRODUCE', message: error.message, stack: error.stack });
+      result.errors.push({
+        stage: 'PRODUCE',
+        message: error.message,
+        stack: error.stack
+      });
       this.log('ERROR', `❌ 制作失败: ${error.message}`);
     }
 
@@ -277,77 +299,6 @@ class ProductionEngine {
       this.log(stageName.toUpperCase(), `失败 (${duration}ms): ${error.message}`);
       throw error;
     }
-  }
-
-  /** 是否需要生成片头 */
-  _shouldGenerateOpening(adaptedBlueprint) {
-    const _meta = adaptedBlueprint.config?._metadata || adaptedBlueprint._metadata || {};
-    return _meta.isSeries ? (_meta.episodeNumber === 1) : (_meta.hasOpening !== false);
-  }
-
-  /** 把全局截止时间下发给所有 Agent */
-  _setAgentDeadline(deadlineMs) {
-    for (const a of Object.values(this.agents || {})) {
-      if (a && typeof a.setDeadline === 'function') a.setDeadline(deadlineMs);
-    }
-  }
-
-  /** 浅拷贝 shots（并行分支互不污染） */
-  _cloneShots(shots) {
-    return (shots || []).map(s => ({ ...s }));
-  }
-
-  /**
-   * 按 shotId 把 updatedShots 的指定字段合并回 baseShots
-   * - 只在字段非空时覆盖，避免降级返回的空字符串冲掉已有数据
-   */
-  _mergeShotsByShotId(baseShots, updatedShots, fields) {
-    const map = new Map((updatedShots || []).map(s => [s.shotId, s]));
-    return baseShots.map(shot => {
-      const u = map.get(shot.shotId);
-      if (!u) return shot;
-      const merged = { ...shot };
-      for (const f of fields) {
-        if (u[f] !== undefined && u[f] !== null && u[f] !== '') merged[f] = u[f];
-      }
-      return merged;
-    });
-  }
-
-  /**
-   * 并行执行多个 Agent 任务（allSettled，单点失败不阻塞其余）
-   * 保留每个任务的 [STAGE] 完成 (Xms) 日志格式
-   */
-  async _runParallel(tasks, label) {
-    const keys = Object.keys(tasks);
-    const starts = keys.map(() => Date.now());
-    this.log(label, `${keys.join(' + ')} 并行启动...`);
-
-    const wrapped = keys.map((k, i) =>
-      Promise.resolve(tasks[k]).then(v => {
-        this.log(k.toUpperCase(), `完成 (${Date.now() - starts[i]}ms)`);
-        return v;
-      })
-    );
-
-    const settled = await Promise.allSettled(wrapped);
-    const values = [];
-    settled.forEach((r, i) => {
-      if (r.status === 'fulfilled') {
-        values.push(r.value);
-      } else {
-        this.log(label, `⚠️ ${keys[i]} 异常: ${r.reason?.message || r.reason}（降级处理，继续）`);
-        values.push(this._emptyAgentResult(keys[i]));
-      }
-    });
-    return values;
-  }
-
-  /** 并行任务异常时的兜底空结果（仅兜底，正常路径不会走到） */
-  _emptyAgentResult(name) {
-    if (name === 'opening-design-agent') return { opening: null, degraded: true, degradeReason: 'phase exception' };
-    if (name === 'continuity-review-agent') return { review: { overallScore: 80, issues: [], summary: '并行阶段异常，跳过审查' }, degraded: true, degradeReason: 'phase exception' };
-    return { shots: [], degraded: true, degradeReason: 'phase exception' };
   }
 
   /**
@@ -1766,45 +1717,61 @@ class ProductionEngine {
    */
   _runQualityGate(prompts) {
     const checks = [];
+    
     for (const p of prompts) {
-      const camStr = p.cameraString || (typeof p.camera === 'string' ? p.camera : '') || '';
-      const lightStr = p.lightingString || (typeof p.lighting === 'string' ? p.lighting : '') || '';
-      const tlStr = p.timelineString || (typeof p.timeline === 'string' ? p.timeline : '') || '';
-      const bgStr = p.backgroundSoundString || (typeof p.backgroundSound === 'string' ? p.backgroundSound : '') || '';
-
       const check = {
         shotId: p.shotId,
-        promptLength: p.promptCharCount || 0,
-
-        // 格式无关：只看字段是否存在且有内容
-        hasScene: !!(p.scene && String(p.scene).trim().length > 8),
-        hasMood: !!(p.mood && String(p.mood).trim().length > 1),
-        hasCamera: camStr.trim().length > 5,
-        hasLighting: lightStr.trim().length > 5,
-        hasCharacter: !!(p.character && p.character !== 'NONE'),
-        hasAction: !!(p.action && String(p.action).length > 3),
-        hasTimeline: tlStr.trim().length > 3 || Array.isArray(p.timeline) && p.timeline.length > 0,
-        hasBackgroundSound: bgStr.trim().length > 3,
-        hasPrompt: !!(p.prompt && String(p.prompt).length > 50),
-
-        withinLimit: (p.promptCharCount || 0) <= this.config.maxPromptLength,
-
-        // 片头专属（S00 在 openingData 中，这里仅保留兼容检查）
+        promptLength: p.promptCharCount || p.length || 0,
+        
+        // v6.37-P2: 核心字段检查（适配结构化对象 + 独立字符串字段）
+        hasScene: !!p.scene && p.scene.length > 10,
+        hasMood: !!p.mood && p.mood.split(',').length >= 3,
+        hasCamera: !!(p.cameraString || p.camera) && (p.cameraString || p.camera).toString().length > 10,
+        hasLighting: !!(p.lightingString) && p.lightingString.includes('K'),
+        hasCharacter: !!p.character && p.character !== 'NONE',
+        hasAction: !!p.action && p.action.length > 5,
+        hasDialogue: !!p.dialogue && p.dialogue !== 'NONE',
+        hasTimeline: !!(p.timelineString) && p.timelineString.includes('T00:'),
+        hasBackgroundSound: !!(p.backgroundSoundString) && p.backgroundSoundString.includes('AMBIENT:'),
+        
+        // 片头专属检查
         isOpening: p.shotId === 'S00',
-        hasAudioLayer: p.shotId === 'S00' ? (!!p.audioLayerString && p.audioLayerString.length > 5) : true,
-        hasTitleOverlay: p.shotId === 'S00' ? (!!p.titleOverlayString && p.titleOverlayString.length > 5) : true
+        hasAudioLayer: p.shotId === 'S00' ? (!!p.audioLayer?.string && p.audioLayer.string.length > 10) : true,
+        hasTitleOverlay: p.shotId === 'S00' ? (!!p.titleOverlay?.string && p.titleOverlay.string.includes('MAIN_TITLE:')) : true,
+        
+        // 字符数检查
+        withinLimit: (p.promptCharCount || p.length || 0) <= this.config.maxPromptLength,
+        
+        // 格式检查
+        characterRefFormat: p.characterRef === 'NONE' || p.characterRef.includes('image://'),
+        dialogueFormat: p.dialogue === 'NONE' || p.dialogue.includes('|'),
+        timelineFormat: p.timelineString === 'NONE' || (p.timelineString && p.timelineString.includes('T00:')),
+        
+        // 通用检查
+        noForbidden: !p.prompt.includes('暗黑风') || p.prompt.includes('暗黑风') && p.prompt.indexOf('暗黑风') > p.prompt.length - 50
       };
-
-      // 对白/角色可为 NONE（无对白、无人物镜头），不强制；其余为核心必过项
-      check.passed =
-        check.hasScene && check.hasMood && check.hasCamera && check.hasLighting &&
-        check.hasAction && check.hasTimeline && check.hasBackgroundSound &&
-        check.hasPrompt && check.withinLimit && check.hasAudioLayer && check.hasTitleOverlay;
-
+      
+      // v6.37-P2: 综合通过条件（更严格）
+      check.passed = 
+        check.hasScene && 
+        check.hasMood && 
+        check.hasCamera && 
+        check.hasLighting &&
+        check.hasAction &&
+        check.hasTimeline &&
+        check.hasBackgroundSound &&
+        check.withinLimit &&
+        check.characterRefFormat &&
+        check.dialogueFormat &&
+        check.timelineFormat &&
+        check.hasAudioLayer &&
+        check.hasTitleOverlay;
+      
       checks.push(check);
     }
-
+    
     const allPassed = checks.every(c => c.passed);
+    
     return {
       passed: allPassed,
       checks,
