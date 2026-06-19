@@ -26,17 +26,17 @@ class HyperrealitySystem {
   }
 
   /**
-   * 主创作流程（含剧本确认 + 提示词审核 + 后期制作环节）
+   * 主创作流程（需求确认 → 提示词审核 → 渲染 → 后期制作）
    * @param {string} intent - 用户意图
    * @param {object} metadata - 元数据
-   * @param {object} options - { skipScriptConfirmation, skipPromptReview, skipRender, skipPostProduction }
+   * @param {object} options - { skipPromptReview, skipRender, skipPostProduction }
    * @returns {object} 完整创作结果
    */
   async create(intent, metadata = {}, options = {}) {
     console.log(`\n🔥 [HyperrealitySystem v${this.version}] 开始创作`);
     console.log(`   意图: ${intent}`);
     console.log(`   项目: ${metadata.title || '未命名'}`);
-    console.log(`   流程: ${options.skipScriptConfirmation ? '跳过' : '含'}剧本确认 → ${options.skipPromptReview ? '跳过' : '含'}提示词审核 → ${options.skipRender ? '跳过' : '含'}渲染 → ${options.skipPostProduction ? '跳过' : '含'}后期`);
+    console.log(`   流程: 需求确认 → ${options.skipPromptReview ? '跳过' : '含'}提示词审核 → ${options.skipRender ? '跳过' : '含'}渲染 → ${options.skipPostProduction ? '跳过' : '含'}后期`);
     console.log('');
 
     const result = {
@@ -160,30 +160,10 @@ class HyperrealitySystem {
       console.log(`   ✅ 剧本生成完成 (${result.stages.scriptEngine.timing}ms)`);
       console.log(`      场景: ${scriptResult.report.scenes_count} | 角色: ${scriptResult.report.characters_count} | 台词: ${scriptResult.report.dialogues_count}`);
       console.log(`      校验: ${scriptResult.validation.passed ? '通过' : '失败'} (${scriptResult.validation.overall_score}分)`);
+      console.log('   ✅ 剧本生成完成，直接进入制作环节');
 
-      // ========== 🆕 剧本确认环节（P0-固化） ==========
-      if (!options.skipScriptConfirmation) {
-        console.log('\n🎭 [剧本确认] 等待人工确认...');
-        
-        const scriptConfirmation = await this._confirmScript(scriptResult.blueprint);
-        result.confirmations.script = scriptConfirmation;
-        
-        if (!scriptConfirmation.approved) {
-          console.log('   ❌ 剧本未确认，流程中止');
-          result.success = false;
-          result.stages.scriptReview = {
-            status: 'rejected',
-            reason: scriptConfirmation.reason || '用户未确认',
-            suggestions: scriptConfirmation.suggestions || []
-          };
-          return result;
-        }
-        
-        console.log('   ✅ 剧本已确认，继续制作');
-      } else {
-        console.log('\n⚠️ [剧本确认] 跳过（调试模式）');
-        result.confirmations.script = { approved: true, skipped: true };
-      }
+      // 剧本确认已移除：需求确认后直接跑完整预生产
+      result.confirmations.script = { approved: true, skipped: true, reason: '剧本确认环节已移除，需求确认后直接生产' };
 
       // ========== 适配层 ==========
       console.log('\n🔗 [Adapter] 适配层 - 转换数据格式...');
@@ -377,32 +357,6 @@ class HyperrealitySystem {
   }
 
   /**
-   * 剧本确认环节
-   * v1.2.5: 支持外部确认
-   */
-  async _confirmScript(blueprint) {
-    // 生成剧本报告供审阅
-    const scriptReport = this._generateScriptReport(blueprint);
-    
-    // v1.2.5: 写入文件并等待外部确认
-    const confirmPath = await this._waitForExternalConfirmation('script', scriptReport);
-    
-    if (confirmPath.approved) {
-      console.log('   ✅ 剧本已确认');
-    } else {
-      console.log('   ❌ 剧本被拒绝:', confirmPath.reason);
-    }
-    
-    return {
-      approved: confirmPath.approved,
-      reviewedAt: new Date().toISOString(),
-      report: scriptReport,
-      reason: confirmPath.reason,
-      suggestions: confirmPath.suggestions
-    };
-  }
-
-  /**
    * 提示词确认环节
    * v1.2.5: 支持外部确认
    */
@@ -488,67 +442,6 @@ class HyperrealitySystem {
   }
 
   /**
-   * 生成剧本报告（供审阅）
-   */
-  _generateScriptReport(blueprint) {
-    const scenes = blueprint.structure?.scenes || [];
-    const lines = [];
-    
-    lines.push('# 🎭 剧本确认报告');
-    lines.push('');
-    lines.push(`**项目**: ${blueprint.meta?.title || '未命名'}`);
-    lines.push(`**时长**: ${blueprint.meta?.target_duration || 120}s`);
-    lines.push(`**场景**: ${scenes.length} 个`);
-    lines.push(`**校验**: ${blueprint.validate ? '通过' : '待校验'}`);
-    lines.push('');
-    lines.push('## 场景总览');
-    lines.push('');
-    lines.push('| 场景 | 类型 | 时长 | 角色 | 台词 |');
-    lines.push('|------|------|------|------|------|');
-    
-    for (const scene of scenes) {
-      const chars = (scene.characters || []).join(', ');
-      const dialogueCount = scene.dialogue?.lines?.length || 0;
-      lines.push(`| ${scene.scene_id} | ${scene.scene_type} | ${scene.timing?.duration || 0}s | ${chars} | ${dialogueCount}句 |`);
-    }
-    
-    lines.push('');
-    lines.push('## 详细场景');
-    lines.push('');
-    
-    for (const scene of scenes) {
-      lines.push(`### ${scene.scene_id}: ${scene.scene_name}`);
-      lines.push(`**类型**: ${scene.scene_type} | **时长**: ${scene.timing?.duration || 0}s`);
-      lines.push(`**设定**: ${scene.setting || '无'}`);
-      lines.push(`**角色**: ${(scene.characters || []).join(', ') || '无'}`);
-      lines.push('');
-      
-      if (scene.dialogue?.lines?.length > 0) {
-        lines.push('**台词**:');
-        for (const line of scene.dialogue.lines) {
-          lines.push(`- ${line.speaker}: 「${line.text}」 (${line.emotion || 'neutral'})`);
-        }
-        lines.push('');
-      }
-      
-      lines.push('---');
-      lines.push('');
-    }
-    
-    lines.push('## ⚠️ 确认须知');
-    lines.push('');
-    lines.push('1. 确认场景时序连续无断层');
-    lines.push('2. 确认每个场景有角色对话');
-    lines.push('3. 确认总时长等于目标时长');
-    lines.push('4. 确认角色数量、设定符合预期');
-    lines.push('');
-    lines.push('**请回复 "确认" 继续，或 "修改" 并指出问题**');
-    lines.push('');
-    
-    return lines.join('\n');
-  }
-
-  /**
    * 生成提示词报告（供审阅）
    */
   _generatePromptsReport(prompts) {
@@ -557,7 +450,8 @@ class HyperrealitySystem {
     lines.push('# 📝 提示词审核报告');
     lines.push('');
     lines.push(`**镜头数**: ${prompts.length}`);
-    lines.push(`**平均长度**: ${Math.round(prompts.reduce((s, p) => s + p.length, 0) / prompts.length)} 字符`);
+    const totalLen = prompts.reduce((s, p) => s + (p.prompt?.length || 0), 0);
+    lines.push(`**平均长度**: ${prompts.length > 0 ? Math.round(totalLen / prompts.length) : 0} 字符`);
     lines.push('');
     lines.push('## 镜头总览');
     lines.push('');
@@ -565,10 +459,10 @@ class HyperrealitySystem {
     lines.push('|------|------|----------|----------|--------|');
     
     for (const p of prompts) {
-      const hasImages = (p.imageRefs || []).length > 0;
-      const hasTimeline = p.prompt?.includes('【镜头时间轴】') || false;
-      const hasConstraints = p.prompt?.includes('【角色一致性】') || false;
-      lines.push(`| ${p.shotId} | ${p.length} | ${hasImages ? '✓' : '✗'} | ${hasTimeline ? '✓' : '✗'} | ${hasConstraints ? '✓' : '✗'} |`);
+      const hasImages = (p.portraits || []).length > 0;
+      const hasTimeline = p.timeline && (p.timeline.start !== undefined || p.timeline.text) ? true : false;
+      const hasConstraints = p.prompt?.includes('角色一致性') || false;
+      lines.push(`| ${p.shotId} | ${p.prompt?.length || 0} | ${hasImages ? '✓' : '✗'} | ${hasTimeline ? '✓' : '✗'} | ${hasConstraints ? '✓' : '✗'} |`);
     }
     
     lines.push('');
@@ -577,10 +471,10 @@ class HyperrealitySystem {
     
     for (const p of prompts) {
       lines.push(`### ${p.shotId}`);
-      lines.push(`**长度**: ${p.length} 字符 | **定妆照**: ${p.imageRefs?.length || 0} 张`);
+      lines.push(`**长度**: ${p.prompt?.length || 0} 字符 | **定妆照**: ${p.portraits?.length || 0} 张`);
       lines.push('');
       lines.push('```');
-      lines.push(p.prompt);
+      lines.push(p.prompt || '(空)');
       lines.push('```');
       lines.push('');
       lines.push('---');
@@ -622,9 +516,6 @@ class HyperrealitySystem {
     lines.push('');
     lines.push(`| 环节 | 状态 | 时间 |`);
     lines.push(`|------|------|------|`);
-    if (confirmations?.script) {
-      lines.push(`| 剧本确认 | ${confirmations.script.approved ? '✅ 通过' : '❌ 未通过'} ${confirmations.script.skipped ? '(跳过)' : ''} | ${confirmations.script.reviewedAt || 'N/A'} |`);
-    }
     if (confirmations?.prompts) {
       lines.push(`| 提示词审核 | ${confirmations.prompts.approved ? '✅ 通过' : '❌ 未通过'} ${confirmations.prompts.skipped ? '(跳过)' : ''} | ${confirmations.prompts.reviewedAt || 'N/A'} |`);
     }
@@ -790,14 +681,6 @@ class HyperrealitySystem {
       await fs.writeFile(
         `${basePath}-report.md`,
         result.finalReport
-      );
-    }
-
-    // 保存剧本确认报告
-    if (result.confirmations?.script?.report) {
-      await fs.writeFile(
-        `${basePath}-script-review.md`,
-        result.confirmations.script.report
       );
     }
 
