@@ -1,7 +1,7 @@
 // hyperreality-system/index.js
 // Hyperreality System - 超现实工业创作系统统一入口
 // 深度融合：剧本引擎 → 适配层 → 制作引擎 → 完整镜头
-// 版本：v1.0.0 | 日期：2026-06-08
+// 版本：v1.2.5 | 日期：2026-06-19
 
 const { ScriptEngine } = require('./engines/script-engine');
 const { ProductionEngine } = require('./engines/production-engine/production-engine');
@@ -20,7 +20,7 @@ class HyperrealitySystem {
     this.renderingEngine = new RenderingEngine(options.renderingEngine);
     this.postProductionEngine = new PostProductionEngine(options.postProductionEngine);
     this.fieldGuard = new FieldGuard({ strict: true, logPrefix: '[Hyperreality]' });
-    this.version = '1.2.3';
+    this.version = '1.2.5';
   }
 
   /**
