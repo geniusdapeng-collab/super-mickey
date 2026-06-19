@@ -232,7 +232,7 @@ class ProductionEngine {
     const char = characters.find(c => c.character_id === cid);
     if (!char) return `${cid}: unknown`;
     
-    const race = char.species || char.race || 'unknown';
+    const race = char.species || char.race || char.gender || 'human';
     const features = char.visual_anchor?.core_features || [];
     
     // 颜色词列表（用于检查）
@@ -874,7 +874,12 @@ class ProductionEngine {
       };
       
       // 片头专属字段
-      if (shot.sceneType === 'opening') {
+      // v1.2.5: 系列片头逻辑——只有第一集才有片头titleOverlay
+      const isSeries = blueprint.config?._metadata?.isSeries || false;
+      const episodeNumber = blueprint.config?._metadata?.episodeNumber || 1;
+      const hasOpening = isSeries ? (episodeNumber === 1) : true;
+      
+      if (shot.sceneType === 'opening' && hasOpening) {
         const audioLayer = this._buildAudioLayer(shot);
         const titleOverlay = this._buildTitleOverlay(blueprint);
         standardOutput.audioLayer = audioLayer.object;
@@ -882,8 +887,8 @@ class ProductionEngine {
         standardOutput.titleOverlay = titleOverlay.object;
         standardOutput.titleOverlayString = titleOverlay.string;
         // FieldGuard 要求的片头必填字段
-        standardOutput.title = titleOverlay.object?.mainTitle || blueprint.meta?.title || '';
-        standardOutput.subtitle = titleOverlay.object?.subtitle || blueprint.meta?.seriesTitle || '';
+        standardOutput.title = titleOverlay.object?.mainTitle || blueprint.config?.title || '';
+        standardOutput.subtitle = titleOverlay.object?.subtitle || blueprint.config?.seriesTitle || '';
       }
       
       // v6.37+: 生成 portraits 和 characterCards（FieldGuard 要求的关键字段）
@@ -987,15 +992,27 @@ class ProductionEngine {
   _buildTitleOverlay(blueprint) {
     const config = blueprint.config || {};
     const worldSetting = blueprint.worldSetting || {};
+    const _metadata = config._metadata || {};
+    
+    // v1.2.5: 系列作品片头逻辑
+    const isSeries = _metadata.isSeries || false;
+    const episodeNumber = _metadata.episodeNumber || 1;
+    const totalEpisodes = _metadata.totalEpisodes || 1;
+    
+    // 只有第一集显示完整片头title
+    const showTitle = isSeries ? (episodeNumber === 1) : true;
     
     const titleObj = {
-      mainTitle: config.title || '未命名',
-      subtitle: worldSetting.name || '系列作品',
-      producer: `by ${config.producer || 'Genius'}`,
-      titleAnim: 'light-vein carving growth 3.0-5.0s'
+      mainTitle: showTitle ? (config.title || '未命名') : '',
+      subtitle: showTitle ? (worldSetting.name || '系列作品') : '',
+      producer: showTitle ? `by ${config.producer || 'Genius'}` : '',
+      titleAnim: showTitle ? 'light-vein carving growth 3.0-5.0s' : 'none',
+      episodeInfo: isSeries ? `第${episodeNumber}集 / 共${totalEpisodes}集` : ''
     };
     
-    const titleStr = `MAIN_TITLE: "${titleObj.mainTitle}" | SUBTITLE: "${titleObj.subtitle}" | PRODUCER: "${titleObj.producer}" | TITLE_ANIM: ${titleObj.titleAnim}`;
+    const titleStr = showTitle 
+      ? `MAIN_TITLE: "${titleObj.mainTitle}" | SUBTITLE: "${titleObj.subtitle}" | PRODUCER: "${titleObj.producer}" | TITLE_ANIM: ${titleObj.titleAnim}`
+      : `EPISODE: ${titleObj.episodeInfo} | TITLE_ANIM: none`;
     
     return {
       object: titleObj,
@@ -1101,6 +1118,16 @@ class ProductionEngine {
   _buildShotPrompt(shot, blueprint, structuredStrings = {}) {
     const { cameraStr, lightingStr, timelineStr } = structuredStrings;
     
+    // v1.2.5: 从blueprint metadata中提取系列信息，控制片头和结尾
+    const isSeries = blueprint._metadata?.isSeries || false;
+    const episodeNumber = blueprint._metadata?.episodeNumber || 1;
+    const hasOpening = blueprint._metadata?.hasOpening !== false; // 默认true
+    const noNextEpisodePreview = blueprint._metadata?.noNextEpisodePreview || false;
+    
+    // 检查当前镜头是否为片头/结尾，根据系列规则调整
+    const isOpeningShot = shot.sceneType === 'opening' || shot.sceneType === 'establish';
+    const isResolutionShot = shot.sceneType === 'resolution';
+    
     // 定义优先级和截断策略（专家反馈）
     const priorityMap = {
       'L1_constraint': { priority: 'P0', strategy: 'never' },
@@ -1122,7 +1149,8 @@ class ProductionEngine {
     const partMeta = [];
     
     // === L1: 约束层（P0必加）===
-    const ratio = blueprint.aspectRatio || shot.ratio || '16:9';
+    // v1.2.5: 从blueprint.config读取画幅，默认16:9横屏
+    const ratio = blueprint.config?.aspectRatio || '16:9';
     parts.push(`${ratio} cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic`);
     partMeta.push({ id: 'L1_constraint', priority: 'P0' });
     

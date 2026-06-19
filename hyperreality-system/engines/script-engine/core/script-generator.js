@@ -260,11 +260,22 @@ ${meta.world_setting === 'Nirath' ? `
 
 ## 关键要求
 1. 场景数量建议 5-7 个，总时长严格等于 ${meta.target_duration} 秒
-2. 片头场景（SC00）必须有角色出场 + 对话，建立世界观
-3. 高潮场景必须包含情感张力和视觉冲击力
-4. 结尾场景必须有角色成长/感悟 + 下集钩子
-5. 每个场景的台词必须包含在场景中（不能旁白）
-6. 场景时长分配示例：SC00=15s, SC01=25s, SC02=30s, SC03=30s, SC04=20s（总120s）
+2. 每个场景的台词必须包含在场景中（不能旁白）
+3. 场景时长分配需严格计算，总和必须精确等于${meta.target_duration}秒，例如：${Math.round(meta.target_duration/5)}秒×5场景
+4. 角色视觉锚点必须保持一致（定妆照引用）
+${meta.characters?.length > 0 ? `
+## 角色信息（必须严格使用，禁止自创角色）
+${meta.characters.map(c => `- ${c.name} (ID: ${c.id || c.name}): ${c.description || '主讲人'}`).join('\n')}
+` : ''}
+${meta.series?.totalEpisodes > 1 ? `
+## 系列作品约束（极其重要）
+- 这是第 ${meta.series?.currentEpisode || 1} 集 / 共 ${meta.series?.totalEpisodes} 集
+- 本集主题：${meta.series?.episodeTitles?.[meta.series?.currentEpisode - 1] || meta.title}
+- 内容边界：只讲本集主题，不跨集（不重复已讲内容，不提前讲后续内容）
+${meta.series?.currentEpisode > 1 ? '- **本集无片头标题画面**（片头仅第一集有）' : ''}
+${meta.noNextEpisodePreview ? '- **结尾禁止预告下一集**（不提及后续内容）' : ''}
+` : ''}
+5. 高潮场景必须包含情感张力和视觉冲击力
 
 请直接输出 JSON，不要包含任何其他解释文字。`;
 
@@ -365,14 +376,66 @@ ${meta.world_setting === 'Nirath' ? `
       // 解析 JSON
       const parsed = JSON.parse(jsonStr);
 
+      // v1.2.5: 从metadata注入角色信息（覆盖LLM生成的错误角色）
+      const metadataChars = userIntent.metadata?.characters || [];
+      if (metadataChars.length > 0) {
+        const overrideCharacters = metadataChars.map(c => ({
+          character_id: c.id || c.name,
+          name: c.name,
+          role: c.role || 'protagonist',
+          visual_anchor: {
+            core_features: c.description ? c.description.split(/[,，、]/) : ['写实人物'],
+            reference_images: c.portraitPaths || c.portraits || []
+          },
+          voice_profile: {
+            persona: c.description || c.name,
+            tone: '专业',
+            speaking_style: '口语化科普'
+          }
+        }));
+        
+        // 替换LLM生成的角色
+        parsed.character_system = {
+          characters: overrideCharacters
+        };
+        
+        // 同时替换所有场景中的角色引用
+        if (parsed.structure?.scenes) {
+          for (const scene of parsed.structure.scenes) {
+            if (scene.characters) {
+              scene.characters = overrideCharacters.map(c => c.character_id);
+            }
+            if (scene.dialogue?.lines) {
+              for (const line of scene.dialogue.lines) {
+                line.speaker = overrideCharacters[0]?.name || line.speaker;
+              }
+            }
+          }
+        }
+        
+        console.log(`[ScriptGenerator] 角色覆盖: ${metadataChars.map(c => c.name).join(', ')}`);
+      }
+
+      // v1.2.5: 注入metadata._metadata到blueprint meta
+      const meta = {
+        ...parsed.meta,
+        narrative_mode: userIntent.parsed?.narrative_mode || 'dramatic',
+        target_duration: userIntent.metadata?.target_duration || 120,
+        _metadata: {
+          isSeries: userIntent.metadata?.series?.totalEpisodes > 1,
+          episodeNumber: userIntent.metadata?.series?.currentEpisode || 1,
+          totalEpisodes: userIntent.metadata?.series?.totalEpisodes || 1,
+          hasOpening: userIntent.metadata?.hasOpening !== false,
+          noNextEpisodePreview: userIntent.metadata?.noNextEpisodePreview || false,
+          aspectRatio: userIntent.metadata?.aspectRatio || '16:9',
+          ...userIntent.metadata?._metadata
+        }
+      };
+
       // 构建 Blueprint
       const blueprint = new ScriptBlueprint({
         intent_ref: userIntent.intent_id,
-        meta: {
-          ...parsed.meta,
-          narrative_mode: userIntent.parsed?.narrative_mode || 'dramatic',
-          target_duration: userIntent.metadata?.target_duration || 120
-        },
+        meta: meta,
         structure: parsed.structure,
         character_system: parsed.character_system,
         voice_system: parsed.voice_system,

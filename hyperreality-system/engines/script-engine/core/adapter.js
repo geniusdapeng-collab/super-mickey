@@ -56,13 +56,19 @@ class ScriptBlueprintAdapter {
    * 适配配置
    */
   _adaptConfig(blueprint) {
+    // v1.2.5: 从blueprint.meta._metadata中提取系列和平台信息
+    const meta = blueprint.meta || {};
     return {
-      title: blueprint.meta.title,
-      narrative_mode: blueprint.meta.narrative_mode,
-      target_duration: blueprint.meta.target_duration,
+      title: meta.title,
+      narrative_mode: meta.narrative_mode,
+      target_duration: meta.target_duration,
       world_setting: blueprint.world_setting?.world_id || 'default',
       featured_beast_id: blueprint.extensions?.nirath_extension?.featured_beast_id || null,
       protagonist: blueprint.character_system?.characters?.find(c => c.role === 'protagonist')?.character_id || 'xiaoG',
+      
+      // v1.2.5: 传递系列和平台元数据
+      aspectRatio: meta._metadata?.aspectRatio || meta.aspectRatio || '16:9',
+      _metadata: meta._metadata || {},
       
       // 约束配置
       constraints: {
