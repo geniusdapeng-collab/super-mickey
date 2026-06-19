@@ -25,7 +25,7 @@ class ScriptGenerator {
       temperature: options.temperature || 1,
       promptTemplateDir: options.promptTemplateDir || path.join(__dirname, '../prompts'),
       templateDir: options.templateDir || path.join(__dirname, '../templates'),
-      timeout: options.timeout || 180000,
+      timeout: options.timeout || 300000, // v1.2.5: 从180s增加到300s，API有时需要更长时间
       maxRetries: options.maxRetries || 3,
       ...options
     };
@@ -297,14 +297,20 @@ ${meta.noNextEpisodePreview ? '- **结尾禁止预告下一集**（不提及后�
           timeoutMs: this.config.timeout
         });
         
-        if (result.content) {
-          return result.content;
+        // v1.2.5-fix: 正确处理LLM引擎返回结构
+        if (!result.success) {
+          console.error('[ScriptGenerator] LLM引擎返回失败:', result.error);
+          throw new Error(`LLM引擎错误: ${result.error}`);
         }
-        if (result.reasoning_content) {
+        
+        if (result.content && result.content.trim()) {
+          return result.content.trim();
+        }
+        if (result.reasoning_content && result.reasoning_content.trim()) {
           console.warn('[ScriptGenerator] 从reasoning_content提取内容');
-          return result.reasoning_content;
+          return result.reasoning_content.trim();
         }
-        throw new Error('LLM返回空内容');
+        throw new Error('LLM返回空内容（success=true但content为空）');
       } catch (error) {
         console.error('[ScriptGenerator] LLMEngine调用失败:', error.message);
         throw error;
