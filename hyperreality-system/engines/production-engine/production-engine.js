@@ -296,7 +296,18 @@ class ProductionEngine {
     const characters = adaptedBlueprint.characters || [];
     const worldSetting = adaptedBlueprint.worldSetting || {};
     
+    // v1.2.5: 系列作品非第一集处理
+    const _metadata = adaptedBlueprint.config?._metadata || {};
+    const isSeriesNonFirst = _metadata.isSeries && _metadata.episodeNumber > 1;
+    
     const shots = scenes.map((scene, index) => {
+      // v1.2.5: 非第一集将opening类型改为establishing
+      let sceneType = scene.scene_type || 'establishing';
+      if (isSeriesNonFirst && sceneType === 'opening') {
+        console.log(`[ProductionEngine] 非第一集，场景 ${scene.scene_id} 从 opening 降级为 establishing`);
+        sceneType = 'establishing';
+      }
+      
       // 构建角色描述（v6.37-P1+: 强制极简锚点，3-5关键词）
       const characterAnchors = (scene.characters || []).map(cid => {
         return this._buildMinimalAnchor(cid, characters);
@@ -322,7 +333,7 @@ class ProductionEngine {
       
       return {
         shotId: scene.scene_id || `S${String(index + 1).padStart(2, '0')}`,
-        sceneType: scene.scene_type || 'establishing',
+        sceneType: sceneType,
         sceneFunction: scene.scene_function || 'establish',
         
         // v6.37-P0: 时序（保留对象，后续转为字符串）
