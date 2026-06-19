@@ -1,6 +1,6 @@
 // engines/script-engine/core/requirement-list-builder.js
 // RequirementListBuilder - 需求清单生成确认模块 (Layer 0)
-// 适配超现实系统四层架构，在 IntentParser 和 ScriptEngine 之间
+// 适配超现实系统四层架构,在 IntentParser 和 ScriptEngine 之间
 // 版本: v1.0.0 | 日期: 2026-06-18
 
 const { IntentParser } = require('./intent-parser');
@@ -11,14 +11,14 @@ const { IntentParser } = require('./intent-parser');
  */
 const StyleEncoder = {
   primaryStyles: {
-    'REAL': { name: '写实纪实', description: '自然光、真实场景、手持感', context: { EDU: '真实可信的纪实风格，增强专业信任感', default: '写实纪实的真实质感' }},
-    'CINE': { name: '电影质感', description: '戏剧性光影、宽画幅、景深', context: { DRAMA: '电影级叙事质感，增强戏剧张力', EDU: '电影级纪录片质感，提升专业度', default: '电影级的戏剧质感' }},
+    'REAL': { name: '写实纪实', description: '自然光、真实场景、手持感', context: { EDU: '真实可信的纪实风格,增强专业信任感', default: '写实纪实的真实质感' }},
+    'CINE': { name: '电影质感', description: '戏剧性光影、宽画幅、景深', context: { DRAMA: '电影级叙事质感,增强戏剧张力', EDU: '电影级纪录片质感,提升专业度', default: '电影级的戏剧质感' }},
     'POL': { name: '精致商业', description: '高饱和、精致布光、产品特写', context: { ADV: '精致商业广告质感', default: '精致商业的高品质呈现' }},
     'MINI': { name: '极简现代', description: 'clean背景、大留白、几何构图', context: { default: '极简现代的设计美学' }},
     'RET': { name: '复古怀旧', description: '暖色调、胶片颗粒、年代感', context: { default: '复古怀旧的温暖质感' }},
     'FUT': { name: '科幻未来', description: '冷色调、霓虹光、科技感UI', context: { default: '科幻未来的科技美学' }},
     'ART': { name: '艺术实验', description: '非常规构图、抽象视觉、强烈色彩', context: { default: '艺术实验的独特美学' }},
-    'WARM': { name: '温暖治愈', description: '柔和光线、暖色调、慢节奏', context: { EDU: '温暖治愈的亲和风格，降低知识门槛', default: '温暖治愈的情感氛围' }},
+    'WARM': { name: '温暖治愈', description: '柔和光线、暖色调、慢节奏', context: { EDU: '温暖治愈的亲和风格,降低知识门槛', default: '温暖治愈的情感氛围' }},
     'STREET': { name: '街头潮流', description: '快速剪辑、涂鸦元素、动感运镜', context: { default: '街头潮流的动感风格' }},
     'FAIRY': { name: '梦幻童话', description: '柔光、仙气、超现实元素', context: { default: '梦幻童话的超现实美感' }}
   },
@@ -38,7 +38,7 @@ const StyleEncoder = {
     const style = this.primaryStyles[code];
     if (!style) return code;
     const ctx = style.context[videoType] || style.context.default;
-    return `${style.name}风格，${ctx}，${style.description}`;
+    return `${style.name}风格,${ctx},${style.description}`;
   },
 
   expandSecondary(code) {
@@ -52,7 +52,7 @@ const StyleEncoder = {
     const primaryDesc = this.expandPrimary(primary, videoType);
     if (!secondary.length) return primaryDesc;
     const secondaryDescs = secondary.map(s => this.expandSecondary(s));
-    return `${primaryDesc}，叠加${secondaryDescs.join('、')}`;
+    return `${primaryDesc},叠加${secondaryDescs.join('、')}`;
   }
 };
 
@@ -130,7 +130,7 @@ const ParserRules = {
 
 /**
  * RequirementListBuilder - 需求清单生成确认器
- * 超现实系统 Layer 0：在 IntentParser (Layer 1前) 运行
+ * 超现实系统 Layer 0:在 IntentParser (Layer 1前) 运行
  */
 class RequirementListBuilder {
   constructor(options = {}) {
@@ -147,31 +147,31 @@ class RequirementListBuilder {
   }
 
   /**
-   * 主入口：生成需求清单
+   * 主入口:生成需求清单
    * @param {string} userInput - 用户自然语言输入
-   * @param {Object} metadata - 附加元数据（如标题、时长等）
+   * @param {Object} metadata - 附加元数据(如标题、时长等)
    * @returns {RequirementList} 结构化需求清单
    */
   async build(userInput, metadata = {}) {
     console.log(`\n📋 [Layer 0] 需求清单生成 - 解析用户意图...`);
     const startTime = Date.now();
 
-    // 1. IntentParser 快速分类（复用超现实系统已有能力）
+    // 1. IntentParser 快速分类(复用超现实系统已有能力)
     const intentResult = this.intentParser.parse(userInput, metadata);
     console.log(`   ✅ IntentParser 分类: ${intentResult.parsed.narrative_mode} (置信度: ${intentResult.analysis.confidence})`);
 
-    // 2. 规则库快速解析（确定性提取）
+    // 2. 规则库快速解析(确定性提取)
     const ruleBasedResult = this._ruleBasedParse(userInput, metadata);
     console.log(`   ✅ 规则库解析: 类型=${ruleBasedResult.videoType || '未识别'}, 时长=${ruleBasedResult.duration || '默认'}`);
 
-    // 3. LLM 深度解析（语义理解）
+    // 3. LLM 深度解析(语义理解)
     let llmResult = {};
     if (this.options.useLLM && this.options.llmEngine) {
       try {
         llmResult = await this._llmParse(userInput, ruleBasedResult, intentResult, metadata);
         console.log(`   ✅ LLM 深度解析完成`);
       } catch (e) {
-        console.warn(`   ⚠️ LLM 解析失败: ${e.message}，回退到规则库`);
+        console.warn(`   ⚠️ LLM 解析失败: ${e.message},回退到规则库`);
       }
     }
 
@@ -238,7 +238,7 @@ class RequirementListBuilder {
       if (result.platform) break;
     }
 
-    // 推断风格（优先使用metadata）
+    // 推断风格(优先使用metadata)
     if (metadata.style) {
       result.style.primary = metadata.style;
     } else {
@@ -275,9 +275,9 @@ class RequirementListBuilder {
       result.duration = value;
     }
 
-    // 提取时长范围（如 59～65秒）—— 如果metadata没有提供
+    // 提取时长范围(如 59~65秒)-- 如果metadata没有提供
     if (!result.duration) {
-      const rangeMatch = text.match(/(\d+)\s*[~～-]\s*(\d+)\s*(秒|分钟|分|s)/i);
+      const rangeMatch = text.match(/(\d+)\s*[~~-]\s*(\d+)\s*(秒|分钟|分|s)/i);
       if (rangeMatch) {
         let min = parseInt(rangeMatch[1]);
         let max = parseInt(rangeMatch[2]);
@@ -289,7 +289,7 @@ class RequirementListBuilder {
     }
 
     // 提取创意指数
-    const intensityMatch = text.match(/创意指数\s*[:：]?\s*(0?\.\d+|\d+)/i);
+    const intensityMatch = text.match(/创意指数\s*[::]?\s*(0?\.\d+|\d+)/i);
     if (intensityMatch) {
       result.creativeIntensity = parseFloat(intensityMatch[1]);
     }
@@ -310,7 +310,7 @@ class RequirementListBuilder {
     }
 
     // 提取角色信息
-    const characterMatches = text.match(/([^，。]+?)女士|([^，。]+?)先生|主角([^，。]+)|([^，。]+?)穿/);
+    const characterMatches = text.match(/([^,。]+?)女士|([^,。]+?)先生|主角([^,。]+)|([^,。]+?)穿/);
     if (characterMatches) {
       const name = characterMatches[1] || characterMatches[2] || characterMatches[3] || characterMatches[4];
       if (name && name.length < 10) {
@@ -318,8 +318,8 @@ class RequirementListBuilder {
       }
     }
 
-    // 提取关键需求点（简单分句）
-    const sentences = text.split(/[。！；\n]/).filter(s => s.trim().length > 5);
+    // 提取关键需求点(简单分句)
+    const sentences = text.split(/[。!;\n]/).filter(s => s.trim().length > 5);
     result.keyPoints = sentences.slice(0, 5);
 
     return result;
@@ -357,20 +357,20 @@ class RequirementListBuilder {
    * 构建 LLM 提示词 - 超现实系统专用
    */
   _buildLLMPrompt(userInput, ruleResult, intentResult, metadata) {
-    return `你是一位资深AI视频制片人，擅长将用户的粗略需求转化为专业的视频制作方案。
+    return `你是一位资深AI视频制片人,擅长将用户的粗略需求转化为专业的视频制作方案。
 
 ## 用户输入
 """${userInput}"""
 
-## 规则库初步解析（供参考）
+## 规则库初步解析(供参考)
 ${JSON.stringify(ruleResult, null, 2)}
 
-## 系统硬约束（不可违反）
+## 系统硬约束(不可违反)
 - 单次最长时长: 180秒
 - 单个镜头最长: 15秒
 - 单集最长: 180秒
-- 总时长上限: 20分钟（1200秒）
-- 系列最多7集，推荐最多5集
+- 总时长上限: 20分钟(1200秒)
+- 系列最多7集,推荐最多5集
 - 画幅比例: 9:16(竖屏) / 16:9(横屏) / 1:1(方形)
 
 ## 视频类型
@@ -381,14 +381,14 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
 辅助风格: +LUX=奢华感, +VIV=活力感, +EMO=情绪感, +NAT=自然感, +GRI=粗粝感, +SWE=甜美感, +DAR=暗黑感, +NOS=怀旧感
 
 ## 任务
-请分析用户需求，输出JSON格式的完整需求清单：
+请分析用户需求,输出JSON格式的完整需求清单:
 
 {
   "videoType": "类型编码",
   "videoTypeName": "中文类型名",
   "title": "视频主题",
-  "seriesTitle": "系列名称（如有）",
-  "targetAudience": "目标受众描述（年龄/性别/兴趣/职业）",
+  "seriesTitle": "系列名称(如有)",
+  "targetAudience": "目标受众描述(年龄/性别/兴趣/职业)",
   "platform": "投放平台",
   "aspectRatio": "画幅比例",
   "duration": 目标时长数字,
@@ -404,7 +404,7 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
     {
       "id": "角色ID(小写英文+连字符)",
       "name": "角色名",
-      "description": "角色描述（年龄/性别/服装/气质）",
+      "description": "角色描述(年龄/性别/服装/气质)",
       "role": "角色定位: protagonist(主角) / supporting(配角) / narrator(解说员)"
     }
   ],
@@ -421,7 +421,7 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
   "uncertainties": ["不确定项1"]
 }
 
-只输出JSON，不要其他内容。`;
+只输出JSON,不要其他内容。`;
   }
 
   /**
@@ -436,7 +436,7 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
       confidence: intentResult.analysis?.confidence || 0.5
     };
 
-    // 规则库结果优先（确定性更高），除非LLM明确提供了非推断值
+    // 规则库结果优先(确定性更高),除非LLM明确提供了非推断值
     if (ruleResult.videoType) {
       merged.videoType = ruleResult.videoType;
       merged.videoTypeName = ruleResult.videoTypeName;
@@ -445,7 +445,7 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
       merged.duration = ruleResult.duration;
       merged.durationRange = ruleResult.durationRange;
     }
-    // 风格：如果规则库有明确值，优先使用；否则用LLM的
+    // 风格:如果规则库有明确值,优先使用;否则用LLM的
     if (ruleResult.style?.primary) {
       merged.style = merged.style || {};
       merged.style.primary = ruleResult.style.primary;
@@ -464,7 +464,7 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
   _inferCompletion(result) {
     const completed = { ...result };
 
-    // 补全视频类型（默认EDU）
+    // 补全视频类型(默认EDU)
     if (!completed.videoType) {
       completed.videoType = 'EDU';
       completed.videoTypeName = '教育科普';
@@ -486,7 +486,7 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
       completed.durationRange = [Math.max(15, completed.duration - 10), Math.min(180, completed.duration + 10)];
     }
 
-    // 补全风格（强制根据视频类型设置默认风格，覆盖LLM的错误推断）
+    // 补全风格(强制根据视频类型设置默认风格,覆盖LLM的错误推断)
     const typeToStyle = {
       'EDU': 'REAL', 'DOC': 'REAL', 'VLOG': 'REAL',
       'DRAMA': 'CINE', 'MV': 'ART',
@@ -494,7 +494,7 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
       'SOC': 'STREET', 'EVT': 'REAL'
     };
     const defaultStyle = typeToStyle[completed.videoType] || 'REAL';
-    // 如果当前风格与默认不符，且是推断的，强制覆盖
+    // 如果当前风格与默认不符,且是推断的,强制覆盖
     if (completed.style?.primary !== defaultStyle) {
       console.log(`[RequirementListBuilder] 风格强制修正: ${completed.style?.primary} → ${defaultStyle} (视频类型: ${completed.videoType})`);
       completed.style = completed.style || {};
@@ -535,7 +535,7 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
         '抖音': '9:16', '快手': '9:16', '小红书': '9:16', '视频号': '9:16',
         'B站/YouTube': '16:9', '朋友圈': '9:16', '户外大屏': '16:9'
       };
-      // v1.2.5-fix: 默认横屏16:9，队长明确要求所有内容为横屏
+      // v1.2.5-fix: 默认横屏16:9,队长明确要求所有内容为横屏
       completed.aspectRatio = platformToRatio[completed.platform] || '16:9';
       completed.aspectRatioInferred = true;
     }
@@ -564,7 +564,7 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
   _inferStructure(result) {
     const typeToStructure = {
       'EDU': {
-        opening: '开场引入（问题/场景/数据）',
+        opening: '开场引入(问题/场景/数据)',
         scenes: ['核心知识点讲解', '案例/演示说明', '重点强调'],
         ending: '总结回顾 + 行动号召'
       },
@@ -604,11 +604,11 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
    */
   _inferCharacters(result) {
     const characters = [];
-    
+
     // 从用户输入中提取角色名
     const text = result.raw_input || '';
-    // 修复：支持 "穿警服的陈卓女士" 这种格式，正确提取名字
-    const nameMatches = text.match(/([^，。\s]{1,6})女士|([^，。\s]{1,6})先生|([^，。\s]{1,6})讲解|([^，。\s]{1,6})介绍/);
+    // 修复:支持 "穿警服的陈卓女士" 这种格式,正确提取名字
+    const nameMatches = text.match(/([^,。\s]{1,6})女士|([^,。\s]{1,6})先生|([^,。\s]{1,6})讲解|([^,。\s]{1,6})介绍/);
     if (nameMatches) {
       const name = (nameMatches[1] || nameMatches[2] || nameMatches[3] || nameMatches[4]).trim();
       if (name && name.length < 10 && name.length > 1) {
@@ -717,7 +717,7 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
         maxShotDuration: 15
       },
 
-      // 不确定项（需要用户确认）
+      // 不确定项(需要用户确认)
       uncertainties: result.uncertainties || [],
 
       // 推断标记
@@ -741,7 +741,7 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
   }
 
   /**
-   * 生成 Markdown 格式的需求清单（供用户确认）
+   * 生成 Markdown 格式的需求清单(供用户确认)
    */
   generateMarkdown(requirementList) {
     const r = requirementList;
@@ -749,8 +749,8 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
 
     return `# 视频需求要点清单
 
-> 系统: 超现实系统 v${r.version}  
-> 生成时间: ${r.generatedAt}  
+> 系统: 超现实系统 v${r.version}
+> 生成时间: ${r.generatedAt}
 > 置信度: ${(r._analysis.confidence * 100).toFixed(0)}%
 
 ---
@@ -762,7 +762,7 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
 ${r.seriesTitle ? `- **系列名称**: ${r.seriesTitle}` : ''}
 ${r.isSeries ? `- **集数**: 第${r.episode}集 / 共${r.totalEpisodes}集` : ''}
 - **目标时长**: ${r.targetDuration}秒${inferred('duration')}
-${r.durationRange ? `- **时长范围**: ${r.durationRange[0]}～${r.durationRange[1]}秒` : ''}
+${r.durationRange ? `- **时长范围**: ${r.durationRange[0]}~${r.durationRange[1]}秒` : ''}
 - **画幅比例**: ${r.aspectRatio}${inferred('aspectRatio')}
 - **投放平台**: ${r.platform}${inferred('platform')}
 
@@ -780,7 +780,7 @@ ${r.targetAudience}
 
 ## 四、角色设定
 
-${r.characters.map(c => `- **${c.name}** (${c.role === 'protagonist' ? '主角' : c.role === 'supporting' ? '配角' : '解说员'}): ${c.description}`).join('\n') || '（待补充）'}
+${r.characters.map(c => `- **${c.name}** (${c.role === 'protagonist' ? '主角' : c.role === 'supporting' ? '配角' : '解说员'}): ${c.description}`).join('\n') || '(待补充)'}
 
 ## 五、结构规划
 
@@ -790,17 +790,17 @@ ${r.structure.scenes.map((s, i) => `- **场景${i + 1}**: ${s}`).join('\n')}
 
 ## 六、关键需求点
 
-${r.keyPoints.map((p, i) => `${i + 1}. ${p}`).join('\n') || '（无）'}
+${r.keyPoints.map((p, i) => `${i + 1}. ${p}`).join('\n') || '(无)'}
 
 ## 七、内容约束
 
-${r.contentConstraints.map((c, i) => `${i + 1}. ${c}`).join('\n') || '（无）'}
+${r.contentConstraints.map((c, i) => `${i + 1}. ${c}`).join('\n') || '(无)'}
 
 ${r.uncertainties.length ? `## ⚠️ 待确认项\n\n${r.uncertainties.map((u, i) => `${i + 1}. ${u}`).join('\n')}` : ''}
 
 ---
 
-**请确认以上清单，或提出修改意见。确认后进入预生产流程。**`;
+**请确认以上清单,或提出修改意见。确认后进入预生产流程。**`;
   }
 
   /**
@@ -818,7 +818,7 @@ ${r.uncertainties.length ? `## ⚠️ 待确认项\n\n${r.uncertainties.map((u, 
       ],
       world_setting: requirementList._analysis.worldSetting,
       protagonist: requirementList.protagonist?.id || 'default',
-      featured_beast_id: requirementList._analysis.worldSetting === 'Nirath' ? 
+      featured_beast_id: requirementList._analysis.worldSetting === 'Nirath' ?
         requirementList._analysis.featuredBeastId : null,
       max_prompt_length: requirementList.constraints.maxPromptLength,
       reference_image_count: requirementList.constraints.referenceImageCount,
@@ -830,7 +830,9 @@ ${r.uncertainties.length ? `## ⚠️ 待确认项\n\n${r.uncertainties.map((u, 
         title: requirementList.seriesTitle,
         episode: requirementList.episode,
         total_episodes: requirementList.totalEpisodes
-      } : null
+      } : null,
+      // 🆕 v1.2.6-fix4b: 传递 characters 数组（角色覆盖的前置条件）
+      characters: requirementList.characters || []
     };
   }
 }

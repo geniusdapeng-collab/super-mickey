@@ -875,9 +875,16 @@ class ProductionEngine {
       const cameraStr = shot.camera?.string || shot.camera || '';
       const lightingStr = shot.lighting?.string || shot.lighting || '';
       const timelineStr = shot.timeline?.string || shot.timeline || '';
-      
+
+      // v1.2.6-fix10: 预先生成 backgroundSound，注入 shot 供 _buildShotPrompt 使用
+      const bgSoundResult = this._buildBackgroundSound(shot);
+      const shotWithSound = {
+        ...shot,
+        backgroundSound: bgSoundResult
+      };
+
       // 构建 Prompt 各部分（按融合顺序，带优先级截断）
-      const prompt = this._buildShotPrompt(shot, blueprint, { cameraStr, lightingStr, timelineStr });
+      const prompt = this._buildShotPrompt(shotWithSound, blueprint, { cameraStr, lightingStr, timelineStr });
       
       // 字符计数
       const promptLength = this._countChars(prompt.fullPrompt);
@@ -900,8 +907,8 @@ class ProductionEngine {
         dialogue: shot.dialogue || 'NONE',
         timeline: shot.timeline?.object || shot.timeline || {},
         timelineString: timelineStr,
-        backgroundSound: this._buildBackgroundSound(shot).object,
-        backgroundSoundString: this._buildBackgroundSound(shot).string,
+        backgroundSound: bgSoundResult.object,
+        backgroundSoundString: bgSoundResult.string,
         prompt: prompt.fullPrompt,
         promptCharCount: promptLength
       };
@@ -1766,18 +1773,28 @@ class ProductionEngine {
    * 生成生产报告
    */
   generateReport(result) {
+    // v1.2.6-fix: 标准输出对象没有 timing 字段，用顶层 duration；prompts 用 promptCharCount
+    const totalDuration = (result.shots || []).reduce((sum, s) => {
+      return sum + (s.duration || s.timing?.duration || 0);
+    }, 0);
+
+    const prompts = result.prompts || [];
+    const avgPromptLength = prompts.length > 0
+      ? prompts.reduce((sum, p) => sum + (p.promptCharCount || (typeof p.prompt === 'string' ? p.prompt.length : 0) || 0), 0) / prompts.length
+      : 0;
+
     return {
       engine: 'ProductionEngine',
       version: '1.0.0',
       success: result.success,
       summary: {
-        totalShots: result.shots.length,
-        totalPrompts: result.prompts.length,
-        totalDuration: result.shots.reduce((sum, s) => sum + s.timing.duration, 0),
-        avgPromptLength: result.prompts.reduce((sum, p) => sum + p.length, 0) / result.prompts.length
+        totalShots: (result.shots || []).length,
+        totalPrompts: prompts.length,
+        totalDuration,
+        avgPromptLength: Math.round(avgPromptLength)
       },
       stages: Object.fromEntries(
-        Object.entries(result.stages).map(([k, v]) => [k, {
+        Object.entries(result.stages || {}).map(([k, v]) => [k, {
           duration: v._stageDuration || 0,
           success: !v.error
         }])

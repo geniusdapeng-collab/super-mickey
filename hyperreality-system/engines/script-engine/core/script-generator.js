@@ -291,28 +291,35 @@ ${meta.noNextEpisodePreview ? '- **结尾禁止预告下一集**（不提及后�
     if (this.llmEngine) {
       try {
         console.log('[ScriptGenerator] 使用LLMEngine调用...');
-        // v1.2.5: 增加maxTokens到32000，防止长推理导致JSON截断
-        // 同时要求紧凑输出以减少token消耗
+        // v1.2.6-fix8: 强制 forceJson=true，禁止 reasoning_content 顶替 content
         const result = await this.llmEngine.generate(prompt, {
           systemPrompt: '你是一位专业的AI视频编剧。只输出严格格式的JSON，不要markdown代码块，不要解释，不要思考过程。使用最紧凑的JSON格式（不要换行和缩进）。',
           maxTokens: 32000,
-          timeoutMs: this.config.timeout
+          timeoutMs: this.config.timeout,
+          forceJson: true,
+          allowReasoningFallback: false
         });
         
-        // v1.2.5-fix: 正确处理LLM引擎返回结构
+        // v1.2.6-fix: 正确处理LLM引擎返回结构
         if (!result.success) {
           console.error('[ScriptGenerator] LLM引擎返回失败:', result.error);
           throw new Error(`LLM引擎错误: ${result.error}`);
         }
         
+        // v1.2.6-fix8: forceJson 模式下，content 必非空
         if (result.content && result.content.trim()) {
           return result.content.trim();
         }
+        
+        // 兜底：从 reasoning 中提取 JSON 对象
         if (result.reasoning_content && result.reasoning_content.trim()) {
-          console.warn('[ScriptGenerator] 从reasoning_content提取内容');
-          return result.reasoning_content.trim();
+          console.warn('[ScriptGenerator] ⚠️ forceJson模式下仍返回空content，尝试从reasoning提取');
+          const jsonMatch = result.reasoning_content.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            return jsonMatch[0].trim();
+          }
         }
-        throw new Error('LLM返回空内容（success=true但content为空）');
+        throw new Error('LLM返回空内容（success=true但content为空，forceJson模式异常）');
       } catch (error) {
         console.error('[ScriptGenerator] LLMEngine调用失败:', error.message);
         throw error;
@@ -336,7 +343,9 @@ ${meta.noNextEpisodePreview ? '- **结尾禁止预告下一集**（不提及后�
               { role: 'user', content: prompt }
             ],
             max_tokens: this.config.maxTokens,
-            temperature: this.config.temperature
+            // v1.2.6-fix9: kimi-k2p6 要求 temperature 必须为1，强制固定
+            temperature: 1,
+            top_p: 0.95
           },
           {
             headers: {
@@ -394,7 +403,7 @@ ${meta.noNextEpisodePreview ? '- **结尾禁止预告下一集**（不提及后�
         throw new Error('无法从响应中提取有效JSON');
       }
 
-      // v1.2.5: 从metadata注入角色信息（覆盖LLM生成的错误角色）
+      // v1.2.6-fix4: 从metadata注入角色信息（彻底覆盖LLM生成的错误角色）
       const metadataChars = userIntent.metadata?.characters || [];
       if (metadataChars.length > 0) {
         const overrideCharacters = metadataChars.map(c => ({
@@ -402,7 +411,7 @@ ${meta.noNextEpisodePreview ? '- **结尾禁止预告下一集**（不提及后�
           name: c.name,
           role: c.role || 'protagonist',
           visual_anchor: {
-            core_features: c.description ? c.description.split(/[,，、]/) : ['写实人物'],
+            core_features: c.description ? c.description.split(/[,，、]/).filter(s => s.trim()) : ['写实人物'],
             reference_images: c.portraitPaths || c.portraits || []
           },
           voice_profile: {
@@ -411,27 +420,93 @@ ${meta.noNextEpisodePreview ? '- **结尾禁止预告下一集**（不提及后�
             speaking_style: '口语化科普'
           }
         }));
-        
-        // 替换LLM生成的角色
-        parsed.character_system = {
-          characters: overrideCharacters
-        };
-        
-        // 同时替换所有场景中的角色引用
+
+        const primaryName = overrideCharacters[0]?.name || '主讲人';
+        const validNames = overrideCharacters.map(c => c.name);
+        const validIds = overrideCharacters.map(c => c.character_id);
+
+        // 1. 替换角色系统
+        parsed.character_system = { characters: overrideCharacters };
+
+        // 2. 替换 voice_system 中的角色引用
+        if (parsed.voice_system?.characters) {
+          parsed.voice_system.characters = overrideCharacters;
+        }
+
+        // 3. 彻底替换所有场景中的角色引用（兼容多种 dialogue 结构）
         if (parsed.structure?.scenes) {
           for (const scene of parsed.structure.scenes) {
-            if (scene.characters) {
-              scene.characters = overrideCharacters.map(c => c.character_id);
+            // 3a. 替换场景角色ID列表
+            if (Array.isArray(scene.characters)) {
+              scene.characters = validIds.slice(0, scene.characters.length || 1);
             }
-            if (scene.dialogue?.lines) {
+
+            // 3b. 兼容多种 dialogue 结构
+            // 结构A: scene.dialogue.lines = [{speaker, text, ...}]
+            if (scene.dialogue?.lines && Array.isArray(scene.dialogue.lines)) {
               for (const line of scene.dialogue.lines) {
-                line.speaker = overrideCharacters[0]?.name || line.speaker;
+                if (line && typeof line === 'object') {
+                  line.speaker = primaryName;
+                }
+              }
+            }
+            // 结构B: scene.dialogue = [{speaker, text, ...}] (直接数组)
+            else if (Array.isArray(scene.dialogue)) {
+              scene.dialogue = scene.dialogue.map(line => {
+                if (typeof line === 'string') {
+                  return { speaker: primaryName, text: line, type: '独白', emotion: '平静' };
+                }
+                if (line && typeof line === 'object') {
+                  line.speaker = primaryName;
+                  return line;
+                }
+                return line;
+              });
+            }
+            // 结构C: scene.lines = [...] (部分LLM用这个)
+            else if (scene.lines && Array.isArray(scene.lines)) {
+              for (const line of scene.lines) {
+                if (line && typeof line === 'object') {
+                  line.speaker = primaryName;
+                }
+              }
+            }
+            // 结构D: scene.dialogue 是字符串
+            else if (typeof scene.dialogue === 'string' && scene.dialogue.trim()) {
+              let newDialogue = scene.dialogue;
+              newDialogue = newDialogue.replace(/小G|小R|小A|小B|医生小[A-Z]|患者小[A-Z]/g, primaryName);
+              scene.dialogue = newDialogue;
+            }
+
+            // 3c. 替换场景描述中的角色名
+            if (typeof scene.description === 'string') {
+              scene.description = scene.description.replace(/小G|小R|小A|小B/g, primaryName);
+            }
+            if (typeof scene.scene_description === 'string') {
+              scene.scene_description = scene.scene_description.replace(/小G|小R|小A|小B/g, primaryName);
+            }
+
+            // 3d. 替换 narration 字段
+            if (scene.narration) {
+              if (typeof scene.narration === 'string') {
+                scene.narration = scene.narration.replace(/小G|小R|小A|小B/g, primaryName);
+              } else if (Array.isArray(scene.narration)) {
+                scene.narration = scene.narration.map(n => {
+                  if (typeof n === 'string') return n.replace(/小G|小R|小A|小B/g, primaryName);
+                  if (n && typeof n === 'object') { n.speaker = primaryName; return n; }
+                  return n;
+                });
               }
             }
           }
         }
-        
-        console.log(`[ScriptGenerator] 角色覆盖: ${metadataChars.map(c => c.name).join(', ')}`);
+
+        // 4. 清理 world_setting 中可能的角色引用
+        if (parsed.world_setting?.characters) {
+          parsed.world_setting.characters = overrideCharacters;
+        }
+
+        console.log(`[ScriptGenerator] 角色覆盖完成: ${validNames.join(', ')}（已替换所有场景角色引用）`);
       }
 
       // v1.2.5: 注入metadata._metadata到blueprint meta
@@ -513,85 +588,119 @@ ${meta.noNextEpisodePreview ? '- **结尾禁止预告下一集**（不提及后�
    * v1.2.5: 从可能截断的文本中提取最长有效JSON
    * 策略：从字符串末尾逐步截断，尝试找到能解析的最长前缀
    */
+  /**
+   * v1.2.6-fix11: 从可能截断的文本中提取最长有效JSON
+   * 策略：1.直接解析 2.逐步截断前缀尝试 3.括号匹配找完整对象 4.🆕自动补全缺失的闭合括号
+   */
   _extractValidJson(str) {
+    if (!str || typeof str !== 'string') return null;
+
     // 先找到最外层的大括号范围
     let start = str.indexOf('{');
     if (start === -1) return null;
-    
-    // 从字符串末尾开始，逐步向前尝试解析
-    // 步长：先尝试大步长，再精细搜索
+
+    // 策略1：直接解析整段
+    let parsed = this._tryParseJson(str.substring(start));
+    if (parsed && parsed.meta && parsed.structure) return parsed;
+
+    // 策略2：从字符串末尾开始，逐步向前尝试解析
     const stepSizes = [1000, 500, 100, 50, 10, 5, 1];
-    let bestEnd = -1;
-    
     for (const step of stepSizes) {
       for (let end = str.length; end > start; end -= step) {
         const candidate = str.substring(start, end);
         try {
-          const parsed = JSON.parse(candidate);
-          // 确保解析结果至少包含meta和structure
-          if (parsed.meta && parsed.structure) {
-            bestEnd = end;
-            // 记录这次成功的解析
+          const p = JSON.parse(candidate);
+          if (p.meta && p.structure) {
             console.log(`[ScriptGenerator] 从截断文本提取JSON成功，使用 ${end}/${str.length} 字符`);
-            return parsed;
+            return p;
           }
-        } catch (e) {
-          // 继续尝试
-        }
+        } catch (e) { /* 继续 */ }
       }
-      
-      // 如果已经找到有效JSON，停止搜索
-      if (bestEnd > 0) break;
     }
-    
-    // 最后的尝试：直接找第一个完整的JSON对象
-    if (bestEnd === -1) {
-      // 尝试使用更暴力的方法：找到匹配的最后一个右大括号
+
+    // 策略3：括号匹配找完整对象
+    {
       let braceCount = 0;
       let inString = false;
       let escaped = false;
       let lastValidEnd = -1;
-      
+
       for (let i = start; i < str.length; i++) {
         const ch = str[i];
-        
         if (inString) {
-          if (escaped) {
-            escaped = false;
-          } else if (ch === '\\') {
-            escaped = true;
-          } else if (ch === '"') {
-            inString = false;
-          }
+          if (escaped) { escaped = false; }
+          else if (ch === '\\') { escaped = true; }
+          else if (ch === '"') { inString = false; }
           continue;
         }
-        
-        if (ch === '"') {
-          inString = true;
-        } else if (ch === '{') {
-          braceCount++;
-        } else if (ch === '}') {
+        if (ch === '"') { inString = true; }
+        else if (ch === '{') { braceCount++; }
+        else if (ch === '}') {
           braceCount--;
-          if (braceCount === 0) {
-            lastValidEnd = i + 1;
-          }
+          if (braceCount === 0) lastValidEnd = i + 1;
         }
       }
-      
+
       if (lastValidEnd > start) {
         const candidate = str.substring(start, lastValidEnd);
         try {
-          const parsed = JSON.parse(candidate);
-          if (parsed.meta && parsed.structure) {
+          const p = JSON.parse(candidate);
+          if (p.meta && p.structure) {
             console.log(`[ScriptGenerator] 通过括号匹配提取JSON成功，使用 ${lastValidEnd}/${str.length} 字符`);
-            return parsed;
+            return p;
           }
-        } catch (e) {
-          // 失败
+        } catch (e) { /* 失败，进入策略4 */ }
+      }
+    }
+
+    // 策略4：🆕 自动补全缺失的闭合括号（处理未闭合的截断JSON）
+    {
+      let braceCount = 0;    // {} 未闭合数
+      let bracketCount = 0;  // [] 未闭合数
+      let inString = false;
+      let escaped = false;
+
+      for (let i = start; i < str.length; i++) {
+        const ch = str[i];
+        if (inString) {
+          if (escaped) { escaped = false; }
+          else if (ch === '\\') { escaped = true; }
+          else if (ch === '"') { inString = false; }
+          continue;
+        }
+        if (ch === '"') { inString = true; }
+        else if (ch === '{') { braceCount++; }
+        else if (ch === '}') { braceCount--; }
+        else if (ch === '[') { bracketCount++; }
+        else if (ch === ']') { bracketCount--; }
+      }
+
+      // braceCount > 0 或 bracketCount > 0 或 inString=true 说明被截断
+      if (braceCount > 0 || bracketCount > 0 || inString) {
+        let base = str.substring(start);
+        // 如果字符串未闭合，补上引号
+        if (inString) base += '"';
+
+        // 暴力尝试补全组合（数量有限，性能可接受）
+        for (let arr = bracketCount; arr >= 0; arr--) {
+          for (let obj = braceCount; obj >= 0; obj--) {
+            const testA = base + ']'.repeat(arr) + '}'.repeat(obj);
+            const testB = base + '}'.repeat(obj) + ']'.repeat(arr);
+
+            for (const candidate of [testA, testB]) {
+              try {
+                const p = JSON.parse(candidate);
+                if (p && p.meta && p.structure) {
+                  console.log(`[ScriptGenerator] 通过自动补全括号提取JSON成功（补 ${arr}个] ${obj}个}），使用 ${candidate.length}/${str.length} 字符`);
+                  return p;
+                }
+              } catch (e) { /* 继续尝试 */ }
+            }
+          }
         }
       }
     }
-    
+
     return null;
   }
 

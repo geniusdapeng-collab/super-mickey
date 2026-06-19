@@ -97,18 +97,39 @@ class FieldGuard {
   /**
    * 打印镜头字段摘要（用于调试和日志）
    */
+  /**
+   * 打印镜头字段摘要（用于调试和日志）
+   * v1.2.6: 适配 v6.37 标准输出字段
+   */
   printShotSummary(shots = [], context = 'unknown') {
     console.log(`\n${this.logPrefix} ${context} shot summary:`);
     for (const shot of shots) {
+      // v6.37: dialogue 是统一格式字符串，用 | 分隔统计条数
+      const dialogueStr = shot.dialogue || '';
+      const dialogueCount = dialogueStr === 'NONE' || !dialogueStr
+        ? 0
+        : (dialogueStr.split('||').length || (dialogueStr.includes('|') ? 1 : 0));
+
+      // v6.37: characterRef 是字符串（含 image:// 路径）
+      const refCount = (typeof shot.characterRef === 'string' && shot.characterRef !== 'NONE')
+        ? (shot.characterRef.split('image://').length - 1)
+        : 0;
+
+      // v6.37: timeline 是对象/字符串，检查 timelineString
+      const hasTimeline = !!(shot.timelineString || (typeof shot.timeline === 'string' ? shot.timeline : ''));
+
       const summary = {
         shotId: shot.shotId,
-        sceneType: shot.sceneType,
-        title: shot.title || '',
-        subtitle: shot.subtitle || '',
-        scene: shot.scene || '',
-        dialogueCount: Array.isArray(shot.dialogue) ? shot.dialogue.length : 0,
-        timelineType: shot.timeline ? (typeof shot.timeline === 'object' ? 'object' : typeof shot.timeline) : 'none',
-        characterRef: shot.characterRef || '',
+        sceneType: shot.sceneType || '',
+        duration: shot.duration || shot.timing?.duration || 0,
+        scene: (shot.scene || '').substring(0, 40),
+        character: (shot.character || 'NONE').substring(0, 30),
+        characterRefCount: refCount,
+        dialogueCount,
+        hasTimeline,
+        hasLighting: !!shot.lightingString,
+        hasBackgroundSound: !!shot.backgroundSoundString,
+        promptLength: shot.promptCharCount || (typeof shot.prompt === 'string' ? shot.prompt.length : 0),
         degraded: !!shot.degraded,
         degradeReason: shot.degradeReason || ''
       };

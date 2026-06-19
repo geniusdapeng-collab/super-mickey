@@ -99,9 +99,13 @@ class HyperrealitySystem {
         }
 
         // 将需求清单转换为 ScriptEngine 可用的 metadata
+        // v1.2.6-fix4b: 确保 characters 正确传递（用户传入优先，否则用 requirementList 的）
+        const scriptEngineMeta = this.requirementListBuilder.toScriptEngineMetadata(requirementList);
         const enhancedMetadata = {
           ...metadata,
-          ...this.requirementListBuilder.toScriptEngineMetadata(requirementList)
+          ...scriptEngineMeta,
+          // 显式保留 characters：用户传入的优先（含 portraitPaths 等详细信息）
+          characters: metadata.characters || scriptEngineMeta.characters || []
         };
         metadata = enhancedMetadata;
 
@@ -197,7 +201,8 @@ class HyperrealitySystem {
       try {
         const normalized = this.fieldGuard.normalizeAndValidate(productionResult.shots, 'Layer2-Production');
         productionResult.shots = normalized.shots;
-        productionResult.prompts = normalized.shots; // Prompts 即 shots 的引用
+        // v1.2.6-fix5: 不再用 normalized.shots 覆盖 prompts（prompts 已是标准输出对象，标准化会破坏结构）
+        // productionResult.prompts = normalized.shots; // ❌ 删除此行
         console.log(`   ✅ 字段标准化通过 (${normalized.report.warnings.length} 警告)`);
         this.fieldGuard.printShotSummary(normalized.shots, 'Layer2-Production');
       } catch (err) {
@@ -298,15 +303,20 @@ class HyperrealitySystem {
       if (productionResult && productionResult.shots) {
         console.log('\n🛡️ [FieldGuard] 最终导出前标准化...');
         try {
+          // v1.2.6-fix5: 只对 shots 做标准化，不要用 normalized.shots 覆盖 prompts
           const normalized = this.fieldGuard.normalizeAndValidate(productionResult.shots, 'Final-Export');
           productionResult.shots = normalized.shots;
-          productionResult.prompts = normalized.shots;
+
+          // v1.2.6-fix5: prompts 保持原样（它们已经是标准输出对象），不再被 shots 覆盖
+          // productionResult.prompts = normalized.shots; // ❌ 删除此行
+
+          // v1.2.6-fix5: shots 摘要改用标准输出字段（duration 而非 timing）
           result.stages.productionEngine.shots = normalized.shots.map(s => ({
             shotId: s.shotId,
-            sceneType: s.sceneType,
-            timing: s.timing,
-            promptLength: s.prompt?.length,
-            status: s.status
+            sceneType: s.sceneType || '',
+            duration: s.duration || s.timing?.duration || 0,
+            promptLength: typeof s.prompt === 'string' ? s.prompt.length : (s.promptCharCount || 0),
+            status: s.status || 'completed'
           }));
           console.log('   ✅ 最终导出字段标准化通过');
           this.fieldGuard.printShotSummary(normalized.shots, 'Final-Export');

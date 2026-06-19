@@ -136,7 +136,9 @@ const FIELD_ALIAS_MAP = {
 };
 
 const CRITICAL_FIELDS = {
-  common: ['shotId', 'sceneType', 'prompt', 'dialogue', 'timeline', 'characterRef'],
+  // v1.2.6: 适配 v6.37 标准输出字段
+  // 移除已废弃的 portraits / characterCards / timeline（v6.37 用 characterRef + character）
+  common: ['shotId', 'sceneType', 'prompt', 'character', 'characterRef'],
   opening: ['title', 'subtitle'],
   content: ['scene']
 };

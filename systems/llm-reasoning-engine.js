@@ -122,14 +122,18 @@ class LLMEngine {
   _extractFromReasoning(reasoning) {
     if (!reasoning || typeof reasoning !== 'string') return null;
 
-    // 策略：找最长的、包含中文和Nirath特征的文本段落
-    // 模型通常在reasoning最后部分输出实际内容
+    // v1.2.6-fix12: 通用化特征词，移除山海经硬编码
     const lines = reasoning.split('\n');
-    
+
+    // 通用指示词：匹配 JSON 结构特征 + 通用影视/叙事术语
     const indicators = [
-      'Nirath', '小G', '白泽', 'Aurelius', 'Silvana', '双恒星',
-      '超写实', '纪录片', '镜头', '全景', '中景', '特写', '推轨',
-      '0.82G', '3.2Tesla', '磁丝蕨', '发光植被'
+      // JSON 结构特征（最可靠）
+      '"meta"', '"structure"', '"scenes"', '"characters"', '"dialogue"',
+      '"character_system"', '"world_setting"', '"voice_system"',
+      '{', '}',
+      // 通用影视/叙事术语（不限IP）
+      '镜头', '全景', '中景', '特写', '推轨', '场景', '角色', '台词',
+      '独白', '对白', '旁白', '片头', '片尾', '画面'
     ];
 
     // 从后向前扫描，找最长的一段包含指标的中文文本
