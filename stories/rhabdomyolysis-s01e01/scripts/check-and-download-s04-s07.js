@@ -3,7 +3,7 @@ const fs = require('fs').promises;
 const fss = require('fs');
 const path = require('path');
 
-const API_KEY = 'ark-0e6994f7-bf34-4f3a-9e78-0fc02aa5fc92-42751';
+const API_KEY = process.env.VOLCENGINE_ARK_API_KEY || '';
 
 const tasks = [
   { id: 'cgt-20260521171826-kv4qh', shot: 'S04' },

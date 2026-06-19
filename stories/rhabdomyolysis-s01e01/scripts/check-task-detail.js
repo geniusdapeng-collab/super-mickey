@@ -1,6 +1,6 @@
 const https = require('https');
 
-const API_KEY = 'ark-0e6994f7-bf34-4f3a-9e78-0fc02aa5fc92-42751';
+const API_KEY = process.env.VOLCENGINE_ARK_API_KEY || '';
 
 const taskId = 'cgt-20260521160457-x7f2m';
 

@@ -1,7 +1,7 @@
 const fs = require('fs').promises;
 const fss = require('fs');
 const https = require('https');
-const API_KEY = 'ark-0e6994f7-bf34-4f3a-9e78-0fc02aa5fc92-42751';
+const API_KEY = process.env.VOLCENGINE_ARK_API_KEY || '';
 const MODEL = 'ep-20260518004750-lz76f';
 
 // 小G 修正版 - 正常身材比例，脑袋正常大小

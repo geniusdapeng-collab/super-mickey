@@ -4,7 +4,7 @@ const path = require('path');
 const https = require('https');
 
 // 配置
-const API_KEY = 'ark-0e6994f7-bf34-4f3a-9e78-0fc02aa5fc92-42751';
+const API_KEY = process.env.VOLCENGINE_ARK_API_KEY || '';
 const API_ENDPOINT = 'ark.cn-beijing.volces.com';
 // 使用自定义接入点（之前成功的端点）
 const MODEL = 'ep-20260518004622-jp46s';

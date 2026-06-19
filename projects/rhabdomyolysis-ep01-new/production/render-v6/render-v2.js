@@ -2,7 +2,7 @@ const fs = require("fs");
 const https = require("https");
 const { preRenderValidation } = require("../../../systems/pre-render-validation");
 
-const API_KEY = "ark-0e6994f7-bf34-4f3a-9e78-0fc02aa5fc92-42751";
+const API_KEY = process.env.VOLCENGINE_ARK_API_KEY || "";
 const MODEL = "ep-20260518004622-jp46s";
 const RENDER_DIR = "/root/.openclaw/workspace/projects/rhabdomyolysis-ep01-new/production/render-v6";
 

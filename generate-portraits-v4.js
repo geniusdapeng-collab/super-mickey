@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const API_KEY = 'ark-0e6994f7-bf34-4f3a-9e78-0fc02aa5fc92-42751';
+const API_KEY = process.env.VOLCENGINE_ARK_API_KEY || '';
 const ENDPOINT = 'https://ark.cn-beijing.volces.com/api/v3/images/generations';
 const MODEL = 'ep-20260518004750-lz76f';
 

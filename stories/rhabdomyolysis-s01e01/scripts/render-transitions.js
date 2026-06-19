@@ -4,7 +4,11 @@ const fss = require('fs');
 const path = require('path');
 
 const ENDPOINT = 'ep-m-20260518003302-245xb';
-const API_KEY = process.env.VOLCENGINE_ARK_API_KEY || 'ark-0e6994f7-bf34-4f3a-9e78-0fc02aa5fc92-42751';
+const API_KEY = process.env.VOLCENGINE_ARK_API_KEY;
+if (!API_KEY) {
+  console.error('❌ 错误：环境变量 VOLCENGINE_ARK_API_KEY 未设置');
+  process.exit(1);
+}
 const MANDATORY_RATIO = '16:9';
 
 const PROJECT_DIR = '/root/.openclaw/workspace/stories/rhabdomyolysis-s01e01';

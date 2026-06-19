@@ -3,7 +3,7 @@ const fss = require('fs');
 const https = require('https');
 
 // Seedream API配置
-const API_KEY = 'ark-0e6994f7-bf34-4f3a-9e78-0fc02aa5fc92-42751';
+const API_KEY = process.env.VOLCENGINE_ARK_API_KEY || '';
 const API_ENDPOINT = 'ark.cn-beijing.volces.com';
 const MODEL = 'ep-20260518004750-lz76f'; // Seedream 5.0 自定义接入点
 

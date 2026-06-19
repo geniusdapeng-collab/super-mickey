@@ -2,7 +2,7 @@ const fs = require('fs').promises;
 const fss = require('fs');
 const https = require('https');
 
-const API_KEY = 'ark-0e6994f7-bf34-4f3a-9e78-0fc02aa5fc92-42751';
+const API_KEY = process.env.VOLCENGINE_ARK_API_KEY || '';
 const renderDir = '/root/.openclaw/workspace/projects/rhabdomyolysis-ep01-universal/production/render-v4';
 let status = JSON.parse(fss.readFileSync(renderDir + '/render-status-v5.json', 'utf8'));
 

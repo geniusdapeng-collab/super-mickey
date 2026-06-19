@@ -6,7 +6,7 @@
 
 ```bash
 # 写入 ~/.bashrc 或 ~/.zshrc
-export VOLCENGINE_ARK_API_KEY="ark-0e6994f7-bf34-4f3a-9e78-0fc02aa5fc92-42751"
+export VOLCENGINE_ARK_API_KEY="YOUR_API_KEY_HERE"
 
 # 立即生效
 source ~/.bashrc
