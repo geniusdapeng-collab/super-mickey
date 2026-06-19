@@ -562,22 +562,19 @@ class ProductionEngine {
       const finalDuration = Math.max(10, Math.min(40, adjustedDuration));
       
       // v6.37-P1+: 构建 timeline 字段（结构化对象 + 字符串）
-      const timelineResult = this._buildTimeline(shot, index, finalDuration);
+      // v1.2.5: 使用已归一化的时长，不再重新分配
+      const timelineResult = this._buildTimeline(shot, index, baseDuration);
       
       return {
         ...shot,
-        timing: {
-          ...shot.timing,
-          duration: finalDuration,
-          end: shot.timing.start + finalDuration
-        },
         // v6.37-P1+: timeline 结构化对象
         timeline: timelineResult,
         allocation: {
           baseDuration,
           dialogueFactor,
           typeWeight,
-          finalDuration
+          // v1.2.5: 标记为保留原始时长
+          preserved: true
         }
       };
     });
