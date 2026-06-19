@@ -8,7 +8,8 @@ class ScriptBlueprintAdapter {
   constructor(options = {}) {
     this.config = {
       charactersDir: options.charactersDir || path.join(__dirname, '../../../characters'),
-      maxPromptLength: options.maxPromptLength || 980,
+      // v1.2.7-fix-A7: 与 v6.37 标准(1500)和 production-engine 对齐
+      maxPromptLength: options.maxPromptLength || 1500,
       ...options
     };
   }
@@ -64,7 +65,8 @@ class ScriptBlueprintAdapter {
       target_duration: meta.target_duration,
       world_setting: blueprint.world_setting?.world_id || 'default',
       featured_beast_id: blueprint.extensions?.nirath_extension?.featured_beast_id || null,
-      protagonist: blueprint.character_system?.characters?.find(c => c.role === 'protagonist')?.character_id || 'xiaoG',
+      // v1.2.7-fix-A10: 移除 xiaoG 硬编码
+      protagonist: blueprint.character_system?.characters?.find(c => c.role === 'protagonist')?.character_id || null,
       
       // v1.2.5: 传递系列和平台元数据
       aspectRatio: meta._metadata?.aspectRatio || meta.aspectRatio || '16:9',
@@ -276,7 +278,8 @@ class ScriptBlueprintAdapter {
     // 如果没有提供路径，尝试默认路径
     if (Object.keys(paths).length === 0) {
       const defaultAngles = ['front', 'threeQuarter', 'closeup', 'side'];
-      const charDir = characterId === 'taotie' ? 'tao-tie' : characterId;
+      // v1.2.7-fix-A10: 移除 taotie 特例，统一用 characterId
+      const charDir = characterId;
       
       for (const angle of defaultAngles) {
         const defaultPath = path.join(this.config.charactersDir, charDir, `${angle}.jpg`);

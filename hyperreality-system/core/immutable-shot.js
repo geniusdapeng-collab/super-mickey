@@ -10,7 +10,9 @@
 
 const crypto = require('crypto');
 
-const REQUIRED_FIELDS = Object.freeze(['shotId', 'sceneType', 'timing']);
+// v1.2.7-fix-A4: 适配 v6.37 标准输出（timing 已从标准输出移除）
+// 仅 shotId 为必填；sceneType 和 timing 作为可选（有默认值）
+const REQUIRED_FIELDS = Object.freeze(['shotId']);
 
 const DEFAULT_VALUES = Object.freeze({
   duration: 20,

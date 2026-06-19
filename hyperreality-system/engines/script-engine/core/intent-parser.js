@@ -6,8 +6,9 @@ class IntentParser {
   constructor(options = {}) {
     this.config = {
       // 快速分类器：关键词匹配
+      // v1.2.7-fix-A8: 移除山海经特定词，保留通用剧情词
       keywordDict: {
-        dramatic: ['短剧', '剧情', '故事', '角色', '冲突', '反转', '结局', '情感', '感动', '逆袭', '人设', '剧本', '台词', '山海经', 'Nirath'],
+        dramatic: ['短剧', '剧情', '故事', '角色', '冲突', '反转', '结局', '情感', '感动', '逆袭', '人设', '剧本', '台词'],
         educational: ['科普', '讲解', '知识', '教程', '学会', '原理', '什么是', '如何', '为什么'],
         documentary: ['纪录片', '纪实', '采访', '真实', '调查', '记录'],
         lifelog: ['家庭', '聚会', '旅行', '回忆', 'Vlog', '日常', '记录生活'],
@@ -20,8 +21,8 @@ class IntentParser {
         '纪实营销': { primary: 'documentary', secondary: 'commercial', keywords: ['品牌纪录片', '真实故事广告'] },
         '科普短剧': { primary: 'educational', secondary: 'dramatic', keywords: ['剧情科普', '故事学习'] }
       },
-      // Nirath 世界观检测
-      nirathSignals: ['Nirath', 'nirath', '山海经', '异兽', '饕餮', '小G', '硅基', '碳化硅'],
+      // v1.2.7-fix-A8: Nirath 世界观检测（仅山海经项目触发，不影响通用性）
+      nirathSignals: ['Nirath', 'nirath', '山海经', '异兽', '饕餮', '硅基', '碳化硅'],
       // 默认配置
       defaultMode: 'dramatic',
       confidenceThreshold: 0.85,
@@ -235,11 +236,13 @@ class IntentParser {
         style_tags: metadata.style_tags || ['hyper-realistic', 'cinematic', 'epic'],
         world_setting: analysis.world_setting || metadata.world_setting || 'default',
         featured_beast_id: analysis.featured_beast_id || metadata.featured_beast_id || null,
-        protagonist: metadata.protagonist || 'xiaoG',
+        // v1.2.7-fix-A8: 移除 xiaoG 硬编码，改为通用默认值
+        protagonist: metadata.protagonist || 'protagonist',
         ...metadata
       },
       constraints: {
-        max_prompt_length: metadata.max_prompt_length || 980,
+        // v1.2.7-fix-A7: 与 v6.37 标准(1500)和 production-engine 对齐
+        max_prompt_length: metadata.max_prompt_length || 1500,
         reference_image_count: metadata.reference_image_count || 2,
         forbidden_elements: metadata.forbidden_elements || ['voiceover', 'metal_gloss', 'unnatural_eye_color']
       },

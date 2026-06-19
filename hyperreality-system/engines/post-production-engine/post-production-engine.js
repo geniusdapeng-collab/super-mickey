@@ -192,14 +192,16 @@ class PostProductionEngine {
   async generateIdentitySubtitles(scriptResult) {
     const blueprint = scriptResult.blueprint;
     const scenes = blueprint?.structure?.scenes || [];
-    const characters = blueprint?.structure?.characters || [];
+    // B1-fix: 角色在 character_system.characters，不在 structure.characters
+    const characters = blueprint?.character_system?.characters || [];
     const subtitles = [];
 
     for (const scene of scenes) {
       const sceneChars = scene.characters || [];
       
       for (const charId of sceneChars) {
-        const char = characters.find(c => c.id === charId || c.name === charId);
+        // B1-fix: 兼容 character_id 和 id 两种字段名
+        const char = characters.find(c => c.character_id === charId || c.id === charId || c.name === charId);
         if (!char) continue;
 
         // 生成身份信息介绍（LLM 生成或模板）
@@ -211,7 +213,8 @@ class PostProductionEngine {
           characterName: char.name || charId,
           sceneId: scene.scene_id,
           // 出现在场景开始的前 3-5 秒
-          start: scene.timing?.start_time || 0,
+          // B5-fix: start_time → start（与 ScriptBlueprint timing 结构一致）
+          start: scene.timing?.start || 0,
           duration: 3.5, // 固定 3.5 秒显示
           // 信息内容
           content: {
@@ -240,45 +243,75 @@ class PostProductionEngine {
   }
 
   /**
-   * 生成角色身份信息（LLM 或模板）
+   * 生成角色身份信息（通用化）
+   * B2-fix: 移除 Nirath 硬编码，从角色数据动态生成
    */
   generateCharacterIdentity(character, scene) {
     const name = character.name || '未知';
-    const isProtagonist = character.role === 'protagonist' || character.id === 'xiaoG';
-    
-    // 物种判断
+    const isProtagonist = character.role === 'protagonist';
+
+    // B2-fix: 从角色数据推断物种/身份
     const species = this.inferSpecies(character);
-    
-    // 特征提取（从角色描述或场景设定）
     const trait = this.extractTrait(character, scene);
-    
-    // 标题（LLM 生成或模板选择）
+
+    // B2-fix: 通用化标题，基于 role 而非 Nirath
     let title;
     if (isProtagonist) {
-      title = `Nirath 星球探险者 | ${species} ${name}`;
-    } else if (character.id?.includes('beast') || species.includes('异兽')) {
-      title = `Nirath 原生异兽 | ${name}`;
+      title = `${species} ${name}`;
+    } else if (species.includes('异兽') || species.includes('creature')) {
+      title = `${name}`;
     } else {
-      title = `Nirath 旅者 | ${species} ${name}`;
+      title = `${species} ${name}`;
     }
-    
+
     return {
       name,
       title,
       species,
-      trait: trait || '探索者',
+      trait: trait || '主讲人',
       role: isProtagonist ? '主角' : '配角'
     };
   }
 
+  /**
+   * 推断物种（通用化）
+   * B2-fix: 移除 xiaoG/taotie 硬编码，基于 visual_anchor 推断
+   */
   inferSpecies(character) {
-    if (character.id === 'xiaoG') return '人类';
-    if (character.id?.includes('taotie') || character.name?.includes('饕餮')) return '硅基碳基共生体';
-    if (character.tags?.includes('beast')) return '异兽';
-    return '旅者';
+    // B2-fix: 从 visual_anchor.core_features 推断种族
+    const features = character.visual_anchor?.core_features || [];
+    const featureStr = features.join(' ').toLowerCase();
+
+    // 通用种族判断
+    if (featureStr.includes('human') || featureStr.includes('人类') || featureStr.includes('人物')) return '人类';
+    if (featureStr.includes('beast') || featureStr.includes('兽') || featureStr.includes('creature')) return '异兽';
+    if (featureStr.includes('robot') || featureStr.includes('机器人')) return '机器人';
+
+    // 兜底：从 character_id/name 推断
+    const idStr = (character.character_id || character.id || character.name || '').toLowerCase();
+    if (idStr.includes('beast') || idStr.includes('兽')) return '异兽';
+
+    return '人物';
   }
 
+  /**
+   * 提取特征（通用化）
+   * B2-fix: 从 visual_anchor 动态提取，移除硬编码
+   */
   extractTrait(character, scene) {
+    // B2-fix: 优先从 visual_anchor.core_features 提取前2个特征
+    const features = character.visual_anchor?.core_features || [];
+    if (features.length > 0) {
+      return features.slice(0, 2).join('，');
+    }
+
+    // 兜底：从 description 提取
+    if (character.voice_profile?.persona) {
+      return character.voice_profile.persona.substring(0, 20);
+    }
+
+    return '主讲人';
+  }
     // 从角色描述或场景设定中提取特征
     if (character.id === 'xiaoG') return '银灰装甲';
     if (character.id?.includes('taotie') || character.name?.includes('饕餮')) return '碳化硅质甲壳';
@@ -351,7 +384,8 @@ class PostProductionEngine {
 
     for (const scene of scenes) {
       const sceneType = scene.scene_type;
-      const startTime = scene.timing?.start_time || 0;
+      // B5-fix: start_time → start
+      const startTime = scene.timing?.start || 0;
       const duration = scene.timing?.duration || 25;
       
       // 根据场景类型生成不同风格的弹幕
@@ -389,12 +423,13 @@ class PostProductionEngine {
     }
     
     // 场景类型弹幕
+    // B9-fix: 通用化弹幕，移除山海经硬编码
     const typeComments = {
-      opening: ['🔥 开局！', '⚡ 燃起来了', '小G冲！', 'Nirath 我来了'],
-      establishing: ['🌟 好美', '这是什么星球', '晶体森林！', '双月！'],
-      conflict: ['💥 打起来！', '小心！', '饕餮来了！', '好紧张！'],
-      emotional_climax: ['😭 泪目', '太感人了', '记忆即存在！', '燃！'],
-      resolution: ['✨ 圆满', '期待下一集', '小G成长了', 'Nirath 等我']
+      opening: ['🔥 开局！', '⚡ 来了来了', '期待！', '开始了'],
+      establishing: ['🌟 好美', '学到了', '涨知识', '有意思'],
+      conflict: ['💥 紧张', '小心！', '注意看', '好紧张！'],
+      emotional_climax: ['😭 泪目', '太感人了', '讲得太好了', '燃！'],
+      resolution: ['✨ 圆满', '期待下一集', '总结到位', '学到了']
     };
     
     if (typeComments[sceneType]) {
@@ -545,7 +580,8 @@ class PostProductionEngine {
   generateHyperFramesHTML(version, config, productionResult, scriptResult, renderResult, subtitles, musicTracks, danmakuList) {
     const shots = productionResult.shots || [];
     const blueprint = scriptResult.blueprint;
-    const totalDuration = shots.reduce((sum, s) => sum + (s.timing?.duration || 25), 0);
+      // B10-fix: 标准输出用 duration 字段，不是 timing.duration
+      const totalDuration = shots.reduce((sum, s) => sum + (s.duration || s.timing?.duration || 25), 0);
     
     let html = [];
     
@@ -598,7 +634,8 @@ class PostProductionEngine {
     // ========== 视频片段轨道 ==========
     for (let i = 0; i < shots.length; i++) {
       const shot = shots[i];
-      const duration = shot.timing?.duration || 25;
+      // B10-fix: 优先使用顶层 duration 字段
+      const duration = shot.duration || shot.timing?.duration || 25;
       
       // 视频片段（实际使用时替换为渲染后的视频文件）
       html.push(`  <!-- Shot ${shot.shotId} -->`);
@@ -700,7 +737,7 @@ class PostProductionEngine {
       if (shot.shotId === sceneId || shot.sceneId === sceneId) {
         return time;
       }
-      time += shot.timing?.duration || 25;
+      time += shot.duration || shot.timing?.duration || 25;
     }
     return 0;
   }

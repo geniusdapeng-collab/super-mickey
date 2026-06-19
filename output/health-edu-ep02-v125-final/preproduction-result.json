@@ -1,0 +1,1810 @@
+{
+  "success": false,
+  "stages": {
+    "requirementList": {
+      "data": {
+        "version": "1.0.0",
+        "system": "hyperreality",
+        "generatedAt": "2026-06-19T03:10:31.203Z",
+        "rawInput": "穿警服的陈卓女士，讲解居民健康护理知识，进行全民健康科普，现在是第二集。",
+        "videoType": "EDU",
+        "videoTypeName": "教育科普",
+        "title": "横纹肌溶解科普-第二集",
+        "seriesTitle": "全民健康科普——横纹肌溶解",
+        "episode": 1,
+        "totalEpisodes": 1,
+        "isSeries": false,
+        "style": {
+          "primary": "REAL",
+          "secondary": [],
+          "description": "写实纪实风格，真实可信的纪实风格，增强专业信任感，自然光、真实场景、手持感"
+        },
+        "aspectRatio": "16:9",
+        "platform": "视频号/抖音",
+        "creativeIntensity": 0.5,
+        "targetDuration": 62,
+        "durationRange": [
+          52,
+          72
+        ],
+        "targetAudience": "通用受众",
+        "language": "zh-CN",
+        "narrativeMode": "educational",
+        "characters": [
+          {
+            "name": "穿警服的陈卓",
+            "description": "待补充"
+          }
+        ],
+        "protagonist": {
+          "name": "穿警服的陈卓",
+          "description": "待补充"
+        },
+        "structure": {
+          "opening": "开场引入（问题/场景/数据）",
+          "scenes": [
+            "核心知识点讲解",
+            "案例/演示说明",
+            "重点强调"
+          ],
+          "ending": "总结回顾 + 行动号召"
+        },
+        "keyPoints": [
+          "穿警服的陈卓女士，讲解居民健康护理知识，进行全民健康科普，现在是第二集"
+        ],
+        "contentConstraints": [],
+        "forbiddenElements": [
+          "voiceover",
+          "metal_gloss",
+          "unnatural_eye_color"
+        ],
+        "constraints": {
+          "maxPromptLength": 1500,
+          "referenceImageCount": 2,
+          "maxShotDuration": 15
+        },
+        "uncertainties": [],
+        "_inferred": {
+          "videoType": false,
+          "duration": false,
+          "style": false,
+          "platform": true,
+          "aspectRatio": true,
+          "creativeIntensity": true,
+          "structure": false
+        },
+        "_analysis": {
+          "confidence": 1,
+          "parsingLayers": [
+            "intent_parser",
+            "rule_based",
+            "llm_deep"
+          ],
+          "worldSetting": "default"
+        }
+      },
+      "timing": 3
+    },
+    "creativeIntensity": {
+      "intensity": 0.5,
+      "level": {
+        "key": "L2",
+        "max": 0.5,
+        "name": "平衡",
+        "description": "电影级质感，艺术平衡"
+      },
+      "activeCapabilities": 11,
+      "report": {
+        "intensity": 0.5,
+        "level": "L2",
+        "levelName": "平衡",
+        "levelDescription": "电影级质感，艺术平衡",
+        "narrativeMode": "educational",
+        "worldSetting": "default",
+        "summary": "创意指数 0.5 (平衡)：已激活 11/12 个能力",
+        "byLayer": {
+          "Layer 1": [
+            {
+              "id": "script",
+              "layer": "Layer 1",
+              "threshold": 0.4,
+              "weight": 0.12,
+              "name": "叙事结构",
+              "aspects": [
+                "scene_complexity",
+                "character_depth",
+                "conflict_design",
+                "pacing_structure"
+              ],
+              "adjustedThreshold": 0.4,
+              "active": true,
+              "gap": -0.09999999999999998
+            }
+          ],
+          "Layer 2": [
+            {
+              "id": "camera",
+              "layer": "Layer 2",
+              "threshold": 0.35,
+              "weight": 0.18,
+              "name": "镜头语言",
+              "aspects": [
+                "movement",
+                "angle",
+                "lens_choice",
+                "depth_of_field"
+              ],
+              "adjustedThreshold": 0.35,
+              "active": true,
+              "gap": -0.15000000000000002
+            },
+            {
+              "id": "lighting",
+              "layer": "Layer 2",
+              "threshold": 0.3,
+              "weight": 0.12,
+              "name": "灯光设计",
+              "aspects": [
+                "key_light",
+                "fill_light",
+                "practical_light",
+                "color_temperature"
+              ],
+              "adjustedThreshold": 0.3,
+              "active": true,
+              "gap": -0.2
+            },
+            {
+              "id": "composition",
+              "layer": "Layer 2",
+              "threshold": 0.35,
+              "weight": 0.1,
+              "name": "构图风格",
+              "aspects": [
+                "framing",
+                "negative_space",
+                "leading_lines",
+                "symmetry"
+              ],
+              "adjustedThreshold": 0.35,
+              "active": true,
+              "gap": -0.15000000000000002
+            },
+            {
+              "id": "production",
+              "layer": "Layer 2",
+              "threshold": 0.4,
+              "weight": 0.08,
+              "name": "美术布景",
+              "aspects": [
+                "set_design",
+                "props",
+                "color_coding",
+                "texture"
+              ],
+              "adjustedThreshold": 0.4,
+              "active": true,
+              "gap": -0.09999999999999998
+            },
+            {
+              "id": "performance",
+              "layer": "Layer 2",
+              "threshold": 0.4,
+              "weight": 0.08,
+              "name": "表演指导",
+              "aspects": [
+                "expression",
+                "gesture",
+                "movement",
+                "eye_contact"
+              ],
+              "adjustedThreshold": 0.4,
+              "active": true,
+              "gap": -0.09999999999999998
+            }
+          ],
+          "Layer 3": [
+            {
+              "id": "color",
+              "layer": "Layer 3",
+              "threshold": 0.3,
+              "weight": 0.1,
+              "name": "色彩分级",
+              "aspects": [
+                "lut",
+                "saturation",
+                "contrast",
+                "temperature"
+              ],
+              "adjustedThreshold": 0.3,
+              "active": true,
+              "gap": -0.2
+            },
+            {
+              "id": "vfx",
+              "layer": "Layer 3",
+              "threshold": 0.5,
+              "weight": 0.05,
+              "name": "特效程度",
+              "aspects": [
+                "particles",
+                "light_effects",
+                "transitions",
+                "environmental"
+              ],
+              "adjustedThreshold": 0.5,
+              "active": true,
+              "gap": 0
+            },
+            {
+              "id": "atmosphere",
+              "layer": "Layer 3",
+              "threshold": 0.35,
+              "weight": 0.06,
+              "name": "氛围营造",
+              "aspects": [
+                "fog",
+                "haze",
+                "volumetric",
+                "weather"
+              ],
+              "adjustedThreshold": 0.35,
+              "active": true,
+              "gap": -0.15000000000000002
+            }
+          ],
+          "Layer 4": [
+            {
+              "id": "editing",
+              "layer": "Layer 4",
+              "threshold": 0.45,
+              "weight": 0.08,
+              "name": "剪辑节奏",
+              "aspects": [
+                "cutting_pace",
+                "match_cut",
+                "j_cut_l_cut",
+                "time_manipulation"
+              ],
+              "adjustedThreshold": 0.45,
+              "active": true,
+              "gap": -0.04999999999999999
+            },
+            {
+              "id": "sound",
+              "layer": "Layer 4",
+              "threshold": 0.35,
+              "weight": 0.08,
+              "name": "声音设计",
+              "aspects": [
+                "bgm",
+                "sound_effects",
+                "spatial_audio",
+                "silence_design"
+              ],
+              "adjustedThreshold": 0.35,
+              "active": true,
+              "gap": -0.15000000000000002
+            }
+          ]
+        },
+        "capabilities": [
+          {
+            "id": "script",
+            "name": "叙事结构",
+            "weight": 0.12,
+            "instruction": {
+              "tag": "[SCRIPT:L2]",
+              "instruction": "多线叙事，伏笔与呼应，情绪曲线设计",
+              "level": "L2",
+              "levelName": "平衡",
+              "intensity": 0.5,
+              "weight": 0.12
+            }
+          },
+          {
+            "id": "camera",
+            "name": "镜头语言",
+            "weight": 0.18,
+            "instruction": {
+              "tag": "[CAMERA:L2]",
+              "instruction": "斯坦尼康长镜头，轨道滑动，浅景深跟焦",
+              "level": "L2",
+              "levelName": "平衡",
+              "intensity": 0.5,
+              "weight": 0.18
+            }
+          },
+          {
+            "id": "lighting",
+            "name": "灯光设计",
+            "weight": 0.12,
+            "instruction": {
+              "tag": "[LIGHTING:L2]",
+              "instruction": "戏剧性光影，伦勃朗光，剪影，环境填充",
+              "level": "L2",
+              "levelName": "平衡",
+              "intensity": 0.5,
+              "weight": 0.12
+            }
+          },
+          {
+            "id": "composition",
+            "name": "构图风格",
+            "weight": 0.1,
+            "instruction": {
+              "tag": "[COMPOSITION:L2]",
+              "instruction": "框架构图，多层景深，前景中景背景",
+              "level": "L2",
+              "levelName": "平衡",
+              "intensity": 0.5,
+              "weight": 0.1
+            }
+          },
+          {
+            "id": "production",
+            "name": "美术布景",
+            "weight": 0.08,
+            "instruction": {
+              "tag": "[PRODUCTION:L2]",
+              "instruction": "定制化场景，色彩编码空间，沉浸式环境",
+              "level": "L2",
+              "levelName": "平衡",
+              "intensity": 0.5,
+              "weight": 0.08
+            }
+          },
+          {
+            "id": "performance",
+            "name": "表演指导",
+            "weight": 0.08,
+            "instruction": {
+              "tag": "[PERFORMANCE:L2]",
+              "instruction": "情感层次，微表情，眼神变化，手势设计",
+              "level": "L2",
+              "levelName": "平衡",
+              "intensity": 0.5,
+              "weight": 0.08
+            }
+          },
+          {
+            "id": "color",
+            "name": "色彩分级",
+            "weight": 0.1,
+            "instruction": {
+              "tag": "[COLOR:L2]",
+              "instruction": "电影LUT，冷暖对比，单色调色",
+              "level": "L2",
+              "levelName": "平衡",
+              "intensity": 0.5,
+              "weight": 0.1
+            }
+          },
+          {
+            "id": "vfx",
+            "name": "特效程度",
+            "weight": 0.05,
+            "instruction": {
+              "tag": "[VFX:L2]",
+              "instruction": "光效粒子，镜头光晕，环境互动粒子",
+              "level": "L2",
+              "levelName": "平衡",
+              "intensity": 0.5,
+              "weight": 0.05
+            }
+          },
+          {
+            "id": "atmosphere",
+            "name": "氛围营造",
+            "weight": 0.06,
+            "instruction": {
+              "tag": "[ATMOSPHERE:L2]",
+              "instruction": "体积雾，光雾交互，季节感",
+              "level": "L2",
+              "levelName": "平衡",
+              "intensity": 0.5,
+              "weight": 0.06
+            }
+          },
+          {
+            "id": "editing",
+            "name": "剪辑节奏",
+            "weight": 0.08,
+            "instruction": {
+              "tag": "[EDITING:L2]",
+              "instruction": "情绪匹配时长，紧张快切，情感延长",
+              "level": "L2",
+              "levelName": "平衡",
+              "intensity": 0.5,
+              "weight": 0.08
+            }
+          },
+          {
+            "id": "sound",
+            "name": "声音设计",
+            "weight": 0.08,
+            "instruction": {
+              "tag": "[SOUND:L2]",
+              "instruction": "ASMR细节，3D空间音频，情绪配乐",
+              "level": "L2",
+              "levelName": "平衡",
+              "intensity": 0.5,
+              "weight": 0.08
+            }
+          }
+        ],
+        "inactiveCapabilities": [
+          {
+            "id": "texture",
+            "name": "质感处理",
+            "threshold": 0.55,
+            "reason": "需创意指数 ≥ 0.55 激活"
+          }
+        ],
+        "engineConfigs": {
+          "intensity": 0.5,
+          "level": {
+            "key": "L2",
+            "max": 0.5,
+            "name": "平衡",
+            "description": "电影级质感，艺术平衡"
+          },
+          "narrativeMode": "educational",
+          "worldSetting": "default",
+          "scriptEngine": {
+            "sceneComplexity": "standard",
+            "characterDepth": "deep",
+            "conflictDesign": "single",
+            "pacingStructure": "linear",
+            "creativeInstructions": "[[SCRIPT:L2]] 多线叙事，伏笔与呼应，情绪曲线设计"
+          },
+          "productionEngine": {
+            "cameraStyle": "cinematic",
+            "lightingStyle": "dramatic",
+            "compositionStyle": "artistic",
+            "productionStyle": "customized",
+            "performanceStyle": "emotional",
+            "creativeInstructions": "[[CAMERA:L2]] 斯坦尼康长镜头，轨道滑动，浅景深跟焦\n[[LIGHTING:L2]] 戏剧性光影，伦勃朗光，剪影，环境填充\n[[COMPOSITION:L2]] 框架构图，多层景深，前景中景背景\n[[PRODUCTION:L2]] 定制化场景，色彩编码空间，沉浸式环境\n[[PERFORMANCE:L2]] 情感层次，微表情，眼神变化，手势设计"
+          },
+          "renderingEngine": {
+            "colorGrading": "cinematic",
+            "textureQuality": "digital",
+            "vfxLevel": "none",
+            "atmosphereLevel": "rich",
+            "creativeInstructions": "[[COLOR:L2]] 电影LUT，冷暖对比，单色调色\n[[VFX:L2]] 光效粒子，镜头光晕，环境互动粒子\n[[ATMOSPHERE:L2]] 体积雾，光雾交互，季节感"
+          },
+          "postProductionEngine": {
+            "editingStyle": "artistic",
+            "soundDesign": "immersive",
+            "creativeInstructions": "[[EDITING:L2]] 情绪匹配时长，紧张快切，情感延长\n[[SOUND:L2]] ASMR细节，3D空间音频，情绪配乐"
+          },
+          "_metadata": {
+            "activeCapabilities": 11,
+            "totalCapabilities": 12,
+            "contentFirewall": true
+          }
+        },
+        "firewall": "\n[CONTENT_FIREWALL] 🔒 内容层完全隔离，创意指数不干预：\n  - 剧本内容 (Script Content) → 已锁定\n  - 台词对白 (Dialogue) → 已锁定\n  - 事实数据 (Facts & Data) → 已锁定\n  - 叙事逻辑 (Narrative Logic) → 已锁定\n[CONTENT_FIREWALL] ✅ 表现层接受创意指数调控：\n  - Layer 2: 镜头语言、灯光、构图、布景、表演\n  - Layer 3: 色彩、质感、特效、氛围\n  - Layer 4: 剪辑、声音设计\n"
+      }
+    },
+    "scriptEngine": {
+      "blueprint": {
+        "title": "横纹肌溶解科普-第二集",
+        "narrative_mode": "educational",
+        "target_duration": 62,
+        "acts_count": 3,
+        "scenes_count": 6,
+        "_metadata": {
+          "isSeries": false,
+          "episodeNumber": 1,
+          "totalEpisodes": 1,
+          "hasOpening": false,
+          "noNextEpisodePreview": true,
+          "aspectRatio": "16:9"
+        }
+      },
+      "validation": {
+        "blueprint_id": "91a9cc72-a461-4c7a-9804-8a3b296189ab",
+        "passed": false,
+        "overall_score": 98,
+        "checks": [
+          {
+            "category": "structure",
+            "name": "acts_exist",
+            "passed": true,
+            "severity": "critical",
+            "message": "有 3 幕",
+            "suggestion": "必须至少包含 1 幕"
+          },
+          {
+            "category": "structure",
+            "name": "scene_count",
+            "passed": true,
+            "severity": "critical",
+            "message": "有 6 个场景",
+            "suggestion": "场景数量应在 3-10 之间"
+          },
+          {
+            "category": "structure",
+            "name": "scene_continuity",
+            "passed": true,
+            "severity": "warning",
+            "message": "场景时序连续",
+            "suggestion": "确保场景时间轴连续无断层"
+          },
+          {
+            "category": "structure",
+            "name": "scene_id_unique",
+            "passed": true,
+            "severity": "critical",
+            "message": "场景 ID 唯一",
+            "suggestion": "确保每个场景 ID 唯一"
+          },
+          {
+            "category": "duration",
+            "name": "total_duration_match",
+            "passed": true,
+            "severity": "critical",
+            "message": "目标时长 62s, 实际时长 62s",
+            "suggestion": "总时长应与目标时长一致（误差≤5s）"
+          },
+          {
+            "category": "duration",
+            "name": "duration_in_range",
+            "passed": true,
+            "severity": "critical",
+            "message": "实际时长 62s",
+            "suggestion": "时长应在 15-300s 之间"
+          },
+          {
+            "category": "duration",
+            "name": "scene_SC00_duration",
+            "passed": true,
+            "severity": "warning",
+            "message": "场景 SC00 时长 10s",
+            "suggestion": "单个场景时长应在 1-60s 之间"
+          },
+          {
+            "category": "duration",
+            "name": "scene_SC01_duration",
+            "passed": true,
+            "severity": "warning",
+            "message": "场景 SC01 时长 12s",
+            "suggestion": "单个场景时长应在 1-60s 之间"
+          },
+          {
+            "category": "duration",
+            "name": "scene_SC02_duration",
+            "passed": true,
+            "severity": "warning",
+            "message": "场景 SC02 时长 12s",
+            "suggestion": "单个场景时长应在 1-60s 之间"
+          },
+          {
+            "category": "duration",
+            "name": "scene_SC03_duration",
+            "passed": true,
+            "severity": "warning",
+            "message": "场景 SC03 时长 13s",
+            "suggestion": "单个场景时长应在 1-60s 之间"
+          },
+          {
+            "category": "duration",
+            "name": "scene_SC04_duration",
+            "passed": true,
+            "severity": "warning",
+            "message": "场景 SC04 时长 10s",
+            "suggestion": "单个场景时长应在 1-60s 之间"
+          },
+          {
+            "category": "duration",
+            "name": "scene_SC05_duration",
+            "passed": true,
+            "severity": "warning",
+            "message": "场景 SC05 时长 5s",
+            "suggestion": "单个场景时长应在 1-60s 之间"
+          },
+          {
+            "category": "dialogue",
+            "name": "has_dialogue",
+            "passed": true,
+            "severity": "critical",
+            "message": "6/6 场景有台词",
+            "suggestion": "必须至少包含台词的场景"
+          },
+          {
+            "category": "dialogue",
+            "name": "line_length",
+            "passed": true,
+            "severity": "warning",
+            "message": "所有台词长度合规",
+            "suggestion": "台词每句不超过 30 字"
+          },
+          {
+            "category": "dialogue",
+            "name": "no_voiceover",
+            "passed": true,
+            "severity": "critical",
+            "message": "无旁白，合规",
+            "suggestion": "全局禁止旁白，只保留角色对话"
+          },
+          {
+            "category": "character",
+            "name": "has_protagonist",
+            "passed": false,
+            "severity": "critical",
+            "message": "缺少主角定义",
+            "suggestion": "必须定义 protagonist 角色"
+          },
+          {
+            "category": "character",
+            "name": "character_chen-zhuo_features",
+            "passed": true,
+            "severity": "warning",
+            "message": "角色 chen-zhuo 有 3 个核心特征",
+            "suggestion": "核心特征应在 2-5 个之间"
+          },
+          {
+            "category": "character",
+            "name": "scene_SC00_character_chen-zhuo",
+            "passed": true,
+            "severity": "critical",
+            "message": "角色 chen-zhuo 已定义",
+            "suggestion": "场景中引用的角色必须在 character_system 中定义"
+          },
+          {
+            "category": "character",
+            "name": "scene_SC01_character_chen-zhuo",
+            "passed": true,
+            "severity": "critical",
+            "message": "角色 chen-zhuo 已定义",
+            "suggestion": "场景中引用的角色必须在 character_system 中定义"
+          },
+          {
+            "category": "character",
+            "name": "scene_SC02_character_chen-zhuo",
+            "passed": true,
+            "severity": "critical",
+            "message": "角色 chen-zhuo 已定义",
+            "suggestion": "场景中引用的角色必须在 character_system 中定义"
+          },
+          {
+            "category": "character",
+            "name": "scene_SC03_character_chen-zhuo",
+            "passed": true,
+            "severity": "critical",
+            "message": "角色 chen-zhuo 已定义",
+            "suggestion": "场景中引用的角色必须在 character_system 中定义"
+          },
+          {
+            "category": "character",
+            "name": "scene_SC04_character_chen-zhuo",
+            "passed": true,
+            "severity": "critical",
+            "message": "角色 chen-zhuo 已定义",
+            "suggestion": "场景中引用的角色必须在 character_system 中定义"
+          },
+          {
+            "category": "character",
+            "name": "scene_SC05_character_chen-zhuo",
+            "passed": true,
+            "severity": "critical",
+            "message": "角色 chen-zhuo 已定义",
+            "suggestion": "场景中引用的角色必须在 character_system 中定义"
+          },
+          {
+            "category": "forbidden",
+            "name": "forbidden_旁白",
+            "passed": true,
+            "severity": "critical",
+            "message": "无 \"旁白\"",
+            "suggestion": "全局禁止 \"旁白\""
+          },
+          {
+            "category": "forbidden",
+            "name": "forbidden_voiceover",
+            "passed": true,
+            "severity": "critical",
+            "message": "无 \"voiceover\"",
+            "suggestion": "全局禁止 \"voiceover\""
+          },
+          {
+            "category": "forbidden",
+            "name": "forbidden_解说",
+            "passed": true,
+            "severity": "critical",
+            "message": "无 \"解说\"",
+            "suggestion": "全局禁止 \"解说\""
+          },
+          {
+            "category": "forbidden",
+            "name": "forbidden_金属光泽",
+            "passed": true,
+            "severity": "critical",
+            "message": "无 \"金属光泽\"",
+            "suggestion": "全局禁止 \"金属光泽\""
+          },
+          {
+            "category": "forbidden",
+            "name": "forbidden_unnatural_eye_color",
+            "passed": true,
+            "severity": "critical",
+            "message": "无 \"unnatural_eye_color\"",
+            "suggestion": "全局禁止 \"unnatural_eye_color\""
+          }
+        ],
+        "scores": {
+          "detailed": {
+            "structural_integrity": 100,
+            "duration_compliance": 100,
+            "dialogue_quality": 100,
+            "character_consistency": 88,
+            "nirath_compliance": 100
+          },
+          "summary": {
+            "total_checks": 28,
+            "passed_checks": 27,
+            "failed_checks": 1,
+            "critical_issues": 1
+          }
+        },
+        "issues": [
+          {
+            "category": "character",
+            "severity": "critical",
+            "message": "缺少主角定义",
+            "suggestion": "必须定义 protagonist 角色"
+          }
+        ],
+        "timestamp": "2026-06-19T03:37:19.429Z"
+      },
+      "report": {
+        "blueprint_id": "91a9cc72-a461-4c7a-9804-8a3b296189ab",
+        "adaptation_status": "success",
+        "scenes_count": 6,
+        "characters_count": 1,
+        "dialogues_count": 15,
+        "total_duration": 62,
+        "warnings": [
+          {
+            "type": "missing_portraits",
+            "message": "角色 陈卓 没有定妆照",
+            "severity": "warning"
+          }
+        ],
+        "timestamp": "2026-06-19T03:37:19.431Z"
+      },
+      "timing": 154894
+    },
+    "productionEngine": {
+      "shots": [
+        {
+          "shotId": "SC00",
+          "sceneType": "opening",
+          "timing": {
+            "start": 0,
+            "duration": 10,
+            "end": 10
+          },
+          "promptLength": 1246
+        },
+        {
+          "shotId": "SC01",
+          "sceneType": "establishing",
+          "timing": {
+            "start": 10,
+            "duration": 12,
+            "end": 22
+          },
+          "promptLength": 1268
+        },
+        {
+          "shotId": "SC02",
+          "sceneType": "conflict",
+          "timing": {
+            "start": 22,
+            "duration": 12,
+            "end": 34
+          },
+          "promptLength": 1283
+        },
+        {
+          "shotId": "SC03",
+          "sceneType": "emotional_climax",
+          "timing": {
+            "start": 34,
+            "duration": 13,
+            "end": 47
+          },
+          "promptLength": 1294
+        },
+        {
+          "shotId": "SC04",
+          "sceneType": "resolution",
+          "timing": {
+            "start": 47,
+            "duration": 10,
+            "end": 57
+          },
+          "promptLength": 1272
+        },
+        {
+          "shotId": "SC05",
+          "sceneType": "resolution",
+          "timing": {
+            "start": 57,
+            "duration": 5,
+            "end": 62
+          },
+          "promptLength": 1183
+        }
+      ],
+      "prompts": [
+        {
+          "shotId": "SC00",
+          "sceneType": "opening",
+          "timing": {
+            "start": 0,
+            "duration": 10,
+            "end": 10
+          },
+          "duration": 10,
+          "scene": "default, 室内科普宣讲室，背景为简洁的健康警示屏, spatial depth: atmospheric perspective",
+          "mood": "epic, mysterious, awe-inspiring",
+          "camera": {
+            "shotSize": "wide",
+            "movement": "dolly in",
+            "lens": "24mm",
+            "speed": 0.3,
+            "aperture": "f/2.8",
+            "focus": "normal"
+          },
+          "cameraString": "wide shot, dolly in, 24mm lens, speed 0.3",
+          "lighting": {
+            "keyLight": {
+              "direction": "backlight",
+              "colorTemp": 3200,
+              "effect": "golden hour rim"
+            },
+            "fillLight": {
+              "direction": "ambient",
+              "colorTemp": 6500,
+              "effect": "cool fill"
+            },
+            "special": "volumetric god rays"
+          },
+          "lightingString": "backlight 3200K, golden hour rim, ambient 6500K, cool fill, volumetric god rays",
+          "characterRef": "陈卓: image://characters/chen-zhuo-front.png, image://characters/chen-zhuo-profile.png, image://characters/chen-zhuo-three-quarter.png, image://characters/chen-zhuo-closeup.png, image://characters/chen-zhuo-detail.png",
+          "character": "陈卓: human, 35-40岁女性, 穿警服, 科普讲解员",
+          "action": "establishing shot, camera slowly descending through atmospheric layers",
+          "dialogue": "陈卓|独白|serious|你知道剧烈运动后，肌肉为什么会溶解吗？|LIP_SYNC:YES || 陈卓|独白|urgent|这不是吓你，是真会进ICU！|LIP_SYNC:YES",
+          "timeline": [
+            {
+              "start": "T00:00",
+              "end": "T00:10",
+              "duration": 10,
+              "type": "opening",
+              "mood": "epic, mysterious, awe-inspiring"
+            }
+          ],
+          "timelineString": "T00:00-T00:10 / duration: 10s / type: opening / mood: epic, mysterious, awe-inspiring",
+          "backgroundSound": {
+            "ambient": "deep earth rumble 20-60Hz, epic atmosphere",
+            "spatial": "3D audio pan synchronized with camera movement",
+            "intensity": {
+              "crescendo": "0-3s",
+              "peak": "3-7s",
+              "decay": "7-10s"
+            }
+          },
+          "backgroundSoundString": "AMBIENT: deep earth rumble 20-60Hz, epic atmosphere | SPATIAL: 3D audio pan synchronized with camera movement | INTENSITY: crescendo 0-3s, peak 3-7s, decay 7-10s",
+          "prompt": "16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic，hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film，default, 室内科普宣讲室，背景为简洁的健康警示屏, spatial depth: atmospheric perspective，陈卓: human, 35-40岁女性, 穿警服, 科普讲解员，establishing shot, camera slowly descending through atmospheric layers，dialogue: 陈卓|独白|serious|你知道剧烈运动后，肌肉为什么会溶解吗？|LIP_SYNC:YES || 陈卓|独白|urgent|这不是吓你，是真会进ICU！|LIP_SYNC:YES，wide shot, dolly in, 24mm lens, speed 0.3，timeline: T00:00-T00:10 / duration: 10s / type: opening / mood: epic, mysterious, awe-inspiring，mood: epic, mysterious, awe-inspiring，backlight 3200K, golden hour rim, ambient 6500K, cool fill, volumetric god rays，no watermark, no logo, no text overlay, no subtitle, no caption，blurry, low resolution, pixelated, compression artifacts，cartoon, anime, illustration, 3D render look, CGI appearance, plastic look，distorted perspective, impossible geometry, floating objects，flat lighting, overexposed, crushed blacks, double shadows，unnatural physics, fake water, static water, cardboard texture, plastic foliage，distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose，角色一致性：保持chen-zhuo形象一致，杜绝分身重影",
+          "promptCharCount": 1246,
+          "mouthAction": "嘴部自然闭合，面对镜头，准备开口",
+          "importance": 5,
+          "visualComplexity": 5,
+          "qualityScore": {
+            "totalScore": 75
+          },
+          "enhanced": true,
+          "physicsLayer": "",
+          "colorScience": "",
+          "negativePrompt": "",
+          "renderStyle": "",
+          "directorStyle": "",
+          "priorities": {
+            "characterRef": "P0-never",
+            "dialogue": "P0-keep_core",
+            "character": "P0-minimal_anchor",
+            "camera": "P1-keep_core_movement",
+            "action": "P1-keep_core_verb",
+            "scene": "P1-keep_core_location",
+            "lighting": "P1-keep_main_light",
+            "backgroundSound": "P1-keep_core_sound",
+            "mood": "P2-keyword_list",
+            "timeline": "P2-keep_duration_type"
+          },
+          "length": 1246,
+          "utilization": 83,
+          "utilizationStatus": "🔥理想",
+          "audioLayer": {
+            "segments": [
+              {
+                "time": "0-3s",
+                "sound": "sub-bass earth rumble fade in"
+              },
+              {
+                "time": "3-5s",
+                "sound": "distant wind and environmental sounds"
+              },
+              {
+                "time": "5-8s",
+                "sound": "string section long note"
+              },
+              {
+                "time": "8-10s",
+                "sound": "timpani strike"
+              }
+            ]
+          },
+          "audioLayerString": "sub-bass earth rumble fade in, distant wind and environmental sounds, string section long note, timpani strike",
+          "titleOverlay": {
+            "mainTitle": "横纹肌溶解科普-第二集",
+            "subtitle": "系列作品",
+            "producer": "by Genius",
+            "titleAnim": "light-vein carving growth 3.0-5.0s",
+            "episodeInfo": ""
+          },
+          "titleOverlayString": "MAIN_TITLE: \"横纹肌溶解科普-第二集\" | SUBTITLE: \"系列作品\" | PRODUCER: \"by Genius\" | TITLE_ANIM: light-vein carving growth 3.0-5.0s",
+          "title": "横纹肌溶解科普-第二集",
+          "subtitle": "系列作品",
+          "portraits": [
+            {
+              "character": "unknown",
+              "characterId": "unknown",
+              "url": "PENDING_GENERATION",
+              "angle": "default",
+              "source": "pending"
+            }
+          ],
+          "characterCards": [
+            {
+              "characterId": "unknown",
+              "name": "未知角色",
+              "role": "supporting",
+              "description": "",
+              "voiceProfile": {}
+            }
+          ]
+        },
+        {
+          "shotId": "SC01",
+          "sceneType": "establishing",
+          "timing": {
+            "start": 10,
+            "duration": 12,
+            "end": 22
+          },
+          "duration": 12,
+          "scene": "default, 室内科普宣讲室，背景切换为肌肉与肾脏示意图, spatial depth: atmospheric perspective",
+          "mood": "mysterious, anticipation, wonder",
+          "camera": {
+            "shotSize": "medium",
+            "movement": "static",
+            "lens": "35mm",
+            "speed": 1,
+            "aperture": "f/2.8",
+            "focus": "normal"
+          },
+          "cameraString": "medium shot, static, 35mm lens, speed 1",
+          "lighting": {
+            "keyLight": {
+              "direction": "front",
+              "colorTemp": 4500,
+              "effect": "neutral balanced"
+            },
+            "fillLight": {
+              "direction": "ambient",
+              "colorTemp": 4500,
+              "effect": "soft fill"
+            },
+            "special": ""
+          },
+          "lightingString": "front 4500K, neutral balanced, ambient 4500K, soft fill",
+          "characterRef": "陈卓: image://characters/chen-zhuo-front.png, image://characters/chen-zhuo-profile.png, image://characters/chen-zhuo-three-quarter.png, image://characters/chen-zhuo-closeup.png, image://characters/chen-zhuo-detail.png",
+          "character": "陈卓: human, 35-40岁女性, 穿警服, 科普讲解员",
+          "action": "protagonist steps forward, observing surroundings with focused gaze",
+          "dialogue": "陈卓|独白|calm|横纹肌溶解，就是肌肉细胞破了。|LIP_SYNC:YES || 陈卓|独白|concerned|肌肉里的毒素冲进血液，把肾堵了。|LIP_SYNC:YES || 陈卓|独白|serious|尿会变成酱油色，特别危险。|LIP_SYNC:YES",
+          "timeline": [
+            {
+              "start": "T00:10",
+              "end": "T00:22",
+              "duration": 12,
+              "type": "establishing",
+              "mood": "mysterious, anticipation, wonder"
+            }
+          ],
+          "timelineString": "T00:10-T00:22 / duration: 12s / type: establishing / mood: mysterious, anticipation, wonder",
+          "backgroundSound": {
+            "ambient": "natural environment, wind and distant sounds",
+            "spatial": "ambient stereo field",
+            "intensity": {
+              "steady": "0-100%",
+              "variations": "subtle"
+            }
+          },
+          "backgroundSoundString": "AMBIENT: natural environment, wind and distant sounds | SPATIAL: ambient stereo field | INTENSITY: steady 0-100%, variations subtle",
+          "prompt": "16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic，hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film，default, 室内科普宣讲室，背景切换为肌肉与肾脏示意图, spatial depth: atmospheric perspective，陈卓: human, 35-40岁女性, 穿警服, 科普讲解员，protagonist steps forward, observing surroundings with focused gaze，dialogue: 陈卓|独白|calm|横纹肌溶解，就是肌肉细胞破了。|LIP_SYNC:YES || 陈卓|独白|concerned|肌肉里的毒素冲进血液，把肾堵了。|LIP_SYNC:YES || 陈卓|独白|serious|尿会变成酱油色，特别危险。|LIP_SYNC:YES，medium shot, static, 35mm lens, speed 1，timeline: T00:10-T00:22 / duration: 12s / type: establishing / mood: mysterious, anticipation, wonder，mood: mysterious, anticipation, wonder，front 4500K, neutral balanced, ambient 4500K, soft fill，no watermark, no logo, no text overlay, no subtitle, no caption，blurry, low resolution, pixelated, compression artifacts，cartoon, anime, illustration, 3D render look, CGI appearance, plastic look，distorted perspective, impossible geometry, floating objects，flat lighting, overexposed, crushed blacks, double shadows，unnatural physics, fake water, static water, cardboard texture, plastic foliage，distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose，角色一致性：保持chen-zhuo形象一致，杜绝分身重影",
+          "promptCharCount": 1268,
+          "mouthAction": "嘴部微张，观察时自然呼吸",
+          "importance": 5,
+          "visualComplexity": 5,
+          "qualityScore": {
+            "totalScore": 75
+          },
+          "enhanced": true,
+          "physicsLayer": "",
+          "colorScience": "",
+          "negativePrompt": "",
+          "renderStyle": "",
+          "directorStyle": "",
+          "priorities": {
+            "characterRef": "P0-never",
+            "dialogue": "P0-keep_core",
+            "character": "P0-minimal_anchor",
+            "camera": "P1-keep_core_movement",
+            "action": "P1-keep_core_verb",
+            "scene": "P1-keep_core_location",
+            "lighting": "P1-keep_main_light",
+            "backgroundSound": "P1-keep_core_sound",
+            "mood": "P2-keyword_list",
+            "timeline": "P2-keep_duration_type"
+          },
+          "length": 1268,
+          "utilization": 85,
+          "utilizationStatus": "🔥理想",
+          "portraits": [
+            {
+              "character": "unknown",
+              "characterId": "unknown",
+              "url": "PENDING_GENERATION",
+              "angle": "default",
+              "source": "pending"
+            }
+          ],
+          "characterCards": [
+            {
+              "characterId": "unknown",
+              "name": "未知角色",
+              "role": "supporting",
+              "description": "",
+              "voiceProfile": {}
+            }
+          ]
+        },
+        {
+          "shotId": "SC02",
+          "sceneType": "conflict",
+          "timing": {
+            "start": 22,
+            "duration": 12,
+            "end": 34
+          },
+          "duration": 12,
+          "scene": "default, 室内科普宣讲室，背景混剪健身、军训、高温作业画面, spatial depth: atmospheric perspective",
+          "mood": "tense, determined, brave, confrontational",
+          "camera": {
+            "shotSize": "close-up",
+            "movement": "handheld",
+            "lens": "85mm",
+            "speed": 1.5,
+            "aperture": "f/2.8",
+            "focus": "normal"
+          },
+          "cameraString": "close-up shot, handheld, 85mm lens, speed 1.5",
+          "lighting": {
+            "keyLight": {
+              "direction": "top",
+              "colorTemp": 5600,
+              "effect": "harsh shadows"
+            },
+            "fillLight": {
+              "direction": "none",
+              "colorTemp": 0,
+              "effect": "dramatic contrast"
+            },
+            "special": "high contrast noir"
+          },
+          "lightingString": "top 5600K, harsh shadows, high contrast noir",
+          "characterRef": "陈卓: image://characters/chen-zhuo-front.png, image://characters/chen-zhuo-profile.png, image://characters/chen-zhuo-three-quarter.png, image://characters/chen-zhuo-closeup.png, image://characters/chen-zhuo-detail.png",
+          "character": "陈卓: human, 35-40岁女性, 穿警服, 科普讲解员",
+          "action": "confrontation stance, direct eye contact, tension building in posture",
+          "dialogue": "陈卓|独白|questioning|哪些人容易中招？|LIP_SYNC:YES || 陈卓|独白|serious|突击健身的、军训学生、还有高温下干活的。|LIP_SYNC:YES || 陈卓|独白|warning|突然拼命练，最容易出事。|LIP_SYNC:YES",
+          "timeline": [
+            {
+              "start": "T00:22",
+              "end": "T00:34",
+              "duration": 12,
+              "type": "conflict",
+              "mood": "tense, determined, brave, confrontational"
+            }
+          ],
+          "timelineString": "T00:22-T00:34 / duration: 12s / type: conflict / mood: tense, determined, brave, confrontational",
+          "backgroundSound": {
+            "ambient": "tension building, low frequency rumble",
+            "spatial": "directional audio pan",
+            "intensity": {
+              "building": "0-5s",
+              "peak": "5-8s",
+              "decay": "8-10s"
+            }
+          },
+          "backgroundSoundString": "AMBIENT: tension building, low frequency rumble | SPATIAL: directional audio pan | INTENSITY: building 0-5s, peak 5-8s, decay 8-10s",
+          "prompt": "16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic，hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film，default, 室内科普宣讲室，背景混剪健身、军训、高温作业画面, spatial depth: atmospheric perspective，陈卓: human, 35-40岁女性, 穿警服, 科普讲解员，confrontation stance, direct eye contact, tension building in posture，dialogue: 陈卓|独白|questioning|哪些人容易中招？|LIP_SYNC:YES || 陈卓|独白|serious|突击健身的、军训学生、还有高温下干活的。|LIP_SYNC:YES || 陈卓|独白|warning|突然拼命练，最容易出事。|LIP_SYNC:YES，close-up shot, handheld, 85mm lens, speed 1.5，timeline: T00:22-T00:34 / duration: 12s / type: conflict / mood: tense, determined, brave, confrontational，mood: tense, determined, brave, confrontational，top 5600K, harsh shadows, high contrast noir，no watermark, no logo, no text overlay, no subtitle, no caption，blurry, low resolution, pixelated, compression artifacts，cartoon, anime, illustration, 3D render look, CGI appearance, plastic look，distorted perspective, impossible geometry, floating objects，flat lighting, overexposed, crushed blacks, double shadows，unnatural physics, fake water, static water, cardboard texture, plastic foliage，distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose，角色一致性：保持chen-zhuo形象一致，杜绝分身重影",
+          "promptCharCount": 1283,
+          "mouthAction": "嘴部紧闭，紧张时咬紧牙关",
+          "importance": 5,
+          "visualComplexity": 5,
+          "qualityScore": {
+            "totalScore": 75
+          },
+          "enhanced": true,
+          "physicsLayer": "",
+          "colorScience": "",
+          "negativePrompt": "",
+          "renderStyle": "",
+          "directorStyle": "",
+          "priorities": {
+            "characterRef": "P0-never",
+            "dialogue": "P0-keep_core",
+            "character": "P0-minimal_anchor",
+            "camera": "P1-keep_core_movement",
+            "action": "P1-keep_core_verb",
+            "scene": "P1-keep_core_location",
+            "lighting": "P1-keep_main_light",
+            "backgroundSound": "P1-keep_core_sound",
+            "mood": "P2-keyword_list",
+            "timeline": "P2-keep_duration_type"
+          },
+          "length": 1283,
+          "utilization": 86,
+          "utilizationStatus": "🔥理想",
+          "portraits": [
+            {
+              "character": "unknown",
+              "characterId": "unknown",
+              "url": "PENDING_GENERATION",
+              "angle": "default",
+              "source": "pending"
+            }
+          ],
+          "characterCards": [
+            {
+              "characterId": "unknown",
+              "name": "未知角色",
+              "role": "supporting",
+              "description": "",
+              "voiceProfile": {}
+            }
+          ]
+        },
+        {
+          "shotId": "SC03",
+          "sceneType": "emotional_climax",
+          "timing": {
+            "start": 34,
+            "duration": 13,
+            "end": 47
+          },
+          "duration": 13,
+          "scene": "default, 室内科普宣讲室，背景转为红色警示，肾脏特写图, spatial depth: atmospheric perspective",
+          "mood": "epic, emotional, powerful, cathartic",
+          "camera": {
+            "shotSize": "extreme close-up",
+            "movement": "push in",
+            "lens": "50mm",
+            "speed": 0.8,
+            "aperture": "f/2.8",
+            "focus": "normal"
+          },
+          "cameraString": "extreme close-up shot, push in, 50mm lens, speed 0.8",
+          "lighting": {
+            "keyLight": {
+              "direction": "omni",
+              "colorTemp": 8000,
+              "effect": "bright key"
+            },
+            "fillLight": {
+              "direction": "ambient",
+              "colorTemp": 8000,
+              "effect": "volumetric glow"
+            },
+            "special": "volumetric glow"
+          },
+          "lightingString": "omni 8000K, bright key, ambient 8000K, volumetric glow, volumetric glow",
+          "characterRef": "陈卓: image://characters/chen-zhuo-front.png, image://characters/chen-zhuo-profile.png, image://characters/chen-zhuo-three-quarter.png, image://characters/chen-zhuo-closeup.png, image://characters/chen-zhuo-detail.png",
+          "character": "陈卓: human, 35-40岁女性, 穿警服, 科普讲解员",
+          "action": "dramatic gesture, emotional peak, decisive movement",
+          "dialogue": "陈卓|独白|urgent|一旦出现肌肉剧痛、肿胀、没力气，|LIP_SYNC:YES || 陈卓|独白|commanding|千万别硬撑！赶紧去医院。|LIP_SYNC:YES || 陈卓|独白|grave|拖久了会肾衰竭，直接危及生命。|LIP_SYNC:YES",
+          "timeline": [
+            {
+              "start": "T00:34",
+              "end": "T00:47",
+              "duration": 13,
+              "type": "emotional_climax",
+              "mood": "epic, emotional, powerful, cathartic"
+            }
+          ],
+          "timelineString": "T00:34-T00:47 / duration: 13s / type: emotional_climax / mood: epic, emotional, powerful, cathartic",
+          "backgroundSound": {
+            "ambient": "full frequency spectrum, rich harmonics",
+            "spatial": "immersive surround",
+            "intensity": {
+              "maximum": "0-3s",
+              "sustain": "3-10s"
+            }
+          },
+          "backgroundSoundString": "AMBIENT: full frequency spectrum, rich harmonics | SPATIAL: immersive surround | INTENSITY: maximum 0-3s, sustain 3-10s",
+          "prompt": "16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic，hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film，default, 室内科普宣讲室，背景转为红色警示，肾脏特写图, spatial depth: atmospheric perspective，陈卓: human, 35-40岁女性, 穿警服, 科普讲解员，dramatic gesture, emotional peak, decisive movement，dialogue: 陈卓|独白|urgent|一旦出现肌肉剧痛、肿胀、没力气，|LIP_SYNC:YES || 陈卓|独白|commanding|千万别硬撑！赶紧去医院。|LIP_SYNC:YES || 陈卓|独白|grave|拖久了会肾衰竭，直接危及生命。|LIP_SYNC:YES，extreme close-up shot, push in, 50mm lens, speed 0.8，timeline: T00:34-T00:47 / duration: 13s / type: emotional_climax / mood: epic, emotional, powerful, cathartic，mood: epic, emotional, powerful, cathartic，omni 8000K, bright key, ambient 8000K, volumetric glow, volumetric glow，no watermark, no logo, no text overlay, no subtitle, no caption，blurry, low resolution, pixelated, compression artifacts，cartoon, anime, illustration, 3D render look, CGI appearance, plastic look，distorted perspective, impossible geometry, floating objects，flat lighting, overexposed, crushed blacks, double shadows，unnatural physics, fake water, static water, cardboard texture, plastic foliage，distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose，角色一致性：保持chen-zhuo形象一致，杜绝分身重影",
+          "promptCharCount": 1294,
+          "mouthAction": "嘴部张大，情感爆发时大声呼喊",
+          "importance": 5,
+          "visualComplexity": 5,
+          "qualityScore": {
+            "totalScore": 75
+          },
+          "enhanced": true,
+          "physicsLayer": "",
+          "colorScience": "",
+          "negativePrompt": "",
+          "renderStyle": "",
+          "directorStyle": "",
+          "priorities": {
+            "characterRef": "P0-never",
+            "dialogue": "P0-keep_core",
+            "character": "P0-minimal_anchor",
+            "camera": "P1-keep_core_movement",
+            "action": "P1-keep_core_verb",
+            "scene": "P1-keep_core_location",
+            "lighting": "P1-keep_main_light",
+            "backgroundSound": "P1-keep_core_sound",
+            "mood": "P2-keyword_list",
+            "timeline": "P2-keep_duration_type"
+          },
+          "length": 1294,
+          "utilization": 86,
+          "utilizationStatus": "🔥理想",
+          "portraits": [
+            {
+              "character": "unknown",
+              "characterId": "unknown",
+              "url": "PENDING_GENERATION",
+              "angle": "default",
+              "source": "pending"
+            }
+          ],
+          "characterCards": [
+            {
+              "characterId": "unknown",
+              "name": "未知角色",
+              "role": "supporting",
+              "description": "",
+              "voiceProfile": {}
+            }
+          ]
+        },
+        {
+          "shotId": "SC04",
+          "sceneType": "resolution",
+          "timing": {
+            "start": 47,
+            "duration": 10,
+            "end": 57
+          },
+          "duration": 10,
+          "scene": "default, 室内科普宣讲室，光线转暖，背景变为绿色健康标识, spatial depth: atmospheric perspective",
+          "mood": "peaceful, warm, nostalgic, hopeful",
+          "camera": {
+            "shotSize": "medium",
+            "movement": "pull back",
+            "lens": "24mm",
+            "speed": 0.3,
+            "aperture": "f/2.8",
+            "focus": "normal"
+          },
+          "cameraString": "medium shot, pull back, 24mm lens, speed 0.3",
+          "lighting": {
+            "keyLight": {
+              "direction": "backlight",
+              "colorTemp": 2800,
+              "effect": "warm sunset"
+            },
+            "fillLight": {
+              "direction": "ambient",
+              "colorTemp": 3200,
+              "effect": "soft diffusion"
+            },
+            "special": "soft diffusion"
+          },
+          "lightingString": "backlight 2800K, warm sunset, ambient 3200K, soft diffusion, soft diffusion",
+          "characterRef": "陈卓: image://characters/chen-zhuo-front.png, image://characters/chen-zhuo-profile.png, image://characters/chen-zhuo-three-quarter.png, image://characters/chen-zhuo-closeup.png, image://characters/chen-zhuo-detail.png",
+          "character": "陈卓: human, 35-40岁女性, 穿警服, 科普讲解员",
+          "action": "gentle release, returning to calm, peaceful closure",
+          "dialogue": "陈卓|独白|calm|预防很简单：运动要循序渐进。|LIP_SYNC:YES || 陈卓|独白|friendly|多喝水，别在高温天逞强。|LIP_SYNC:YES || 陈卓|独白|caring|感觉不对马上停，别拼。|LIP_SYNC:YES",
+          "timeline": [
+            {
+              "start": "T00:47",
+              "end": "T00:57",
+              "duration": 10,
+              "type": "resolution",
+              "mood": "peaceful, warm, nostalgic, hopeful"
+            }
+          ],
+          "timelineString": "T00:47-T00:57 / duration: 10s / type: resolution / mood: peaceful, warm, nostalgic, hopeful",
+          "backgroundSound": {
+            "ambient": "gentle atmosphere, soft reverb",
+            "spatial": "wide stereo field",
+            "intensity": {
+              "fading": "0-5s",
+              "quiet": "5-10s"
+            }
+          },
+          "backgroundSoundString": "AMBIENT: gentle atmosphere, soft reverb | SPATIAL: wide stereo field | INTENSITY: fading 0-5s, quiet 5-10s",
+          "prompt": "16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic，hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film，default, 室内科普宣讲室，光线转暖，背景变为绿色健康标识, spatial depth: atmospheric perspective，陈卓: human, 35-40岁女性, 穿警服, 科普讲解员，gentle release, returning to calm, peaceful closure，dialogue: 陈卓|独白|calm|预防很简单：运动要循序渐进。|LIP_SYNC:YES || 陈卓|独白|friendly|多喝水，别在高温天逞强。|LIP_SYNC:YES || 陈卓|独白|caring|感觉不对马上停，别拼。|LIP_SYNC:YES，medium shot, pull back, 24mm lens, speed 0.3，timeline: T00:47-T00:57 / duration: 10s / type: resolution / mood: peaceful, warm, nostalgic, hopeful，mood: peaceful, warm, nostalgic, hopeful，backlight 2800K, warm sunset, ambient 3200K, soft diffusion, soft diffusion，no watermark, no logo, no text overlay, no subtitle, no caption，blurry, low resolution, pixelated, compression artifacts，cartoon, anime, illustration, 3D render look, CGI appearance, plastic look，distorted perspective, impossible geometry, floating objects，flat lighting, overexposed, crushed blacks, double shadows，unnatural physics, fake water, static water, cardboard texture, plastic foliage，distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose，角色一致性：保持chen-zhuo形象一致，杜绝分身重影",
+          "promptCharCount": 1272,
+          "mouthAction": "嘴部放松，微笑，平静呼吸",
+          "importance": 5,
+          "visualComplexity": 5,
+          "qualityScore": {
+            "totalScore": 75
+          },
+          "enhanced": true,
+          "physicsLayer": "",
+          "colorScience": "",
+          "negativePrompt": "",
+          "renderStyle": "",
+          "directorStyle": "",
+          "priorities": {
+            "characterRef": "P0-never",
+            "dialogue": "P0-keep_core",
+            "character": "P0-minimal_anchor",
+            "camera": "P1-keep_core_movement",
+            "action": "P1-keep_core_verb",
+            "scene": "P1-keep_core_location",
+            "lighting": "P1-keep_main_light",
+            "backgroundSound": "P1-keep_core_sound",
+            "mood": "P2-keyword_list",
+            "timeline": "P2-keep_duration_type"
+          },
+          "length": 1272,
+          "utilization": 85,
+          "utilizationStatus": "🔥理想",
+          "portraits": [
+            {
+              "character": "unknown",
+              "characterId": "unknown",
+              "url": "PENDING_GENERATION",
+              "angle": "default",
+              "source": "pending"
+            }
+          ],
+          "characterCards": [
+            {
+              "characterId": "unknown",
+              "name": "未知角色",
+              "role": "supporting",
+              "description": "",
+              "voiceProfile": {}
+            }
+          ]
+        },
+        {
+          "shotId": "SC05",
+          "sceneType": "resolution",
+          "timing": {
+            "start": 57,
+            "duration": 5,
+            "end": 62
+          },
+          "duration": 5,
+          "scene": "default, 室内科普宣讲室，背景回归简洁品牌墙, spatial depth: atmospheric perspective",
+          "mood": "peaceful, warm, nostalgic, hopeful",
+          "camera": {
+            "shotSize": "medium",
+            "movement": "pull back",
+            "lens": "24mm",
+            "speed": 0.3,
+            "aperture": "f/2.8",
+            "focus": "normal"
+          },
+          "cameraString": "medium shot, pull back, 24mm lens, speed 0.3",
+          "lighting": {
+            "keyLight": {
+              "direction": "backlight",
+              "colorTemp": 2800,
+              "effect": "warm sunset"
+            },
+            "fillLight": {
+              "direction": "ambient",
+              "colorTemp": 3200,
+              "effect": "soft diffusion"
+            },
+            "special": "soft diffusion"
+          },
+          "lightingString": "backlight 2800K, warm sunset, ambient 3200K, soft diffusion, soft diffusion",
+          "characterRef": "陈卓: image://characters/chen-zhuo-front.png, image://characters/chen-zhuo-profile.png, image://characters/chen-zhuo-three-quarter.png, image://characters/chen-zhuo-closeup.png, image://characters/chen-zhuo-detail.png",
+          "character": "陈卓: human, 35-40岁女性, 穿警服, 科普讲解员",
+          "action": "gentle release, returning to calm, peaceful closure",
+          "dialogue": "陈卓|独白|friendly|关注我，了解更多健康知识。|LIP_SYNC:YES",
+          "timeline": [
+            {
+              "start": "T00:57",
+              "end": "T01:02",
+              "duration": 5,
+              "type": "resolution",
+              "mood": "peaceful, warm, nostalgic, hopeful"
+            }
+          ],
+          "timelineString": "T00:57-T01:02 / duration: 5s / type: resolution / mood: peaceful, warm, nostalgic, hopeful",
+          "backgroundSound": {
+            "ambient": "gentle atmosphere, soft reverb",
+            "spatial": "wide stereo field",
+            "intensity": {
+              "fading": "0-5s",
+              "quiet": "5-10s"
+            }
+          },
+          "backgroundSoundString": "AMBIENT: gentle atmosphere, soft reverb | SPATIAL: wide stereo field | INTENSITY: fading 0-5s, quiet 5-10s",
+          "prompt": "16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic，hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film，default, 室内科普宣讲室，背景回归简洁品牌墙, spatial depth: atmospheric perspective，陈卓: human, 35-40岁女性, 穿警服, 科普讲解员，gentle release, returning to calm, peaceful closure，dialogue: 陈卓|独白|friendly|关注我，了解更多健康知识。|LIP_SYNC:YES，medium shot, pull back, 24mm lens, speed 0.3，timeline: T00:57-T01:02 / duration: 5s / type: resolution / mood: peaceful, warm, nostalgic, hopeful，mood: peaceful, warm, nostalgic, hopeful，backlight 2800K, warm sunset, ambient 3200K, soft diffusion, soft diffusion，no watermark, no logo, no text overlay, no subtitle, no caption，blurry, low resolution, pixelated, compression artifacts，cartoon, anime, illustration, 3D render look, CGI appearance, plastic look，distorted perspective, impossible geometry, floating objects，flat lighting, overexposed, crushed blacks, double shadows，unnatural physics, fake water, static water, cardboard texture, plastic foliage，distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose，角色一致性：保持chen-zhuo形象一致，杜绝分身重影",
+          "promptCharCount": 1183,
+          "mouthAction": "嘴部放松，微笑，平静呼吸",
+          "importance": 5,
+          "visualComplexity": 5,
+          "qualityScore": {
+            "totalScore": 75
+          },
+          "enhanced": true,
+          "physicsLayer": "",
+          "colorScience": "",
+          "negativePrompt": "",
+          "renderStyle": "",
+          "directorStyle": "",
+          "priorities": {
+            "characterRef": "P0-never",
+            "dialogue": "P0-keep_core",
+            "character": "P0-minimal_anchor",
+            "camera": "P1-keep_core_movement",
+            "action": "P1-keep_core_verb",
+            "scene": "P1-keep_core_location",
+            "lighting": "P1-keep_main_light",
+            "backgroundSound": "P1-keep_core_sound",
+            "mood": "P2-keyword_list",
+            "timeline": "P2-keep_duration_type"
+          },
+          "length": 1183,
+          "utilization": 79,
+          "utilizationStatus": "🔥理想",
+          "portraits": [
+            {
+              "character": "unknown",
+              "characterId": "unknown",
+              "url": "PENDING_GENERATION",
+              "angle": "default",
+              "source": "pending"
+            }
+          ],
+          "characterCards": [
+            {
+              "characterId": "unknown",
+              "name": "未知角色",
+              "role": "supporting",
+              "description": "",
+              "voiceProfile": {}
+            }
+          ]
+        }
+      ],
+      "quality": {
+        "passed": false,
+        "checks": [
+          {
+            "shotId": "SC00",
+            "promptLength": 1246,
+            "hasScene": true,
+            "hasMood": true,
+            "hasCamera": true,
+            "hasLighting": false,
+            "hasCharacter": true,
+            "hasAction": true,
+            "hasDialogue": true,
+            "hasTimeline": false,
+            "hasBackgroundSound": false,
+            "isOpening": false,
+            "hasAudioLayer": true,
+            "hasTitleOverlay": true,
+            "withinLimit": true,
+            "characterRefFormat": true,
+            "dialogueFormat": true,
+            "timelineFormat": false,
+            "noForbidden": true,
+            "passed": false
+          },
+          {
+            "shotId": "SC01",
+            "promptLength": 1268,
+            "hasScene": true,
+            "hasMood": true,
+            "hasCamera": true,
+            "hasLighting": false,
+            "hasCharacter": true,
+            "hasAction": true,
+            "hasDialogue": true,
+            "hasTimeline": false,
+            "hasBackgroundSound": false,
+            "isOpening": false,
+            "hasAudioLayer": true,
+            "hasTitleOverlay": true,
+            "withinLimit": true,
+            "characterRefFormat": true,
+            "dialogueFormat": true,
+            "timelineFormat": false,
+            "noForbidden": true,
+            "passed": false
+          },
+          {
+            "shotId": "SC02",
+            "promptLength": 1283,
+            "hasScene": true,
+            "hasMood": true,
+            "hasCamera": true,
+            "hasLighting": false,
+            "hasCharacter": true,
+            "hasAction": true,
+            "hasDialogue": true,
+            "hasTimeline": false,
+            "hasBackgroundSound": false,
+            "isOpening": false,
+            "hasAudioLayer": true,
+            "hasTitleOverlay": true,
+            "withinLimit": true,
+            "characterRefFormat": true,
+            "dialogueFormat": true,
+            "timelineFormat": false,
+            "noForbidden": true,
+            "passed": false
+          },
+          {
+            "shotId": "SC03",
+            "promptLength": 1294,
+            "hasScene": true,
+            "hasMood": true,
+            "hasCamera": true,
+            "hasLighting": false,
+            "hasCharacter": true,
+            "hasAction": true,
+            "hasDialogue": true,
+            "hasTimeline": false,
+            "hasBackgroundSound": false,
+            "isOpening": false,
+            "hasAudioLayer": true,
+            "hasTitleOverlay": true,
+            "withinLimit": true,
+            "characterRefFormat": true,
+            "dialogueFormat": true,
+            "timelineFormat": false,
+            "noForbidden": true,
+            "passed": false
+          },
+          {
+            "shotId": "SC04",
+            "promptLength": 1272,
+            "hasScene": true,
+            "hasMood": true,
+            "hasCamera": true,
+            "hasLighting": false,
+            "hasCharacter": true,
+            "hasAction": true,
+            "hasDialogue": true,
+            "hasTimeline": false,
+            "hasBackgroundSound": false,
+            "isOpening": false,
+            "hasAudioLayer": true,
+            "hasTitleOverlay": true,
+            "withinLimit": true,
+            "characterRefFormat": true,
+            "dialogueFormat": true,
+            "timelineFormat": false,
+            "noForbidden": true,
+            "passed": false
+          },
+          {
+            "shotId": "SC05",
+            "promptLength": 1183,
+            "hasScene": true,
+            "hasMood": true,
+            "hasCamera": true,
+            "hasLighting": false,
+            "hasCharacter": true,
+            "hasAction": true,
+            "hasDialogue": true,
+            "hasTimeline": false,
+            "hasBackgroundSound": false,
+            "isOpening": false,
+            "hasAudioLayer": true,
+            "hasTitleOverlay": true,
+            "withinLimit": true,
+            "characterRefFormat": true,
+            "dialogueFormat": true,
+            "timelineFormat": false,
+            "noForbidden": true,
+            "passed": false
+          }
+        ],
+        "totalPrompts": 6,
+        "passedCount": 0,
+        "failedFields": [
+          {
+            "shotId": "SC00",
+            "failed": [
+              "hasLighting",
+              "hasTimeline",
+              "hasBackgroundSound"
+            ]
+          },
+          {
+            "shotId": "SC01",
+            "failed": [
+              "hasLighting",
+              "hasTimeline",
+              "hasBackgroundSound"
+            ]
+          },
+          {
+            "shotId": "SC02",
+            "failed": [
+              "hasLighting",
+              "hasTimeline",
+              "hasBackgroundSound"
+            ]
+          },
+          {
+            "shotId": "SC03",
+            "failed": [
+              "hasLighting",
+              "hasTimeline",
+              "hasBackgroundSound"
+            ]
+          },
+          {
+            "shotId": "SC04",
+            "failed": [
+              "hasLighting",
+              "hasTimeline",
+              "hasBackgroundSound"
+            ]
+          },
+          {
+            "shotId": "SC05",
+            "failed": [
+              "hasLighting",
+              "hasTimeline",
+              "hasBackgroundSound"
+            ]
+          }
+        ],
+        "_stageDuration": 0
+      },
+      "timing": 8
+    },
+    "promptReview": {
+      "status": "rejected",
+      "reason": "等待确认超时",
+      "issues": []
+    }
+  },
+  "errors": [],
+  "timing": {},
+  "confirmations": {
+    "requirementList": {
+      "approved": true,
+      "reviewedAt": "2026-06-19T03:34:44.535Z",
+      "requirementList": {
+        "version": "1.0.0",
+        "system": "hyperreality",
+        "generatedAt": "2026-06-19T03:10:31.203Z",
+        "rawInput": "穿警服的陈卓女士，讲解居民健康护理知识，进行全民健康科普，现在是第二集。",
+        "videoType": "EDU",
+        "videoTypeName": "教育科普",
+        "title": "横纹肌溶解科普-第二集",
+        "seriesTitle": "全民健康科普——横纹肌溶解",
+        "episode": 1,
+        "totalEpisodes": 1,
+        "isSeries": false,
+        "style": {
+          "primary": "REAL",
+          "secondary": [],
+          "description": "写实纪实风格，真实可信的纪实风格，增强专业信任感，自然光、真实场景、手持感"
+        },
+        "aspectRatio": "16:9",
+        "platform": "视频号/抖音",
+        "creativeIntensity": 0.5,
+        "targetDuration": 62,
+        "durationRange": [
+          52,
+          72
+        ],
+        "targetAudience": "通用受众",
+        "language": "zh-CN",
+        "narrativeMode": "educational",
+        "characters": [
+          {
+            "name": "穿警服的陈卓",
+            "description": "待补充"
+          }
+        ],
+        "protagonist": {
+          "name": "穿警服的陈卓",
+          "description": "待补充"
+        },
+        "structure": {
+          "opening": "开场引入（问题/场景/数据）",
+          "scenes": [
+            "核心知识点讲解",
+            "案例/演示说明",
+            "重点强调"
+          ],
+          "ending": "总结回顾 + 行动号召"
+        },
+        "keyPoints": [
+          "穿警服的陈卓女士，讲解居民健康护理知识，进行全民健康科普，现在是第二集"
+        ],
+        "contentConstraints": [],
+        "forbiddenElements": [
+          "voiceover",
+          "metal_gloss",
+          "unnatural_eye_color"
+        ],
+        "constraints": {
+          "maxPromptLength": 1500,
+          "referenceImageCount": 2,
+          "maxShotDuration": 15
+        },
+        "uncertainties": [],
+        "_inferred": {
+          "videoType": false,
+          "duration": false,
+          "style": false,
+          "platform": true,
+          "aspectRatio": true,
+          "creativeIntensity": true,
+          "structure": false
+        },
+        "_analysis": {
+          "confidence": 1,
+          "parsingLayers": [
+            "intent_parser",
+            "rule_based",
+            "llm_deep"
+          ],
+          "worldSetting": "default"
+        }
+      },
+      "reason": "",
+      "suggestions": []
+    },
+    "script": {
+      "approved": true,
+      "reviewedAt": "2026-06-19T03:54:29.357Z",
+      "report": "# 🎭 剧本确认报告\n\n**项目**: 横纹肌溶解科普-第二集\n**时长**: 62s\n**场景**: 6 个\n**校验**: 通过\n\n## 场景总览\n\n| 场景 | 类型 | 时长 | 角色 | 台词 |\n|------|------|------|------|------|\n| SC00 | opening | 10s | chen-zhuo | 2句 |\n| SC01 | establishing | 12s | chen-zhuo | 3句 |\n| SC02 | conflict | 12s | chen-zhuo | 3句 |\n| SC03 | emotional_climax | 13s | chen-zhuo | 3句 |\n| SC04 | resolution | 10s | chen-zhuo | 3句 |\n| SC05 | resolution | 5s | chen-zhuo | 1句 |\n\n## 详细场景\n\n### SC00: 惊心Hook\n**类型**: opening | **时长**: 10s\n**设定**: 室内科普宣讲室，背景为简洁的健康警示屏\n**角色**: chen-zhuo\n\n**台词**:\n- 陈卓: 「你知道剧烈运动后，肌肉为什么会溶解吗？」 (serious)\n- 陈卓: 「这不是吓你，是真会进ICU！」 (urgent)\n\n---\n\n### SC01: 机制揭秘\n**类型**: establishing | **时长**: 12s\n**设定**: 室内科普宣讲室，背景切换为肌肉与肾脏示意图\n**角色**: chen-zhuo\n\n**台词**:\n- 陈卓: 「横纹肌溶解，就是肌肉细胞破了。」 (calm)\n- 陈卓: 「肌肉里的毒素冲进血液，把肾堵了。」 (concerned)\n- 陈卓: 「尿会变成酱油色，特别危险。」 (serious)\n\n---\n\n### SC02: 风险人群\n**类型**: conflict | **时长**: 12s\n**设定**: 室内科普宣讲室，背景混剪健身、军训、高温作业画面\n**角色**: chen-zhuo\n\n**台词**:\n- 陈卓: 「哪些人容易中招？」 (questioning)\n- 陈卓: 「突击健身的、军训学生、还有高温下干活的。」 (serious)\n- 陈卓: 「突然拼命练，最容易出事。」 (warning)\n\n---\n\n### SC03: 致命警告\n**类型**: emotional_climax | **时长**: 13s\n**设定**: 室内科普宣讲室，背景转为红色警示，肾脏特写图\n**角色**: chen-zhuo\n\n**台词**:\n- 陈卓: 「一旦出现肌肉剧痛、肿胀、没力气，」 (urgent)\n- 陈卓: 「千万别硬撑！赶紧去医院。」 (commanding)\n- 陈卓: 「拖久了会肾衰竭，直接危及生命。」 (grave)\n\n---\n\n### SC04: 预防指南\n**类型**: resolution | **时长**: 10s\n**设定**: 室内科普宣讲室，光线转暖，背景变为绿色健康标识\n**角色**: chen-zhuo\n\n**台词**:\n- 陈卓: 「预防很简单：运动要循序渐进。」 (calm)\n- 陈卓: 「多喝水，别在高温天逞强。」 (friendly)\n- 陈卓: 「感觉不对马上停，别拼。」 (caring)\n\n---\n\n### SC05: 关注号召\n**类型**: resolution | **时长**: 5s\n**设定**: 室内科普宣讲室，背景回归简洁品牌墙\n**角色**: chen-zhuo\n\n**台词**:\n- 陈卓: 「关注我，了解更多健康知识。」 (friendly)\n\n---\n\n## ⚠️ 确认须知\n\n1. 确认场景时序连续无断层\n2. 确认每个场景有角色对话\n3. 确认总时长等于目标时长\n4. 确认角色数量、设定符合预期\n\n**请回复 \"确认\" 继续，或 \"修改\" 并指出问题**\n",
+      "reason": "",
+      "suggestions": []
+    },
+    "prompts": {
+      "approved": false,
+      "reviewedAt": "2026-06-19T04:24:31.012Z",
+      "report": "# 📝 提示词审核报告\n\n**镜头数**: 6\n**平均长度**: NaN 字符\n\n## 镜头总览\n\n| 镜头 | 长度 | 有定妆照 | 有时间轴 | 有约束 |\n|------|------|----------|----------|--------|\n| SC00 | undefined | ✗ | ✗ | ✗ |\n| SC01 | undefined | ✗ | ✗ | ✗ |\n| SC02 | undefined | ✗ | ✗ | ✗ |\n| SC03 | undefined | ✗ | ✗ | ✗ |\n| SC04 | undefined | ✗ | ✗ | ✗ |\n| SC05 | undefined | ✗ | ✗ | ✗ |\n\n## 完整提示词\n\n### SC00\n**长度**: undefined 字符 | **定妆照**: 0 张\n\n```\n16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic，hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film，default, 室内科普宣讲室，背景为简洁的健康警示屏, spatial depth: atmospheric perspective，陈卓: human, 35-40岁女性, 穿警服, 科普讲解员，establishing shot, camera slowly descending through atmospheric layers，dialogue: 陈卓|独白|serious|你知道剧烈运动后，肌肉为什么会溶解吗？|LIP_SYNC:YES || 陈卓|独白|urgent|这不是吓你，是真会进ICU！|LIP_SYNC:YES，wide shot, dolly in, 24mm lens, speed 0.3，timeline: T00:00-T00:10 / duration: 10s / type: opening / mood: epic, mysterious, awe-inspiring，mood: epic, mysterious, awe-inspiring，backlight 3200K, golden hour rim, ambient 6500K, cool fill, volumetric god rays，no watermark, no logo, no text overlay, no subtitle, no caption，blurry, low resolution, pixelated, compression artifacts，cartoon, anime, illustration, 3D render look, CGI appearance, plastic look，distorted perspective, impossible geometry, floating objects，flat lighting, overexposed, crushed blacks, double shadows，unnatural physics, fake water, static water, cardboard texture, plastic foliage，distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose，角色一致性：保持chen-zhuo形象一致，杜绝分身重影\n```\n\n---\n\n### SC01\n**长度**: undefined 字符 | **定妆照**: 0 张\n\n```\n16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic，hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film，default, 室内科普宣讲室，背景切换为肌肉与肾脏示意图, spatial depth: atmospheric perspective，陈卓: human, 35-40岁女性, 穿警服, 科普讲解员，protagonist steps forward, observing surroundings with focused gaze，dialogue: 陈卓|独白|calm|横纹肌溶解，就是肌肉细胞破了。|LIP_SYNC:YES || 陈卓|独白|concerned|肌肉里的毒素冲进血液，把肾堵了。|LIP_SYNC:YES || 陈卓|独白|serious|尿会变成酱油色，特别危险。|LIP_SYNC:YES，medium shot, static, 35mm lens, speed 1，timeline: T00:10-T00:22 / duration: 12s / type: establishing / mood: mysterious, anticipation, wonder，mood: mysterious, anticipation, wonder，front 4500K, neutral balanced, ambient 4500K, soft fill，no watermark, no logo, no text overlay, no subtitle, no caption，blurry, low resolution, pixelated, compression artifacts，cartoon, anime, illustration, 3D render look, CGI appearance, plastic look，distorted perspective, impossible geometry, floating objects，flat lighting, overexposed, crushed blacks, double shadows，unnatural physics, fake water, static water, cardboard texture, plastic foliage，distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose，角色一致性：保持chen-zhuo形象一致，杜绝分身重影\n```\n\n---\n\n### SC02\n**长度**: undefined 字符 | **定妆照**: 0 张\n\n```\n16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic，hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film，default, 室内科普宣讲室，背景混剪健身、军训、高温作业画面, spatial depth: atmospheric perspective，陈卓: human, 35-40岁女性, 穿警服, 科普讲解员，confrontation stance, direct eye contact, tension building in posture，dialogue: 陈卓|独白|questioning|哪些人容易中招？|LIP_SYNC:YES || 陈卓|独白|serious|突击健身的、军训学生、还有高温下干活的。|LIP_SYNC:YES || 陈卓|独白|warning|突然拼命练，最容易出事。|LIP_SYNC:YES，close-up shot, handheld, 85mm lens, speed 1.5，timeline: T00:22-T00:34 / duration: 12s / type: conflict / mood: tense, determined, brave, confrontational，mood: tense, determined, brave, confrontational，top 5600K, harsh shadows, high contrast noir，no watermark, no logo, no text overlay, no subtitle, no caption，blurry, low resolution, pixelated, compression artifacts，cartoon, anime, illustration, 3D render look, CGI appearance, plastic look，distorted perspective, impossible geometry, floating objects，flat lighting, overexposed, crushed blacks, double shadows，unnatural physics, fake water, static water, cardboard texture, plastic foliage，distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose，角色一致性：保持chen-zhuo形象一致，杜绝分身重影\n```\n\n---\n\n### SC03\n**长度**: undefined 字符 | **定妆照**: 0 张\n\n```\n16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic，hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film，default, 室内科普宣讲室，背景转为红色警示，肾脏特写图, spatial depth: atmospheric perspective，陈卓: human, 35-40岁女性, 穿警服, 科普讲解员，dramatic gesture, emotional peak, decisive movement，dialogue: 陈卓|独白|urgent|一旦出现肌肉剧痛、肿胀、没力气，|LIP_SYNC:YES || 陈卓|独白|commanding|千万别硬撑！赶紧去医院。|LIP_SYNC:YES || 陈卓|独白|grave|拖久了会肾衰竭，直接危及生命。|LIP_SYNC:YES，extreme close-up shot, push in, 50mm lens, speed 0.8，timeline: T00:34-T00:47 / duration: 13s / type: emotional_climax / mood: epic, emotional, powerful, cathartic，mood: epic, emotional, powerful, cathartic，omni 8000K, bright key, ambient 8000K, volumetric glow, volumetric glow，no watermark, no logo, no text overlay, no subtitle, no caption，blurry, low resolution, pixelated, compression artifacts，cartoon, anime, illustration, 3D render look, CGI appearance, plastic look，distorted perspective, impossible geometry, floating objects，flat lighting, overexposed, crushed blacks, double shadows，unnatural physics, fake water, static water, cardboard texture, plastic foliage，distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose，角色一致性：保持chen-zhuo形象一致，杜绝分身重影\n```\n\n---\n\n### SC04\n**长度**: undefined 字符 | **定妆照**: 0 张\n\n```\n16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic，hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film，default, 室内科普宣讲室，光线转暖，背景变为绿色健康标识, spatial depth: atmospheric perspective，陈卓: human, 35-40岁女性, 穿警服, 科普讲解员，gentle release, returning to calm, peaceful closure，dialogue: 陈卓|独白|calm|预防很简单：运动要循序渐进。|LIP_SYNC:YES || 陈卓|独白|friendly|多喝水，别在高温天逞强。|LIP_SYNC:YES || 陈卓|独白|caring|感觉不对马上停，别拼。|LIP_SYNC:YES，medium shot, pull back, 24mm lens, speed 0.3，timeline: T00:47-T00:57 / duration: 10s / type: resolution / mood: peaceful, warm, nostalgic, hopeful，mood: peaceful, warm, nostalgic, hopeful，backlight 2800K, warm sunset, ambient 3200K, soft diffusion, soft diffusion，no watermark, no logo, no text overlay, no subtitle, no caption，blurry, low resolution, pixelated, compression artifacts，cartoon, anime, illustration, 3D render look, CGI appearance, plastic look，distorted perspective, impossible geometry, floating objects，flat lighting, overexposed, crushed blacks, double shadows，unnatural physics, fake water, static water, cardboard texture, plastic foliage，distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose，角色一致性：保持chen-zhuo形象一致，杜绝分身重影\n```\n\n---\n\n### SC05\n**长度**: undefined 字符 | **定妆照**: 0 张\n\n```\n16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic，hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film，default, 室内科普宣讲室，背景回归简洁品牌墙, spatial depth: atmospheric perspective，陈卓: human, 35-40岁女性, 穿警服, 科普讲解员，gentle release, returning to calm, peaceful closure，dialogue: 陈卓|独白|friendly|关注我，了解更多健康知识。|LIP_SYNC:YES，medium shot, pull back, 24mm lens, speed 0.3，timeline: T00:57-T01:02 / duration: 5s / type: resolution / mood: peaceful, warm, nostalgic, hopeful，mood: peaceful, warm, nostalgic, hopeful，backlight 2800K, warm sunset, ambient 3200K, soft diffusion, soft diffusion，no watermark, no logo, no text overlay, no subtitle, no caption，blurry, low resolution, pixelated, compression artifacts，cartoon, anime, illustration, 3D render look, CGI appearance, plastic look，distorted perspective, impossible geometry, floating objects，flat lighting, overexposed, crushed blacks, double shadows，unnatural physics, fake water, static water, cardboard texture, plastic foliage，distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose，角色一致性：保持chen-zhuo形象一致，杜绝分身重影\n```\n\n---\n\n## ⚠️ 审核须知\n\n1. 确认每个镜头有【镜头时间轴】\n2. 确认角色定妆照引用正确\n3. 确认负面约束（暗黑风/金属光泽）已包含\n4. 确认角色一致性约束已包含\n5. 确认 Prompt 长度在 980 字符以内\n\n**请回复 \"确认\" 继续渲染，或 \"修改\" 并指出问题**\n",
+      "reason": "等待确认超时",
+      "suggestions": []
+    }
+  }
+}

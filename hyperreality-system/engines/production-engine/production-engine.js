@@ -136,8 +136,14 @@ class ProductionEngine {
         this._runQualityGate(result.stages.promptEngineering.prompts)
       );
       
-      // === Stage 6: 片头生成（如有需要）===
-      if (adaptedBlueprint.config?.featured_beast_id) {
+      // === Stage 6: 片头生成 ===
+      // B6-fix: 移除 featured_beast_id 限制，所有项目都应有片头（v6.37 标准 S00）
+      const _meta = adaptedBlueprint.config?._metadata || adaptedBlueprint._metadata || {};
+      const shouldGenerateOpening = _meta.isSeries
+        ? (_meta.episodeNumber === 1) // 系列：仅第一集
+        : (_meta.hasOpening !== false); // 非系列：默认有片头
+
+      if (shouldGenerateOpening) {
         result.stages.opening = await this._runStage('opening', () =>
           this._generateOpening(adaptedBlueprint)
         );
@@ -477,7 +483,32 @@ class ProductionEngine {
   /**
    * v6.37-P0: 构建 mood（3-5情绪关键词）
    */
+  /**
+   * v6.37-P0: 构建 mood（3-5情绪关键词）
+   * B8-fix: 优先从 scene 动态提取，兜底用默认映射
+   */
   _buildMood(scene) {
+    // B8-fix: 优先使用 LLM 生成的情绪数据
+    if (scene.emotional_target) {
+      const et = scene.emotional_target;
+      const moods = [];
+      // 从 emotional_target 的 valence/arousal 推断情绪
+      if (et.valence > 0.5) moods.push('hopeful', 'positive');
+      else if (et.valence < -0.3) moods.push('tense', 'serious');
+      else moods.push('neutral', 'calm');
+
+      if (et.arousal > 0.7) moods.push('intense', 'dramatic');
+      else if (et.arousal < 0.3) moods.push('peaceful', 'gentle');
+
+      // 补充 scene 自带的情绪标签
+      if (scene.mood_tags && Array.isArray(scene.mood_tags)) {
+        moods.push(...scene.mood_tags.slice(0, 2));
+      }
+
+      if (moods.length >= 3) return moods.slice(0, 5).join(', ');
+    }
+
+    // 兜底：按场景类型映射
     const moodMap = {
       'opening': 'epic, mysterious, awe-inspiring',
       'establishing': 'mysterious, anticipation, wonder',
@@ -487,44 +518,115 @@ class ProductionEngine {
       'discovery': 'curious, excited, surprised, wondrous',
       'transition': 'flowing, continuous, seamless'
     };
-    
+
     return moodMap[scene.scene_type] || 'neutral, calm, steady';
   }
-  
+
   /**
    * v6.37-P0: 构建 action（核心动词+交互目标）
+   * B8-fix: 优先从 scene 动态提取
    */
   _buildAction(scene) {
+    // B8-fix: 优先使用 scene 自带的 action/visual_notes
+    if (scene.action && scene.action.length > 5) return scene.action;
+    if (scene.visual_notes && scene.visual_notes.length > 5) return scene.visual_notes;
+
+    // 从 dialogue 推断动作
+    if (scene.dialogue?.lines?.[0]?.text) {
+      const firstLine = scene.dialogue.lines[0].text;
+      // 根据台词情绪推断基础动作
+      const emotion = scene.dialogue.lines[0].emotion || '';
+      if (emotion.includes('紧张') || emotion.includes('tense')) {
+        return 'tense posture, direct gaze, deliberate movement';
+      }
+      if (emotion.includes('兴奋') || emotion.includes('excited')) {
+        return 'animated gesture, energetic movement, expressive';
+      }
+      return 'speaking to camera, clear hand gestures, professional delivery';
+    }
+
+    // 兜底：按场景类型映射
     const actionMap = {
       'opening': 'establishing shot, camera slowly descending through atmospheric layers',
-      'establishing': 'protagonist steps forward, observing surroundings with focused gaze',
+      'establishing': 'standing in scene, observing and explaining with focused gaze',
       'conflict': 'confrontation stance, direct eye contact, tension building in posture',
       'emotional_climax': 'dramatic gesture, emotional peak, decisive movement',
       'resolution': 'gentle release, returning to calm, peaceful closure',
       'discovery': 'leaning forward, reaching out, examining with curiosity'
     };
-    
+
     return actionMap[scene.scene_type] || 'neutral stance, steady breathing';
   }
   
   /**
-   * v6.37-P0: 构建 characterRef（image://格式）
+   * v1.2.7-fix-A2: 构建角色定妆照引用
+   * 修复：优先使用真实定妆照路径，而非凭空生成
    */
   _buildCharacterRef(scene, characters) {
+    const fs = require('fs');
+    const path = require('path');
+
     const refs = (scene.characters || []).map(cid => {
       const char = characters.find(c => c.character_id === cid);
       if (!char) return null;
-      
-      // 构建 image:// 路径
-      const paths = [];
-      const angles = ['front', 'profile', 'three-quarter', 'closeup', 'detail'];
-      angles.forEach(angle => {
-        paths.push(`image://characters/${cid}-${angle}.png`);
-      });
-      
-      return `${char.name}: ${paths.join(', ')}`;
+
+      // v1.2.7-fix-A2: 优先使用角色已有的真实定妆照路径
+      const existingPaths = [];
+
+      // 来源1: visual_anchor.reference_images（LLM生成或角色覆盖注入的）
+      const refImages = char.visual_anchor?.reference_images || [];
+      if (Array.isArray(refImages) && refImages.length > 0) {
+        existingPaths.push(...refImages.filter(p => p && typeof p === 'string'));
+      }
+
+      // 来源2: portraits 对象（adapter 解析的真实文件路径）
+      if (char.portraits && typeof char.portraits === 'object') {
+        const portraitPaths = Object.values(char.portraits).filter(p => p && typeof p === 'string');
+        existingPaths.push(...portraitPaths);
+      }
+
+      // 来源3: portraitPaths 数组（用户直接传入的）
+      if (Array.isArray(char.portraitPaths)) {
+        existingPaths.push(...char.portraitPaths.filter(p => p && typeof p === 'string'));
+      }
+
+      // 去重
+      const uniquePaths = [...new Set(existingPaths)];
+
+      if (uniquePaths.length > 0) {
+        // 有真实路径，直接使用
+        return `${char.name}: ${uniquePaths.join(', ')}`;
+      }
+
+      // 兜底：检查默认目录是否有定妆照文件（不再凭空生成路径）
+      const charDir = cid;
+      const defaultAngles = ['front', 'profile', 'three-quarter', 'closeup'];
+      const foundPaths = [];
+
+      for (const angle of defaultAngles) {
+        // 尝试多种扩展名
+        for (const ext of ['.png', '.jpg', '.jpeg', '.webp']) {
+          const filePath = path.join(this.config?.charactersDir || 'characters', charDir, `${angle}${ext}`);
+          try {
+            if (fs.existsSync(filePath)) {
+              foundPaths.push(`image://characters/${charDir}/${angle}${ext}`);
+              break;
+            }
+          } catch (e) {
+            // 路径检查失败，跳过
+          }
+        }
+      }
+
+      if (foundPaths.length > 0) {
+        return `${char.name}: ${foundPaths.join(', ')}`;
+      }
+
+      // 最终兜底：标记为无定妆照（而非虚构路径）
+      console.warn(`[ProductionEngine] ⚠️ 角色 ${char.name}(${cid}) 无定妆照，characterRef 标记为 NONE`);
+      return null;
     }).filter(Boolean);
-    
+
     return refs.join(' | ') || 'NONE';
   }
 
@@ -1320,42 +1422,58 @@ class ProductionEngine {
   }
   
   /**
-   * v6.37-P1+: 优先级截断策略（专家反馈）
-   * P0: 永不截断（characterRef/dialogue/titleOverlay/character/negative）
-   * P1: 保留核心（camera/action/scene/lighting/backgroundSound/audioLayer）
-   * P2: 可截断（mood/timeline/physicsLayer/colorScience/renderStyle/directorStyle）
+   * v1.2.7-fix-A3: 优先级截断（保持 L1-L9 原始顺序）
+   * 修复：截断时不再重排 parts，保持 v6.37 规定的融合顺序
    */
   _truncateWithPriority(prompt, maxLength, partMeta, parts) {
     if (prompt.length <= maxLength) return prompt;
-    
-    // 按优先级排序（P2优先截断，P1次之，P0永不截断）
-    const p2Parts = parts.filter((_, i) => partMeta[i]?.priority === 'P2');
-    const p1Parts = parts.filter((_, i) => partMeta[i]?.priority === 'P1');
-    const p0Parts = parts.filter((_, i) => partMeta[i]?.priority === 'P0');
-    
-    // 先截断P2字段（保留最少信息）
-    let reduced = p0Parts.concat(p1Parts).concat(p2Parts.map(p => this._minimizePart(p, 'P2')));
-    let result = reduced.join('，');
-    
+
+    // 阶段1: 最小化所有 P2 部分（保持原位）
+    let workingParts = parts.map((p, i) => {
+      if (partMeta[i]?.priority === 'P2') return this._minimizePart(p, 'P2');
+      return p;
+    });
+    let result = workingParts.join('，');
     if (result.length <= maxLength) return result;
-    
-    // 再截断P1字段（保留核心信息）
-    reduced = p0Parts.concat(p1Parts.map(p => this._minimizePart(p, 'P1'))).concat(p2Parts.map(p => this._minimizePart(p, 'P2')));
-    result = reduced.join('，');
-    
+
+    // 阶段2: 最小化所有 P1 部分（P2 已最小化，保持原位）
+    workingParts = parts.map((p, i) => {
+      if (partMeta[i]?.priority === 'P2') return this._minimizePart(p, 'P2');
+      if (partMeta[i]?.priority === 'P1') return this._minimizePart(p, 'P1');
+      return p;
+    });
+    result = workingParts.join('，');
     if (result.length <= maxLength) return result;
-    
-    // 如果还超长，截断到maxLength（保留开头和结尾的P0字段）
-    const startP0 = p0Parts.slice(0, 2).join('，');
-    const endP0 = p0Parts.slice(-2).join('，');
-    const mid = result.substring(startP0.length, result.length - endP0.length);
-    const available = maxLength - startP0.length - endP0.length - 2;
-    
-    return startP0 + '，' + mid.substring(0, available) + '，' + endP0;
+
+    // 阶段3: 逐个移除 P2 部分（从后往前移除，保持其余顺序）
+    const p2Indices = partMeta
+      .map((m, i) => m?.priority === 'P2' ? i : -1)
+      .filter(i => i >= 0);
+
+    for (const idx of p2Indices.slice().reverse()) {
+      workingParts[idx] = null; // 标记移除
+      result = workingParts.filter(p => p !== null).join('，');
+      if (result.length <= maxLength) return result;
+    }
+
+    // 阶段4: 逐个移除 P1 部分（从后往前）
+    const p1Indices = partMeta
+      .map((m, i) => m?.priority === 'P1' ? i : -1)
+      .filter(i => i >= 0);
+
+    for (const idx of p1Indices.slice().reverse()) {
+      workingParts[idx] = null;
+      result = workingParts.filter(p => p !== null).join('，');
+      if (result.length <= maxLength) return result;
+    }
+
+    // 阶段5: 最后兜底——保留前N个字符（P0字段在前，至少保留 L1+L2）
+    return result.substring(0, maxLength);
   }
-  
+
   /**
    * 最小化部分（按策略）
+   * v1.2.7-fix-A6: P1 用英文逗号和中文逗号都尝试分割
    */
   _minimizePart(part, priority) {
     if (priority === 'P2') {
@@ -1363,8 +1481,8 @@ class ProductionEngine {
       return part.substring(0, 20) + '...';
     }
     if (priority === 'P1') {
-      // P1: 保留核心（逗号前的主语）
-      const core = part.split('，')[0];
+      // P1: 保留核心（第一个逗号前的内容，兼容中英文逗号）
+      const core = part.split(/[,，]/)[0];
       return core.length < part.length ? core + '...' : part;
     }
     return part;
@@ -1571,13 +1689,12 @@ class ProductionEngine {
   _generateOpening(blueprint) {
     const config = blueprint.config || {};
     const worldSetting = blueprint.worldSetting || {};
-    const beastId = config.featured_beast_id;
-    
-    if (!beastId) {
-      return { generated: false, reason: '无 featured_beast_id' };
-    }
-    
-    // v6.37-P1+: 构建标准片头结构（结构化对象 + 字符串）
+    // B6-fix: 移除 featured_beast_id 强制要求，通用项目也生成片头
+    // const beastId = config.featured_beast_id;
+    // if (!beastId) { return { generated: false, reason: '无 featured_beast_id' }; }
+
+    // B7-fix: 复用 _buildBackgroundSound 保证格式一致
+    const openingBgSound = this._buildBackgroundSound({ sceneType: 'opening' });
     const openingData = {
       shotId: 'S00',
       duration: config.opening_duration || 10,
@@ -1631,13 +1748,9 @@ class ProductionEngine {
         titleAnim: 'light-vein carving growth 3.0-5.0s'
       },
       titleOverlayString: `MAIN_TITLE: "${config.title || '未命名'}" | SUBTITLE: "${worldSetting.name || '系列作品'}" | PRODUCER: "by ${config.producer || 'Genius'}" | TITLE_ANIM: light-vein carving growth 3.0-5.0s`,
-      // 结构化 backgroundSound 对象
-      backgroundSound: {
-        ambient: 'deep earth rumble 20-60Hz, epic atmosphere',
-        spatial: '3D audio pan synchronized with camera movement',
-        intensity: { crescendo: '0-3s', peak: '3-7s', decay: '7-10s' }
-      },
-      backgroundSoundString: 'AMBIENT: epic atmosphere, deep earth rumble 20-60Hz | SPATIAL: 3D audio pan synchronized with camera movement | INTENSITY: crescendo 0-3s, peak 3-7s, decay 7-10s',
+      // B7-fix: 复用 _buildBackgroundSound 保证格式一致
+      backgroundSound: openingBgSound.object,
+      backgroundSoundString: openingBgSound.string,
       prompt: '', // 由 Prompt 工程构建
       promptCharCount: 0
     };

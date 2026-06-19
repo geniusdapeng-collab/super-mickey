@@ -199,7 +199,8 @@ class RenderingEngine {
   }
 
   /**
-   * 生成绑定清单（从 prompts 的 imageRefs 提取）
+   * 生成绑定清单
+   * v1.2.7-fix-A1: 从 characterRef 解析定妆照（修复 imageRefs 不存在的bug）
    */
   _generateBindingManifest(prompts) {
     const characters = {};
@@ -209,30 +210,36 @@ class RenderingEngine {
       const shotId = prompt.shotId;
       const charsInShot = [];
 
-      for (const ref of (prompt.imageRefs || [])) {
+      // v1.2.7-fix-A1: 从 characterRef 解析，而非读不存在的 imageRefs
+      const refs = this._parseCharacterRef(prompt.characterRef);
+
+      for (const ref of refs) {
         const charId = ref.characterId;
-        charsInShot.push(charId);
+        if (!charsInShot.includes(charId)) {
+          charsInShot.push(charId);
+        }
 
         if (!characters[charId]) {
           characters[charId] = {
             id: charId,
-            name: ref.characterName || charId,
-            requiredAngles: ['front', 'threeQuarter', 'closeup', 'side'],
+            name: charId,
+            requiredAngles: ['front', 'profile', 'threeQuarter', 'closeup'],
             portraits: {}
           };
         }
 
         // 添加定妆照路径
         if (ref.path) {
-          characters[charId].portraits[ref.angle] = ref.path;
+          characters[charId].portraits[ref.angle || 'unknown'] = ref.path;
         }
       }
 
       shots.push({
         shotId,
         requiredCharacters: charsInShot,
-        duration: 12,
-        promptLength: prompt.length
+        // v1.2.7-fix-A1: 用实际时长和字符数（非硬编码12和.length）
+        duration: prompt.duration || 12,
+        promptLength: prompt.promptCharCount || (typeof prompt.prompt === 'string' ? prompt.prompt.length : 0) || 0
       });
     }
 
@@ -246,32 +253,65 @@ class RenderingEngine {
   /**
    * 查询渲染状态
    */
+  /**
+   * 查询渲染状态
+   * v1.2.7-fix-A5: 修复端点和 taskId 传递
+   */
   async queryStatus(taskIds) {
     if (!this.submitter || !taskIds || taskIds.length === 0) {
       return { status: 'unknown', tasks: [] };
     }
 
-    // 复用现有系统的状态查询逻辑
+    // v1.2.7-fix-A5: 优先复用 submitter 的状态查询（如果存在）
+    if (typeof this.submitter.queryStatus === 'function') {
+      try {
+        return await this.submitter.queryStatus(taskIds);
+      } catch (e) {
+        console.warn(`[RenderingEngine] submitter.queryStatus 失败: ${e.message}`);
+      }
+    }
+
+    // v1.2.7-fix-A5: 直接调用 Seedance API 查询（修复端点和 taskId）
+    // 查询端点 = 创建端点 + /{taskId}
+    const baseUrl = this.config.apiUrl.replace(/\/$/, '');
+
     try {
       const results = await Promise.all(
         taskIds.map(async taskId => {
           try {
-            // 调用 Seedance API 查询状态
-            const response = await fetch(this.config.apiUrl, {
+            // v1.2.7-fix-A5: taskId 拼入 URL，使用 GET 方法
+            const queryUrl = `${baseUrl}/${taskId}`;
+            const response = await fetch(queryUrl, {
               method: 'GET',
               headers: {
                 'Authorization': `Bearer ${this.config.apiKey}`,
                 'Content-Type': 'application/json'
               }
             });
-            return { taskId, status: 'queried', response: await response.json() };
+
+            if (!response.ok) {
+              const errText = await response.text().catch(() => '');
+              return { taskId, status: 'error', error: `HTTP ${response.status}: ${errText.substring(0, 200)}` };
+            }
+
+            const data = await response.json();
+            // Seedance API 返回的 status 字段
+            const apiStatus = data.status || data.state || 'unknown';
+            return { taskId, status: apiStatus, response: data };
           } catch (e) {
             return { taskId, status: 'error', error: e.message };
           }
         })
       );
 
-      return { status: 'completed', tasks: results };
+      // 汇总状态
+      const allDone = results.every(r => r.status === 'succeeded' || r.status === 'failed');
+      const anyFailed = results.some(r => r.status === 'failed');
+
+      return {
+        status: allDone ? (anyFailed ? 'partial_failure' : 'completed') : 'in_progress',
+        tasks: results
+      };
     } catch (e) {
       return { status: 'error', error: e.message, tasks: [] };
     }

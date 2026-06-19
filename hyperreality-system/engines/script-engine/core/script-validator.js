@@ -14,7 +14,8 @@ class ScriptValidator {
       maxScenes: 10,
       
       // 台词约束
-      maxLineLength: 30, // 字
+      // B4-fix: 与 v6.37 标准(≤50字)对齐
+      maxLineLength: 50, // 字（v6.37标准：单句台词≤50字）
       minScenesWithDialogue: 1,
       
       // 质量阈值
@@ -190,10 +191,11 @@ class ScriptValidator {
         checks.push({
           category: 'duration',
           name: `scene_${scene.scene_id}_duration`,
-          passed: duration > 0 && duration <= 15,
+          // B3-fix: 与 v6.37 标准对齐（过渡8-10s，核心12-15s，上限60s）
+          passed: duration > 0 && duration <= 60,
           severity: 'warning',
           message: `场景 ${scene.scene_id} 时长 ${duration}s`,
-          suggestion: '单个场景时长应在 1-60s 之间'
+          suggestion: '单个场景时长应在 8-60s 之间（过渡8-10s，核心12-15s）'
         });
       }
     }
