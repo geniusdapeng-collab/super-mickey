@@ -556,7 +556,17 @@ class LLMGateway {
    * 分块调用（Prompt超长时）
    */
   async callWithSplit(options) {
-    const { prompt, systemPrompt } = options;
+    const { prompt, systemPrompt, outputFormat } = options;
+    
+    // v2.0.2-fix: JSON/structured 输出禁用自动分块，防止同key覆盖和数组丢失
+    if (outputFormat === 'json' || outputFormat === 'structured') {
+      console.log('[LLMGateway] JSON/structured 模式禁用分块，要求单次完整返回');
+      return this.call({
+        ...options,
+        splitLongPrompt: false
+      });
+    }
+    
     const maxChunkSize = Math.floor(this.defaultConfig.maxPromptChars * 0.8);
 
     // 按段落分割
@@ -573,8 +583,8 @@ class LLMGateway {
       results.push(chunkResult.data);
     }
 
-    // 合并结果
-    const merged = this.mergeResults(results, options.outputFormat);
+    // 合并结果（仅text模式，json已提前返回）
+    const merged = this.mergeResults(results, outputFormat);
     return {
       success: true,
       data: merged,

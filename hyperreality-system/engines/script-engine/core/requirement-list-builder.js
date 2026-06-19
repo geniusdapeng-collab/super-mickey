@@ -5,6 +5,17 @@
 
 const { IntentParser } = require('./intent-parser');
 
+// v2.0.2-fix: 安全数值解析工具，防止NaN污染后续计算
+function safeParseInt(str, defaultValue = 0) {
+  const val = parseInt(str, 10);
+  return Number.isNaN(val) ? defaultValue : val;
+}
+
+function safeParseFloat(str, defaultValue = 0) {
+  const val = parseFloat(str);
+  return Number.isNaN(val) ? defaultValue : val;
+}
+
 /**
  * 超现实系统风格编码展开器
  * 适配超现实系统的电影级质感需求
@@ -267,7 +278,7 @@ class RequirementListBuilder {
     // 提取时长
     const durationMatch = text.match(/(\d+)\s*(秒|分钟|分|s|sec|min)/i);
     if (durationMatch) {
-      let value = parseInt(durationMatch[1]);
+      let value = safeParseInt(durationMatch[1]);
       const unit = durationMatch[2];
       if (unit.includes('分') || unit.includes('min')) {
         value *= 60;
@@ -279,8 +290,8 @@ class RequirementListBuilder {
     if (!result.duration) {
       const rangeMatch = text.match(/(\d+)\s*[~~-]\s*(\d+)\s*(秒|分钟|分|s)/i);
       if (rangeMatch) {
-        let min = parseInt(rangeMatch[1]);
-        let max = parseInt(rangeMatch[2]);
+        let min = safeParseInt(rangeMatch[1]);
+        let max = safeParseInt(rangeMatch[2]);
         const unit = rangeMatch[3];
         if (unit.includes('分')) { min *= 60; max *= 60; }
         result.durationRange = [min, max];
@@ -291,7 +302,7 @@ class RequirementListBuilder {
     // 提取创意指数
     const intensityMatch = text.match(/创意指数\s*[::]?\s*(0?\.\d+|\d+)/i);
     if (intensityMatch) {
-      result.creativeIntensity = parseFloat(intensityMatch[1]);
+      result.creativeIntensity = safeParseFloat(intensityMatch[1]);
     }
     // 检测"天花板般的创造力"等描述
     if (text.includes('天花板') || text.includes('顶级') || text.includes('极致')) {
@@ -301,12 +312,12 @@ class RequirementListBuilder {
     // 提取系列信息
     const seriesMatch = text.match(/(\d+)\s*集/);
     if (seriesMatch) {
-      result.totalEpisodes = parseInt(seriesMatch[1]);
+      result.totalEpisodes = safeParseInt(seriesMatch[1]);
       result.isSeries = true;
     }
     const episodeMatch = text.match(/第\s*(\d+)\s*集/);
     if (episodeMatch) {
-      result.currentEpisode = parseInt(episodeMatch[1]);
+      result.currentEpisode = safeParseInt(episodeMatch[1]);
     }
 
     // 提取角色信息

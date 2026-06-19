@@ -599,26 +599,11 @@ ${meta.noNextEpisodePreview ? '- **结尾禁止预告下一集**（不提及后�
     let start = str.indexOf('{');
     if (start === -1) return null;
 
-    // 策略1：直接解析整段
+    // 策略1：直接解析整段（快速路径）
     let parsed = this._tryParseJson(str.substring(start));
     if (parsed && parsed.meta && parsed.structure) return parsed;
 
-    // 策略2：从字符串末尾开始，逐步向前尝试解析
-    const stepSizes = [1000, 500, 100, 50, 10, 5, 1];
-    for (const step of stepSizes) {
-      for (let end = str.length; end > start; end -= step) {
-        const candidate = str.substring(start, end);
-        try {
-          const p = JSON.parse(candidate);
-          if (p.meta && p.structure) {
-            console.log(`[ScriptGenerator] 从截断文本提取JSON成功，使用 ${end}/${str.length} 字符`);
-            return p;
-          }
-        } catch (e) { /* 继续 */ }
-      }
-    }
-
-    // 策略3：括号匹配找完整对象
+    // 策略2：单次栈扫描定位匹配括号（O(n)，替代原暴力截断）
     {
       let braceCount = 0;
       let inString = false;
@@ -649,11 +634,11 @@ ${meta.noNextEpisodePreview ? '- **结尾禁止预告下一集**（不提及后�
             console.log(`[ScriptGenerator] 通过括号匹配提取JSON成功，使用 ${lastValidEnd}/${str.length} 字符`);
             return p;
           }
-        } catch (e) { /* 失败，进入策略4 */ }
+        } catch (e) { /* 失败，进入策略3 */ }
       }
     }
 
-    // 策略4：🆕 自动补全缺失的闭合括号（处理未闭合的截断JSON）
+    // 策略3：自动补全缺失的闭合括号（处理未闭合的截断JSON）
     {
       let braceCount = 0;    // {} 未闭合数
       let bracketCount = 0;  // [] 未闭合数
@@ -681,7 +666,7 @@ ${meta.noNextEpisodePreview ? '- **结尾禁止预告下一集**（不提及后�
         // 如果字符串未闭合，补上引号
         if (inString) base += '"';
 
-        // 暴力尝试补全组合（数量有限，性能可接受）
+        // 尝试补全组合（数量有限，性能可接受）
         for (let arr = bracketCount; arr >= 0; arr--) {
           for (let obj = braceCount; obj >= 0; obj--) {
             const testA = base + ']'.repeat(arr) + '}'.repeat(obj);

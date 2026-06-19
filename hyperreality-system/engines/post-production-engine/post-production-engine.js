@@ -6,6 +6,17 @@
 const fs = require('fs').promises;
 const path = require('path');
 
+// v2.0.2-fix: HTML转义工具，防止XSS和结构破坏
+function escapeHtml(text) {
+  if (typeof text !== 'string') return '';
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 // 无版权音乐库配置
 const ROYALTY_FREE_MUSIC_SOURCES = {
   pixabay: {
@@ -653,9 +664,9 @@ class PostProductionEngine {
       html.push('  <!-- 字幕轨道 -->');
       for (const sub of subtitles) {
         html.push(`  <div class="clip identity-card" data-start="${sub.start}" data-duration="${sub.duration}" data-track-index="${trackIndex++}">`);
-        html.push(`    <div class="name">${sub.content.name}</div>`);
-        html.push(`    <div class="title">${sub.content.title}</div>`);
-        html.push(`    <div class="trait">${sub.content.species} · ${sub.content.trait}</div>`);
+        html.push(`    <div class="name">${escapeHtml(sub.content.name)}</div>`);
+        html.push(`    <div class="title">${escapeHtml(sub.content.title)}</div>`);
+        html.push(`    <div class="trait">${escapeHtml(sub.content.species)} · ${escapeHtml(sub.content.trait)}</div>`);
         html.push('  </div>');
       }
       html.push('');
@@ -681,7 +692,7 @@ class PostProductionEngine {
         const size = sizeMap[dm.size] || '28px';
         html.push(`  <div class="clip danmaku" data-start="${dm.startTime}" data-duration="${dm.duration}" data-track-index="${trackIndex++}"`);
         html.push(`       style="top: ${50 + Math.random() * 300}px; color: ${dm.color}; font-size: ${size};"`);
-        html.push(`       data-speed="${dm.speed}">${dm.text}</div>`);
+        html.push(`       data-speed="${dm.speed}">${escapeHtml(dm.text)}</div>`);
       }
       html.push('');
     }
