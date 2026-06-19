@@ -312,12 +312,6 @@ class PostProductionEngine {
 
     return '主讲人';
   }
-    // 从角色描述或场景设定中提取特征
-    if (character.id === 'xiaoG') return '银灰装甲';
-    if (character.id?.includes('taotie') || character.name?.includes('饕餮')) return '碳化硅质甲壳';
-    if (character.visuals?.color) return character.visuals.color;
-    return '探索者';
-  }
 
   /**
    * 匹配无版权音乐

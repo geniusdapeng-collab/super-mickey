@@ -1769,7 +1769,7 @@ class ProductionEngine {
       openingData,
       shotId: 'S00',
       type: 'opening',
-      beastId
+      beastId: null
     };
   }
   
