@@ -343,6 +343,9 @@ class ProductionEngine {
           end: scene.timing?.end || 20
         },
         
+        // v1.2.5: 添加顶层duration字段供FieldGuard使用
+        duration: scene.timing?.duration || 20,
+        
         // v6.37-P0: 场景（五维空间描述法）
         scene: sceneDescription,
         
@@ -381,7 +384,64 @@ class ProductionEngine {
       };
     });
     
+    // v1.2.5: 时长归一化——确保总时长严格等于目标时长
+    const targetDuration = adaptedBlueprint.config?.target_duration || adaptedBlueprint.meta?.target_duration || 120;
+    shots = this._normalizeDurations(shots, targetDuration);
+    
     return { shots, sceneCount: shots.length };
+  }
+  
+  /**
+   * v1.2.5: 时长归一化
+   * 将场景时长按比例缩放，使总时长严格等于目标时长
+   */
+  _normalizeDurations(shots, targetDuration) {
+    if (!shots || shots.length === 0) return shots;
+    
+    // 计算当前总时长（取最后一个场景的end时间）
+    const currentEnd = Math.max(...shots.map(s => s.timing?.end || 0));
+    if (currentEnd <= 0) return shots;
+    
+    // 如果已经精确匹配，无需调整
+    if (currentEnd === targetDuration) {
+      console.log(`[ProductionEngine] 时长已精确匹配: ${targetDuration}s`);
+      return shots;
+    }
+    
+    // 计算缩放比例
+    const scale = targetDuration / currentEnd;
+    console.log(`[ProductionEngine] 时长归一化: ${currentEnd}s → ${targetDuration}s (缩放: ${scale.toFixed(3)})`);
+    
+    // 按比例缩放每个场景的timing
+    let accumulatedEnd = 0;
+    for (let i = 0; i < shots.length; i++) {
+      const shot = shots[i];
+      const origDuration = shot.timing?.duration || 10;
+      
+      // 缩放时长，至少保留3秒
+      const newDuration = Math.max(3, Math.round(origDuration * scale));
+      
+      // 更新timing和顶层duration
+      shot.timing = {
+        start: accumulatedEnd,
+        duration: newDuration,
+        end: accumulatedEnd + newDuration
+      };
+      shot.duration = newDuration;
+      
+      accumulatedEnd += newDuration;
+    }
+    
+    // 最后微调：确保总时长精确等于目标
+    const lastShot = shots[shots.length - 1];
+    const diff = targetDuration - lastShot.timing.end;
+    if (diff !== 0) {
+      lastShot.timing.duration += diff;
+      lastShot.timing.end = targetDuration;
+      console.log(`[ProductionEngine] 最后微调: ${lastShot.shotId} 时长调整为 ${lastShot.timing.duration}s`);
+    }
+    
+    return shots;
   }
   
   /**
