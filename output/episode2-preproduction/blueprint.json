@@ -1,0 +1,401 @@
+{
+  "meta": {
+    "title": "横纹肌溶解原因分析",
+    "narrative_mode": "educational",
+    "target_duration": 62,
+    "acts_count": 3,
+    "scenes_count": 6
+  },
+  "structure": {
+    "acts": [
+      {
+        "act_id": "ACT-1",
+        "act_name": "第一幕",
+        "act_function": "establish",
+        "start_time": 0,
+        "end_time": 20,
+        "beats": [
+          {
+            "beat_id": "B-1.1",
+            "beat_type": "hook",
+            "description": "陈卓直接抛出横纹肌溶解话题，引发观众好奇",
+            "target_emotion": "wonder"
+          },
+          {
+            "beat_id": "B-1.2",
+            "beat_type": "setup",
+            "description": "用通俗语言解释横纹肌溶解的病理机制",
+            "target_emotion": "tension"
+          }
+        ]
+      },
+      {
+        "act_id": "ACT-2",
+        "act_name": "第二幕",
+        "act_function": "confront",
+        "start_time": 20,
+        "end_time": 54,
+        "beats": [
+          {
+            "beat_id": "B-2.1",
+            "beat_type": "rising",
+            "description": "揭示过度运动是导致横纹肌溶解的首要原因",
+            "target_emotion": "tension"
+          },
+          {
+            "beat_id": "B-2.2",
+            "beat_type": "rising",
+            "description": "揭示高温脱水环境下肌肉坏死的风险",
+            "target_emotion": "tension"
+          },
+          {
+            "beat_id": "B-2.3",
+            "beat_type": "climax",
+            "description": "揭示药物、创伤、饮食等隐藏诱因，强化危机感",
+            "target_emotion": "awe"
+          }
+        ]
+      },
+      {
+        "act_id": "ACT-3",
+        "act_name": "第三幕",
+        "act_function": "resolve",
+        "start_time": 54,
+        "end_time": 62,
+        "beats": [
+          {
+            "beat_id": "B-3.1",
+            "beat_type": "resolution",
+            "description": "给出早期预警信号和科学的预防建议",
+            "target_emotion": "joy"
+          }
+        ]
+      }
+    ],
+    "scenes": [
+      {
+        "scene_id": "SC00",
+        "scene_name": "开场引入",
+        "scene_type": "opening",
+        "scene_function": "establish",
+        "act_id": "ACT-1",
+        "timing": {
+          "start": 0,
+          "duration": 10,
+          "end": 10
+        },
+        "characters": [
+          "chen-zhuo"
+        ],
+        "setting": "简洁的室内科普讲台，陈卓正对镜头",
+        "dialogue": {
+          "has_dialogue": true,
+          "lines": [
+            {
+              "speaker": "chen-zhuo",
+              "text": "大家好，我是陈卓。",
+              "emotion": "亲和"
+            },
+            {
+              "speaker": "chen-zhuo",
+              "text": "今天聊聊横纹肌溶解，很多人听过但不懂。",
+              "emotion": "认真"
+            },
+            {
+              "speaker": "chen-zhuo",
+              "text": "其实它离你不远。",
+              "emotion": "神秘"
+            }
+          ]
+        },
+        "visual_notes": "陈卓身穿警服，短发干练，直视镜头，表情亲和",
+        "emotional_target": {
+          "valence": 0.7,
+          "arousal": 0.5,
+          "dominance": 0.6
+        }
+      },
+      {
+        "scene_id": "SC01",
+        "scene_name": "概念解释",
+        "scene_type": "establishing",
+        "scene_function": "establish",
+        "act_id": "ACT-1",
+        "timing": {
+          "start": 10,
+          "duration": 10,
+          "end": 20
+        },
+        "characters": [
+          "chen-zhuo"
+        ],
+        "setting": "同一讲台，配合手势讲解",
+        "dialogue": {
+          "has_dialogue": true,
+          "lines": [
+            {
+              "speaker": "chen-zhuo",
+              "text": "简单说，就是肌肉细胞溶解了。",
+              "emotion": "平静"
+            },
+            {
+              "speaker": "chen-zhuo",
+              "text": "肌肉里的东西漏进血液，把肾脏堵了。",
+              "emotion": "严肃"
+            },
+            {
+              "speaker": "chen-zhuo",
+              "text": "严重会肾衰竭。",
+              "emotion": "凝重"
+            }
+          ]
+        },
+        "visual_notes": "镜头近景，陈卓用手比划肌肉到肾脏的路径，画面简洁",
+        "emotional_target": {
+          "valence": 0.3,
+          "arousal": 0.6,
+          "dominance": 0.5
+        }
+      },
+      {
+        "scene_id": "SC02",
+        "scene_name": "原因一：过度运动",
+        "scene_type": "conflict",
+        "scene_function": "advance",
+        "act_id": "ACT-2",
+        "timing": {
+          "start": 20,
+          "duration": 12,
+          "end": 32
+        },
+        "characters": [
+          "chen-zhuo"
+        ],
+        "setting": "同一空间，语气加快，情绪上升",
+        "dialogue": {
+          "has_dialogue": true,
+          "lines": [
+            {
+              "speaker": "chen-zhuo",
+              "text": "第一大原因，过度运动。",
+              "emotion": "强调"
+            },
+            {
+              "speaker": "chen-zhuo",
+              "text": "突然剧烈运动，比如平时不练，突然做两百个深蹲。",
+              "emotion": "举例"
+            },
+            {
+              "speaker": "chen-zhuo",
+              "text": "肌肉承受不住，直接崩溃。",
+              "emotion": "警示"
+            },
+            {
+              "speaker": "chen-zhuo",
+              "text": "健身新手最容易中招。",
+              "emotion": "关切"
+            }
+          ]
+        },
+        "visual_notes": "陈卓做深蹲手势，画面可叠加肌肉溶解示意图，节奏紧凑",
+        "emotional_target": {
+          "valence": 0.4,
+          "arousal": 0.7,
+          "dominance": 0.5
+        }
+      },
+      {
+        "scene_id": "SC03",
+        "scene_name": "原因二：高温脱水",
+        "scene_type": "conflict",
+        "scene_function": "advance",
+        "act_id": "ACT-2",
+        "timing": {
+          "start": 32,
+          "duration": 12,
+          "end": 44
+        },
+        "characters": [
+          "chen-zhuo"
+        ],
+        "setting": "同一空间，表情严肃",
+        "dialogue": {
+          "has_dialogue": true,
+          "lines": [
+            {
+              "speaker": "chen-zhuo",
+              "text": "第二是高温脱水。",
+              "emotion": "严肃"
+            },
+            {
+              "speaker": "chen-zhuo",
+              "text": "大夏天跑步不喝水，体温过高。",
+              "emotion": "警示"
+            },
+            {
+              "speaker": "chen-zhuo",
+              "text": "肌肉在缺水高温下直接坏死。",
+              "emotion": "凝重"
+            },
+            {
+              "speaker": "chen-zhuo",
+              "text": "记住，补水比补蛋白重要。",
+              "emotion": "强调"
+            }
+          ]
+        },
+        "visual_notes": "陈卓做喝水手势，可配合高温警示图标，镜头保持稳定",
+        "emotional_target": {
+          "valence": 0.4,
+          "arousal": 0.7,
+          "dominance": 0.6
+        }
+      },
+      {
+        "scene_id": "SC04",
+        "scene_name": "隐藏诱因",
+        "scene_type": "emotional_climax",
+        "scene_function": "climax",
+        "act_id": "ACT-2",
+        "timing": {
+          "start": 44,
+          "duration": 10,
+          "end": 54
+        },
+        "characters": [
+          "chen-zhuo"
+        ],
+        "setting": "同一空间，靠近镜头，语气加重",
+        "dialogue": {
+          "has_dialogue": true,
+          "lines": [
+            {
+              "speaker": "chen-zhuo",
+              "text": "还有些药物和创伤。",
+              "emotion": "严肃"
+            },
+            {
+              "speaker": "chen-zhuo",
+              "text": "吃他汀类降脂药，或摔伤挤压。",
+              "emotion": "解释"
+            },
+            {
+              "speaker": "chen-zhuo",
+              "text": "甚至吃小龙虾也可能诱发。",
+              "emotion": "惊讶"
+            },
+            {
+              "speaker": "chen-zhuo",
+              "text": "原因很多，别大意。",
+              "emotion": "警示"
+            }
+          ]
+        },
+        "visual_notes": "陈卓微微前倾，表情认真，可快速切换药物、创伤、食物的图标",
+        "emotional_target": {
+          "valence": 0.3,
+          "arousal": 0.8,
+          "dominance": 0.7
+        }
+      },
+      {
+        "scene_id": "SC05",
+        "scene_name": "预防总结",
+        "scene_type": "resolution",
+        "scene_function": "resolve",
+        "act_id": "ACT-3",
+        "timing": {
+          "start": 54,
+          "duration": 8,
+          "end": 62
+        },
+        "characters": [
+          "chen-zhuo"
+        ],
+        "setting": "同一空间，恢复亲和语气",
+        "dialogue": {
+          "has_dialogue": true,
+          "lines": [
+            {
+              "speaker": "chen-zhuo",
+              "text": "肌肉酸痛、尿色深，赶紧就医。",
+              "emotion": "关切"
+            },
+            {
+              "speaker": "chen-zhuo",
+              "text": "运动要循序渐进，别硬撑。",
+              "emotion": "叮嘱"
+            },
+            {
+              "speaker": "chen-zhuo",
+              "text": "今天就说这些，关注我！",
+              "emotion": "亲和"
+            }
+          ]
+        },
+        "visual_notes": "陈卓微笑，镜头拉远，可显示关注引导手势，画面明亮收尾",
+        "emotional_target": {
+          "valence": 0.8,
+          "arousal": 0.4,
+          "dominance": 0.6
+        }
+      }
+    ]
+  },
+  "character_system": {
+    "characters": [
+      {
+        "character_id": "chen-zhuo",
+        "name": "陈卓",
+        "role": "protagonist",
+        "voice_profile": {
+          "persona": "35岁左右女性，穿警服，短发干练，亲和专业的健康科普讲师",
+          "tone": "亲和专业",
+          "speaking_style": "口语化短句，节奏明快，适合短视频"
+        },
+        "visual_anchor": {
+          "core_features": [
+            "35岁女性",
+            "穿警服",
+            "短发干练"
+          ],
+          "reference_images": [
+            "chen-zhuo-reference.jpg"
+          ]
+        }
+      }
+    ]
+  },
+  "voice_system": {
+    "global_voice_policy": "dialogue_only_no_voiceover",
+    "voice_profiles": [
+      {
+        "voice_id": "V-chen-zhuo",
+        "character_id": "chen-zhuo",
+        "role": "protagonist",
+        "tone": "亲和专业",
+        "pace": "中快",
+        "constraints": {
+          "forbidden_words": [
+            "旁白",
+            "注释"
+          ],
+          "max_line_length": 30
+        }
+      }
+    ]
+  },
+  "world_setting": {
+    "world_id": "default",
+    "world_name": "现代科普空间",
+    "era": "现代",
+    "core_rules": [
+      "无旁白仅角色对话",
+      "基于真实医学知识科普"
+    ],
+    "environment_tags": [
+      "室内简约背景",
+      "正对镜头讲解"
+    ]
+  }
+}

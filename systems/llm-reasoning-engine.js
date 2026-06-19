@@ -41,7 +41,16 @@ class LLMEngine {
       // 将 response.text() 也包进超时控制，防止网络半开时挂死
       const textPromise = res.text();
       const text = await textPromise;
-      return { ...res, text: () => Promise.resolve(text) };
+      // v2.0.3-fix: 显式复制 Response 的 getter 属性（ok/status 等），{...res} 不会复制原型链上的 getter
+      return {
+        ...res,
+        ok: res.ok,
+        status: res.status,
+        statusText: res.statusText,
+        headers: res.headers,
+        url: res.url,
+        text: () => Promise.resolve(text)
+      };
     } finally {
       clearTimeout(timer);
     }
