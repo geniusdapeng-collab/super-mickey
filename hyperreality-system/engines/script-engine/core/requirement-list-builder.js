@@ -203,7 +203,7 @@ class RequirementListBuilder {
       videoType: null,
       platform: null,
       style: { primary: null, secondary: [] },
-      duration: null,
+      duration: metadata.target_duration || null,  // 优先使用metadata
       title: metadata.title || null,
       creativeIntensity: null,
       characters: [],
@@ -238,15 +238,19 @@ class RequirementListBuilder {
       if (result.platform) break;
     }
 
-    // 推断风格
-    for (const rule of this.rules.styleRules) {
-      for (const keyword of rule.keywords) {
-        if (text.includes(keyword.toLowerCase())) {
-          result.style.primary = rule.style;
-          break;
+    // 推断风格（优先使用metadata）
+    if (metadata.style) {
+      result.style.primary = metadata.style;
+    } else {
+      for (const rule of this.rules.styleRules) {
+        for (const keyword of rule.keywords) {
+          if (text.includes(keyword.toLowerCase())) {
+            result.style.primary = rule.style;
+            break;
+          }
         }
+        if (result.style.primary) break;
       }
-      if (result.style.primary) break;
     }
 
     // 推断辅助风格
@@ -271,15 +275,17 @@ class RequirementListBuilder {
       result.duration = value;
     }
 
-    // 提取时长范围（如 59～65秒）
-    const rangeMatch = text.match(/(\d+)\s*[~～-]\s*(\d+)\s*(秒|分钟|分|s)/i);
-    if (rangeMatch) {
-      let min = parseInt(rangeMatch[1]);
-      let max = parseInt(rangeMatch[2]);
-      const unit = rangeMatch[3];
-      if (unit.includes('分')) { min *= 60; max *= 60; }
-      result.durationRange = [min, max];
-      result.duration = Math.round((min + max) / 2);
+    // 提取时长范围（如 59～65秒）—— 如果metadata没有提供
+    if (!result.duration) {
+      const rangeMatch = text.match(/(\d+)\s*[~～-]\s*(\d+)\s*(秒|分钟|分|s)/i);
+      if (rangeMatch) {
+        let min = parseInt(rangeMatch[1]);
+        let max = parseInt(rangeMatch[2]);
+        const unit = rangeMatch[3];
+        if (unit.includes('分')) { min *= 60; max *= 60; }
+        result.durationRange = [min, max];
+        result.duration = Math.round((min + max) / 2);
+      }
     }
 
     // 提取创意指数
@@ -430,16 +436,21 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
       confidence: intentResult.analysis?.confidence || 0.5
     };
 
-    // LLM 结果优先，但保留规则库的高置信度字段
-    if (!llmResult.videoType && ruleResult.videoType) {
+    // 规则库结果优先（确定性更高），除非LLM明确提供了非推断值
+    if (ruleResult.videoType) {
       merged.videoType = ruleResult.videoType;
       merged.videoTypeName = ruleResult.videoTypeName;
     }
-    if (!llmResult.style?.primary && ruleResult.style?.primary) {
+    if (ruleResult.duration) {
+      merged.duration = ruleResult.duration;
+      merged.durationRange = ruleResult.durationRange;
+    }
+    // 风格：如果规则库有明确值，优先使用；否则用LLM的
+    if (ruleResult.style?.primary) {
       merged.style = merged.style || {};
       merged.style.primary = ruleResult.style.primary;
     }
-    if (ruleResult.style?.secondary?.length && !llmResult.style?.secondary?.length) {
+    if (ruleResult.style?.secondary?.length) {
       merged.style = merged.style || {};
       merged.style.secondary = ruleResult.style.secondary;
     }
@@ -475,16 +486,19 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
       completed.durationRange = [Math.max(15, completed.duration - 10), Math.min(180, completed.duration + 10)];
     }
 
-    // 补全风格
-    if (!completed.style?.primary) {
-      const typeToStyle = {
-        'EDU': 'REAL', 'DOC': 'REAL', 'VLOG': 'REAL',
-        'DRAMA': 'CINE', 'MV': 'ART',
-        'ADV': 'POL', 'COR': 'POL',
-        'SOC': 'STREET', 'EVT': 'REAL'
-      };
+    // 补全风格（强制根据视频类型设置默认风格，覆盖LLM的错误推断）
+    const typeToStyle = {
+      'EDU': 'REAL', 'DOC': 'REAL', 'VLOG': 'REAL',
+      'DRAMA': 'CINE', 'MV': 'ART',
+      'ADV': 'POL', 'COR': 'POL',
+      'SOC': 'STREET', 'EVT': 'REAL'
+    };
+    const defaultStyle = typeToStyle[completed.videoType] || 'REAL';
+    // 如果当前风格与默认不符，且是推断的，强制覆盖
+    if (completed.style?.primary !== defaultStyle) {
+      console.log(`[RequirementListBuilder] 风格强制修正: ${completed.style?.primary} → ${defaultStyle} (视频类型: ${completed.videoType})`);
       completed.style = completed.style || {};
-      completed.style.primary = typeToStyle[completed.videoType] || 'REAL';
+      completed.style.primary = defaultStyle;
       completed.styleInferred = true;
     }
 
@@ -592,7 +606,8 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
     
     // 从用户输入中提取角色名
     const text = result.raw_input || '';
-    const nameMatches = text.match(/([^，。]+?)女士|([^，。]+?)先生|([^，。]+?)讲解|([^，。]+?)介绍/);
+    // 修复：支持 "穿警服的陈卓女士" 这种格式，正确提取名字
+    const nameMatches = text.match(/([^，。\s]{1,6})女士|([^，。\s]{1,6})先生|([^，。\s]{1,6})讲解|([^，。\s]{1,6})介绍/);
     if (nameMatches) {
       const name = (nameMatches[1] || nameMatches[2] || nameMatches[3] || nameMatches[4]).trim();
       if (name && name.length < 10 && name.length > 1) {

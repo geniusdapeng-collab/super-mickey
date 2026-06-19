@@ -49,7 +49,7 @@ async function main() {
 
     const raw = await engine.reasonRaw(prompt, {
       maxTokens: 900,
-      temperature: 0.4,
+      temperature: 1,
       timeoutMs: 180000
     });
 

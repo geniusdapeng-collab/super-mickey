@@ -2015,7 +2015,7 @@ class NirathMasterPipeline {
 
       const result = await llm.reasonStructured(prompt, schema, {
         maxTokens: 2048,
-        temperature: 0.2
+        temperature: 1
       });
 
       if (result.success && result.data?.id === scene.id) {

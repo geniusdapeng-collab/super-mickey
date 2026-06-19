@@ -38,14 +38,17 @@ class ScriptEngine {
     let degraded = false;
     let degradeReason = '';
     
-    if (this.scriptGenerator.config.apiKey) {
+    // v1.1: 检查LLMEngine是否可用（复用现有引擎）
+    const hasLLM = this.scriptGenerator.llmEngine || this.scriptGenerator.config.apiKey;
+    
+    if (hasLLM) {
       blueprint = await this.scriptGenerator.generate(userIntent);
     } else {
-      console.log('[ScriptEngine] 无 API Key，使用模板生成');
+      console.log('[ScriptEngine] 无 LLM 可用，使用模板生成');
       console.log('[ScriptEngine] ⚠️ 降级标记: LLM不可用，回退到模板生成');
       blueprint = this._generateFromTemplate(userIntent);
       degraded = true;
-      degradeReason = 'LLM API unavailable (no API key), fallback to template generation';
+      degradeReason = 'LLM API unavailable, fallback to template generation';
     }
 
     // 3. 校验剧本

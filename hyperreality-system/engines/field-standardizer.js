@@ -174,6 +174,8 @@ function normalizeDialogue(value) {
 
 function normalizeTimeline(value, raw = {}) {
   if (Array.isArray(value)) return value;
+  // v6.37+: 支持对象格式（如 {object, string}）转数组
+  if (value && typeof value === 'object' && !Array.isArray(value)) return [value];
   if (Array.isArray(raw._timeline)) return raw._timeline;
   if (Array.isArray(raw.timeline)) return raw.timeline;
   if (Array.isArray(raw.cameraMovement?.timeline)) return raw.cameraMovement.timeline;

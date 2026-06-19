@@ -47,7 +47,7 @@ class SceneCardAgent {
       must_deliver: []
     }, {
       maxTokens: 1500,
-      temperature: 0.7
+      temperature: 1
     });
 
     if (!result.success) {

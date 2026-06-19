@@ -77,7 +77,7 @@ class ShotDesignAgentV4 {
     // 调用LLM
     const result = await this.engine.reasonRaw(prompt, {
       maxTokens: 1200,
-      temperature: 0.6
+      temperature: 1
     });
 
     // 从content或reasoning_content提取

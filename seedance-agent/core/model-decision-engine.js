@@ -23,7 +23,7 @@ const DECISION_CONFIG = {
   mode: 'llm',           // 'rule' | 'llm'
   model: 'kimi-k2p6',     // LLM 模型别名
   maxTokens: 4000,
-  temperature: 0.2,       // 低温度，决策要稳定
+  temperature: 1,       // kimi-k2p6 只支持 temperature=1
   timeoutMs: 30000,
   // 决策缓存（相同状态不重复请求 LLM）
   cacheEnabled: true,
@@ -673,7 +673,7 @@ async function callLLMViaAgent(prompt) {
         { role: 'user', content: prompt }
       ],
       max_tokens: DECISION_CONFIG.maxTokens || 4000,
-      temperature: DECISION_CONFIG.temperature || 0.2
+      temperature: DECISION_CONFIG.temperature || 1
     })
   });
 

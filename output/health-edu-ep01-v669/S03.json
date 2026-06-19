@@ -1,21 +1,20 @@
 {
   "shotId": "S03",
-  "recordedAt": "2026-06-18T02:02:22.423Z",
+  "recordedAt": "2026-06-18T09:00:44.121Z",
   "rawShot": {
     "id": "S03",
-    "scene": "高危人群警示",
-    "dialogue": "有三类人特别要当心。第一是平时不运动、突然猛练的新手；第二是高温天还在户外拼命出汗的人；第三类，比如吃了他汀类降脂药的朋友，剧烈运动更容易诱发横纹肌溶解。",
+    "scene": "病理机制解析",
+    "dialogue": "陈卓要告诉大家，当你突然进行剧烈运动，肌细胞可能大面积破裂，肌红蛋白大量涌入血液，肾脏不堪重负，这就是横纹肌溶解的关键机制。",
     "duration": 15,
     "type": "content",
     "characters": [
-      "chen-zhuo",
-      "presenter"
+      "chen-zhuo"
     ],
-    "mouthAction": "speaking_emphasis",
+    "mouthAction": "speaking_normal",
     "importance": 5,
     "visualComplexity": 5,
     "emotionPhase": "tension",
-    "visualPrompt": "超写实纪录片风格，医院健康宣教室或专业科普演播室内，陈卓身穿整洁白大褂，正面站立面向镜头进行讲解，双手随着三类人群的说明做出自然手势，神态专业而亲切，中近景竖屏构图，人物位于画面视觉中心，背景为明亮简洁的医疗教育环境，可见模糊的人体肌肉解剖示意图或健康知识展板，柔和自然光配合均匀室内照明，人物肤色与衣物纹理真实细腻，焦点清晰锐利，镜头稳定不晃动，整体呈现权威、清晰、真实可信的医学科普质感。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
+    "visualPrompt": "超写实纪录片风格，医院健康教育室或医学科普演播间，环境整洁明亮，背景可见人体解剖示意图或医学显示屏。陈卓位于画面中近景，身穿白大褂或专业医疗服饰，正面直视镜头，神态沉稳自信，双手配合讲解做自然手势，模拟示意肌细胞与肾脏位置。竖屏构图，人物占据画面主体，面部光线均匀柔和，肤色与织物纹理细节真实，镜头稳定无抖动，整体呈现权威、亲切且极具说服力的医疗科普质感。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
     "fpvRecommended": true,
     "fpvScore": 60,
     "fpvReason": "导演决策:无强烈FPV适配镜头，S03相对最佳(60分)，可选FPV增强",
@@ -32,19 +31,19 @@
       ],
       "physics": false
     },
-    "prompt": "16:9宽屏电影级镜头。【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic | 【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film | 【空间】golden hour, clear sky, atmospheric haze, depth layers, foreground to background | 【主体】陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业人像摄影，自然生活化场景, presenter | 【动态】电影级镜头, 高危人群警示, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression and presenter, natural expression, slide_left | 【风格】color palette: natural earth shadows + daylight highlights + green foliage accents, cinematic atmosphere, 通用导演 aesthetic | 【音频】伴随白天环境音, 动作产生自然动作声, 氛围弥漫明亮日常氛围, 声画精准同步，嘴型与发音对齐 | 【质控】blurry, low resolution, pixelated, compression artifacts, cartoon, anime, illustration, 3D render look, CGI appearance, plastic look, distorted perspective, impossible geometry, floating objects, inconsistent scale, flat lighting, overexposed, crushed blacks, double shadows, wrong light direction, distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose, unnatural physics, fake water, static water, cardboard texture, plastic foliage 平滑平稳左移，中景居中构图，纪录片场景。5秒内完成景别过渡，保持画面稳定流畅。通过精准的镜头运动引导观众视线，强化叙事节奏。 【负面约束】no blurry, no cartoon, no deformed hands, no extra fingers, no watermark, no text 【明亮约束】自然光或柔和室内照明,画面真实干净,禁止暗黑/灰暗。 【角色约束】画面中仅出现陈卓、presenter,禁止重复角色;2人位置分布自然,避免重叠 speaking_emphasis",
+    "prompt": "16:9宽屏电影级镜头。【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic | 【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film | 【空间】golden hour, clear sky, atmospheric haze, depth layers, foreground to background | 【主体】陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业人像摄影，自然生活化场景 | 【动态】电影级镜头, 病理机制解析, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression, slide_left | 【风格】color palette: natural earth shadows + daylight highlights + green foliage accents, cinematic atmosphere, 通用导演 aesthetic | 【音频】伴随白天环境音, 动作产生自然动作声, 氛围弥漫明亮日常氛围, 声画精准同步，嘴型与发音对齐 | 【质控】blurry, low resolution, pixelated, compression artifacts, cartoon, anime, illustration, 3D render look, CGI appearance, plastic look, distorted perspective, impossible geometry, floating objects, inconsistent scale, flat lighting, overexposed, crushed blacks, double shadows, wrong light direction, distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose, unnatural physics, fake water, static water, cardboard texture, plastic foliage 平滑平稳左移，中景居中构图，纪录片场景。5秒内完成景别过渡，保持画面稳定流畅。通过精准的镜头运动引导观众视线，强化叙事节奏。 【负面约束】no blurry, no cartoon, no deformed hands, no extra fingers, no watermark, no text 【明亮约束】自然光或柔和室内照明,画面真实干净,禁止暗黑/灰暗。 【角色约束】画面中仅出现陈卓,禁止重复角色 speaking_normal\n[创意指数0.5][[LIGHTING:L2]] 电影级灯光：戏剧性光影、伦勃朗光、剪影、环境光填充\n[[COLOR:L2]] 电影级色彩：电影LUT、冷暖对比、单色调色\n[[VFX:L2]] 电影级特效：光效粒子...[/创意指数]",
     "shotId": "S03",
-    "sceneName": "高危人群警示",
-    "sceneText": "高危人群警示",
+    "sceneName": "病理机制解析",
+    "sceneText": "病理机制解析",
     "qualityScore": {
-      "score": 76,
+      "score": 75,
       "grade": "A",
       "passed": true,
       "action": "放行",
       "scores": {
         "tier1Completeness": 50,
         "visualPurity": 100,
-        "utilization": 120,
+        "utilization": 115,
         "techValidity": 100,
         "emotionConsistency": 70,
         "negativeCompleteness": 0
@@ -75,11 +74,11 @@
         },
         {
           "dimension": "字符利用率",
-          "score": 120,
+          "score": 115,
           "weight": 15,
-          "length": 1197,
+          "length": 1152,
           "maxLength": 1500,
-          "utilization": 80,
+          "utilization": 77,
           "comment": "利用率良好"
         },
         {
@@ -111,7 +110,7 @@
         }
       ],
       "duration": 0,
-      "report": "===== Prompt质量门禁报告 =====\n\n总分: 76/100 | 评级: A | 动作: 放行\n\n各维度评分:\n  Tier-1完整性: 50/100 (权重25% → 13分) — 缺失: 主体, 动作\n  视觉纯度: 100/100 (权重20% → 20分) — 视觉纯净\n  字符利用率: 120/100 (权重15% → 18分) — 利用率良好\n  技术规格有效性: 100/100 (权重15% → 15分) — 技术声明有效\n  情绪-表情一致性: 70/100 (权重15% → 11分) — 未定义情绪阶段，默认评分\n  负面约束完整性: 0/100 (权重10% → 0分) — 缺失: no metallic shine, no traditional Chinese symbols, natural eye colors only\n\n综合: ✅ 通过门禁"
+      "report": "===== Prompt质量门禁报告 =====\n\n总分: 75/100 | 评级: A | 动作: 放行\n\n各维度评分:\n  Tier-1完整性: 50/100 (权重25% → 13分) — 缺失: 主体, 动作\n  视觉纯度: 100/100 (权重20% → 20分) — 视觉纯净\n  字符利用率: 115/100 (权重15% → 17分) — 利用率良好\n  技术规格有效性: 100/100 (权重15% → 15分) — 技术声明有效\n  情绪-表情一致性: 70/100 (权重15% → 11分) — 未定义情绪阶段，默认评分\n  负面约束完整性: 0/100 (权重10% → 0分) — 缺失: no metallic shine, no traditional Chinese symbols, natural eye colors only\n\n综合: ✅ 通过门禁"
     },
     "channelData": {
       "narration": {
@@ -120,7 +119,7 @@
         "duration": 0
       },
       "visual": {
-        "text": "电影级镜头, 高危人群警示, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression and presenter, natural expression",
+        "text": "电影级镜头, 病理机制解析, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression",
         "hasLipSync": false
       },
       "lipSync": null
@@ -129,12 +128,12 @@
   "mappedShot": {
     "id": "S03",
     "type": "content",
-    "scene": "高危人群警示",
+    "scene": "病理机制解析",
     "sceneType": "nature_epic",
     "emotionPhase": "tension",
     "narration": "",
     "action": "",
-    "visualPrompt": "超写实纪录片风格，医院健康宣教室或专业科普演播室内，陈卓身穿整洁白大褂，正面站立面向镜头进行讲解，双手随着三类人群的说明做出自然手势，神态专业而亲切，中近景竖屏构图，人物位于画面视觉中心，背景为明亮简洁的医疗教育环境，可见模糊的人体肌肉解剖示意图或健康知识展板，柔和自然光配合均匀室内照明，人物肤色与衣物纹理真实细腻，焦点清晰锐利，镜头稳定不晃动，整体呈现权威、清晰、真实可信的医学科普质感。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
+    "visualPrompt": "超写实纪录片风格，医院健康教育室或医学科普演播间，环境整洁明亮，背景可见人体解剖示意图或医学显示屏。陈卓位于画面中近景，身穿白大褂或专业医疗服饰，正面直视镜头，神态沉稳自信，双手配合讲解做自然手势，模拟示意肌细胞与肾脏位置。竖屏构图，人物占据画面主体，面部光线均匀柔和，肤色与织物纹理细节真实，镜头稳定无抖动，整体呈现权威、亲切且极具说服力的医疗科普质感。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
     "camera": "",
     "cameraMovement": {
       "description": "平滑平稳左移，中景居中构图，纪录片场景。5秒内完成景别过渡，保持画面稳定流畅。通过精准的镜头运动引导观众视线，强化叙事节奏。",
@@ -154,8 +153,7 @@
     "renderStyle": "",
     "negativePrompt": "",
     "characters": [
-      "chen-zhuo",
-      "presenter"
+      "chen-zhuo"
     ],
     "duration": 15,
     "beastId": "",
@@ -170,7 +168,7 @@
     "protagonistName": "主角",
     "beastId": "",
     "beastName": "",
-    "habitat": "高危人群警示",
+    "habitat": "病理机制解析",
     "episodeTheme": "",
     "sceneType": "nature_epic"
   },
@@ -182,8 +180,8 @@
     ]
   },
   "subsystemFields": {
-    "CHARACTER": "chen-zhuo，presenter",
-    "SCENE": "高危人群警示",
+    "CHARACTER": "chen-zhuo",
+    "SCENE": "病理机制解析",
     "MOOD": "tension",
     "RENDER": "电影级、超写实、细节丰富",
     "CAMERA": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
@@ -192,11 +190,11 @@
     "meta": {
       "source": "camera-movement-system-v3",
       "raw": {
-        "scene": "高危人群警示",
+        "scene": "病理机制解析",
         "emotionPhase": "tension",
         "duration": 15,
         "baseMovement": {
-          "scene": "高危人群警示",
+          "scene": "病理机制解析",
           "physicsDriver": "generic",
           "primaryMovement": "smooth_track",
           "speed": "smooth",
@@ -359,7 +357,7 @@
         }
       }
     },
-    "AUDIO": "【环境音效】风穿过物体声、风声",
+    "AUDIO": "【环境音效】风声、风穿过物体声",
     "_meta": {
       "activatedSubsystems": [
         "CameraMovementSystemV3Bridge",
@@ -372,8 +370,8 @@
   },
   "llmFields": {},
   "mergedFields": {
-    "CHARACTER": "chen-zhuo，presenter",
-    "SCENE": "高危人群警示",
+    "CHARACTER": "chen-zhuo",
+    "SCENE": "病理机制解析",
     "MOOD": "tension",
     "RENDER": "电影级、超写实、细节丰富",
     "CAMERA": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
@@ -382,11 +380,11 @@
     "meta": {
       "source": "camera-movement-system-v3",
       "raw": {
-        "scene": "高危人群警示",
+        "scene": "病理机制解析",
         "emotionPhase": "tension",
         "duration": 15,
         "baseMovement": {
-          "scene": "高危人群警示",
+          "scene": "病理机制解析",
           "physicsDriver": "generic",
           "primaryMovement": "smooth_track",
           "speed": "smooth",
@@ -549,7 +547,7 @@
         }
       }
     },
-    "AUDIO": "【环境音效】风穿过物体声、风声",
+    "AUDIO": "【环境音效】风声、风穿过物体声",
     "_meta": {
       "activatedSubsystems": [
         "CameraMovementSystemV3Bridge",
@@ -562,19 +560,19 @@
     "NEGATIVE": "no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers"
   },
   "normalizedFields": {
-    "CHARACTER": "chen-zhuo，presenter",
+    "CHARACTER": "chen-zhuo",
     "DIALOGUE": "",
     "ACTION": "",
-    "SCENE": "高危人群警示",
+    "SCENE": "病理机制解析",
     "MOOD": "tension",
     "CAMERA": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
     "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K",
     "NEGATIVE": "no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers",
-    "AUDIO": "【环境音效】风穿过物体声、风声",
+    "AUDIO": "【环境音效】风声、风穿过物体声",
     "RENDER": "电影级、超写实、细节丰富",
     "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow"
   },
-  "finalPrompt": "{CHARACTER: chen-zhuo，presenter | SCENE: 高危人群警示 | MOOD: tension | CAMERA: （一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人） | LIGHTING: 仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K | NEGATIVE: no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers | AUDIO: 【环境音效】风穿过物体声、风声 | RENDER: 电影级、超写实、细节丰富 | DIRECTOR: 景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow}",
+  "finalPrompt": "{CHARACTER: chen-zhuo | SCENE: 病理机制解析 | MOOD: tension | CAMERA: （一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人） | LIGHTING: 仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K | NEGATIVE: no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers | AUDIO: 【环境音效】风声、风穿过物体声 | RENDER: 电影级、超写实、细节丰富 | DIRECTOR: 景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow}",
   "validation": {
     "valid": false,
     "issues": [
@@ -582,7 +580,7 @@
     ],
     "warnings": [],
     "stats": {
-      "length": 705,
+      "length": 695,
       "emptyFields": [
         "DIALOGUE",
         "ACTION"
@@ -602,6 +600,6 @@
   },
   "meta": {
     "builderVersion": "v3",
-    "timestamp": "2026-06-18T02:02:22.423Z"
+    "timestamp": "2026-06-18T09:00:44.121Z"
   }
 }

@@ -3,14 +3,14 @@
   "name": "陈卓",
   "baseIdentity": {
     "name": "陈卓",
-    "age": 28,
+    "age": "35-40",
     "gender": "female",
     "species": "human",
-    "role": "presenter",
+    "role": "",
     "origin": "Earth"
   },
   "visualIdentity": {
-    "age": 28,
+    "age": "35-40",
     "gender": "female",
     "build": "average",
     "height": "medium",
@@ -50,8 +50,8 @@
     "emotion": "neutral",
     "language": "zh-CN"
   },
-  "createdAt": "2026-06-18T01:55:20.718Z",
-  "updatedAt": "2026-06-18T01:55:20.719Z",
+  "createdAt": "2026-06-18T13:13:32.651Z",
+  "updatedAt": "2026-06-18T13:13:32.651Z",
   "version": "2.1",
   "generatedAssets": {
     "portraits": [
@@ -70,7 +70,7 @@
     "analyzedDimensions": [],
     "lastComplianceCheck": null,
     "promptTemplates": {},
-    "minimalAnchor": "陈卓: 人类, 28岁女性, presenter",
+    "minimalAnchor": "陈卓: 人类, 35-40岁女性",
     "portraitPaths": [
       "image://bestiary/chen-zhuo-front.png",
       "image://bestiary/chen-zhuo-threeQuarter.png",
@@ -80,7 +80,5 @@
       "image://bestiary/chen-zhuo-action.png",
       "image://bestiary/chen-zhuo-detail.png"
     ]
-  },
-  "species": "human",
-  "race": "human"
+  }
 }

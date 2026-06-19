@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-17T08:26:06.716Z",
+  "updatedAt": "2026-06-18T16:14:44.184Z",
   "entries": {
     "memory:memory/2026-05-15.md:31:42": {
       "key": "memory:memory/2026-05-15.md:31:42",
@@ -3185,18 +3185,20 @@
       "endLine": 367,
       "source": "memory",
       "snippet": "- 大鹏发送新指令：另一个AI给了建议，\"有价值的吸取，没价值的抛弃\" - 大鹏金句：\"站在巨人的肩膀上，成为新的巨人\" - **等待**: 新建议MD文件（尚未收到附件） ### 吸收原则（已确立） 1. ✅ 有价值的 → 立刻融入现有模块 2. ❌ 没价值的 → 明确说清原因，不浪费时间 3. 🎯 始终以现有系统为主，吸收创意而非生搬硬套 4. 🚫 绝不新建独立模块（上次教训） --- *小G 于 2026-05-17 23:03 记录*",
-      "recallCount": 1,
+      "recallCount": 2,
       "dailyCount": 0,
       "groundedCount": 0,
-      "totalScore": 0.3905925095081329,
-      "maxScore": 0.3905925095081329,
+      "totalScore": 0.7960417926311492,
+      "maxScore": 0.4054492831230163,
       "firstRecalledAt": "2026-06-04T12:45:39.703Z",
-      "lastRecalledAt": "2026-06-04T12:45:39.703Z",
+      "lastRecalledAt": "2026-06-18T16:14:44.184Z",
       "queryHashes": [
-        "2397d96fdb6b"
+        "2397d96fdb6b",
+        "07ed01ff3a74"
       ],
       "recallDays": [
-        "2026-06-04"
+        "2026-06-04",
+        "2026-06-19"
       ],
       "conceptTags": [
         "大鹏",
@@ -3311,20 +3313,22 @@
       "endLine": 230,
       "source": "memory",
       "snippet": "- S00-S05：添加 Nirath 环境特征（双恒星、荧光生态、低重力） - 定妆照绑定：characters/xiaoG/portraits/xiaoG-cg-v3-front.png + characters/taotie/portraits/taotie-portrait-front_fullbody.png ### 34. v6.2-patch105 版本发布（20:30） - **Git commit:** a66124d（32 files changed, 2075 insertions, 9486 deletions） - **Tag:** v6.2-patch105 - **发布记录：** versions/v6.2-patch105-release-notes.md - **包含内容：** - promptforge-lite.js（单镜头串行处理 + 2000 tokens输出） - process-remaining-shots.js（独立进程处理剩余镜头） - boundary-test.js（系统能力边界测试） - run-taotie-preproduction.js（完整预生产链路） - S00-S05-prompt.md（6镜头完整导演优化） - nirath-scene-library-v2.json（增强版场景库） - promptforge-render.js（精简Prompt生成） - fix-render-prompts.js（后处理提取） - render-prompts-final.md（最",
-      "recallCount": 2,
+      "recallCount": 3,
       "dailyCount": 0,
       "groundedCount": 0,
-      "totalScore": 0.7991348206996918,
+      "totalScore": 1.1980201601982117,
       "maxScore": 0.4022664666175842,
       "firstRecalledAt": "2026-06-04T23:14:56.335Z",
-      "lastRecalledAt": "2026-06-17T00:36:36.549Z",
+      "lastRecalledAt": "2026-06-18T16:14:44.136Z",
       "queryHashes": [
         "c9c198d2a827",
-        "37175b4c07df"
+        "37175b4c07df",
+        "c29163d53aa1"
       ],
       "recallDays": [
         "2026-06-05",
-        "2026-06-17"
+        "2026-06-17",
+        "2026-06-19"
       ],
       "conceptTags": [
         "s00-s05",
@@ -5185,19 +5189,21 @@
       "endLine": 84,
       "source": "memory",
       "snippet": "1. **PromptForge Worker 输出格式**: shot ID 丢失导致全部跳过 2. **Validator 运镜检查逻辑**: prompt中有运镜词但检查未识别 3. **Stage 11 S01 776字符判定**: 渲染核心自身阈值问题 ### 关键修复记录 - S00 片头保护: `if (!shot.id || shot.id === 'S00' || shot.id === 'undefined') continue;` - 运镜关键词扩展: 增加 `static`, `push_in`, `orbit_right`, `fast_orbit`, `extreme_push`, `hold`, `tracking`, `一镜到底` - 场景流转阈值: `prompt.length >= 700`（原为800） ### 提交记录 ``` v6.5.54: 632a1c0 - 专家方案 v6.5.53-l 落地 v6.5.55: 01ccb3a - 热修复 prompt-standardizer v6.5.56: db6cbec - 修复三个链路问题 v6.5.57: 84d6253 - 修复 existingShot 变量声明 ``` ### 时间线 - 23:00 开始 P0 新建文件 - 23:52 完成 P1 接入修改 - 00:05 提交 v6.5.56 并推送 - 00:12 启动第一次预生产 - 00:21 第一次验证完成（68分） - 00:23 修复三个问题 - 00:28 提交 v6.5.57 并推送 - 00:30 启动第",
-      "recallCount": 2,
+      "recallCount": 3,
       "dailyCount": 0,
       "groundedCount": 0,
-      "totalScore": 0.793861711025238,
-      "maxScore": 0.4126351326704025,
+      "totalScore": 1.224073389172554,
+      "maxScore": 0.430211678147316,
       "firstRecalledAt": "2026-06-17T00:36:36.549Z",
-      "lastRecalledAt": "2026-06-17T00:39:48.443Z",
+      "lastRecalledAt": "2026-06-18T16:14:44.136Z",
       "queryHashes": [
         "37175b4c07df",
-        "f9ce473841a3"
+        "f9ce473841a3",
+        "c29163d53aa1"
       ],
       "recallDays": [
-        "2026-06-17"
+        "2026-06-17",
+        "2026-06-19"
       ],
       "conceptTags": [
         "shot.id",
@@ -5217,19 +5223,21 @@
       "endLine": 31,
       "source": "memory",
       "snippet": "# 2026-06-05 工作日志 ## 任务：PromptForge Director 三阶流水线融入主链路 ### 背景 - 技术专家提供 `promptforge-director.js` 三阶流水线方案 - 队长要求：1）吃透方案并彻底解决；2）接入主链路并让主链路跑稳 ### 进展 #### 第一阶段：技术链路稳定（上午） - 初测总分55分，Stage 3a OOM（SIGKILL） - 诊断：maxTokens 8192 不够，content 为空，reasoning_content 有 7837 字符 - 修复：LLM 接口适配，正确提取 reasoning_content - 修复：Stage 3a 输出要求从5字段→3字段，减少 LLM 负担 - 修复：Stage 3 前强制 GC（`global.gc()`），防止内存累积 - 修复：质量门阈值 70→50，结构检查 4/4→3/4，运镜支持中文词 - 修复：子进程内存限制 4096→8192，超时 900→1200 秒 - 结果：总分 58 → 85（S01 100分，S00 70分因回退） #### 第二阶段：质量分数优化（下午） - 问题：Stage 3a LLM 调用不稳定，有时成功有时失败 - 修复：提取字符数 800→2000，重试次数 2→3，超时 120→180 秒 - 修复：角色一致性检查处理空档案 - 修复：时长分配 4.5→5.0 字/秒 - 修复：运镜正则表达式扩展100+中文词 - 结果：总分 100 分！两个镜头全部满分！ ### 最终状态 - **技术链路**：稳定",
-      "recallCount": 2,
+      "recallCount": 3,
       "dailyCount": 0,
       "groundedCount": 0,
-      "totalScore": 0.7908701121807098,
+      "totalScore": 1.1963157027959823,
       "maxScore": 0.410657387971878,
       "firstRecalledAt": "2026-06-17T00:36:36.549Z",
-      "lastRecalledAt": "2026-06-17T00:39:48.443Z",
+      "lastRecalledAt": "2026-06-18T16:14:44.136Z",
       "queryHashes": [
         "37175b4c07df",
-        "f9ce473841a3"
+        "f9ce473841a3",
+        "c29163d53aa1"
       ],
       "recallDays": [
-        "2026-06-17"
+        "2026-06-17",
+        "2026-06-19"
       ],
       "conceptTags": [
         "promptforge-director.js",
@@ -6183,6 +6191,161 @@
         "硬/软/散射/直射",
         "轮廓/填充/主光/背景",
         "黎明前/日出/上午/正午/午后/日落前/日落/黄昏/夜晚/月光"
+      ]
+    },
+    "memory:memory/2026-06-02.md:28:68": {
+      "key": "memory:memory/2026-06-02.md:28:68",
+      "path": "memory/2026-06-02.md",
+      "startLine": 28,
+      "endLine": 68,
+      "source": "memory",
+      "snippet": "3. ✅ **对齐评分修复**（+8分）: 中英文角色名匹配 + narration关键词扩展 4. ✅ **情绪评分修复**（+4.5分）: 30个情绪关键词 + 权重1.5x 5. ✅ **空间评分修复**（+10分）: 裁剪前长度计算 + 布景增强重复检测/长度限制 6. ✅ **PromptForge导演编排系统**: 7个类600行，STAGE-12后置优化 7. ✅ **v3.0提示词标准**: 9项检查 + Seedance 2.0定妆照规范 8. ✅ **LLM适配器安全层**: 防止text.match崩溃 9. ✅ **全局负面提示词**: 自动注入 10. ✅ **Nirath环境注入**: 场景化环境描述 --- ## 五维评分满分达成 | 维度 | 初始 | 最终 | 状态 | |------|------|------|------| | 运镜(15) | 0 | 15 | ✅ 满分 | | 光影(15) | 0 | 15 | ✅ 满分 | | 空间(15) | 5 | 15 | ✅ 满分 | | 对齐(20) | 5 | 13 | ⚠️ 可再提升 | | 情绪(20) | 3 | 7.5 | ⚠️ 主要瓶颈 | --- ## 仍存在的问题 1. **PromptForge Stage 2/3内存溢出**: LLM返回8000 tokens导致JS堆溢出 2. **S03运镜段数不足**: 3段（11分）vs 其他4段（15分），剧本生成决定 3. **情绪评分瓶颈**: LLM生成prompt中情绪关键词密度不足 4. **链路完整性验",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.39826015830039974,
+      "maxScore": 0.39826015830039974,
+      "firstRecalledAt": "2026-06-18T16:14:44.136Z",
+      "lastRecalledAt": "2026-06-18T16:14:44.136Z",
+      "queryHashes": [
+        "c29163d53aa1"
+      ],
+      "recallDays": [
+        "2026-06-19"
+      ],
+      "conceptTags": [
+        "4.5分",
+        "权重1.5x",
+        "布景增强重复检测/长度限制",
+        "stage-12后置优化",
+        "v3.0提示词标准",
+        "2.0定妆照规范",
+        "防止text.match崩溃",
+        "7.5"
+      ]
+    },
+    "memory:memory/2026-06-03.md:1:20": {
+      "key": "memory:memory/2026-06-03.md:1:20",
+      "path": "memory/2026-06-03.md",
+      "startLine": 1,
+      "endLine": 20,
+      "source": "memory",
+      "snippet": "## 2026-06-03 02:28 UTC - 三管齐下优化执行进度 ### 方案实施状态 1. **方案C（PromptForge内存溢出修复）**：✅ 已落地 - `promptforge-director.js` 修改：`ChiefWriter.writeDialogues` 和 `DirectorOfPhotography.designShots` 改为批量处理（batchSize=2），限制 maxTokens: 4000 2. **方案A（导演优化升级）**：✅ 已落地 - `nirath-master-pipeline.js` 修改：`Director._buildDirectorPrompt` 追加\"情绪弧线现状\"输入与\"情绪审查报告\"输出要求 3. **方案B（对齐评分关键词扩展）**：✅ 已落地 - `calculateEmotionalDepthV2` 情绪关键词扩至100个（单个分值0.5） - `calculateNarrativeAlignment` narration/visual/action 关键词分别扩至15/10/15个（单个分值1.5） ### 端到端测试记录 - **第一轮 fast-meadow**：总耗时 1117.7 秒，Stage 11 因 `sceneType is not defined` 链路中断，输出镜头数 0，交付文档无效。 - **第二轮 salty-ocean**：Stage 11 通过（6个镜头全部渲染，评分：S00=95, S01=64, S02=65, S03=69.5,",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.3947772473096847,
+      "maxScore": 0.3947772473096847,
+      "firstRecalledAt": "2026-06-18T16:14:44.136Z",
+      "lastRecalledAt": "2026-06-18T16:14:44.136Z",
+      "queryHashes": [
+        "c29163d53aa1"
+      ],
+      "recallDays": [
+        "2026-06-19"
+      ],
+      "conceptTags": [
+        "promptforge-director.js",
+        "chiefwriter.writedialogues",
+        "nirath-master-pipeline.js",
+        "单个分值0.5",
+        "narration/visual/action",
+        "关键词分别扩至15/10/15个",
+        "单个分值1.5",
+        "fast-meadow"
+      ]
+    },
+    "memory:memory/2026-06-16.md:334:366": {
+      "key": "memory:memory/2026-06-16.md:334:366",
+      "path": "memory/2026-06-16.md",
+      "startLine": 334,
+      "endLine": 366,
+      "source": "memory",
+      "snippet": "**等待**：队长下一步指示（修复S01/S04边界case / 直接投产 / 其他优化） --- ## 2026-06-16 14:15 v6.6.7 生产版本发布（外部专家修复版） **队长指令**：按外部专家方案修复、测试、提交生产版本 **外部专家方案核心内容**： 1. 多层候选文本提取（4个来源：content/raw.content/reasoning/raw.reasoning） 2. 括号平衡扫描JSON提取（栈匹配算法，非简单正则） 3. 结构修复（策略名占位符纠正、段数修复、movement增强） 4. 软回退替代v3规则模板（高质量fallback） 5. v1/v2兼容输出结构（description/transitionType/timeline） 6. 精简Prompt（禁止\"策略名\"，降低示例污染） **实施**： - 重写 `systems/camera-movement-system-v4.js`（v4.0 → v4.1） - 保留SceneAnalyzer/ContinuityEngine/TimelineFeatureToggle - 重写LLMTimelineGenerator核心逻辑 - 添加_bracket balance scan、_sanitizeParsedTimeline、_buildSoftFallbackTimeline等方法 **验证结果：5/5全部v4通过！** - S01: 静态稳定式讲解 | 2段 ✅ - S02: 递进式推轨聚焦 | 3段 ✅ - S03: 压迫性螺旋推进 | 3段 ✅ - S04:",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.4015022426843643,
+      "maxScore": 0.4015022426843643,
+      "firstRecalledAt": "2026-06-18T16:14:44.184Z",
+      "lastRecalledAt": "2026-06-18T16:14:44.184Z",
+      "queryHashes": [
+        "07ed01ff3a74"
+      ],
+      "recallDays": [
+        "2026-06-19"
+      ],
+      "conceptTags": [
+        "修复s01/s04边界case",
+        "v6.6.7",
+        "v1/v2兼容输出结构",
+        "v4.0",
+        "v4.1",
+        "添加-bracket",
+        "5/5全部v4通过",
+        "等待"
+      ]
+    },
+    "memory:memory/2026-06-09.md:1:24": {
+      "key": "memory:memory/2026-06-09.md:1:24",
+      "path": "memory/2026-06-09.md",
+      "startLine": 1,
+      "endLine": 24,
+      "source": "memory",
+      "snippet": "## v6.5.32-fix5 专家方案 C + D 实施记录 ### 实施内容 1. **方案 C：generic 专用 CAMERA_COMBOS**（`intra-shot-prompt-enhancer.js`） - 新增5个组合：`educational_opening`、`medical_explain`、`clinical_demo`、`process_breakdown`、`reassurance_closing` - 修改 `detectComboType`：增加 generic/medical/education/documentary 模式分支，返回科普运镜组合 2. **方案 D：拆分评分维度**（`nirath-master-pipeline.js`） - 新增 helper 方法：`_normalizeMovementType`、`_getPrimaryMovementType`、`_calcInterShotDiversity` - 新增 `assignDiverseMovements` 批量分配方法（专家方案 E） - 新增 `_extractSegmentsFromShot` 兼容读取方法 - 修改评分逻辑：`cameraVariety = Math.min(15, intraShotVariety + interShotDiversity)` - intraShotVariety：段数评分（3段=6分，4段=8分） - interShotDiversity：镜头间类型差异（5种不同=7分，4",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.3916209042072296,
+      "maxScore": 0.3916209042072296,
+      "firstRecalledAt": "2026-06-18T16:14:44.184Z",
+      "lastRecalledAt": "2026-06-18T16:14:44.184Z",
+      "queryHashes": [
+        "07ed01ff3a74"
+      ],
+      "recallDays": [
+        "2026-06-19"
+      ],
+      "conceptTags": [
+        "v6.5.32-fix5",
+        "camera-combos",
+        "intra-shot-prompt-enhancer.js",
+        "educational-opening",
+        "medical-explain",
+        "clinical-demo",
+        "process-breakdown",
+        "reassurance-closing"
+      ]
+    },
+    "memory:memory/2026-06-16.md:309:342": {
+      "key": "memory:memory/2026-06-16.md:309:342",
+      "path": "memory/2026-06-16.md",
+      "startLine": 309,
+      "endLine": 342,
+      "source": "memory",
+      "snippet": "|------|------|------|------| | S01 开场11s | 策略名（异常） | 1段 | ⚠️ | | S02 病理12s | 渐进聚焦病理叙事 | 3段 | ✅ v4 | | S03 症状13s | （FPV模式） | - | FPV | | S04 高危14s | 策略名（异常） | 1段 | ⚠️ | | S05 结语8s | 渐进式专家证言运镜 | 3段 | ✅ v4 | **v4个性化率：4/5（80%）**，S03走FPV模式 **⚠️ 发现的问题**： - S01/S04 运镜描述过短（3字符），JSON提取异常 - 验证器检测到：运镜对象缺少关键字段（非v1也非v2结构） - 根因：模型在reasoning中输出思考过程，JSON在最后，从后往前匹配时可能匹配到错误的花括号 **Stage 13 定妆照闸机**： - 5个镜头全部被定妆照强制提交闸机拦截 - generic模式下不强制阻塞，链路继续 **Stage 16.5 完整性验证**： - 17项检查：15通过，2失败，0错误，13警告 - 2个失败项：STAGE-9（运镜输出有效性）、STAGE-16.5（类型字段异常） - generic模式不强制阻塞，链路继续 **Git提交**：已推送 v6.6.6 到 short-video **等待**：队长下一步指示（修复S01/S04边界case / 直接投产 / 其他优化） --- ## 2026-06-16 14:15 v6.6.7 生产版本发布（外部专家修复版） **队长指令**：按外部专家方案修复、测试",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.36786355972290036,
+      "maxScore": 0.36786355972290036,
+      "firstRecalledAt": "2026-06-18T16:14:44.184Z",
+      "lastRecalledAt": "2026-06-18T16:14:44.184Z",
+      "queryHashes": [
+        "07ed01ff3a74"
+      ],
+      "recallDays": [
+        "2026-06-19"
+      ],
+      "conceptTags": [
+        "4/5",
+        "s01/s04",
+        "16.5",
+        "stage-9",
+        "stage-16.5",
+        "v6.6.6",
+        "short-video",
+        "修复s01/s04边界case"
       ]
     }
   }

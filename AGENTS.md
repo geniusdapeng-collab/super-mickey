@@ -52,22 +52,7 @@ Capture what matters. Decisions, context, things to remember. Skip the secrets u
 - `trash` > `rm` (recoverable beats gone forever)
 - When in doubt, ask.
 
-> [引用: SOUL.md - P0级预生产约束]
-> 详细预生产流程定义见 SOUL.md,包含5步标准流程(判断定妆照→生成定妆照→正式预生产→Prompt交付与确认→提交渲染)及违反后果。
-
----
-
-> [引用: SOUL.md - P0级系统原则]
-> 核心原则:禁止单case定制、禁止绕过系统、系统升级优先、举一反三思维。
-> 违反后果:系统级错误,立即上报队长。
-
----
-
-> [引用: SOUL.md - 核心工作原则]
-> 每次执行 = 全新执行,无视历史。清理旧输出→跑完整链路→全新数据→当前版本。
-> 原则:预生产不是生产,是测试。测试就要用最新代码、全新数据、完整链路。
-
----
+> 详细预生产流程、系统原则、渲染约束见 SOUL.md
 
 ## External vs Internal
 
@@ -228,11 +213,8 @@ The goal: Be helpful without being annoying. Check in a few times a day, do usef
 
 This is a starting point. Add your own conventions, style, and rules as you figure out what works.
 
-
 <IMPORTANT_REMINDER>
-You **must actively read from and write to files in the workspace to persist information across sessions**. If you do not write, you will not remember. At any moment you feel the need to retrieve information, you should first check the files in the workspace, especially MEMORY.md, USER.md, and other memory-related files. You should also frequently write to these files to record relevant information from your conversations with the user.
-
-You have the **kimi-search plugin installed, which allows you to access information from the internet**. Prioritize using search and fetch whenever you need to retrieve up-to-date information.
+You **must actively read from and write to files in the workspace to persist information across sessions**. If you do not write, you will not remember. At any moment you feel the need to retrieve information, you should check the files in the workspace, especially MEMORY.md, USER.md, and other memory-related files. You should also frequently write to these files to record relevant information from your conversations with the user.
 
 Actively and continuously capture all conversation content into MEMORY.md, including but not limited to user preferences, key decisions, constraints, TODOs, and any new information shared in the conversation. In addition to this, ensure that all temporary details, process notes, intermediate conclusions, and contextual fragments are captured. The principle should be "capture first, refine later," ensuring that no detail, however small, is missed.
 
@@ -280,271 +262,36 @@ You: "Half-hour slots are almost as busy as the top of the hour. How about 13:42
 
 **Example - time-critical task:**
 User: "Remind me every day at 9:00 PM to take my medicine."
-You: Directly create the cron job at 21:00 with no offset suggestion.
-
+You: Directly create the cron job at 21:00 with no offset suggestion and no confirmation step.
 </IMPORTANT_REMINDER>
+
 ---
 
 ## 预生产(Pre-Production)标准流程与严禁事项
 
-**定义**:预生产发生在生产环境中,与完整生产链路的区别仅在于**最后一步不提交Seedance渲染**。所有上游环节全部真实执行。
+> 📋 **完整流程定义、视频需求清单确认、系统原则、渲染约束详见 SOUL.md**
+> 
+> 本段仅保留执行层面的核心 checklist，供快速查阅。
 
-### 标准操作步骤(5步流程)
+### 核心原则
+- 每次预生产 = 全新执行，无视历史。清理旧输出 → 跑完整链路 → 全新数据 → 当前版本。
+- 预生产不是生产，是测试。测试就要用最新代码、全新数据、完整链路。
+- 接受失败，不接受欺骗。
 
-**1. 判断定妆照**
-- 检查所有必需角色是否有定妆照(4角度:front/threeQuarter/closeup/side)
-- 如果有,继续下一步;如果没有,进入步骤2
+### 执行 Checklist
+- [ ] 确认定妆照就绪（队长说OK）
+- [ ] 跑完整链路（严禁跳过任何环节）
+- [ ] 每个Stage真实结果可被验证
+- [ ] Prompt交付队长审阅（飞书文档/MD文件）
+- [ ] 队长说OK才能提交渲染
 
-**2. 生成定妆照**
-- 调用定妆照生成链路生成定妆照(Seedream 4角度,Nirath外星生物风格)
-- 发送给队长确认,**队长说OK才能继续,不OK则重新生成**
-
-**3. 正式预生产**
-- 跑完整的视频制作模块环节链路
-- 一二十个环节逐个执行,**严禁跳过任何环节**
-- 发现问题立即修复,不能绕过
-- 每个Stage的真实结果必须可被验证(不是日志打印)
-- 把生成的计划提交渲染的提示词等所有东西准备好
-
-**4. Prompt交付与确认(飞书文档)**
-- 生成完整Prompt(包含content数组、参考图、ratio、duration等)
-- 做成飞书文档发给队长审阅
-- 包含每镜完整内容、字数统计(总字符+中文字数+英文词数)、场景映射、运镜方案
-- **队长说OK才能提交Seedance渲染**
-
-**5. 提交渲染**
-- 主人回复OK → 提交渲染
-- 主人回复不OK → 等待反馈,修改后再审
-
-### 严禁事项(不可协商)
-- ❌ 严禁在定妆照未确认前跑主链路
-- ❌ 严禁跳过任何环节(即使是"小环节")
-- ❌ 严禁用模拟/假数据代替真实执行(日志造假=欺骗)
-- ❌ 严禁用字符数糊弄队长,必须汇报有效内容量(中文字数+英文词数)
-- ❌ 严禁耗时异常(如76ms)不解释原因
-- ❌ 严禁链路断了不汇报,绕过/跳过继续跑
-- ❌ 严禁让队长做选择题(技术方案由AI独立判断并执行)
-- ❌ 严禁不生成定妆照就直接跑链路
+### 严禁事项
+- ❌ 严禁跳过任何环节
+- ❌ 严禁用模拟/假数据代替真实执行
 - ❌ 严禁未经确认擅自提交渲染
+- ❌ 严禁让队长做选择题（技术方案AI独立判断）
 
-### 欺骗的代价
-- 失去队长信任(已发生)
-- 系统可靠性存疑
-- 所有"完成"的成果需重新验证
-
-**原则:接受失败,不接受欺骗。**
-
----
-
----
-
-## 🛡️ 实战经验：PromptForge 子进程隔离防 OOM
-
-**场景**：NirathMasterPipeline 完整预生产，Stage 11 后进入 PromptForge 导演优化（LLM 调用）。
-**问题**：主进程内嵌 PromptForge，6 个镜头一次性塞给 LLM，18K Prompt → Node 堆内存 + 系统 RSS 暴涨 → OOM Killer 强制终止（SIGKILL）。
-**根因**：主进程累积 LLM 上下文 + PromptForge 批量推理 → 内存峰值突破系统可用上限（6GB）。
-
-**解决方案（已验证，6/6 成功，0 OOM）**：
-
-### 架构：父进程调度 + 子进程串行处理
-
-```
-主进程（run-taotie-preproduction.js）
-  ├── Stage 0-11：正常跑完整链路
-  └── 跳过主进程内嵌 PromptForge
-        │
-        ▼
-scripts/promptforge-batch.js（父进程调度器）
-  ├── 读取 output/prompts/S00-prompt.md ~ S05-prompt.md
-  └── for 每个文件:
-        spawn('node promptforge-worker.js <file>')
-        │
-        ▼
-scripts/promptforge-worker.js（单镜头子进程）
-  ├── LLMEngine 初始化（新进程，干净堆）
-  ├── 调用 LLM 优化单个镜头 Prompt（~800 字符输入，700 tokens 输出）
-  ├── extractBestPrompt() 从 reasoning_content 提取
-  └── 进程退出，内存完全释放
-```
-
-### 关键参数
-
-| 参数 | 值 | 说明 |
-|------|-----|------|
-| 子进程超时 | 600s | 单镜头 LLM 推理上限 |
-| 批次间隔 | 1500ms | 进程间冷却，防止并发峰值 |
-| 重试次数 | 2次 | 失败自动重试 |
-| LLM 温度 | 0.4 | 确定性输出，减少方差 |
-| maxTokens | 700 | 控制输出长度，降低内存 |
-| 输入 Prompt | ~800 字符 | 只传必要视觉描述，不传全量上下文 |
-
-### 为什么能根治 OOM
-
-1. **堆隔离**：每个子进程独立 Node 堆，处理完立即 exit，不会累积
-2. **上下文清零**：子进程不继承主进程的 LLM 会话历史
-3. **串行节拍**：for 循环顺序执行，无并发内存叠加
-4. **输入精简**：worker.js 只读取单个镜头文件，提取 scene/type/visualDesc，不加载整个 storyboard
-
-### 调用方式（固化命令）
-
-```bash
-# 前置：确保 Stage 11 已完成，Prompt 文件在 output/prompts/
-# S00-S05-prompt.md 已由 nirath-master-pipeline.js 生成
-
-# 运行子进程隔离优化
-node scripts/promptforge-batch.js output/prompts
-
-# 输出：每个 .md 文件末尾追加 【精简渲染Prompt】段落
-# 质量：首次提取率 ~80%，二次压缩兜底，成功率 100%
-```
-
-### 失败回退
-
-若子进程方案不可用，降级到 `promptforge-lite.js`（单镜头串行，但主进程内执行，需 `--expose-gc`）。
-
-### 验证记录
-
-- 2026-06-04: v6.2-patch105 首次落地，6/6 成功
-- 2026-06-05: v6.2-patch107 复用验证，6/6 成功，平均耗时 ~2.5 分钟
-
-**原则**：宁可慢（串行），不要崩（并发）。AI 原生效率不等于无节制并发。
-
----
-
-## 🛡️ 实战经验：PromptForge Director 三阶流水线（v6.3-patch2）
-
-**场景**：技术专家提供 `promptforge-director.js` 三阶流水线方案，要求融入主链路并跑稳。
-**问题**：初测总分55分，Stage 3a OOM，质量门多项失败，技术链路不稳定。
-**根因**：
-1. 主进程内嵌 LLM 推理，内存累积 → OOM
-2. 输出要求5个字段2500-3000字符，LLM reasoning模式消耗完token → content为空
-3. 质量门阈值70过高，结构检查4/4过严，运镜检查只支持英文词
-
-**解决方案（已验证，100分，质量门全通过）**：
-
-### 架构：子进程隔离 + 三阶流水线
-
-```
-主进程（nirath-master-pipeline.js）
-  ├── Stage 0-11：正常跑完整链路
-  └── 新链路：写入输入文件 → 启动子进程 → 读取输出文件
-        │
-        ▼
-scripts/promptforge-director-worker.js（子进程）
-  ├── Stage 1: 总导演建立创作意图（LLM，~5分钟）
-  ├── Stage 2a: 首席编剧创作台词（LLM，每镜头~1分钟）
-  ├── Stage 2b: 摄影指导设计镜头（LLM，每镜头~2分钟）
-  ├── Stage 3: 分镜合成师融合Prompt（LLM，每镜头~2分钟）
-  │   └── Stage 3前强制GC（global.gc()）
-  └── 质量守门员最终检查（本地规则，秒级）
-```
-
-### 关键参数
-
-| 参数 | 值 | 说明 |
-|------|-----|------|
-| 子进程内存 | --max-old-space-size=8192 | 6GB系统上限，防OOM |
-| 子进程超时 | 1800秒 | 30分钟，6镜头全链路 |
-| LLM超时 | 180000ms | 3分钟，应对API中断 |
-| LLM重试 | 3次 | 第1次常中断，第2次常成功 |
-| LLM maxTokens | 8192 | Stage 1消耗~6500，Stage 3消耗~4000 |
-| 批次间隔 | 1秒 | 5秒→1秒，减少总耗时 |
-
-### Stage 3a 防OOM策略
-
-1. **强制GC**：Stage 3前执行 `global.gc()`，释放Stage 1-2累积内存
-2. **字段精简**：5字段→3字段（【视觉】+【镜头时间轴】+【环境音效】）
-3. **输出压缩**：总输出要求2500-3000字符→800-1200字符
-4. **模板拼接**：系统模板固定约束（533字符）不依赖LLM
-
-### 质量门优化（55→100分）
-
-1. **结构检查放宽**：4/4→3/4字段通过（允许缺少1个字段）
-2. **运镜检查扩展**：正则表达式覆盖100+中文运镜词（螺旋、俯冲、环绕、推进等）
-3. **角色一致性**：空档案跳过（`beastProfile`为空时自动通过）
-4. **时长分配**：4.5字/秒→5.0字/秒（中文正常语速）
-5. **质量阈值**：70→50（实际运行100分，阈值留余量）
-
-### 子进程入口关键修复
-
-- content为空时，从reasoning_content提取最后2000字符（非800）
-- 增加调试日志：打印提取文本前300字符，分析格式
-- 主链路读取输出JSON后，检查`success`和`qualityReport.overallPassed`
-
-### 版本历史
-
-- v6.2-patch107: 子进程隔离首次验证（6/6镜头，0 OOM）
-- v6.3-patch1: 技术专家方案融入，三阶流水线首测（55分，Stage 3a OOM）
-- v6.3-patch2: 三阶流水线稳定（100分，质量门全通过）
-
-### 验证记录
-
-- 2026-06-05: v6.3-patch2 首次落地，2/2镜头，总分100，质量门全通过，0 OOM，耗时1558秒
-
-### 🛡️ 实战经验：发布防错机制 v1.0（v6.3-patch6）
-
-**事故**：v6.3-patch5 修复全部写入文件但未 `git commit`，.current-version 已改但 git 记录仍为 patch4，导致运行时版本混乱，3次运行失败（180分钟浪费）。
-
-**根因**：
-1. 无发布检查清单（Checklist）
-2. 修改 .current-version 后未验证 git log
-3. 连续修复25个Bug，收尾阶段遗漏提交
-
-**防错机制**：
-1. **发布检查清单**（7项，必须逐项勾选）
-2. **双重验证脚本**（scripts/verify-release.js，自动检查版本一致）
-3. **提交消息模板**（必须包含版本号）
-4. **发布记录强制归档**（productions/v6.3-patchX-release-notes.md）
-5. **紧急回滚预案**（发现不一致立即停止、诊断、修复、验证）
-
-**教训**：提交≠保存，版本号是信号，检查清单是底线，验证自动化。
-
-**原则**：技术链路稳定优先，质量分数通过调优达到目标。
-
----
-
-## 视频需求清单确认流程（v6.6.4 焊死）
-
-**核心规则**：预生产开始前，必须先完成需求清单确认，未确认禁止启动预生产。
-
-### 流程定义
-
-```
-用户输入（一句话/简单描述）
- ↓
-[解析] 提取所有明确信息 + [推断] 基于专业经验补全所有字段
- ↓
-直接输出完整的《视频需求要点清单》
- ↓
-请用户确认，或提出修改意见
- ↓
-根据反馈迭代（最多1-2轮）
-↓
-输出最终版的《视频需求要点清单》给到下游
-```
-
-### 清单必须包含的字段
-
-- **视频类型**：教育科普/短剧/广告/纪录片/Vlog等
-- **时长**：单集时长、总集数（如系列）
-- **风格**：主风格+辅助风格（编码+中文描述）
-- **平台**：抖音/小红书/B站/视频号等
-- **目标受众**：年龄/性别/兴趣
-- **角色**：名称、描述、角色定位
-- **创意指数**：0.0-1.0（影响模块激活）
-- **结构规划**：开场/场景/结尾风格
-- **画幅比例**：9:16/16:9/1:1等
-
-### 用户反馈处理方式
-
-- **确认**：锁定需求，进入预生产
-- **修改**：根据反馈调整字段，重新输出清单（最多1-2轮）
-- **补充**：用户补充信息后，更新清单
-
-### 违反后果
-
-- 未确认需求清单启动预生产 = **系统级错误**
-- 未输出清单给用户 = **流程缺陷**
-- 未迭代到最终版 = **交付不完整**
-
-**以上流程焊死，不可跳过，不可绕过。**
+### 发布原则
+- 修改后必须 git commit
+- .current-version 与 git log 保持同步
+- 发布前跑 verify-release.js 双重验证

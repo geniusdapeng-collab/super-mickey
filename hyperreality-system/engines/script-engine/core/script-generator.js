@@ -6,20 +6,41 @@ const fs = require('fs');
 const path = require('path');
 const { ScriptBlueprint } = require('./script-blueprint');
 
+// 复用现有LLM引擎
+const LLM_ENGINE_PATH = path.join(__dirname, '../../../../systems/llm-reasoning-engine.js');
+let LLMEngine;
+try {
+  ({ LLMEngine } = require(LLM_ENGINE_PATH));
+} catch (e) {
+  console.warn('[ScriptGenerator] 无法加载LLMEngine:', e.message);
+}
+
 class ScriptGenerator {
   constructor(options = {}) {
     this.config = {
       llmEndpoint: options.llmEndpoint || process.env.LLM_ENDPOINT || 'https://ark.cn-beijing.volces.com/api/v3/chat/completions',
       apiKey: options.apiKey || process.env.VOLCENGINE_ARK_API_KEY,
-      model: options.model || 'ep-20260518004622-jp46s', // 使用文本模型
+      model: options.model || 'ep-20260518004622-jp46s',
       maxTokens: options.maxTokens || 8192,
-      temperature: options.temperature || 0.7,
+      temperature: options.temperature || 1,
       promptTemplateDir: options.promptTemplateDir || path.join(__dirname, '../prompts'),
       templateDir: options.templateDir || path.join(__dirname, '../templates'),
       timeout: options.timeout || 180000,
       maxRetries: options.maxRetries || 3,
       ...options
     };
+    
+    // 初始化LLM引擎（优先使用现有引擎）
+    this.llmEngine = null;
+    if (LLMEngine) {
+      this.llmEngine = new LLMEngine({
+        model: 'kimi-k2p6',
+        maxTokens: this.config.maxTokens,
+        timeoutMs: this.config.timeout,
+        maxRetries: this.config.maxRetries
+      });
+      console.log('[ScriptGenerator] 使用LLMEngine (kimi-k2p6)');
+    }
   }
 
   /**
@@ -115,12 +136,20 @@ ${meta.featured_beast_id ? '- 主角异兽：' + meta.featured_beast_id : ''}
 采用三幕式结构：
 ${JSON.stringify(template.structure.acts, null, 2)}
 
-## 世界观设定（Nirath）
+## 世界观设定
+${meta.world_setting === 'Nirath' ? `
 - Nirath是地球前身，一个硅基与碳基生命共存的星球
 - 《山海经》实为Nirath往事的记录
 - 核心主题：记忆即存在
 - 环境特征：硅晶草原、双月当空、等离子河流、晶体森林
 - 禁止暗黑风格，要求明亮多色彩强质感
+` : meta.world_setting ? `
+- 世界观：${meta.world_setting}
+` : `
+- 现实世界设定，真实场景，写实风格
+- 环境特征：根据内容类型选择合适场景（医院、实验室、户外等）
+- 要求明亮、专业、可信的视觉效果
+`}
 
 ## 输出格式要求
 你必须输出一个严格的 JSON 对象，符合以下 Schema：
@@ -244,14 +273,40 @@ ${JSON.stringify(template.structure.acts, null, 2)}
 
   /**
    * 调用 LLM API
+   * v1.1: 优先使用LLMEngine (kimi-k2p6)
    */
   async _callLLM(prompt) {
+    // 优先使用LLMEngine
+    if (this.llmEngine) {
+      try {
+        console.log('[ScriptGenerator] 使用LLMEngine调用...');
+        const result = await this.llmEngine.generate(prompt, {
+          systemPrompt: '你是一位专业的AI视频编剧，只输出严格格式的JSON。',
+          maxTokens: this.config.maxTokens,
+          timeoutMs: this.config.timeout
+        });
+        
+        if (result.content) {
+          return result.content;
+        }
+        if (result.reasoning_content) {
+          console.warn('[ScriptGenerator] 从reasoning_content提取内容');
+          return result.reasoning_content;
+        }
+        throw new Error('LLM返回空内容');
+      } catch (error) {
+        console.error('[ScriptGenerator] LLMEngine调用失败:', error.message);
+        throw error;
+      }
+    }
+    
+    // 降级：直接HTTP调用（保留旧逻辑作为fallback）
     const axios = require('axios');
     let lastError = null;
 
     for (let attempt = 1; attempt <= this.config.maxRetries; attempt++) {
       try {
-        console.log(`[ScriptGenerator] LLM 调用尝试 ${attempt}/${this.config.maxRetries}`);
+        console.log(`[ScriptGenerator] LLM 直接调用尝试 ${attempt}/${this.config.maxRetries}`);
 
         const response = await axios.post(
           this.config.llmEndpoint,

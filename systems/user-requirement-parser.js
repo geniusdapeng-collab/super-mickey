@@ -362,7 +362,7 @@ class UserRequirementParser {
       const response = await this.llmEngine.complete({
         prompt: prompt,
         maxTokens: 2000,
-        temperature: 0.3
+        temperature: 1
       });
 
       // 解析LLM输出（期望JSON格式）

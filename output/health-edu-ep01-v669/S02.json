@@ -1,10 +1,10 @@
 {
   "shotId": "S02",
-  "recordedAt": "2026-06-18T02:02:22.420Z",
+  "recordedAt": "2026-06-18T09:00:44.116Z",
   "rawShot": {
     "id": "S02",
-    "scene": "常见诱因解析",
-    "dialogue": "横纹肌溶解不会无缘无故发生，剧烈运动、肌肉挤压伤，还有部分药物，都是临床上最常见的诱因。",
+    "scene": "症状识别与警示",
+    "dialogue": "很多人觉得运动后肌肉酸痛很正常，但如果尿液变成浓茶色，同时肌肉严重肿胀、压痛明显，这就要高度警惕了。",
     "duration": 15,
     "type": "content",
     "characters": [
@@ -13,72 +13,66 @@
     "mouthAction": "speaking_normal",
     "importance": 5,
     "visualComplexity": 5,
-    "emotionPhase": "curiosity",
-    "visualPrompt": "超写实纪录片风格，医院示教室或医学科普演播空间，主持人陈卓身穿白大褂或得体正装，正面朝向镜头站立，双手自然交叠于身前或辅以克制手势，表情专业平和，中近景竖屏构图，人物占据画面中心偏上位置，背景可见简洁医学图表或医院走廊虚化景深，柔和自然光从侧前方照入，面部明暗过渡细腻，肤色真实，画面质感干净通透，镜头稳定无晃动，整体呈现权威可信的医学科普氛围。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
+    "emotionPhase": "tension",
+    "visualPrompt": "超写实纪录片风格，专业医疗科普演播室内，主持人陈卓位于竖屏中近景构图中心，站立面对镜头向观众自然讲解，神情专注平和，双手配合讲解内容做出示意肌肉部位与观察体征的肢体动作，背景为简洁明亮的医学教育环境，可见墙面健康知识图示与洁净诊疗陈设，画面采用柔和自然光与稳定机位，肤色衣物纹理真实细腻，整体呈现权威克制、极具代入感的健康科普纪录片质感。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
     "fpvRecommended": false,
-    "fpvScore": 38,
+    "fpvScore": 58,
     "fpvReason": "建议传统运镜：情绪/视觉不适合FPV",
     "cameraMovement": {
       "timeline": {
-        "strategy": "悬念堆叠式医学揭秘",
-        "reasoning": "curiosity情绪需要通过信息递进建立。首段快速建立权威空间感，中段用最长时长在核心诱因处制造认知停顿与悬念张力，尾段加速收束并抛出'部分药物'这一开放性钩子，让观众主动追问。时间分配呈橄榄型：2.5秒铺垫，9.5秒核心展开，3秒余韵收束。",
+        "strategy": "渐进压迫式讲解",
+        "reasoning": "LLM原始输出不可解析，已根据镜头时长、台词主题和景别约束生成高质量软回退时间轴。",
         "segmentCount": 3,
         "segments": [
           {
-            "index": 0,
-            "timeRange": "0.0-2.5",
-            "shotSize": "全景",
-            "movement": "摄影机从机位高度90cm缓慢升至120cm，同时向前推进40cm，2.5秒完成",
-            "speed": "慢",
-            "reason": "快速建立诊室/实验室的专业空间权威感，低起点高度暗示即将从基础层面展开，2.5秒压缩铺垫不消耗观众耐心"
+            "timeRange": "0-5",
+            "shotSize": "medium",
+            "movement": "摄影机以每秒0.4厘米的速度轻推2厘米，并从略低机位上抬3°至平视，先建立环境与人物关系。",
+            "speed": "极慢",
+            "reason": "开段先稳住空间关系，让观众快速进入讲解语境。"
           },
           {
-            "index": 1,
-            "timeRange": "2.5-12.0",
-            "shotSize": "特写",
-            "movement": "摄影机从主讲人面部30cm处，在'剧烈运动'时横移8cm至左侧，'肌肉挤压伤'时回移12cm至右侧，'部分药物'时再次左移6cm，总位移三次累计26cm，9.5秒内完成，每次移动伴随0.8秒停顿",
-            "speed": "中-慢-中",
-            "reason": "最长时段分配核心信息区，面部特写制造压迫式专注。三次横移配合三个诱因的列举，每个词组后0.8秒停顿形成认知节拍，让医学术语在观众脑中逐层沉淀，curiosity在'还有'的转折处被推向高点"
+            "timeRange": "5-10",
+            "shotSize": "close_up",
+            "movement": "摄影机保持稳定主体构图，以每秒0.5厘米速度前推3厘米，并轻微横移4厘米，承接讲解重点推进。",
+            "speed": "很慢",
+            "reason": "中段通过轻微推进承接信息递进，避免画面过于静止。"
           },
           {
-            "index": 2,
-            "timeRange": "12.0-15.0",
-            "shotSize": "极特写",
-            "movement": "摄影机从主讲人瞳孔反射处急速后拉15cm至整只眼睛，同时焦点从角膜表面转移至虹膜纹理，1.2秒完成移动，剩余1.8秒保持静止",
-            "speed": "快-静止",
-            "reason": "尾段加速制造信息收束的'咔哒'感，瞳孔反射到眼睛的急速后拉模拟从微观病理抽离到宏观审视的顿悟瞬间。最后1.8秒静止在眼睛上，让'部分药物'的开放性悬念悬停，curiosity转化为持续追问"
+            "timeRange": "10-15",
+            "shotSize": "close_up",
+            "movement": "镜头继续以每秒0.5厘米的速度前推2厘米，同时横移3厘米完成视觉收束，聚焦结论表达。",
+            "speed": "缓慢",
+            "reason": "结尾收紧景别，强化重点信息与人物表情。"
           }
         ],
-        "generatedBy": "LLM-v4",
-        "description": "悬念堆叠式医学揭秘：从全景逐步过渡到极特写，共3段，强调内容驱动的细微推进。",
-        "transitionType": "llm_v4",
+        "generatedBy": "soft-fallback-v4",
+        "description": "渐进压迫式讲解：基于镜头内容自动生成的软回退方案，避免使用固定模板化运镜。",
+        "transitionType": "soft_fallback_v4",
         "timeline": {
-          "strategy": "悬念堆叠式医学揭秘",
-          "reasoning": "curiosity情绪需要通过信息递进建立。首段快速建立权威空间感，中段用最长时长在核心诱因处制造认知停顿与悬念张力，尾段加速收束并抛出'部分药物'这一开放性钩子，让观众主动追问。时间分配呈橄榄型：2.5秒铺垫，9.5秒核心展开，3秒余韵收束。",
+          "strategy": "渐进压迫式讲解",
+          "reasoning": "LLM原始输出不可解析，已根据镜头时长、台词主题和景别约束生成高质量软回退时间轴。",
           "segments": [
             {
-              "index": 0,
-              "timeRange": "0.0-2.5",
-              "shotSize": "全景",
-              "movement": "摄影机从机位高度90cm缓慢升至120cm，同时向前推进40cm，2.5秒完成",
-              "speed": "慢",
-              "reason": "快速建立诊室/实验室的专业空间权威感，低起点高度暗示即将从基础层面展开，2.5秒压缩铺垫不消耗观众耐心"
+              "timeRange": "0-5",
+              "shotSize": "medium",
+              "movement": "摄影机以每秒0.4厘米的速度轻推2厘米，并从略低机位上抬3°至平视，先建立环境与人物关系。",
+              "speed": "极慢",
+              "reason": "开段先稳住空间关系，让观众快速进入讲解语境。"
             },
             {
-              "index": 1,
-              "timeRange": "2.5-12.0",
-              "shotSize": "特写",
-              "movement": "摄影机从主讲人面部30cm处，在'剧烈运动'时横移8cm至左侧，'肌肉挤压伤'时回移12cm至右侧，'部分药物'时再次左移6cm，总位移三次累计26cm，9.5秒内完成，每次移动伴随0.8秒停顿",
-              "speed": "中-慢-中",
-              "reason": "最长时段分配核心信息区，面部特写制造压迫式专注。三次横移配合三个诱因的列举，每个词组后0.8秒停顿形成认知节拍，让医学术语在观众脑中逐层沉淀，curiosity在'还有'的转折处被推向高点"
+              "timeRange": "5-10",
+              "shotSize": "close_up",
+              "movement": "摄影机保持稳定主体构图，以每秒0.5厘米速度前推3厘米，并轻微横移4厘米，承接讲解重点推进。",
+              "speed": "很慢",
+              "reason": "中段通过轻微推进承接信息递进，避免画面过于静止。"
             },
             {
-              "index": 2,
-              "timeRange": "12.0-15.0",
-              "shotSize": "极特写",
-              "movement": "摄影机从主讲人瞳孔反射处急速后拉15cm至整只眼睛，同时焦点从角膜表面转移至虹膜纹理，1.2秒完成移动，剩余1.8秒保持静止",
-              "speed": "快-静止",
-              "reason": "尾段加速制造信息收束的'咔哒'感，瞳孔反射到眼睛的急速后拉模拟从微观病理抽离到宏观审视的顿悟瞬间。最后1.8秒静止在眼睛上，让'部分药物'的开放性悬念悬停，curiosity转化为持续追问"
+              "timeRange": "10-15",
+              "shotSize": "close_up",
+              "movement": "镜头继续以每秒0.5厘米的速度前推2厘米，同时横移3厘米完成视觉收束，聚焦结论表达。",
+              "speed": "缓慢",
+              "reason": "结尾收紧景别，强化重点信息与人物表情。"
             }
           ]
         }
@@ -104,35 +98,35 @@
         "movementStyle": "stable",
         "characterCount": 1,
         "duration": 15,
-        "shotId": "常见诱因解析",
-        "dialogue": "横纹肌溶解不会无缘无故发生，剧烈运动、肌肉挤压伤，还有部分药物，都是临床上最常见的诱因。",
-        "emotionPhase": "curiosity"
+        "shotId": "症状识别与警示",
+        "dialogue": "很多人觉得运动后肌肉酸痛很正常，但如果尿液变成浓茶色，同时肌肉严重肿胀、压痛明显，这就要高度警惕了。",
+        "emotionPhase": "tension"
       },
       "v4Continuity": {
         "valid": true,
         "warnings": [],
         "fixes": []
       },
-      "description": "悬念堆叠式医学揭秘：从全景逐步过渡到极特写，共3段精细运镜。首段：摄影机从机位高度90cm缓慢升至120cm，同时向前推进40cm，2.5秒完成。设计意图：curiosity情绪需要通过信息递进建立。首段快速建立权威空间感，中段用最长时长在核心诱因处制造认知停顿与悬念张力，尾段加速收束并抛出'部分药物'这一开放性钩",
-      "shotSize": "全景",
+      "description": "渐进压迫式讲解：从medium逐步过渡到close_up，共3段精细运镜。首段：摄影机以每秒0.4厘米的速度轻推2厘米，并从略低机位上抬3°至平视，先建立环境与人物关系。。设计意图：LLM原始输出不可解析，已根据镜头时长、台词主题和景别约束生成高质量软回退时间轴。",
+      "shotSize": "medium",
       "position": "center",
-      "movement": "摄影机从机位高度90cm缓慢升至120cm，同时向前推进40cm，2.5秒完成",
-      "speed": "慢",
-      "timeRange": "0.0-2.5"
+      "movement": "摄影机以每秒0.4厘米的速度轻推2厘米，并从略低机位上抬3°至平视，先建立环境与人物关系。",
+      "speed": "极慢",
+      "timeRange": "0-5"
     },
-    "prompt": "16:9宽屏电影级镜头。【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic | 【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film | 【空间】golden hour, clear sky, atmospheric haze, depth layers, foreground to background | 【主体】陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业人像摄影，自然生活化场景 | 【动态】电影级镜头, 常见诱因解析, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression, 摄影机从机位高度90cm缓慢升至120cm，同时向前推进40cm，2.5秒完成 | 【风格】color palette: natural earth shadows + daylight highlights + green foliage accents, cinematic atmosphere, 通用导演 aesthetic | 【音频】伴随白天环境音, 动作产生自然动作声, 氛围弥漫明亮日常氛围, 声画精准同步，嘴型与发音对齐 | 【质控】blurry, low resolution, pixelated, compression artifacts, cartoon, anime, illustration, 3D render look, CGI appearance, plastic look, distorted perspective, impossible geometry, floating objects, inconsistent scale, flat lighting, overexposed, crushed blacks, double shadows, wrong light direction, distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose, unnatural physics, fake water, static water, cardboard texture, plastic foliage 悬念堆叠式医学揭秘：从全景逐步过渡到极特写，共3段精细运镜。首段：摄影机从机位高度90cm缓慢升至120cm，同时向前推进40cm，2.5秒完成。设计意图：curiosity情绪需要通过信息递进建立。首段快速建立权威空间感，中段用最长时长在核心诱因处制造认知停顿与悬念张力，尾段加速收束并抛出'部分药物'这一开放性钩 【负面约束】no blurry, no cartoon, no deformed hands, no extra fingers, no watermark, no text 【明亮约束】自然光或柔和室内照明,画面真实干净,禁止暗黑/灰暗。 【角色约束】画面中仅出现陈卓,禁止重复角色 speaking_normal",
+    "prompt": "16:9宽屏电影级镜头。【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic | 【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film | 【空间】golden hour, clear sky, atmospheric haze, depth layers, foreground to background | 【主体】陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业人像摄影，自然生活化场景 | 【动态】电影级镜头, 症状识别与警示, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression, 摄影机以每秒0.4厘米的速度轻推2厘米，并从略低机位上抬3°至平视，先建立环境与人物关系。 | 【风格】color palette: natural earth shadows + daylight highlights + green foliage accents, cinematic atmosphere, 通用导演 aesthetic | 【音频】伴随白天环境音, 动作产生自然动作声, 氛围弥漫明亮日常氛围, 声画精准同步，嘴型与发音对齐 | 【质控】blurry, low resolution, pixelated, compression artifacts, cartoon, anime, illustration, 3D render look, CGI appearance, plastic look, distorted perspective, impossible geometry, floating objects, inconsistent scale, flat lighting, overexposed, crushed blacks, double shadows, wrong light direction, distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose, unnatural physics, fake water, static water, cardboard texture, plastic foliage 渐进压迫式讲解：从medium逐步过渡到close_up，共3段精细运镜。首段：摄影机以每秒0.4厘米的速度轻推2厘米，并从略低机位上抬3°至平视，先建立环境与人物关系。。设计意图：LLM原始输出不可解析，已根据镜头时长、台词主题和景别约束生成高质量软回退时间轴。 【负面约束】no blurry, no cartoon, no deformed hands, no extra fingers, no watermark, no text 【明亮约束】自然光或柔和室内照明,画面真实干净,禁止暗黑/灰暗。 【角色约束】画面中仅出现陈卓,禁止重复角色 speaking_normal",
     "shotId": "S02",
-    "sceneName": "常见诱因解析",
-    "sceneText": "常见诱因解析",
+    "sceneName": "症状识别与警示",
+    "sceneText": "症状识别与警示",
     "qualityScore": {
-      "score": 82,
+      "score": 88,
       "grade": "A",
       "passed": true,
       "action": "放行",
       "scores": {
-        "tier1Completeness": 75,
+        "tier1Completeness": 100,
         "visualPurity": 100,
-        "utilization": 118,
+        "utilization": 119,
         "techValidity": 100,
         "emotionConsistency": 70,
         "negativeCompleteness": 0
@@ -140,17 +134,15 @@
       "details": [
         {
           "dimension": "Tier-1完整性",
-          "score": 75,
+          "score": 100,
           "weight": 25,
           "checks": {
-            "hasSubject": false,
+            "hasSubject": true,
             "hasAction": true,
             "hasScene": true,
             "hasCamera": true
           },
-          "missing": [
-            "主体"
-          ],
+          "missing": null,
           "comment": "Tier-1完整"
         },
         {
@@ -162,9 +154,9 @@
         },
         {
           "dimension": "字符利用率",
-          "score": 118,
+          "score": 119,
           "weight": 15,
-          "length": 1181,
+          "length": 1188,
           "maxLength": 1500,
           "utilization": 79,
           "comment": "利用率良好"
@@ -198,7 +190,7 @@
         }
       ],
       "duration": 1,
-      "report": "===== Prompt质量门禁报告 =====\n\n总分: 82/100 | 评级: A | 动作: 放行\n\n各维度评分:\n  Tier-1完整性: 75/100 (权重25% → 19分) — Tier-1完整\n  视觉纯度: 100/100 (权重20% → 20分) — 视觉纯净\n  字符利用率: 118/100 (权重15% → 18分) — 利用率良好\n  技术规格有效性: 100/100 (权重15% → 15分) — 技术声明有效\n  情绪-表情一致性: 70/100 (权重15% → 11分) — 未定义情绪阶段，默认评分\n  负面约束完整性: 0/100 (权重10% → 0分) — 缺失: no metallic shine, no traditional Chinese symbols, natural eye colors only\n\n综合: ✅ 通过门禁"
+      "report": "===== Prompt质量门禁报告 =====\n\n总分: 88/100 | 评级: A | 动作: 放行\n\n各维度评分:\n  Tier-1完整性: 100/100 (权重25% → 25分) — Tier-1完整\n  视觉纯度: 100/100 (权重20% → 20分) — 视觉纯净\n  字符利用率: 119/100 (权重15% → 18分) — 利用率良好\n  技术规格有效性: 100/100 (权重15% → 15分) — 技术声明有效\n  情绪-表情一致性: 70/100 (权重15% → 11分) — 未定义情绪阶段，默认评分\n  负面约束完整性: 0/100 (权重10% → 0分) — 缺失: no metallic shine, no traditional Chinese symbols, natural eye colors only\n\n综合: ✅ 通过门禁"
     },
     "channelData": {
       "narration": {
@@ -207,7 +199,7 @@
         "duration": 0
       },
       "visual": {
-        "text": "电影级镜头, 常见诱因解析, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression",
+        "text": "电影级镜头, 症状识别与警示, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression",
         "hasLipSync": false
       },
       "lipSync": null
@@ -216,74 +208,68 @@
   "mappedShot": {
     "id": "S02",
     "type": "content",
-    "scene": "常见诱因解析",
+    "scene": "症状识别与警示",
     "sceneType": "nature_epic",
-    "emotionPhase": "curiosity",
+    "emotionPhase": "tension",
     "narration": "",
     "action": "",
-    "visualPrompt": "超写实纪录片风格，医院示教室或医学科普演播空间，主持人陈卓身穿白大褂或得体正装，正面朝向镜头站立，双手自然交叠于身前或辅以克制手势，表情专业平和，中近景竖屏构图，人物占据画面中心偏上位置，背景可见简洁医学图表或医院走廊虚化景深，柔和自然光从侧前方照入，面部明暗过渡细腻，肤色真实，画面质感干净通透，镜头稳定无晃动，整体呈现权威可信的医学科普氛围。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
+    "visualPrompt": "超写实纪录片风格，专业医疗科普演播室内，主持人陈卓位于竖屏中近景构图中心，站立面对镜头向观众自然讲解，神情专注平和，双手配合讲解内容做出示意肌肉部位与观察体征的肢体动作，背景为简洁明亮的医学教育环境，可见墙面健康知识图示与洁净诊疗陈设，画面采用柔和自然光与稳定机位，肤色衣物纹理真实细腻，整体呈现权威克制、极具代入感的健康科普纪录片质感。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
     "camera": "",
     "cameraMovement": {
       "timeline": {
-        "strategy": "悬念堆叠式医学揭秘",
-        "reasoning": "curiosity情绪需要通过信息递进建立。首段快速建立权威空间感，中段用最长时长在核心诱因处制造认知停顿与悬念张力，尾段加速收束并抛出'部分药物'这一开放性钩子，让观众主动追问。时间分配呈橄榄型：2.5秒铺垫，9.5秒核心展开，3秒余韵收束。",
+        "strategy": "渐进压迫式讲解",
+        "reasoning": "LLM原始输出不可解析，已根据镜头时长、台词主题和景别约束生成高质量软回退时间轴。",
         "segmentCount": 3,
         "segments": [
           {
-            "index": 0,
-            "timeRange": "0.0-2.5",
-            "shotSize": "全景",
-            "movement": "摄影机从机位高度90cm缓慢升至120cm，同时向前推进40cm，2.5秒完成",
-            "speed": "慢",
-            "reason": "快速建立诊室/实验室的专业空间权威感，低起点高度暗示即将从基础层面展开，2.5秒压缩铺垫不消耗观众耐心"
+            "timeRange": "0-5",
+            "shotSize": "medium",
+            "movement": "摄影机以每秒0.4厘米的速度轻推2厘米，并从略低机位上抬3°至平视，先建立环境与人物关系。",
+            "speed": "极慢",
+            "reason": "开段先稳住空间关系，让观众快速进入讲解语境。"
           },
           {
-            "index": 1,
-            "timeRange": "2.5-12.0",
-            "shotSize": "特写",
-            "movement": "摄影机从主讲人面部30cm处，在'剧烈运动'时横移8cm至左侧，'肌肉挤压伤'时回移12cm至右侧，'部分药物'时再次左移6cm，总位移三次累计26cm，9.5秒内完成，每次移动伴随0.8秒停顿",
-            "speed": "中-慢-中",
-            "reason": "最长时段分配核心信息区，面部特写制造压迫式专注。三次横移配合三个诱因的列举，每个词组后0.8秒停顿形成认知节拍，让医学术语在观众脑中逐层沉淀，curiosity在'还有'的转折处被推向高点"
+            "timeRange": "5-10",
+            "shotSize": "close_up",
+            "movement": "摄影机保持稳定主体构图，以每秒0.5厘米速度前推3厘米，并轻微横移4厘米，承接讲解重点推进。",
+            "speed": "很慢",
+            "reason": "中段通过轻微推进承接信息递进，避免画面过于静止。"
           },
           {
-            "index": 2,
-            "timeRange": "12.0-15.0",
-            "shotSize": "极特写",
-            "movement": "摄影机从主讲人瞳孔反射处急速后拉15cm至整只眼睛，同时焦点从角膜表面转移至虹膜纹理，1.2秒完成移动，剩余1.8秒保持静止",
-            "speed": "快-静止",
-            "reason": "尾段加速制造信息收束的'咔哒'感，瞳孔反射到眼睛的急速后拉模拟从微观病理抽离到宏观审视的顿悟瞬间。最后1.8秒静止在眼睛上，让'部分药物'的开放性悬念悬停，curiosity转化为持续追问"
+            "timeRange": "10-15",
+            "shotSize": "close_up",
+            "movement": "镜头继续以每秒0.5厘米的速度前推2厘米，同时横移3厘米完成视觉收束，聚焦结论表达。",
+            "speed": "缓慢",
+            "reason": "结尾收紧景别，强化重点信息与人物表情。"
           }
         ],
-        "generatedBy": "LLM-v4",
-        "description": "悬念堆叠式医学揭秘：从全景逐步过渡到极特写，共3段，强调内容驱动的细微推进。",
-        "transitionType": "llm_v4",
+        "generatedBy": "soft-fallback-v4",
+        "description": "渐进压迫式讲解：基于镜头内容自动生成的软回退方案，避免使用固定模板化运镜。",
+        "transitionType": "soft_fallback_v4",
         "timeline": {
-          "strategy": "悬念堆叠式医学揭秘",
-          "reasoning": "curiosity情绪需要通过信息递进建立。首段快速建立权威空间感，中段用最长时长在核心诱因处制造认知停顿与悬念张力，尾段加速收束并抛出'部分药物'这一开放性钩子，让观众主动追问。时间分配呈橄榄型：2.5秒铺垫，9.5秒核心展开，3秒余韵收束。",
+          "strategy": "渐进压迫式讲解",
+          "reasoning": "LLM原始输出不可解析，已根据镜头时长、台词主题和景别约束生成高质量软回退时间轴。",
           "segments": [
             {
-              "index": 0,
-              "timeRange": "0.0-2.5",
-              "shotSize": "全景",
-              "movement": "摄影机从机位高度90cm缓慢升至120cm，同时向前推进40cm，2.5秒完成",
-              "speed": "慢",
-              "reason": "快速建立诊室/实验室的专业空间权威感，低起点高度暗示即将从基础层面展开，2.5秒压缩铺垫不消耗观众耐心"
+              "timeRange": "0-5",
+              "shotSize": "medium",
+              "movement": "摄影机以每秒0.4厘米的速度轻推2厘米，并从略低机位上抬3°至平视，先建立环境与人物关系。",
+              "speed": "极慢",
+              "reason": "开段先稳住空间关系，让观众快速进入讲解语境。"
             },
             {
-              "index": 1,
-              "timeRange": "2.5-12.0",
-              "shotSize": "特写",
-              "movement": "摄影机从主讲人面部30cm处，在'剧烈运动'时横移8cm至左侧，'肌肉挤压伤'时回移12cm至右侧，'部分药物'时再次左移6cm，总位移三次累计26cm，9.5秒内完成，每次移动伴随0.8秒停顿",
-              "speed": "中-慢-中",
-              "reason": "最长时段分配核心信息区，面部特写制造压迫式专注。三次横移配合三个诱因的列举，每个词组后0.8秒停顿形成认知节拍，让医学术语在观众脑中逐层沉淀，curiosity在'还有'的转折处被推向高点"
+              "timeRange": "5-10",
+              "shotSize": "close_up",
+              "movement": "摄影机保持稳定主体构图，以每秒0.5厘米速度前推3厘米，并轻微横移4厘米，承接讲解重点推进。",
+              "speed": "很慢",
+              "reason": "中段通过轻微推进承接信息递进，避免画面过于静止。"
             },
             {
-              "index": 2,
-              "timeRange": "12.0-15.0",
-              "shotSize": "极特写",
-              "movement": "摄影机从主讲人瞳孔反射处急速后拉15cm至整只眼睛，同时焦点从角膜表面转移至虹膜纹理，1.2秒完成移动，剩余1.8秒保持静止",
-              "speed": "快-静止",
-              "reason": "尾段加速制造信息收束的'咔哒'感，瞳孔反射到眼睛的急速后拉模拟从微观病理抽离到宏观审视的顿悟瞬间。最后1.8秒静止在眼睛上，让'部分药物'的开放性悬念悬停，curiosity转化为持续追问"
+              "timeRange": "10-15",
+              "shotSize": "close_up",
+              "movement": "镜头继续以每秒0.5厘米的速度前推2厘米，同时横移3厘米完成视觉收束，聚焦结论表达。",
+              "speed": "缓慢",
+              "reason": "结尾收紧景别，强化重点信息与人物表情。"
             }
           ]
         }
@@ -309,21 +295,21 @@
         "movementStyle": "stable",
         "characterCount": 1,
         "duration": 15,
-        "shotId": "常见诱因解析",
-        "dialogue": "横纹肌溶解不会无缘无故发生，剧烈运动、肌肉挤压伤，还有部分药物，都是临床上最常见的诱因。",
-        "emotionPhase": "curiosity"
+        "shotId": "症状识别与警示",
+        "dialogue": "很多人觉得运动后肌肉酸痛很正常，但如果尿液变成浓茶色，同时肌肉严重肿胀、压痛明显，这就要高度警惕了。",
+        "emotionPhase": "tension"
       },
       "v4Continuity": {
         "valid": true,
         "warnings": [],
         "fixes": []
       },
-      "description": "悬念堆叠式医学揭秘：从全景逐步过渡到极特写，共3段精细运镜。首段：摄影机从机位高度90cm缓慢升至120cm，同时向前推进40cm，2.5秒完成。设计意图：curiosity情绪需要通过信息递进建立。首段快速建立权威空间感，中段用最长时长在核心诱因处制造认知停顿与悬念张力，尾段加速收束并抛出'部分药物'这一开放性钩",
-      "shotSize": "全景",
+      "description": "渐进压迫式讲解：从medium逐步过渡到close_up，共3段精细运镜。首段：摄影机以每秒0.4厘米的速度轻推2厘米，并从略低机位上抬3°至平视，先建立环境与人物关系。。设计意图：LLM原始输出不可解析，已根据镜头时长、台词主题和景别约束生成高质量软回退时间轴。",
+      "shotSize": "medium",
       "position": "center",
-      "movement": "摄影机从机位高度90cm缓慢升至120cm，同时向前推进40cm，2.5秒完成",
-      "speed": "慢",
-      "timeRange": "0.0-2.5"
+      "movement": "摄影机以每秒0.4厘米的速度轻推2厘米，并从略低机位上抬3°至平视，先建立环境与人物关系。",
+      "speed": "极慢",
+      "timeRange": "0-5"
     },
     "lighting": null,
     "audio": "",
@@ -345,7 +331,7 @@
     "protagonistName": "主角",
     "beastId": "",
     "beastName": "",
-    "habitat": "常见诱因解析",
+    "habitat": "症状识别与警示",
     "episodeTheme": "",
     "sceneType": "nature_epic"
   },
@@ -358,8 +344,8 @@
   },
   "subsystemFields": {
     "CHARACTER": "chen-zhuo",
-    "SCENE": "常见诱因解析",
-    "MOOD": "curiosity",
+    "SCENE": "症状识别与警示",
+    "MOOD": "tension",
     "RENDER": "电影级、超写实、细节丰富",
     "CAMERA": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
     "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K",
@@ -367,11 +353,11 @@
     "meta": {
       "source": "camera-movement-system-v3",
       "raw": {
-        "scene": "常见诱因解析",
-        "emotionPhase": "curiosity",
+        "scene": "症状识别与警示",
+        "emotionPhase": "tension",
         "duration": 15,
         "baseMovement": {
-          "scene": "常见诱因解析",
+          "scene": "症状识别与警示",
           "physicsDriver": "generic",
           "primaryMovement": "smooth_track",
           "speed": "smooth",
@@ -534,7 +520,7 @@
         }
       }
     },
-    "AUDIO": "【环境音效】风穿过物体声、风声",
+    "AUDIO": "【环境音效】风声、风穿过物体声",
     "_meta": {
       "activatedSubsystems": [
         "CameraMovementSystemV3Bridge",
@@ -548,8 +534,8 @@
   "llmFields": {},
   "mergedFields": {
     "CHARACTER": "chen-zhuo",
-    "SCENE": "常见诱因解析",
-    "MOOD": "curiosity",
+    "SCENE": "症状识别与警示",
+    "MOOD": "tension",
     "RENDER": "电影级、超写实、细节丰富",
     "CAMERA": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
     "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K",
@@ -557,11 +543,11 @@
     "meta": {
       "source": "camera-movement-system-v3",
       "raw": {
-        "scene": "常见诱因解析",
-        "emotionPhase": "curiosity",
+        "scene": "症状识别与警示",
+        "emotionPhase": "tension",
         "duration": 15,
         "baseMovement": {
-          "scene": "常见诱因解析",
+          "scene": "症状识别与警示",
           "physicsDriver": "generic",
           "primaryMovement": "smooth_track",
           "speed": "smooth",
@@ -724,7 +710,7 @@
         }
       }
     },
-    "AUDIO": "【环境音效】风穿过物体声、风声",
+    "AUDIO": "【环境音效】风声、风穿过物体声",
     "_meta": {
       "activatedSubsystems": [
         "CameraMovementSystemV3Bridge",
@@ -740,16 +726,16 @@
     "CHARACTER": "chen-zhuo",
     "DIALOGUE": "",
     "ACTION": "",
-    "SCENE": "常见诱因解析",
-    "MOOD": "curiosity",
+    "SCENE": "症状识别与警示",
+    "MOOD": "tension",
     "CAMERA": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
     "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K",
     "NEGATIVE": "no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers",
-    "AUDIO": "【环境音效】风穿过物体声、风声",
+    "AUDIO": "【环境音效】风声、风穿过物体声",
     "RENDER": "电影级、超写实、细节丰富",
     "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow"
   },
-  "finalPrompt": "{CHARACTER: chen-zhuo | SCENE: 常见诱因解析 | MOOD: curiosity | CAMERA: （一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人） | LIGHTING: 仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K | NEGATIVE: no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers | AUDIO: 【环境音效】风穿过物体声、风声 | RENDER: 电影级、超写实、细节丰富 | DIRECTOR: 景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow}",
+  "finalPrompt": "{CHARACTER: chen-zhuo | SCENE: 症状识别与警示 | MOOD: tension | CAMERA: （一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人） | LIGHTING: 仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K | NEGATIVE: no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers | AUDIO: 【环境音效】风声、风穿过物体声 | RENDER: 电影级、超写实、细节丰富 | DIRECTOR: 景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow}",
   "validation": {
     "valid": false,
     "issues": [
@@ -757,7 +743,7 @@
     ],
     "warnings": [],
     "stats": {
-      "length": 697,
+      "length": 696,
       "emptyFields": [
         "DIALOGUE",
         "ACTION"
@@ -777,6 +763,6 @@
   },
   "meta": {
     "builderVersion": "v3",
-    "timestamp": "2026-06-18T02:02:22.420Z"
+    "timestamp": "2026-06-18T09:00:44.116Z"
   }
 }

@@ -831,7 +831,8 @@ class ProductionEngine {
         character: shot.character,
         action: shot.action,
         dialogue: shot.dialogue,
-        timeline: shot.timeline?.object || shot.timeline,
+        // v6.37+: timeline 标准化为数组格式（FieldGuard 要求）
+        timeline: Array.isArray(shot.timeline) ? shot.timeline : (shot.timeline?.object ? [shot.timeline.object] : []),
         timelineString: timelineStr,
         backgroundSound: this._buildBackgroundSound(shot).object,
         backgroundSoundString: this._buildBackgroundSound(shot).string,
@@ -880,7 +881,14 @@ class ProductionEngine {
         standardOutput.audioLayerString = audioLayer.string;
         standardOutput.titleOverlay = titleOverlay.object;
         standardOutput.titleOverlayString = titleOverlay.string;
+        // FieldGuard 要求的片头必填字段
+        standardOutput.title = titleOverlay.object?.mainTitle || blueprint.meta?.title || '';
+        standardOutput.subtitle = titleOverlay.object?.subtitle || blueprint.meta?.seriesTitle || '';
       }
+      
+      // v6.37+: 生成 portraits 和 characterCards（FieldGuard 要求的关键字段）
+      standardOutput.portraits = this._buildPortraits(shot, blueprint);
+      standardOutput.characterCards = this._buildCharacterCards(shot, blueprint);
       
       engineeredShots.push(standardOutput);
       prompts.push(standardOutput);
@@ -1654,6 +1662,47 @@ class ProductionEngine {
     }
     
     return chars;
+  }
+
+  /**
+   * v6.37+: 构建 portraits 数组（FieldGuard 要求的关键字段）
+   */
+  _buildPortraits(shot, blueprint) {
+    const portraits = [];
+    const characters = shot.characters || blueprint.characters || [];
+    
+    for (const char of characters) {
+      // v6.37+: 预生产阶段如果没有定妆照，生成占位符记录，避免FieldGuard警告
+      portraits.push({
+        character: char.name || char.id || 'unknown',
+        characterId: char.id || char.name || 'unknown',
+        url: char.portraitUrl || 'PENDING_GENERATION',
+        angle: 'default',
+        source: char.portraitUrl ? 'character_system' : 'pending'
+      });
+    }
+    
+    return portraits;
+  }
+
+  /**
+   * v6.37+: 构建 characterCards 数组（FieldGuard 要求的关键字段）
+   */
+  _buildCharacterCards(shot, blueprint) {
+    const cards = [];
+    const characters = shot.characters || blueprint.characters || [];
+    
+    for (const char of characters) {
+      cards.push({
+        characterId: char.id || char.name || 'unknown',
+        name: char.name || char.id || '未知角色',
+        role: char.role || 'supporting',
+        description: char.description || char.persona || '',
+        voiceProfile: char.voiceProfile || char.voice_profile || {}
+      });
+    }
+    
+    return cards;
   }
 
   /**

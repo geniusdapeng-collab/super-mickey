@@ -1,10 +1,10 @@
 {
   "shotId": "S04",
-  "recordedAt": "2026-06-18T02:02:22.426Z",
+  "recordedAt": "2026-06-18T09:00:44.125Z",
   "rawShot": {
     "id": "S04",
-    "scene": "危险信号识别",
-    "dialogue": "怎么判断横纹肌溶解？陈卓告诉你两个关键信号：第一，肌肉持续酸痛无力；第二，尿液颜色变深，像浓茶或酱油色。一旦出现，请立刻停止运动，尽快就医。",
+    "scene": "症状识别警示",
+    "dialogue": "如果你在剧烈运动后，出现肌肉持续酸痛、肿胀无力，甚至尿液变成浓茶色，千万别硬扛，这很可能是横纹肌溶解发出的危险信号。",
     "duration": 15,
     "type": "content",
     "characters": [
@@ -14,13 +14,13 @@
     "importance": 5,
     "visualComplexity": 5,
     "emotionPhase": "tension",
-    "visualPrompt": "超写实纪录片风格，真实医疗科普场景中，陈卓以沉稳专业的姿态站立于明亮整洁的健康教育室，面向镜头直接进行总结性讲解，手势自然克制，中近景竖屏构图，人物居于画面中心，背景为简洁的医学科普墙面，柔和自然光均匀照亮面部，画面质感真实细腻，镜头稳定，整体呈现权威、可信且具指导意义的医学科普氛围。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
+    "visualPrompt": "超写实纪录片风格，明亮整洁的医院诊室或医学科普演播室，主持人陈卓身穿白色医生外套或浅蓝色衬衫，站在画面中央偏左位置，面向镜头直接说话，手势自然辅助表达，表情专业且带有适度关切。中近景构图，人物胸部以上入画，背景可见简洁的医疗墙面、健康宣教海报或淡色书架。柔和均匀的室内照明，无明显阴影，肤色还原真实。画面采用9:16竖屏构图，镜头稳定无晃动，浅景深适度突出人物，整体呈现权威可信、克制专业的医疗科普纪录片质感。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
     "fpvRecommended": false,
     "fpvScore": 58,
     "fpvReason": "建议传统运镜：情绪/视觉不适合FPV",
     "cameraMovement": {
       "timeline": {
-        "strategy": "递进揭示式推镜",
+        "strategy": "渐进压迫式讲解",
         "reasoning": "LLM原始输出不可解析，已根据镜头时长、台词主题和景别约束生成高质量软回退时间轴。",
         "segmentCount": 3,
         "segments": [
@@ -47,10 +47,10 @@
           }
         ],
         "generatedBy": "soft-fallback-v4",
-        "description": "递进揭示式推镜：基于镜头内容自动生成的软回退方案，避免使用固定模板化运镜。",
+        "description": "渐进压迫式讲解：基于镜头内容自动生成的软回退方案，避免使用固定模板化运镜。",
         "transitionType": "soft_fallback_v4",
         "timeline": {
-          "strategy": "递进揭示式推镜",
+          "strategy": "渐进压迫式讲解",
           "reasoning": "LLM原始输出不可解析，已根据镜头时长、台词主题和景别约束生成高质量软回退时间轴。",
           "segments": [
             {
@@ -98,8 +98,8 @@
         "movementStyle": "stable",
         "characterCount": 1,
         "duration": 15,
-        "shotId": "危险信号识别",
-        "dialogue": "怎么判断横纹肌溶解？陈卓告诉你两个关键信号：第一，肌肉持续酸痛无力；第二，尿液颜色变深，像浓茶或酱油色。一旦出现，请立刻停止运动，尽快就医。",
+        "shotId": "症状识别警示",
+        "dialogue": "如果你在剧烈运动后，出现肌肉持续酸痛、肿胀无力，甚至尿液变成浓茶色，千万别硬扛，这很可能是横纹肌溶解发出的危险信号。",
         "emotionPhase": "tension"
       },
       "v4Continuity": {
@@ -107,17 +107,17 @@
         "warnings": [],
         "fixes": []
       },
-      "description": "递进揭示式推镜：从medium逐步过渡到close_up，共3段精细运镜。首段：摄影机以每秒0.4厘米的速度轻推2厘米，并从略低机位上抬3°至平视，先建立环境与人物关系。。设计意图：LLM原始输出不可解析，已根据镜头时长、台词主题和景别约束生成高质量软回退时间轴。",
+      "description": "渐进压迫式讲解：从medium逐步过渡到close_up，共3段精细运镜。首段：摄影机以每秒0.4厘米的速度轻推2厘米，并从略低机位上抬3°至平视，先建立环境与人物关系。。设计意图：LLM原始输出不可解析，已根据镜头时长、台词主题和景别约束生成高质量软回退时间轴。",
       "shotSize": "medium",
       "position": "center",
       "movement": "摄影机以每秒0.4厘米的速度轻推2厘米，并从略低机位上抬3°至平视，先建立环境与人物关系。",
       "speed": "极慢",
       "timeRange": "0-5"
     },
-    "prompt": "16:9宽屏电影级镜头。【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic | 【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film | 【空间】golden hour, clear sky, atmospheric haze, depth layers, foreground to background | 【主体】陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业人像摄影，自然生活化场景 | 【动态】电影级镜头, 危险信号识别, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression, 摄影机以每秒0.4厘米的速度轻推2厘米，并从略低机位上抬3°至平视，先建立环境与人物关系。 | 【风格】color palette: natural earth shadows + daylight highlights + green foliage accents, cinematic atmosphere, 通用导演 aesthetic | 【音频】伴随白天环境音, 动作产生自然动作声, 氛围弥漫明亮日常氛围, 声画精准同步，嘴型与发音对齐 | 【质控】blurry, low resolution, pixelated, compression artifacts, cartoon, anime, illustration, 3D render look, CGI appearance, plastic look, distorted perspective, impossible geometry, floating objects, inconsistent scale, flat lighting, overexposed, crushed blacks, double shadows, wrong light direction, distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose, unnatural physics, fake water, static water, cardboard texture, plastic foliage 递进揭示式推镜：从medium逐步过渡到close_up，共3段精细运镜。首段：摄影机以每秒0.4厘米的速度轻推2厘米，并从略低机位上抬3°至平视，先建立环境与人物关系。。设计意图：LLM原始输出不可解析，已根据镜头时长、台词主题和景别约束生成高质量软回退时间轴。 【负面约束】no blurry, no cartoon, no deformed hands, no extra fingers, no watermark, no text 【明亮约束】自然光或柔和室内照明,画面真实干净,禁止暗黑/灰暗。 【角色约束】画面中仅出现陈卓,禁止重复角色 speaking_emphasis",
+    "prompt": "16:9宽屏电影级镜头。【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic | 【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film | 【空间】golden hour, clear sky, atmospheric haze, depth layers, foreground to background | 【主体】陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业人像摄影，自然生活化场景 | 【动态】电影级镜头, 症状识别警示, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression, 摄影机以每秒0.4厘米的速度轻推2厘米，并从略低机位上抬3°至平视，先建立环境与人物关系。 | 【风格】color palette: natural earth shadows + daylight highlights + green foliage accents, cinematic atmosphere, 通用导演 aesthetic | 【音频】伴随白天环境音, 动作产生自然动作声, 氛围弥漫明亮日常氛围, 声画精准同步，嘴型与发音对齐 | 【质控】blurry, low resolution, pixelated, compression artifacts, cartoon, anime, illustration, 3D render look, CGI appearance, plastic look, distorted perspective, impossible geometry, floating objects, inconsistent scale, flat lighting, overexposed, crushed blacks, double shadows, wrong light direction, distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose, unnatural physics, fake water, static water, cardboard texture, plastic foliage 渐进压迫式讲解：从medium逐步过渡到close_up，共3段精细运镜。首段：摄影机以每秒0.4厘米的速度轻推2厘米，并从略低机位上抬3°至平视，先建立环境与人物关系。。设计意图：LLM原始输出不可解析，已根据镜头时长、台词主题和景别约束生成高质量软回退时间轴。 【负面约束】no blurry, no cartoon, no deformed hands, no extra fingers, no watermark, no text 【明亮约束】自然光或柔和室内照明,画面真实干净,禁止暗黑/灰暗。 【角色约束】画面中仅出现陈卓,禁止重复角色 speaking_emphasis",
     "shotId": "S04",
-    "sceneName": "危险信号识别",
-    "sceneText": "危险信号识别",
+    "sceneName": "症状识别警示",
+    "sceneText": "症状识别警示",
     "qualityScore": {
       "score": 88,
       "grade": "A",
@@ -199,7 +199,7 @@
         "duration": 0
       },
       "visual": {
-        "text": "电影级镜头, 危险信号识别, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression",
+        "text": "电影级镜头, 症状识别警示, realistic scene, 陈卓，28岁女性，presenter，穿职业套装，亲切温和，略带好奇，摄影棚三点布光，背景虚化，专业, natural expression",
         "hasLipSync": false
       },
       "lipSync": null
@@ -208,16 +208,16 @@
   "mappedShot": {
     "id": "S04",
     "type": "content",
-    "scene": "危险信号识别",
+    "scene": "症状识别警示",
     "sceneType": "nature_epic",
     "emotionPhase": "tension",
     "narration": "",
     "action": "",
-    "visualPrompt": "超写实纪录片风格，真实医疗科普场景中，陈卓以沉稳专业的姿态站立于明亮整洁的健康教育室，面向镜头直接进行总结性讲解，手势自然克制，中近景竖屏构图，人物居于画面中心，背景为简洁的医学科普墙面，柔和自然光均匀照亮面部，画面质感真实细腻，镜头稳定，整体呈现权威、可信且具指导意义的医学科普氛围。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
+    "visualPrompt": "超写实纪录片风格，明亮整洁的医院诊室或医学科普演播室，主持人陈卓身穿白色医生外套或浅蓝色衬衫，站在画面中央偏左位置，面向镜头直接说话，手势自然辅助表达，表情专业且带有适度关切。中近景构图，人物胸部以上入画，背景可见简洁的医疗墙面、健康宣教海报或淡色书架。柔和均匀的室内照明，无明显阴影，肤色还原真实。画面采用9:16竖屏构图，镜头稳定无晃动，浅景深适度突出人物，整体呈现权威可信、克制专业的医疗科普纪录片质感。, Arri Alexa 65, Cooke S7/i, f/2.0 shallow DOF, natural diffused overcast, no hard light, muted desaturated earth tones, teal shadows, warm highlights, subsurface scattering, motion blur on fast elements, subtle film grain, subtle golden rim backlight, luminous edge glow separating subject, warm champagne gold and ivory white color palette, ambient gold 15% + structural gold 20% + highlight gold 10%",
     "camera": "",
     "cameraMovement": {
       "timeline": {
-        "strategy": "递进揭示式推镜",
+        "strategy": "渐进压迫式讲解",
         "reasoning": "LLM原始输出不可解析，已根据镜头时长、台词主题和景别约束生成高质量软回退时间轴。",
         "segmentCount": 3,
         "segments": [
@@ -244,10 +244,10 @@
           }
         ],
         "generatedBy": "soft-fallback-v4",
-        "description": "递进揭示式推镜：基于镜头内容自动生成的软回退方案，避免使用固定模板化运镜。",
+        "description": "渐进压迫式讲解：基于镜头内容自动生成的软回退方案，避免使用固定模板化运镜。",
         "transitionType": "soft_fallback_v4",
         "timeline": {
-          "strategy": "递进揭示式推镜",
+          "strategy": "渐进压迫式讲解",
           "reasoning": "LLM原始输出不可解析，已根据镜头时长、台词主题和景别约束生成高质量软回退时间轴。",
           "segments": [
             {
@@ -295,8 +295,8 @@
         "movementStyle": "stable",
         "characterCount": 1,
         "duration": 15,
-        "shotId": "危险信号识别",
-        "dialogue": "怎么判断横纹肌溶解？陈卓告诉你两个关键信号：第一，肌肉持续酸痛无力；第二，尿液颜色变深，像浓茶或酱油色。一旦出现，请立刻停止运动，尽快就医。",
+        "shotId": "症状识别警示",
+        "dialogue": "如果你在剧烈运动后，出现肌肉持续酸痛、肿胀无力，甚至尿液变成浓茶色，千万别硬扛，这很可能是横纹肌溶解发出的危险信号。",
         "emotionPhase": "tension"
       },
       "v4Continuity": {
@@ -304,7 +304,7 @@
         "warnings": [],
         "fixes": []
       },
-      "description": "递进揭示式推镜：从medium逐步过渡到close_up，共3段精细运镜。首段：摄影机以每秒0.4厘米的速度轻推2厘米，并从略低机位上抬3°至平视，先建立环境与人物关系。。设计意图：LLM原始输出不可解析，已根据镜头时长、台词主题和景别约束生成高质量软回退时间轴。",
+      "description": "渐进压迫式讲解：从medium逐步过渡到close_up，共3段精细运镜。首段：摄影机以每秒0.4厘米的速度轻推2厘米，并从略低机位上抬3°至平视，先建立环境与人物关系。。设计意图：LLM原始输出不可解析，已根据镜头时长、台词主题和景别约束生成高质量软回退时间轴。",
       "shotSize": "medium",
       "position": "center",
       "movement": "摄影机以每秒0.4厘米的速度轻推2厘米，并从略低机位上抬3°至平视，先建立环境与人物关系。",
@@ -331,7 +331,7 @@
     "protagonistName": "主角",
     "beastId": "",
     "beastName": "",
-    "habitat": "危险信号识别",
+    "habitat": "症状识别警示",
     "episodeTheme": "",
     "sceneType": "nature_epic"
   },
@@ -344,7 +344,7 @@
   },
   "subsystemFields": {
     "CHARACTER": "chen-zhuo",
-    "SCENE": "危险信号识别",
+    "SCENE": "症状识别警示",
     "MOOD": "tension",
     "RENDER": "电影级、超写实、细节丰富",
     "CAMERA": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
@@ -353,11 +353,11 @@
     "meta": {
       "source": "camera-movement-system-v3",
       "raw": {
-        "scene": "危险信号识别",
+        "scene": "症状识别警示",
         "emotionPhase": "tension",
         "duration": 15,
         "baseMovement": {
-          "scene": "危险信号识别",
+          "scene": "症状识别警示",
           "physicsDriver": "generic",
           "primaryMovement": "smooth_track",
           "speed": "smooth",
@@ -520,7 +520,7 @@
         }
       }
     },
-    "AUDIO": "【环境音效】风穿过物体声、风声",
+    "AUDIO": "【环境音效】海鸥叫声、海浪轻拍声、风穿过物体声",
     "_meta": {
       "activatedSubsystems": [
         "CameraMovementSystemV3Bridge",
@@ -534,7 +534,7 @@
   "llmFields": {},
   "mergedFields": {
     "CHARACTER": "chen-zhuo",
-    "SCENE": "危险信号识别",
+    "SCENE": "症状识别警示",
     "MOOD": "tension",
     "RENDER": "电影级、超写实、细节丰富",
     "CAMERA": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
@@ -543,11 +543,11 @@
     "meta": {
       "source": "camera-movement-system-v3",
       "raw": {
-        "scene": "危险信号识别",
+        "scene": "症状识别警示",
         "emotionPhase": "tension",
         "duration": 15,
         "baseMovement": {
-          "scene": "危险信号识别",
+          "scene": "症状识别警示",
           "physicsDriver": "generic",
           "primaryMovement": "smooth_track",
           "speed": "smooth",
@@ -710,7 +710,7 @@
         }
       }
     },
-    "AUDIO": "【环境音效】风穿过物体声、风声",
+    "AUDIO": "【环境音效】海鸥叫声、海浪轻拍声、风穿过物体声",
     "_meta": {
       "activatedSubsystems": [
         "CameraMovementSystemV3Bridge",
@@ -726,16 +726,16 @@
     "CHARACTER": "chen-zhuo",
     "DIALOGUE": "",
     "ACTION": "",
-    "SCENE": "危险信号识别",
+    "SCENE": "症状识别警示",
     "MOOD": "tension",
     "CAMERA": "（一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人）",
     "LIGHTING": "仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K",
     "NEGATIVE": "no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers",
-    "AUDIO": "【环境音效】风穿过物体声、风声",
+    "AUDIO": "【环境音效】海鸥叫声、海浪轻拍声、风穿过物体声",
     "RENDER": "电影级、超写实、细节丰富",
     "DIRECTOR": "景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow"
   },
-  "finalPrompt": "{CHARACTER: chen-zhuo | SCENE: 危险信号识别 | MOOD: tension | CAMERA: （一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人） | LIGHTING: 仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K | NEGATIVE: no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers | AUDIO: 【环境音效】风穿过物体声、风声 | RENDER: 电影级、超写实、细节丰富 | DIRECTOR: 景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow}",
+  "finalPrompt": "{CHARACTER: chen-zhuo | SCENE: 症状识别警示 | MOOD: tension | CAMERA: （一镜到底！），镜头时间轴：0-5s: static (宁静) → 5-10s: push_in (聚焦) → 10-15s: orbit_right (升华)，medium shot from normal，平滑 smooth_track，由generic驱动，使用35mm，运镜路径：standard tracking，参考影片氛围：general cinematic；orbit_360，极端远景（环境全貌）；push_in，远景（环境+主体）；push_in，中景（半身/双人） | LIGHTING: 仅轮廓可见 2000K；侧光渐强 2800K；主体清晰 4500K | NEGATIVE: no blurry, no low resolution, no watermark, no text, no logo, no duplicate elements, no broken anatomy, no cartoon, no anime, no illustration, no plastic skin, no CGI look, no deformed hands, no extra fingers | AUDIO: 【环境音效】海鸥叫声、海浪轻拍声、风穿过物体声 | RENDER: 电影级、超写实、细节丰富 | DIRECTOR: 景别策略:progressive_reveal；光影策略:dawn_break；速度曲线:slow_fast_slow}",
   "validation": {
     "valid": false,
     "issues": [
@@ -743,7 +743,7 @@
     ],
     "warnings": [],
     "stats": {
-      "length": 695,
+      "length": 703,
       "emptyFields": [
         "DIALOGUE",
         "ACTION"
@@ -763,6 +763,6 @@
   },
   "meta": {
     "builderVersion": "v3",
-    "timestamp": "2026-06-18T02:02:22.426Z"
+    "timestamp": "2026-06-18T09:00:44.125Z"
   }
 }
