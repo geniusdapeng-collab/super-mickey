@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-19T12:00:27.431Z",
+  "updatedAt": "2026-06-20T04:25:40.563Z",
   "entries": {
     "memory:memory/2026-05-15.md:31:42": {
       "key": "memory:memory/2026-05-15.md:31:42",
@@ -3567,18 +3567,20 @@
       "endLine": 40,
       "source": "memory",
       "snippet": "**状态**: 已固化至v6.2-patch55 **系统配置更新**: 预生产流程文档已更新，注明交付格式为\"MD文件附件发送飞书对话框\" ### v6.2-patch56: Prompt截断修复（2026-05-27 21:43） **问题**: 队长反馈MD文件中Prompt被截断，句子不完整 **根因**: `smartTrim`函数使用`substring(0, remaining)`直接硬截断，不判断句子完整性 **队长反馈原文**: \"你的提示词，你把它没有换行，它截断了，它没有完整的展示出每一个镜头的完整提示词来。这个问题你修复一下，并且就是下次不要再犯\" **修复方案**: 1. 新增`trimAtPunctuation`智能截断方法 2. 优先在中文标点（。，；！？）处截断 3. 其次在英文标点（.,;!?）处截断 4. 再次在空格处截断 5. 最后手段才硬截断 **修复文件**: `systems/nirath-master-pipeline.js` **验证结果**: 全部Prompt在标点处结束 - S00: 结尾=. ✅ - S01: 结尾=。 ✅ - S02: 结尾=。 ✅ - S03: 结尾=。 ✅ - S04: 结尾=。 ✅ - S05: 结尾=， ✅ **教训**: Prompt截断必须保持句子完整性，不能截断在单词/句子中间 ### v6.2-patch57: 竖向阅读格式优化（2026-05-27 21:58 队长确认固化）",
-      "recallCount": 1,
+      "recallCount": 2,
       "dailyCount": 0,
       "groundedCount": 0,
-      "totalScore": 0.40542737841606136,
+      "totalScore": 0.7798652291297912,
       "maxScore": 0.40542737841606136,
       "firstRecalledAt": "2026-06-06T18:18:49.626Z",
-      "lastRecalledAt": "2026-06-06T18:18:49.626Z",
+      "lastRecalledAt": "2026-06-20T02:17:21.985Z",
       "queryHashes": [
-        "f2ede2e7c0a3"
+        "f2ede2e7c0a3",
+        "e141fe4aeddb"
       ],
       "recallDays": [
-        "2026-06-07"
+        "2026-06-07",
+        "2026-06-20"
       ],
       "conceptTags": [
         "已固化至v6.2-patch55",
@@ -5448,18 +5450,20 @@
       "endLine": 866,
       "source": "memory",
       "snippet": "| `xiangXiang/character-card.json` | voiceIdentity: gender=female→male, ageGroup=adult→infant, tone=warm→soft, pace=medium→slow | **预期效果**: - STAGE-12 合规率从 ~49% → 70-80%+ - Prompt 最终输出为 `FIELD: content | FIELD: content` 标准结构化格式 - 负面词从 ~400-500字 → ~180字，释放正向空间 - 无半截 `【】` 标记残留 - 状态文件不再出现 success+killed 双状态污染 **验证方法**: 重新跑预生产，检查日志中 STAGE-12 coverage 是否提升，最终 prompt 是否出现标准字段格式。 --- ## 2026-06-10 22:08: 修复 `toStandardPrompt()` 丢弃原始自然语言内容问题 **现象**：外部专家补丁集落地后，STAGE-12合规率100%，但Prompt长度仅374-394字符，PipelineIntegrity报16个错误。 **根因**：`toStandardPrompt()` 只提取10个结构化字段（CHARACTER/ACTION/SCENE/MOOD/CAMERA/LIGHTING/NEGATIVE/AUDIO/RENDER/DIRECTOR），合计300-400字符，原始自然语言prompt中的丰富视觉描述（环境、光影、质感、色彩等）被全部丢弃。 **修复方案",
-      "recallCount": 1,
+      "recallCount": 2,
       "dailyCount": 0,
       "groundedCount": 0,
-      "totalScore": 0.36655901968479154,
-      "maxScore": 0.36655901968479154,
+      "totalScore": 0.802206403017044,
+      "maxScore": 0.4356473833322525,
       "firstRecalledAt": "2026-06-17T00:39:48.443Z",
-      "lastRecalledAt": "2026-06-17T00:39:48.443Z",
+      "lastRecalledAt": "2026-06-20T04:25:40.563Z",
       "queryHashes": [
-        "f9ce473841a3"
+        "f9ce473841a3",
+        "ababd845b721"
       ],
       "recallDays": [
-        "2026-06-17"
+        "2026-06-17",
+        "2026-06-20"
       ],
       "conceptTags": [
         "xiangxiang/character-card.json",
@@ -6472,6 +6476,316 @@
         "patch21",
         "专家",
         "方案"
+      ]
+    },
+    "memory:memory/2026-06-10.md:338:359": {
+      "key": "memory:memory/2026-06-10.md:338:359",
+      "path": "memory/2026-06-10.md",
+      "startLine": 338,
+      "endLine": 359,
+      "source": "memory",
+      "snippet": "| 镜头多样性低 | segCount<4只得6分，S01/S02仅3个 | 结构-5 | intra-shot-prompt-enhancer.js | v6.5.37-fix | | Nirath关键词污染 | 世界观管理器在generic模式仍注入Nirath | 世界观-4 | worldview-scene-manager.js | v6.5.37-fix | ### 系统级修复详情 **1. narration-auto-trim.js (v6.5.37-fix)** - 新增 `minLengthByType`：`opening: 8`, `closing: 10`, `default: 6` - 新增 `protectedKeywords`：「沙滩」「微笑」「定格」「夕阳」「夕阳下」等 - 增强 `trimRound`：检测到保护关键词时降低精简目标(`targetExcess *= 0.5`)，截断兜底以 `minRetentionChars` 为下限 - 超精简回退：若最终低于最小保留字数，自动回退原始文本并记录警告 - 字符统计优化：中文1字/英文0.5字，但 `minLength` 按实际中文字数计算 **2. worldview-scene-manager.js** - `getWorldviewInjection`：增加 `mode` 参数，generic模式返回空字符串而非Nirath世界观 - `getSceneVisualCore`：generic模式且data为空时返回 `realistic scene` 而非 `Nirath alie",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.37424001991748806,
+      "maxScore": 0.37424001991748806,
+      "firstRecalledAt": "2026-06-20T02:17:21.985Z",
+      "lastRecalledAt": "2026-06-20T02:17:21.985Z",
+      "queryHashes": [
+        "e141fe4aeddb"
+      ],
+      "recallDays": [
+        "2026-06-20"
+      ],
+      "conceptTags": [
+        "s01/s02仅3个",
+        "结构-5",
+        "intra-shot-prompt-enhancer.js",
+        "v6.5.37-fix",
+        "世界观-4",
+        "worldview-scene-manager.js",
+        "narration-auto-trim.js",
+        "0.5"
+      ]
+    },
+    "memory:memory/2026-06-07.md:483:506": {
+      "key": "memory:memory/2026-06-07.md:483:506",
+      "path": "memory/2026-06-07.md",
+      "startLine": 483,
+      "endLine": 506,
+      "source": "memory",
+      "snippet": "### 根因定位 #### Issue 1: 台词格式错误（v6.2-patch100-fix 是根因） `orient-primordial-core-v24.js` 第 884-922 行（v6.2-patch100-fix）明确禁止台词/旁白文本进入视觉 Prompt： - 注释写：`// 🔥 v6.2-patch100-fix: 台词文本不再直接注入视觉Prompt` - 原因：`台词文本由TTS系统独立生成，不占用视觉Prompt空间` - 结果：所有镜头（除 S00 片头外）`has dialogue in prompt: false` **修复**：撤销 v6.2-patch100-fix 的禁用约束，将 `【台词】${narration.substring(0,120)}` 注入到 prompt 中 `【嘴部动作】` 之后。 #### Issue 2: 提示词截断（`smartTruncate` 吃掉尾部核心字段） `MAX_PROMPT_LENGTH = 980` 截断导致末尾标签被切断： - S02 结尾：`【嘴部动作`（`【嘴部动作】咀嚼` 被截断） - S03 结尾：`【嘴部`（`【嘴部动作】低吼` 被截断） - S04 结尾：`【空间深度】远景环境呼应开场但已`（描述被截断） `smartTruncate` 的 `protectedFields` 只保护特定字段，不保护 `【嘴部动作】` / `【空间深度】` / `【台词】`。 **修复**： 1. `smartTruncate` 的 `protectedFields` 数组新增 `{",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.3708740800619125,
+      "maxScore": 0.3708740800619125,
+      "firstRecalledAt": "2026-06-20T02:17:21.985Z",
+      "lastRecalledAt": "2026-06-20T02:17:21.985Z",
+      "queryHashes": [
+        "e141fe4aeddb"
+      ],
+      "recallDays": [
+        "2026-06-20"
+      ],
+      "conceptTags": [
+        "v6.2-patch100-fix",
+        "orient-primordial-core-v24.js",
+        "884-922",
+        "明确禁止台词/旁白文本进入视觉",
+        "narration.substring",
+        "max-prompt-length",
+        "根因",
+        "定位"
+      ]
+    },
+    "memory:memory/2026-06-17.md:93:122": {
+      "key": "memory:memory/2026-06-17.md:93:122",
+      "path": "memory/2026-06-17.md",
+      "startLine": 93,
+      "endLine": 122,
+      "source": "memory",
+      "snippet": "- `【台词】` → DIALOGUE **影响：** STAGE-16.5 标准字段完整性检查因此失败（检查逻辑与输出字段名不匹配）。 **待队长确认：** 标准字段名是否使用上述列表，确认后需修改： 1. `prompt-tier-architecture.js` — 七层架构字段名映射 2. `orient-primordial-core-v24.js` — `buildPromptV3` 字段名 3. `prompt-standard-v3.js` — 确认标准映射 4. `nirath-master-pipeline.js` — pipeline 组装逻辑 ### 下一步行动（待队长确认） 1. 确认标准字段名列表 2. 完成 Nirath 系统 `core/` 和剩余 `systems/` 的 v3 清理 3. 统一字段名全量修改 4. 运行预生产验证 --- ## 2026-06-17 11:44 (Pre-compaction flush) ### v6.6.9.4-patch9 发布完成 **修改文件汇总：** | 文件 | 修改内容 | |------|----------| | `prompt-tier-architecture.js` | 七层架构 `raw` 输出直接改标准字段名：`【约束】+【基础】→【渲染】` / `【主体】→【视觉】` / `【音频】→【环境音效】` / `【质控】→【负面约束】` | | `prompt-schema-v1.js` | 新增 `FIELD_LABELS` 映射表 + `CHARACTER_CARD",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.369894877076149,
+      "maxScore": 0.369894877076149,
+      "firstRecalledAt": "2026-06-20T02:17:21.985Z",
+      "lastRecalledAt": "2026-06-20T02:17:21.985Z",
+      "queryHashes": [
+        "e141fe4aeddb"
+      ],
+      "recallDays": [
+        "2026-06-20"
+      ],
+      "conceptTags": [
+        "stage-16.5",
+        "prompt-tier-architecture.js",
+        "orient-primordial-core-v24.js",
+        "prompt-standard-v3.js",
+        "nirath-master-pipeline.js",
+        "pre-compaction",
+        "v6.6.9.4-patch9",
+        "prompt-schema-v1.js"
+      ]
+    },
+    "memory:memory/2026-06-07.md:501:517": {
+      "key": "memory:memory/2026-06-07.md:501:517",
+      "path": "memory/2026-06-07.md",
+      "startLine": 501,
+      "endLine": 517,
+      "source": "memory",
+      "snippet": "`smartTruncate` 的 `protectedFields` 只保护特定字段，不保护 `【嘴部动作】` / `【空间深度】` / `【台词】`。 **修复**： 1. `smartTruncate` 的 `protectedFields` 数组新增 `{ prefix: '【台词】', label: '台词' }` 作为最高优先级保护项 2. `nirath-master-pipeline.js` 四处 `smartTrim` 调用全部追加 `台词` 和 `嘴部动作` 到 `preserve` 列表 #### Issue 3: 定妆照绑定（无 `@image` 标识符 + 无饕餮定妆照） `reference-image-gate.js` 要求 `seedanceBindFormat` 使用 `@image` 格式（如 `@image1 作为小G角色形象参考`），但当前 prompt 中无 `@image` 引用；且仅包含 `xiaoG` 的定妆照，缺少 `taotie` 的定妆照；`render-request-builder.js` 使用 `role: 'reference_image'` 构建 content 数组。 **修复**： 1. 角色 ID 映射：`charIdMap = { 'taotie': 'tao-tie', 'tao-tie': 'tao-tie' }`，将 `shot.characters` 中的 `taotie` 映射为 `tao-tie` 后再 lookup `stages.characters` 2. 路径修正：`tao-ti",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.3663749366998672,
+      "maxScore": 0.3663749366998672,
+      "firstRecalledAt": "2026-06-20T02:17:21.985Z",
+      "lastRecalledAt": "2026-06-20T02:17:21.985Z",
+      "queryHashes": [
+        "e141fe4aeddb"
+      ],
+      "recallDays": [
+        "2026-06-20"
+      ],
+      "conceptTags": [
+        "nirath-master-pipeline.js",
+        "reference-image-gate.js",
+        "render-request-builder.js",
+        "reference-image",
+        "tao-tie",
+        "shot.characters",
+        "stages.characters",
+        "tao-ti"
+      ]
+    },
+    "memory:memory/2026-06-08.md:180:196": {
+      "key": "memory:memory/2026-06-08.md:180:196",
+      "path": "memory/2026-06-08.md",
+      "startLine": 180,
+      "endLine": 196,
+      "source": "memory",
+      "snippet": "- 但 API 调用成功（200）后，LLM content 为空，fallback 输出 **问题2: Stage 8 故事板校验失败** - S05 narration 未完整收束（以\"状\"结尾） - 根因：Stage 7.3 narration 自动精简时，trimmed text 被截断在\"状\"字 - 修复：`narration-auto-trim.js` 精简后截断在 `,` 或 `。` 前，非标点不前进一步 - 额外修复：`nirath-master-pipeline.js` Stage 7 中，如果精简后导致非完整句，优先使用 originalNarration **问题3: 角色链路断裂** - chen-nurse / coach-li 未出现在最终 Prompt/输出中 - 根因1：`inferCharactersFromScene` 仅推断 Nirath 角色（xiaoG, jiu-wei-hu, tao-tie），generic 模式无角色推断 - 根因2：`enrichVisualPromptWithFiveElements` 无条件注入 Nirath 五要素（\"小G迈出第一步，迎向异兽\"），污染 generic 模式 - 根因3：`stageStoryboard` 中 `storyCraft` 路径硬编码 `characters: ['xiaoG', input.beastId || ...]`，但 generic 模式不走 storyCraft 路径 - 根因4：`enrichVisualPromptWithFiveElements` 的 Ni",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.3624909818172455,
+      "maxScore": 0.3624909818172455,
+      "firstRecalledAt": "2026-06-20T02:17:21.985Z",
+      "lastRecalledAt": "2026-06-20T02:17:21.985Z",
+      "queryHashes": [
+        "e141fe4aeddb"
+      ],
+      "recallDays": [
+        "2026-06-20"
+      ],
+      "conceptTags": [
+        "7.3",
+        "narration-auto-trim.js",
+        "nirath-master-pipeline.js",
+        "chen-nurse",
+        "coach-li",
+        "prompt/输出中",
+        "jiu-wei-hu",
+        "tao-tie"
+      ]
+    },
+    "memory:memory/2026-06-07.md:777:801": {
+      "key": "memory:memory/2026-06-07.md:777:801",
+      "path": "memory/2026-06-07.md",
+      "startLine": 777,
+      "endLine": 801,
+      "source": "memory",
+      "snippet": "- 但我们的 prompt 是**中英混合**（hyper-realistic、cinematic、panoramic 等），实际信息量远超纯中文 500 字 - **队长判断正确**：太长 → 注意力分散；太短 → 效果出不来 **建议优化策略**： - 不放宽长度限制，而是**提升单位字符信息密度** - 压缩英文术语：`hyper-realistic cinematic ultra-detailed` → `超写实电影级` - 砍掉重复修饰：`vast magnificent epic breathtaking` → `史诗级` - 优先保留硬约束：角色锚点、运镜、时间轴、负面约束不可丢 - 风格词后置截断：画质/风格词可适度精简，核心叙事前置 ## 全量代码打包数据（2026-06-07 20:00 GMT+8） **旧版**：14.8 MB（包含废弃 `shanhaijing-render-engine/` 等模块，已移至 `.trash`） **纯净版**：8.3 MB（8,647,295 字节），682 个文件 - 包含：systems/, characters/, config/, scripts/, seedance-*, shanhaijing-*, stories/, projects/, 根目录配置 - 排除：node_modules, .git, output, 图片/视频/二进制, .trash/废弃模块, 版本记录/CHANGELOG - 格式：Markdown 代码块，头部附一键安装指南 + 自动解压脚本 - 文件路径：`/tmp/nira",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.45742890238761896,
+      "maxScore": 0.45742890238761896,
+      "firstRecalledAt": "2026-06-20T04:25:40.563Z",
+      "lastRecalledAt": "2026-06-20T04:25:40.563Z",
+      "queryHashes": [
+        "ababd845b721"
+      ],
+      "recallDays": [
+        "2026-06-20"
+      ],
+      "conceptTags": [
+        "hyper-realistic",
+        "ultra-detailed",
+        "画质/风格词可适度精简",
+        "14.8",
+        "shanhaijing-render-engine",
+        "8.3",
+        "node-modules",
+        "图片/视频/二进制"
+      ]
+    },
+    "memory:memory/2026-06-17.md:390:405": {
+      "key": "memory:memory/2026-06-17.md:390:405",
+      "path": "memory/2026-06-17.md",
+      "startLine": 390,
+      "endLine": 405,
+      "source": "memory",
+      "snippet": "6. **ensureFinalPromptStructure字段迁移** — 通过sed将英文字段批量替换为中文标准字段 ### 预生产验证结果（patch13） - **总体**：77分 | 等级B | 状态PASS | 527942ms | 6镜头 - **S00（片头）**：✅ 中文标准字段正确（【视觉】【动态】【空间】【风格】等） - **S01-S05（内容镜头）**：❌ 仍使用旧英文花括号格式 `{CHARACTER:...|SCENE:...|MOOD:...|CAMERA:...|LIGHTING:...|NEGATIVE:...|AUDIO:...|RENDER:...|DIRECTOR:...}` ### 根因分析（关键发现） **PromptForge Director 子进程输出格式问题**： - `promptforge-director-worker.js` 的 `synthesizeLocalPrompt()` 和 `stage3PromptSynthesis()` 生成旧格式 `{CHARACTER:...|SCENE:...}` - 子进程返回的 `finalPrompt` 被主进程 `_cleanForgePrompt()` 清理后仍保留旧格式 - 主进程 `merge` 逻辑将旧格式 prompt 回灌到 render 数组 - 即使主进程 `toStandardPrompt` 和 `ensureFinalPromptStructure` 已改为中文字段，但子进程输出覆盖了它们 ### 修复方案（已规划） 修改 `promptfo",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.45116697251796717,
+      "maxScore": 0.45116697251796717,
+      "firstRecalledAt": "2026-06-20T04:25:40.563Z",
+      "lastRecalledAt": "2026-06-20T04:25:40.563Z",
+      "queryHashes": [
+        "ababd845b721"
+      ],
+      "recallDays": [
+        "2026-06-20"
+      ],
+      "conceptTags": [
+        "s01-s05",
+        "promptforge-director-worker.js",
+        "ensurefinalpromptstructure",
+        "迁移",
+        "通过",
+        "sed",
+        "文字",
+        "批量"
+      ]
+    },
+    "memory:memory/2026-06-17.md:494:525": {
+      "key": "memory:memory/2026-06-17.md:494:525",
+      "path": "memory/2026-06-17.md",
+      "startLine": 494,
+      "endLine": 525,
+      "source": "memory",
+      "snippet": "【镜头时间轴】【照明】【负面约束】【环境音效】【渲染】【导演】 【台词】【人物介绍卡片】 ``` **片头18个标准字段（在内容15个基础上 +3）：** ``` + 【氛围】【出品人】【标题动效】 ``` **关键修复：PromptForge合并逻辑强制转换** - 根因：子进程返回的旧格式 prompt 直接回灌，未经过 `toStandardPrompt()` 转换 - 修复：`nirath-master-pipeline.js` 第1072行合并后显式调用 `toStandardPrompt() + ensureFinalPromptStructure()` - 确保无论子进程输出什么格式，最终都转为中文标准字段 **Git提交：** - zhuoyue-system: `37e02bb` - 主仓库: `6fb4927` **下一步**：运行预生产验证 S00-S05 字段完整性与格式正确性。 ## 2026-06-17 20:00 外部专家第二轮方案启动 ### 背景 队长已联系外部专家（第三方系统诊断顾问），对方提供了一整套系统级修复方案。第一轮（patch14）已解决字段名称问题，但专家诊断出更多**致命级/P0-P1级问题**。 ### 专家诊断的7个致命问题 | # | 问题 | 影响 | |---|------|------| | 1 | `prompt-standard-v3.js` 导出方式不稳定（默认导出+命名导出混用） | 某些路径突然挂 |",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.44947718083858484,
+      "maxScore": 0.44947718083858484,
+      "firstRecalledAt": "2026-06-20T04:25:40.563Z",
+      "lastRecalledAt": "2026-06-20T04:25:40.563Z",
+      "queryHashes": [
+        "ababd845b721"
+      ],
+      "recallDays": [
+        "2026-06-20"
+      ],
+      "conceptTags": [
+        "nirath-master-pipeline.js",
+        "zhuoyue-system",
+        "s00-s05",
+        "致命级/p0-p1级问题",
+        "prompt-standard-v3.js",
+        "镜头",
+        "时间",
+        "照明"
+      ]
+    },
+    "memory:memory/2026-06-10.md:855:881": {
+      "key": "memory:memory/2026-06-10.md:855:881",
+      "path": "memory/2026-06-10.md",
+      "startLine": 855,
+      "endLine": 881,
+      "source": "memory",
+      "snippet": "**修复方案**：在 `toStandardPrompt()` 末尾附加原始自然语言内容，截断到1500上限： ```js const originalPrompt = (prompt || '').trim(); if (originalPrompt.length > 0) { const remaining = 1500 - result.length - 3; if (remaining > 50) { result += ' | ' + originalPrompt.substring(0, remaining); } } ``` **修复后验证**： - QualityGate：83分（+2分） - PipelineIntegrity：16/16 全通过 - Prompt长度：S01=1436, S02=1447, S03=1440 - 利用率：1441/1500, 1450/1500, 1443/1500 - STAGE-12合规：100% **结论**：Prompt 结构 = 标准字段 + 原始自然语言内容，既保证合规率又保留丰富视觉描述。 ## 生产发布：SHORT-VIDEO-0.8.3 - workspace-root: a82935b（5个系统文件 + memory） - short-video-system: 40ade5f（3个文件 + 版本号） - .current-version: SHORT-VIDEO-0.8.3 - 包含：Prompt结构标准化、紧凑负面词、1500字符统一、香香角色卡修复、signal handl",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.4359765172004699,
+      "maxScore": 0.4359765172004699,
+      "firstRecalledAt": "2026-06-20T04:25:40.563Z",
+      "lastRecalledAt": "2026-06-20T04:25:40.563Z",
+      "queryHashes": [
+        "ababd845b721"
+      ],
+      "recallDays": [
+        "2026-06-20"
+      ],
+      "conceptTags": [
+        "originalprompt.length",
+        "result.length",
+        "originalprompt.substring",
+        "16/16",
+        "1441/1500",
+        "1450/1500",
+        "1443/1500",
+        "stage-12合规"
+      ]
+    },
+    "memory:memory/2026-06-17.md:132:155": {
+      "key": "memory:memory/2026-06-17.md:132:155",
+      "path": "memory/2026-06-17.md",
+      "startLine": 132,
+      "endLine": 155,
+      "source": "memory",
+      "snippet": "【负面约束】→ NEGATIVE 【环境音效】→ AUDIO 【渲染】→ RENDER 【导演】→ DIRECTOR 【台词】→ DIALOGUE 【人物介绍卡片】→ CHARACTER_CARD ``` **关键原则落地：** 最上游直接输出标准字段名，下游零映射，只做内容追加/合并，不做字段名转换。 **GitHub推送：** ✅ 已完成。`git push hyperreal master` 推送至 `github.com:geniusdapeng-collab/hyperreal.git`。 - 主系统 commit: `f5c9436` - Nirath 子系统 commit: `b4e0009`（submodule 指针更新） ### PromptForge 驱动方式确认 **PromptForge 子进程（`promptforge-director-worker.js`）已经是 LLM 驱动。** 使用 `llm-reasoning-engine.js` 的 `LLMEngine`，单次 LLM 调用重写全部镜头 Prompt，子进程隔离防 OOM。这是 v6.5.52 的\"方案F：超简化单次调用\"设计。 **但 pre-PromptForge 链路仍有大量规则驱动环节：** | 阶段 | 驱动方式 | 说明 | |------|----------|------| | 剧本 → 镜头拆分 | 规则驱动（`_buildShotList`） | 硬编码拆分逻辑 | | 角色卡片生成 | 规则驱动（模板填充） | 从 cha",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.43216902017593384,
+      "maxScore": 0.43216902017593384,
+      "firstRecalledAt": "2026-06-20T04:25:40.563Z",
+      "lastRecalledAt": "2026-06-20T04:25:40.563Z",
+      "queryHashes": [
+        "ababd845b721"
+      ],
+      "recallDays": [
+        "2026-06-20"
+      ],
+      "conceptTags": [
+        "character-card",
+        "只做内容追加/合并",
+        "github.com",
+        "promptforge-director-worker.js",
+        "llm-reasoning-engine.js",
+        "v6.5.52",
+        "pre-promptforge",
+        "负面"
       ]
     }
   }

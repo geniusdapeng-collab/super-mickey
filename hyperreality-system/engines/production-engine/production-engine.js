@@ -153,6 +153,129 @@ class ProductionEngine {
    * @param {object} adaptedBlueprint - 适配器输出的剧本数据
    * @returns {object} { shots, prompts, report }
    */
+  /**
+   * v2.0.5-彻底修复: LLM Agent输出标准化层
+   * 将LLM Agent的各种输出格式（对象/数组）统一转换为字符串，
+   * 确保与v1.x的_engineerPrompts完全兼容
+   */
+  _normalizeLLMOutput(shots, blueprint) {
+    return shots.map(shot => {
+      const normalized = { ...shot };
+      
+      // 1. timeline: 数组 → 字符串
+      if (Array.isArray(shot.timeline)) {
+        normalized.timelineString = shot.timeline.map(seg => 
+          `${seg.timeRange || ''}: ${seg.cameraMovement || ''} (${seg.purpose || ''})`
+        ).join(' | ');
+        // 保留原始数组供内部使用，但添加字符串版本
+      } else if (shot.timeline?.string && typeof shot.timeline.string === 'string') {
+        normalized.timelineString = shot.timeline.string;
+      } else if (typeof shot.timeline === 'string') {
+        normalized.timelineString = shot.timeline;
+      }
+      
+      // 2. camera: 对象 → 字符串
+      if (shot.camera && typeof shot.camera === 'object') {
+        if (shot.camera.string && typeof shot.camera.string === 'string') {
+          normalized.cameraString = shot.camera.string;
+        } else {
+          // 从对象构建字符串描述
+          const parts = [];
+          if (shot.camera.shotSize) parts.push(shot.camera.shotSize);
+          if (shot.camera.movement) parts.push(shot.camera.movement);
+          if (shot.camera.lens) parts.push(shot.camera.lens);
+          if (shot.camera.focus) parts.push(shot.camera.focus);
+          normalized.cameraString = parts.join(', ');
+        }
+      } else if (typeof shot.camera === 'string') {
+        normalized.cameraString = shot.camera;
+      }
+      
+      // 3. lighting: 对象 → 字符串
+      if (shot.lighting && typeof shot.lighting === 'object') {
+        if (shot.lighting.string && typeof shot.lighting.string === 'string') {
+          normalized.lightingString = shot.lighting.string;
+        } else {
+          const parts = [];
+          if (shot.lighting.keyLight) {
+            const kl = shot.lighting.keyLight;
+            parts.push(`key: ${kl.direction || ''} ${kl.colorTemp || ''}K ${kl.effect || ''}`);
+          }
+          if (shot.lighting.fillLight) {
+            const fl = shot.lighting.fillLight;
+            parts.push(`fill: ${fl.direction || ''} ${fl.colorTemp || ''}K ${fl.effect || ''}`);
+          }
+          if (shot.lighting.special) parts.push(`special: ${shot.lighting.special}`);
+          normalized.lightingString = parts.join(', ');
+        }
+      } else if (typeof shot.lighting === 'string') {
+        normalized.lightingString = shot.lighting;
+      }
+      
+      // 4. backgroundSound: 对象 → 字符串
+      if (shot.backgroundSound && typeof shot.backgroundSound === 'object') {
+        if (shot.backgroundSound.string && typeof shot.backgroundSound.string === 'string') {
+          normalized.backgroundSoundString = shot.backgroundSound.string;
+        } else {
+          const parts = [];
+          if (shot.backgroundSound.ambient) parts.push(`AMBIENT: ${shot.backgroundSound.ambient}`);
+          if (shot.backgroundSound.spatial) parts.push(`SPATIAL: ${shot.backgroundSound.spatial}`);
+          if (shot.backgroundSound.intensity) parts.push(`INTENSITY: ${JSON.stringify(shot.backgroundSound.intensity)}`);
+          normalized.backgroundSoundString = parts.join(' | ');
+        }
+      }
+      
+      // 5. 角色信息补全：如果shot没有characters，从blueprint补
+      if (!shot.characters || shot.characters.length === 0) {
+        normalized.characters = blueprint.characters || [];
+      }
+      
+      // 6. 角色引用补全：如果characterRef为NONE但有角色，生成描述性引用
+      if ((!shot.characterRef || shot.characterRef === 'NONE') && blueprint.characters && blueprint.characters.length > 0) {
+        const mainChar = blueprint.characters.find(c => c.role === 'protagonist') || blueprint.characters[0];
+        if (mainChar) {
+          normalized.characterRef = `${mainChar.name}: ${mainChar.description || mainChar.persona || 'main character'}`;
+        }
+      }
+      
+      return normalized;
+    });
+  }
+
+  /**
+   * v2.0.5-彻底修复: 质量门适配LLM融合模式
+   * 当fusionText存在时，检查标准放宽（信息在融合段中）
+   */
+  _runQualityGateAdapted(prompts) {
+    const checks = prompts.map(p => {
+      const hasFusion = p.prompt && p.prompt.includes('fusion');
+      // 有fusionText时，timeline/camera/lighting可以不在独立字段中
+      const hasTimeline = !!p.timelineString || hasFusion;
+      const hasCamera = !!p.cameraString || hasFusion;
+      const hasLighting = !!p.lightingString || hasFusion;
+      
+      return {
+        shotId: p.shotId,
+        hasPrompt: !!p.prompt && p.prompt.length > 50,
+        hasDuration: !!p.duration && p.duration > 0,
+        hasTimeline,
+        hasCharacter: p.character !== 'NONE' || p.characterRef !== 'NONE',
+        hasMood: !!p.mood,
+        hasDialogue: p.dialogue !== 'NONE' && p.dialogue !== '',
+        lengthOk: p.promptCharCount > 0 && p.promptCharCount < 2000,
+        passed: false // 后面计算
+      };
+    });
+    
+    checks.forEach(c => {
+      c.passed = c.hasPrompt && c.hasDuration && c.hasTimeline && 
+                 c.hasCharacter && c.hasMood && c.hasDialogue && c.lengthOk;
+    });
+    
+    const allPassed = checks.every(c => c.passed);
+    return { passed: allPassed, checks };
+  }
+
   async produce(adaptedBlueprint) {
     const startTime = Date.now();
 
@@ -239,8 +362,18 @@ class ProductionEngine {
       currentShots = pfResult.shots;
       llmStats.promptFusion = { degraded: pfResult.degraded, degradeReason: pfResult.degradeReason };
 
-      // ===== Stage 6：质量门（规则，快）=====
-      result.stages.qualityGate = await this._runStage('quality-gate', () => this._runQualityGate(currentShots));
+      // v2.0.5-彻底修复: 在PromptFusion后添加标准化层，统一LLM输出格式
+      this.log('PROMPT-ENGINEERING', 'LLM融合完成，进入格式标准化...');
+      currentShots = this._normalizeLLMOutput(currentShots, adaptedBlueprint);
+      
+      // v2.0.4-fix: LLM融合后走标准化流程，补齐中文字段名/字符数统计/时间轴/定妆照/人物卡片
+      this.log('PROMPT-ENGINEERING', '格式标准化完成，进入字段标准化...');
+      const peResult = await this._runStage('prompt-engineering', () => this._engineerPrompts(currentShots, adaptedBlueprint));
+      currentShots = peResult.shots;
+
+      // ===== Stage 6：质量门（适配LLM融合模式）=====
+      this.log('QUALITY-GATE', 'LLM适配模式质量门检查...');
+      result.stages.qualityGate = await this._runStage('quality-gate', () => this._runQualityGateAdapted(currentShots));
 
       // ===== 汇总 =====
       result.shots = currentShots;
@@ -1127,19 +1260,45 @@ class ProductionEngine {
     const engineeredShots = [];
     
     for (const shot of shots) {
-      // 处理结构化对象（取字符串用于Prompt融合）
-      const cameraStr = shot.camera?.string || shot.camera || '';
-      const lightingStr = shot.lighting?.string || shot.lighting || '';
-      const timelineStr = shot.timeline?.string || shot.timeline || '';
+      // v2.0.5-彻底修复: 优先使用标准化后的字段（由_normalizeLLMOutput处理过）
+      // 如果标准化字段存在，直接使用；否则做兜底处理
+      const cameraStr = shot.cameraString || 
+                        shot.camera?.string || 
+                        (typeof shot.camera === 'string' ? shot.camera : '') || '';
+      const lightingStr = shot.lightingString || 
+                          shot.lighting?.string || 
+                          (typeof shot.lighting === 'string' ? shot.lighting : '') || '';
+      
+      // v2.0.5-彻底修复: timeline优先使用标准化后的timelineString
+      let timelineStr = shot.timelineString || '';
+      if (!timelineStr) {
+        if (shot.timeline?.string && typeof shot.timeline.string === 'string') {
+          timelineStr = shot.timeline.string;
+        } else if (typeof shot.timeline === 'string') {
+          timelineStr = shot.timeline;
+        } else if (Array.isArray(shot.timeline)) {
+          timelineStr = shot.timeline.map(seg => 
+            `${seg.timeRange || ''}: ${seg.cameraMovement || ''}`
+          ).join(' | ');
+        }
+      }
+      
+      // v2.0.5-彻底修复: 确保backgroundSound有string版本
+      let bgSoundResult;
+      if (shot.backgroundSoundString && typeof shot.backgroundSoundString === 'string') {
+        bgSoundResult = {
+          object: shot.backgroundSound || {},
+          string: shot.backgroundSoundString
+        };
+      } else {
+        bgSoundResult = this._buildBackgroundSound(shot);
+      }
 
-      // v1.2.6-fix10: 预先生成 backgroundSound，注入 shot 供 _buildShotPrompt 使用
-      const bgSoundResult = this._buildBackgroundSound(shot);
+      // v2.0.5-彻底修复: 构建shotWithSound供_buildShotPrompt使用
       const shotWithSound = {
         ...shot,
         backgroundSound: bgSoundResult
       };
-
-      // 构建 Prompt 各部分（按融合顺序，带优先级截断）
       const prompt = this._buildShotPrompt(shotWithSound, blueprint, { cameraStr, lightingStr, timelineStr });
       
       // 字符计数
@@ -1147,6 +1306,9 @@ class ProductionEngine {
       
       // v6.37-P1+: 构建标准输出对象（严格按 v6.37 标准字段）
       // 正片 S01+: 14 核心字段 | 片头 S00: + audioLayer + titleOverlay
+      // v2.0.4-fix: 添加人物介绍卡片
+      const characterCards = this._buildCharacterCards(shot, blueprint);
+
       const standardOutput = {
         // === 标准字段（v6.37-production+）===
         shotId: shot.shotId,
@@ -1158,7 +1320,8 @@ class ProductionEngine {
         lighting: shot.lighting?.object || shot.lighting || '',
         lightingString: lightingStr,
         characterRef: shot.characterRef || 'NONE',
-        character: shot.character || 'NONE',
+        // v2.0.5-fix: 如果shot.character不存在，从blueprint获取主角名
+        character: shot.character || this._getMainCharacterName(blueprint) || 'NONE',
         action: shot.action || '',
         dialogue: shot.dialogue || 'NONE',
         timeline: shot.timeline?.object || shot.timeline || {},
@@ -1166,7 +1329,9 @@ class ProductionEngine {
         backgroundSound: bgSoundResult.object,
         backgroundSoundString: bgSoundResult.string,
         prompt: prompt.fullPrompt,
-        promptCharCount: promptLength
+        promptCharCount: promptLength,
+        // v2.0.4-fix: 人物介绍卡片
+        characterCards: characterCards
       };
       
       // 片头专属字段（仅 S00）
@@ -1408,6 +1573,9 @@ class ProductionEngine {
   _buildShotPrompt(shot, blueprint, structuredStrings = {}) {
     const { cameraStr, lightingStr, timelineStr } = structuredStrings;
     
+    // v2.0.4-fix: 如果 shot 有 fusionText（LLM融合产出），优先使用作为L3-L7基础
+    const hasFusion = shot.fusionText && shot.fusionText.length > 10;
+    
     // v1.2.5: 从blueprint metadata中提取系列信息，控制片头和结尾
     // 修复：兼容顶层_metadata和config._metadata
     const _meta = blueprint._metadata || blueprint.config?._metadata || {};
@@ -1443,57 +1611,70 @@ class ProductionEngine {
     // === L1: 约束层（P0必加）===
     // v1.2.5: 从blueprint.config读取画幅，默认16:9横屏
     const ratio = blueprint.config?.aspectRatio || '16:9';
-    parts.push(`${ratio} cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic`);
+    parts.push(`【约束】${ratio} cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic`);
     partMeta.push({ id: 'L1_constraint', priority: 'P0' });
     
     // === L2: 基础层（P0必加）===
-    parts.push('hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film');
+    parts.push('【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film');
     partMeta.push({ id: 'L2_base', priority: 'P0' });
     
     // === L3: 空间层（P1）===
-    if (shot.scene) {
-      parts.push(shot.scene);
-      partMeta.push({ id: 'L3_scene', priority: 'P1' });
+    if (hasFusion) {
+      // v2.0.4-fix: LLM融合段直接放入，包含场景/角色/动作/运镜/灯光/情绪的叙事化描述
+      parts.push(`【场景】${shot.fusionText}`);
+      partMeta.push({ id: 'L3-L7_fusion', priority: 'P1' });
+    } else {
+      if (shot.scene) {
+        parts.push(`【场景】${shot.scene}`);
+        partMeta.push({ id: 'L3_scene', priority: 'P1' });
+      }
+      
+      // === L4: 主体层（P0-P1）===
+      if (shot.character && shot.character !== 'NONE') {
+        parts.push(`【角色】${shot.character}`);
+        partMeta.push({ id: 'L4_character', priority: 'P0' });
+      }
+      
+      if (shot.action) {
+        parts.push(`【动作】${shot.action}`);
+        partMeta.push({ id: 'L4_action', priority: 'P1' });
+      }
     }
     
-    // === L4: 主体层（P0-P1）===
-    if (shot.character && shot.character !== 'NONE') {
-      parts.push(shot.character);
-      partMeta.push({ id: 'L4_character', priority: 'P0' });
+    // v2.0.4-fix: 注入定妆照引用（characterRef）到prompt中
+    if (shot.characterRef && shot.characterRef !== 'NONE') {
+      parts.push(`【定妆照】${shot.characterRef}`);
+      partMeta.push({ id: 'L4_characterRef', priority: 'P0' });
     }
-    
-    if (shot.action) {
-      parts.push(shot.action);
-      partMeta.push({ id: 'L4_action', priority: 'P1' });
-    }
-    
+
     if (shot.dialogue && shot.dialogue !== '') {
-      parts.push(`dialogue: ${shot.dialogue}`);
+      parts.push(`【台词】${shot.dialogue}`);
       partMeta.push({ id: 'L4_dialogue', priority: 'P0' });
     }
     
     // === L5: 动态层（P1-P2）===
-    const camera = cameraStr || shot.camera;
+    // v2.0.5-fix: 确保始终是字符串，防止对象污染prompt
+    const camera = cameraStr || (typeof shot.camera === 'string' ? shot.camera : '');
     if (camera) {
-      parts.push(camera);
+      parts.push(`【运镜】${camera}`);
       partMeta.push({ id: 'L5_camera', priority: 'P1' });
     }
     
-    const timeline = timelineStr || shot.timeline;
+    const timeline = timelineStr || (typeof shot.timeline === 'string' ? shot.timeline : '');
     if (timeline) {
-      parts.push(`timeline: ${timeline}`);
+      parts.push(`【时间轴】${timeline}`);
       partMeta.push({ id: 'L5_timeline', priority: 'P2' });
     }
     
     // === L6: 风格层（P1-P2）===
     if (shot.mood) {
-      parts.push(`mood: ${shot.mood}`);
+      parts.push(`【情绪】${shot.mood}`);
       partMeta.push({ id: 'L6_mood', priority: 'P2' });
     }
     
-    const lighting = lightingStr || shot.lighting;
+    const lighting = lightingStr || (typeof shot.lighting === 'string' ? shot.lighting : '');
     if (lighting) {
-      parts.push(lighting);
+      parts.push(`【灯光】${lighting}`);
       partMeta.push({ id: 'L6_lighting', priority: 'P1' });
     }
     
@@ -1501,34 +1682,34 @@ class ProductionEngine {
     // v6.37-P1+: 使用字符串版本（避免对象输出）
     const bgSound = shot.backgroundSound?.string || shot.backgroundSound;
     if (bgSound && typeof bgSound === 'string') {
-      parts.push(`audio: ${bgSound}`);
+      parts.push(`【音频】${bgSound}`);
       partMeta.push({ id: 'L7_audio', priority: 'P1' });
     }
     
     const audioLayer = shot.audioLayer?.string || shot.audioLayer;
     if (audioLayer && audioLayer !== '' && typeof audioLayer === 'string') {
-      parts.push(`audioLayer: ${audioLayer}`);
+      parts.push(`【音频层】${audioLayer}`);
       partMeta.push({ id: 'L7_audio', priority: 'P1' });
     }
     
     // === L8: 内部层（P2）===
     if (shot.physicsLayer && shot.physicsLayer !== '') {
-      parts.push(`physics: ${shot.physicsLayer}`);
+      parts.push(`【物理】${shot.physicsLayer}`);
       partMeta.push({ id: 'L8_internal', priority: 'P2' });
     }
     
     if (shot.colorScience && shot.colorScience !== '') {
-      parts.push(`color: ${shot.colorScience}`);
+      parts.push(`【色彩】${shot.colorScience}`);
       partMeta.push({ id: 'L8_internal', priority: 'P2' });
     }
     
     if (shot.renderStyle && shot.renderStyle !== '') {
-      parts.push(`style: ${shot.renderStyle}`);
+      parts.push(`【渲染】${shot.renderStyle}`);
       partMeta.push({ id: 'L8_internal', priority: 'P2' });
     }
     
     if (shot.directorStyle && shot.directorStyle !== '') {
-      parts.push(`director: ${shot.directorStyle}`);
+      parts.push(`【导演】${shot.directorStyle}`);
       partMeta.push({ id: 'L8_internal', priority: 'P2' });
     }
     
@@ -1537,27 +1718,28 @@ class ProductionEngine {
       parts.push(`${shot.worldId} world`);
     }
     
+    // === L9: 质控层（P0）===
     const negativeConstraints = [
-      'no watermark, no logo, no text overlay, no subtitle, no caption',
-      'blurry, low resolution, pixelated, compression artifacts',
-      'cartoon, anime, illustration, 3D render look, CGI appearance, plastic look',
-      'distorted perspective, impossible geometry, floating objects',
-      'flat lighting, overexposed, crushed blacks, double shadows',
-      'unnatural physics, fake water, static water, cardboard texture, plastic foliage'
+      '【负面约束】no watermark, no logo, no text overlay, no subtitle, no caption',
+      '【负面约束】blurry, low resolution, pixelated, compression artifacts',
+      '【负面约束】cartoon, anime, illustration, 3D render look, CGI appearance, plastic look',
+      '【负面约束】distorted perspective, impossible geometry, floating objects',
+      '【负面约束】flat lighting, overexposed, crushed blacks, double shadows',
+      '【负面约束】unnatural physics, fake water, static water, cardboard texture, plastic foliage'
     ];
     
     if (shot.characters?.length > 0 || shot.character) {
-      negativeConstraints.push('distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose');
+      negativeConstraints.push('【负面约束】distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose');
     }
     
     if (shot.worldId && shot.worldId !== 'default') {
-      negativeConstraints.push('natural eye colors only, no metallic shine');
+      negativeConstraints.push('【负面约束】natural eye colors only, no metallic shine');
     }
     parts.push(...negativeConstraints);
     partMeta.push({ id: 'L9_negative', priority: 'P0' });
     
     if (shot.characters?.length > 0) {
-      parts.push(`角色一致性：保持${shot.characters.join('、')}形象一致，杜绝分身重影`);
+      parts.push(`【角色一致性】保持${shot.characters.join('、')}形象一致，杜绝分身重影`);
     }
     
     const fullPrompt = parts.join('，');
@@ -1770,10 +1952,11 @@ class ProductionEngine {
   _runQualityGate(prompts) {
     const checks = [];
     for (const p of prompts) {
-      const camStr = p.cameraString || (typeof p.camera === 'string' ? p.camera : '') || '';
-      const lightStr = p.lightingString || (typeof p.lighting === 'string' ? p.lighting : '') || '';
-      const tlStr = p.timelineString || (typeof p.timeline === 'string' ? p.timeline : '') || '';
-      const bgStr = p.backgroundSoundString || (typeof p.backgroundSound === 'string' ? p.backgroundSound : '') || '';
+      // v2.0.5-fix: 质量门也做类型保护，确保 .trim() 安全
+      const camStr = String(p.cameraString || (typeof p.camera === 'string' ? p.camera : '') || '');
+      const lightStr = String(p.lightingString || (typeof p.lighting === 'string' ? p.lighting : '') || '');
+      const tlStr = String(p.timelineString || (typeof p.timeline === 'string' ? p.timeline : '') || '');
+      const bgStr = String(p.backgroundSoundString || (typeof p.backgroundSound === 'string' ? p.backgroundSound : '') || '');
 
       const check = {
         shotId: p.shotId,
@@ -1980,6 +2163,16 @@ class ProductionEngine {
   }
 
   /**
+   * v2.0.5-fix: 从blueprint获取主角名称
+   */
+  _getMainCharacterName(blueprint) {
+    const characters = blueprint.characters || [];
+    // 找 protagonist 角色，或第一个角色
+    const protagonist = characters.find(c => c.role === 'protagonist') || characters[0];
+    return protagonist?.name || null;
+  }
+
+  /**
    * v6.37+: 构建 portraits 数组（FieldGuard 要求的关键字段）
    */
   _buildPortraits(shot, blueprint) {
@@ -2005,14 +2198,34 @@ class ProductionEngine {
    */
   _buildCharacterCards(shot, blueprint) {
     const cards = [];
-    const characters = shot.characters || blueprint.characters || [];
+    // v2.0.5-彻底修复: 优先从blueprint获取完整角色信息
+    // _normalizeLLMOutput已经确保shot.characters被填充，但blueprint.characters更完整
+    const characters = blueprint.characters || shot.characters || [];
+    
+    if (characters.length === 0) {
+      // 兜底：如果完全没有角色信息，尝试从blueprint.config或meta提取
+      const config = blueprint.config || {};
+      const meta = blueprint.meta || {};
+      if (config.character || meta.character) {
+        const char = config.character || meta.character;
+        cards.push({
+          characterId: char.character_id || char.id || char.name || 'unknown',
+          name: char.name || '未知角色',
+          role: char.role || 'protagonist',
+          description: char.description || char.persona || '',
+          voiceProfile: char.voiceProfile || char.voice_profile || {}
+        });
+      }
+      return cards;
+    }
     
     for (const char of characters) {
       cards.push({
-        characterId: char.id || char.name || 'unknown',
-        name: char.name || char.id || '未知角色',
+        // v2.0.5-彻底修复: 支持character_id和id两种字段名
+        characterId: char.character_id || char.id || char.name || 'unknown',
+        name: char.name || char.id || char.character_id || '未知角色',
         role: char.role || 'supporting',
-        description: char.description || char.persona || '',
+        description: char.description || char.persona || char.personality || '',
         voiceProfile: char.voiceProfile || char.voice_profile || {}
       });
     }

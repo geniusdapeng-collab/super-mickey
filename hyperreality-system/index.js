@@ -22,7 +22,7 @@ class HyperrealitySystem {
     this.renderingEngine = new RenderingEngine(options.renderingEngine);
     this.postProductionEngine = new PostProductionEngine(options.postProductionEngine);
     this.fieldGuard = new FieldGuard({ strict: true, logPrefix: '[Hyperreality]' });
-    this.version = '2.0.0';
+    this.version = '2.0.5';
   }
 
   /**
@@ -460,19 +460,23 @@ class HyperrealitySystem {
     lines.push('# 📝 提示词审核报告');
     lines.push('');
     lines.push(`**镜头数**: ${prompts.length}`);
-    const totalLen = prompts.reduce((s, p) => s + (p.prompt?.length || 0), 0);
+    // v2.0.4-fix: 使用 promptCharCount 替代 prompt.length，确保中英文混合计数准确
+    const totalLen = prompts.reduce((s, p) => s + (p.promptCharCount || (typeof p.prompt === 'string' ? p.prompt.length : 0)), 0);
     lines.push(`**平均长度**: ${prompts.length > 0 ? Math.round(totalLen / prompts.length) : 0} 字符`);
     lines.push('');
     lines.push('## 镜头总览');
     lines.push('');
-    lines.push('| 镜头 | 长度 | 有定妆照 | 有时间轴 | 有约束 |');
-    lines.push('|------|------|----------|----------|--------|');
+    // v2.0.4-fix: 增加时间轴字符串和字符数统计列
+    lines.push('| 镜头 | 时长 | 字符数 | 有定妆照 | 有时间轴 | 有约束 |');
+    lines.push('|------|------|--------|----------|----------|--------|');
     
     for (const p of prompts) {
       const hasImages = p.characterRef && p.characterRef !== 'NONE';
-      const hasTimeline = p.timeline && (p.timeline.start !== undefined) ? true : false;
+      // v2.0.4-fix: 检查 timelineString 是否存在
+      const hasTimeline = !!(p.timelineString && p.timelineString.length > 3);
       const hasConstraints = p.prompt?.includes('角色一致性') || false;
-      lines.push(`| ${p.shotId} | ${p.prompt?.length || 0} | ${hasImages ? '✓' : '✗'} | ${hasTimeline ? '✓' : '✗'} | ${hasConstraints ? '✓' : '✗'} |`);
+      const charCount = p.promptCharCount || (typeof p.prompt === 'string' ? p.prompt.length : 0);
+      lines.push(`| ${p.shotId} | ${p.duration || '?'}s | ${charCount} | ${hasImages ? '✓' : '✗'} | ${hasTimeline ? '✓' : '✗'} | ${hasConstraints ? '✓' : '✗'} |`);
     }
     
     lines.push('');
@@ -481,8 +485,17 @@ class HyperrealitySystem {
     
     for (const p of prompts) {
       lines.push(`### ${p.shotId}`);
-      lines.push(`**长度**: ${p.prompt?.length || 0} 字符 | **定妆照**: ${p.characterRef && p.characterRef !== 'NONE' ? '有' : '无'}`);
+      const charCount = p.promptCharCount || (typeof p.prompt === 'string' ? p.prompt.length : 0);
+      lines.push(`**长度**: ${charCount} 字符 | **定妆照**: ${p.characterRef && p.characterRef !== 'NONE' ? '有' : '无'} | **时间轴**: ${p.timelineString || '无'}`);
       lines.push('');
+      // v2.0.4-fix: 显示人物介绍卡片
+      if (p.characterCards && p.characterCards.length > 0) {
+        lines.push('**人物卡片**:');
+        for (const card of p.characterCards) {
+          lines.push(`- ${card.name} (${card.role}): ${card.description || '无描述'}`);
+        }
+        lines.push('');
+      }
       lines.push('```');
       lines.push(p.prompt || '(空)');
       lines.push('```');
@@ -497,7 +510,7 @@ class HyperrealitySystem {
     lines.push('2. 确认角色定妆照引用正确');
     lines.push('3. 确认负面约束（暗黑风/金属光泽）已包含');
     lines.push('4. 确认角色一致性约束已包含');
-    lines.push('5. 确认 Prompt 长度在 980 字符以内');
+    lines.push('5. 确认 Prompt 长度在限制以内');
     lines.push('');
     lines.push('**请回复 "确认" 继续渲染，或 "修改" 并指出问题**');
     lines.push('');
@@ -556,10 +569,13 @@ class HyperrealitySystem {
 
     // 镜头总览
     lines.push('## 🎬 镜头总览');
-    lines.push(`| 镜头ID | 类型 | 时长 | Prompt长度 | 状态 |`);
-    lines.push(`|--------|------|------|------------|------|`);
+    // v2.0.4-fix: 增加时间轴和字符数统计列
+    lines.push(`| 镜头ID | 类型 | 时长 | 字符数 | 时间轴 | 状态 |`);
+    lines.push(`|--------|------|------|--------|--------|------|`);
     for (const shot of production.shots) {
-      lines.push(`| ${shot.shotId} | ${shot.sceneType} | ${shot.duration || shot.timing?.duration || 0}s | ${shot.prompt?.length || 0} | ${shot.status || 'ok'} |`);
+      const charCount = shot.promptCharCount || (typeof shot.prompt === 'string' ? shot.prompt.length : 0);
+      const timelineStr = shot.timelineString || '无';
+      lines.push(`| ${shot.shotId} | ${shot.sceneType} | ${shot.duration || shot.timing?.duration || 0}s | ${charCount} | ${timelineStr} | ${shot.status || 'ok'} |`);
     }
     lines.push('');
 
@@ -577,8 +593,17 @@ class HyperrealitySystem {
     lines.push('');
     for (const p of production.prompts) {
       lines.push(`### ${p.shotId}`);
-      lines.push(`**长度**: ${p.length} 字符 | **定妆照**: ${p.imageRefs?.length || 0} 张`);
+      const charCount = p.promptCharCount || (typeof p.prompt === 'string' ? p.prompt.length : 0);
+      lines.push(`**长度**: ${charCount} 字符 | **定妆照**: ${p.characterRef && p.characterRef !== 'NONE' ? p.characterRef : '无'} | **时间轴**: ${p.timelineString || '无'}`);
       lines.push('');
+      // v2.0.4-fix: 显示人物介绍卡片
+      if (p.characterCards && p.characterCards.length > 0) {
+        lines.push('**人物卡片**:');
+        for (const card of p.characterCards) {
+          lines.push(`- ${card.name} (${card.role}): ${card.description || '无描述'}`);
+        }
+        lines.push('');
+      }
       lines.push('```');
       lines.push(p.prompt);
       lines.push('```');

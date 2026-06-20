@@ -1,0 +1,788 @@
+用户要求我作为资深电影导演和摄影师，根据提供的镜头信息，为每个镜头写一段融合后的导演分镜描述（fusionText），要求80-150字，并输出JSON格式。
+
+但是用户给的示例JSON只有shotId和fusionText，而在前面的输出格式要求中提到了还要有prompt和promptCharCount。让我仔细看要求：
+
+输出JSON格式:
+{
+  "shots": [
+    {
+      "shotId": "SC01",
+      "fusionText": "融合后的导演分镜描述（80-150字）",
+      "prompt": "完整Prompt（包含融合段）",
+      "promptCharCount": 1234
+    }
+  ]
+}
+
+但在最后的【目标JSON结构示例】中只写了：
+{
+  "shots": [
+    {
+      "shotId": "SC01",
+      "fusionText": "..."
+    }
+  ]
+}
+
+然而用户说"所有字段必须存在"，所以应该包含prompt和promptCharCount。但是prompt具体是什么？用户说"完整Prompt（包含融合段）"，应该是把镜头描述和fusionText整合成一个完整的画面提示词。
+
+但是用户最后又说"任务:为每个镜头写fusionText(80-120字导演分镜描述)"。这里字数有冲突，前面说80-150，这里说80-120。我按80-120来，或者稍微放宽到80-150。
+
+让我重新理解prompt：用户要求"完整Prompt（包含融合段）"，可能是一个用于生成视频的提示词，包含场景、运镜、灯光、情绪等。
+
+等等，用户给的输入中每个镜头已经有详细的描述（场景、角色、运镜、灯光等），我需要在fusionText中融合这些信息。然后prompt应该是完整版的描述，包含fusionText。
+
+让我仔细看输入：
+SC00: 清晨7点的社区健身房入口区... | 好奇探寻... | 陈卓|独白|好奇|横纹肌溶解，听说过吗？... || 陈卓|独白|严肃|运动过度 | 运镜:... | 灯光:...
+SC01: 健身房力量区... | 专业冷静... | 陈卓|独白|专业|就是肌肉细胞破裂，毒素涌入血液... | 运镜... | 灯光...
+等等，用户给了6个镜头SC00-SC05，但示例中shotId是SC01。我需要按照用户的输入来，但是用户说"任务:为每个镜头写fusionText"，并且JSON格式中shotId是SC01。我看看输入是SC00-SC05，共6个镜头。我应该保持原ID还是重新编号？输入是SC00-SC05，我应该保持SC00-SC05。
+
+但是用户给的示例JSON结构是SC01。让我保持原始ID：SC00, SC01, SC02, SC03, SC04, SC05。
+
+现在构建每个镜头的fusionText和prompt。
+
+SC00:
+- 场景：清晨7点社区健身房入口，左侧45度落地窗斜射阳光，跑步机哑铃架剪影，浮尘
+- 情绪：好奇探寻，柔和，轻松却暗藏悬念
+- 角色：陈卓，独白，好奇→严肃
+- 台词：横纹肌溶解，听说过吗？运动过度
+- 运镜：从入口中景缓推至陈卓半身，晨光身后铺展金色背景，探
+- 灯光：清晨阳光左窗斜射，身侧温暖光柱，浮尘闪
+
+fusionText（80-120字）：
+清晨七点，镜头从健身房入口缓缓推进，穿过浮尘飞舞的金色光柱，陈卓半身渐入画面。晨光在他身后铺展开温暖的金色背景，跑步机与哑铃架形成深色剪影。他侧身而立，光线在肩侧拉出锐利轮廓，空气里悬浮的微粒闪烁着，像是某种隐秘的预兆。随着推近，他脸上的好奇逐渐沉淀为严肃，目光直视镜头，像是要揭开一个被忽视的真相。
+
+字数检查：约130字。符合要求。
+
+prompt：需要包含融合段，并且应该是完整的画面描述。可能包括画幅16:9、无文字水印等约束？用户说"完整Prompt（包含融合段）"，我觉得应该包含场景描述、角色、运镜、灯光、情绪等，像一个视频生成提示词。
+
+等等，用户说"不能添加文本/字幕/水印; 不能改变画幅比例; 保持角色视觉锚点一致"这些是约束，可能不需要放进prompt。
+
+但用户没有明确prompt的格式。我看看：用户要求"prompt: 完整Prompt（包含融合段）"，意味着prompt是一个完整的、可直接用于视频生成的提示词，其中fusionText是叙事核心，还要包含其他技术参数。
+
+考虑到这是给导演和摄影师的，但又是"完整Prompt"，可能类似于Midjourney/Runway的视频生成提示词。我会写成自然语言描述，包含场景、角色、灯光、运镜、情绪、画幅，并嵌入fusionText。
+
+不过为了保险起见，我可以把prompt设计为：画幅16:9，[fusionText内容]，技术参数（如16:9画幅，无字幕，固定角色形象等）。
+
+等等，用户说"所有字段必须存在"，所以必须有prompt和promptCharCount。
+
+让我为每个镜头构建：
+
+SC00:
+fusionText: 清晨七点，镜头从健身房入口缓缓推进，晨光穿过左侧落地窗在陈卓身侧拉出温暖光柱。空气中浮尘闪烁，背景器械形成深色剪影。随着推近，他脸上的好奇逐渐沉淀为严肃，仿佛即将揭开一个隐秘的真相。柔和阳光在他身后铺展成金色背景，氛围轻松却暗藏悬念。
+
+字数：约110字。很好。
+
+prompt: Cinematic 16:9 aspect ratio, no text or watermarks. In a community gym entrance at 7 AM, morning sunlight streams through 45-degree left floor-to-ceiling windows, creating golden light columns with floating dust particles. Camera slowly pushes in from a medium shot of the entrance to a medium close-up of Chen Zhuo. Treadmills and dumbbell racks form dark silhouettes in the background. Warm sunrise glow spreads behind him. He turns from curious to serious expression, lip-syncing. Soft morning light, relaxed yet subtly suspenseful atmosphere, consistent character appearance.
+
+promptCharCount: 约500字符。需要精确计算。
+
+等等，我需要仔细处理每个镜头。先全部构思fusionText。
+
+SC01 (8s):
+- 场景：健身房力量区，上午阳光正侧方，金属货架在橡胶地面形成条纹阴影，杠铃壶铃整齐排列，光线明亮对比
+- 情绪：专业冷静，理性剖析，危险信号初显
+- 角色：陈卓，独白，专业→警示
+- 台词：就是肌肉细胞破裂，毒素涌入血液。+ 警示
+- 运镜：稳定机位中景凝视，陈卓在杠铃阵列前侧身驻足，金属货架将阳光裁
+- 灯光：上午阳光正侧切割力量区，金属货架在地面烙下条纹阴影，杠铃片泛
+
+fusionText:
+稳定机位凝视力量区，上午阳光从正侧方切割空间，金属货架在橡胶地面烙下条纹阴影。陈卓在杠铃阵列前侧身驻足，冷硬的金属光泽映在他脸上。镜头纹丝不动，像一双审视的眼睛，将他的专业冷静框定在画面中央。杠铃片泛着冷光，危险信号在理性剖析中悄然初显，每一寸阴影都在为即将到来的警示铺垫。
+
+字数：约130字。可以。
+
+SC02 (10s):
+- 场景：深蹲架旁，侧光打在黑色杠铃片上反射冷光，陈卓从力量区深处走向深蹲架，阴影在墙面拉长，窗外光线逐渐强烈
+- 情绪：紧张急迫，危险逼近，压迫感层层叠加
+- 角色：陈卓，独白，警示→紧迫
+- 台词：突然狂练、不喝水，最危险。有人
+- 运镜：手持35mm低角度跟拍，陈卓从力量区深处走向深蹲架，压迫感随
+- 灯光：侧光骤强，黑色杠铃片迸出冷冽反光，墙面人影被拉得瘦长锋利，危
+
+fusionText:
+手持35mm低角度跟拍，陈卓从力量区深处走向深蹲架，每一步都让压迫感层层叠加。侧光骤然转强，黑色杠铃片迸出冷冽反光，墙面人影被拉得瘦长锋利。镜头微微晃动，伴随他的脚步逼近，危险的气息在空气中凝结。他语速加快，警示转为紧迫，窗外光线愈加强烈，仿佛无形的枷锁正随他的移动而收紧。
+
+字数：约130字。
+
+SC03 (12s):
+- 场景：力量区与走廊过渡地带，顶灯冷白光与窗外自然光混合交织，陈卓站在明暗交界处，背景隐约可见急救箱标识
+- 情绪：危急紧迫，不容置疑，命令感陡然升起
+- 角色：陈卓，独白，紧迫→命令
+- 台词：全身酸痛像散架，尿液变成酱油色。+ 命令
+- 运镜：手持50mm紧迫近景，陈卓在明暗交界线前逼近镜头，急救箱标识
+- 灯光：顶灯冷白与窗外暖光在肩颈撕扯出青灰交界，半张脸沉进阴影，急救
+
+fusionText:
+手持50mm紧迫近景，陈卓从明暗交界处向镜头逼近。顶灯冷白光与窗外暖光在他肩颈撕扯出青灰交界，半张脸沉进阴影，只剩紧绷的轮廓。背景中急救箱标识隐约闪烁，像最后通牒。镜头随他的迫近产生轻微呼吸感，命令感在压迫性画面中陡然升起。危急气息透过他急促的语调和不容置疑的眼神，狠狠压在观众胸口。
+
+字数：约135字。
+
+SC04 (13s):
+- 场景：休息饮水区，阳光正面落地窗均匀洒入，陈卓坐长椅边缘，身后饮水机冒细微白气，光线柔和阴影淡
+- 情绪：温和亲切，理性回归，建议与关怀并存
+- 角色：陈卓，独白，亲和→专业
+- 台词：运动要循序渐进，别当特种兵。大
+- 运镜：稳定50mm中景平视，陈卓坐在长椅边缘身体前倾，身后饮水机白
+- 灯光：阳光从正面落地窗外均匀涌入，阴影被彻底柔化，饮水机白气在逆光
+
+fusionText:
+稳定50mm中景平视，陈卓坐在长椅边缘身体前倾，姿态放松而真诚。阳光从正面落地窗均匀涌入，阴影被彻底柔化，身后饮水机细微的白气在逆光中袅袅上升。镜头稳稳托住他的亲和与理性，像是朋友间的恳谈。随着语气回归专业，柔和光线将他眼底的关怀映得透亮，危险警报在此刻被轻轻卸下，只剩下可靠的建议在空气中沉淀。
+
+字数：约140字。
+
+SC05 (10s):
+- 场景：健身房中央过道，上午阳光右侧低角度温暖轮廓光，器械区渐次排开延伸至背景，光线稳定充满希望，空
+- 情绪：坚定自信，友善亲和，正向号召收束全篇
+- 角色：陈卓，独白，坚定→亲和
+- 台词：记住，适度运动才是王。关注我，
+- 运镜：35mm中景稳定驻足，上午阳光从右侧为陈卓镀上温暖轮廓，器械
+- 灯光：阳光从右侧低角度涌入，为陈卓镀上通透轮廓光，器械区向远方整齐
+
+fusionText:
+35mm中景稳定驻足，陈卓站在健身房中央过道，上午阳光从右侧低角度涌入，为他镀上通透温暖的轮廓光。器械区向远方整齐延伸，在背景中形成充满秩序感的纵深。镜头平稳如初，坚定而友善地收束全篇。他目光直视，嘴角带着笃定的微笑，正向号召在稳定光线中自然流淌，仿佛这温暖轮廓就是他给所有观众的最后一道安全承诺。
+
+字数：约145字。
+
+现在处理prompt。我需要确保prompt包含fusionText，并且像是一个完整的生成提示。
+
+等等，我需要重新理解任务。用户可能期望的prompt是将fusionText整合到一段完整的、可直接用于AI视频生成的提示词中。但用户没有明确说明prompt格式。我会将prompt写成一个完整的场景描述，包含画幅、风格、核心内容，并且将fusionText作为核心叙事描述嵌入其中。
+
+或者，prompt可能等于fusionText加上额外的技术细节。但用户说"完整Prompt（包含融合段）"，这暗示prompt > fusionText。
+
+考虑到"画幅:16:9"和"角色:无"（但后面又有陈卓，可能角色:无是模板默认值），以及约束。
+
+我设计prompt结构为：
+Cinematic scene, 16:9 aspect ratio, no text/watermarks/subtitles. [fusionText] Technical execution: [camera movement details]. Lighting: [lighting details]. Atmosphere: [mood]. Character: Chen Zhuo, consistent visual appearance throughout.
+
+但是要注意不能改变fusionText的内容。
+
+让我为每个镜头写一个完整的prompt，把fusionText放进去。
+
+实际上，更安全的做法是：prompt = "16:9 cinematic shot. " + fusionText + " " + 技术细节补充。
+
+但用户要求"完整Prompt（包含融合段）"，如果fusionText已经是完整描述，那么prompt可以就是fusionText加上一些确保技术一致性的前缀。
+
+等等，我注意到输入中每个镜头已经有"运镜:..."和"灯光:..."的原始信息，fusionText是叙事化融合。prompt可能要把原始的技术描述和fusionText都结合进去。
+
+让我这样处理：
+prompt: "16:9 cinematic, no text/watermarks. " + fusionText + " [Additional technical specs if needed]"
+
+但是这样fusionText只是prompt的一部分。或者prompt就是fusionText的完整扩展版。
+
+我觉得可以这样：
+每个镜头的prompt = 一个完整的视频生成提示词，包含：
+1. 16:9画幅声明
+2. fusionText作为核心叙事
+3. 角色一致性声明
+4. 无字幕/水印声明
+
+这样比较合理。让我为每个镜头写出具体的prompt。
+
+SC00 prompt:
+Cinematic 16:9, no text or watermarks. Chen Zhuo maintains consistent visual appearance. In a community gym entrance at 7 AM, morning sunlight streams through 45-degree left floor-to-ceiling windows, creating golden light columns with floating dust particles. Camera slowly pushes in from a medium shot of the entrance to a medium close-up of Chen Zhuo. Treadmills and dumbbell racks form dark silhouettes in the background. Warm sunrise glow spreads behind him. He turns from curious to serious expression, lip-syncing. Soft morning light, relaxed yet subtly suspenseful atmosphere.
+
+字符数需要准确。我需要计算每个prompt的字符数。在JSON中，promptCharCount应该是数字。
+
+但是手动数字符很麻烦。我可以估算，但最好精确。由于我是AI，我可以模拟计算，但在这里无法精确数每个汉字。不过用户要求准确的数字。
+
+等等，在JSON中，我可以用一个合理的数字。但我必须确保数字正确。我可以数一下。
+
+先写JSON，然后数字符。
+
+让我先优化fusionText，确保字数在80-150之间。
+
+SC00 fusionText:
+清晨七点，镜头从健身房入口缓缓推进，晨光穿过左侧落地窗在陈卓身侧拉出温暖光柱。空气中浮尘闪烁，背景器械形成深色剪影。随着推近，他脸上的好奇逐渐沉淀为严肃，仿佛即将揭开隐秘真相。柔和阳光在他身后铺展成金色背景，氛围轻松却暗藏悬念。
+
+数一下：
+清晨七点(4)，镜头从健身房入口缓缓推进(11)，晨光穿过左侧落地窗在陈卓身侧拉出温暖光柱(22)。空气中浮尘闪烁(8)，背景器械形成深色剪影(10)。随着推近(5)，他脸上的好奇逐渐沉淀为严肃(15)，仿佛即将揭开隐秘真相(11)。柔和阳光在他身后铺展成金色背景(16)，氛围轻松却暗藏悬念(9)。
+总计：4+11+22+8+10+5+15+11+16+9 = 111字。很好。
+
+SC01 fusionText:
+稳定机位凝视力量区，上午阳光从正侧方切割空间，金属货架在橡胶地面烙下条纹阴影。陈卓在杠铃阵列前侧身驻足，冷硬的金属光泽映在他脸上。镜头纹丝不动，像一双审视的眼睛，将他的专业冷静框定在画面中央。杠铃片泛着冷光，危险信号在理性剖析中悄然初显。
+
+字数：
+稳定机位凝视力量区(8)，上午阳光从正侧方切割空间(12)，金属货架在橡胶地面烙下条纹阴影(15)。陈卓在杠铃阵列前侧身驻足(12)，冷硬的金属光泽映在他脸上(12)。镜头纹丝不动(6)，像一双审视的眼睛(8)，将他的专业冷静框定在画面中央(14)。杠铃片泛着冷光(7)，危险信号在理性剖析中悄然初显(14)。
+总计：8+12+15+12+12+6+8+14+7+14 = 108字。很好。
+
+SC02 fusionText:
+手持35mm低角度跟拍，陈卓从力量区深处走向深蹲架，每一步都让压迫感层层叠加。侧光骤然转强，黑色杠铃片迸出冷冽反光，墙面人影被拉得瘦长锋利。镜头微微晃动，伴随他的脚步逼近，危险气息在空气中凝结。他语速加快，警示转为紧迫，窗外光线愈加强烈，仿佛无形的枷锁正随移动收紧。
+
+字数：
+手持35mm低角度跟拍(9)，陈卓从力量区深处走向深蹲架(13)，每一步都让压迫感层层叠加(12)。侧光骤然转强(6)，黑色杠铃片迸出冷冽反光(12)，墙面人影被拉得瘦长锋利(11)。镜头微微晃动(6)，伴随他的脚步逼近(8)，危险气息在空气中凝结(9)。他语速加快(5)，警示转为紧迫(6)，窗外光线愈加强烈(8)，仿佛无形的枷锁正随移动收紧(13)。
+总计：9+13+12+6+12+11+6+8+9+5+6+8+13 = 118字。很好。
+
+SC03 fusionText:
+手持50mm紧迫近景，陈卓从明暗交界处向镜头逼近。顶灯冷白光与窗外暖光在他肩颈撕扯出青灰交界，半张脸沉进阴影，只剩紧绷的轮廓。背景中急救箱标识隐约闪烁，像最后通牒。镜头随他的迫近产生轻微呼吸感，命令感在压迫性画面中陡然升起。危急气息透过他急促的语调和眼神，狠狠压在观众胸口。
+
+字数：
+手持50mm紧迫近景(9)，陈卓从明暗交界处向镜头逼近(14)。顶灯冷白光与窗外暖光在他肩颈撕扯出青灰交界(24)，半张脸沉进阴影(7)，只剩紧绷的轮廓(7)。背景中急救箱标识隐约闪烁(11)，像最后通牒(5)。镜头随他的迫近产生轻微呼吸感(13)，命令感在压迫性画面中陡然升起(14)。危急气息透过他急促的语调和眼神(14)，狠狠压在观众胸口(8)。
+总计：9+14+24+7+7+11+5+13+14+14+8 = 126字。很好。
+
+SC04 fusionText:
+稳定50mm中景平视，陈卓坐在长椅边缘身体前倾，姿态放松而真诚。阳光从正面落地窗均匀涌入，阴影被彻底柔化，身后饮水机细微的白气在逆光中袅袅上升。镜头稳稳托住他的亲和与理性，像是朋友间的恳谈。随着语气回归专业，柔和光线将他眼底的关怀映得透亮，危险警报在此刻被卸下，只剩下可靠建议沉淀。
+
+字数：
+稳定50mm中景平视(9)，陈卓坐在长椅边缘身体前倾(12)，姿态放松而真诚(7)。阳光从正面落地窗均匀涌入(11)，阴影被彻底柔化(7)，身后饮水机细微的白气在逆光中袅袅上升(18)。镜头稳稳托住他的亲和与理性(12)，像是朋友间的恳谈(8)。随着语气回归专业(8)，柔和光线将他眼底的关怀映得透亮(15)，危险警报在此刻被卸下(9)，只剩下可靠建议沉淀(9)。
+总计：9+12+7+11+7+18+12+8+8+15+9+9 = 125字。很好。
+
+SC05 fusionText:
+35mm中景稳定驻足，陈卓站在健身房中央过道，上午阳光从右侧低角度涌入，为他镀上通透温暖的轮廓光。器械区向远方整齐延伸，在背景中形成充满秩序感的纵深。镜头平稳如初，坚定而友善地收束全篇。他目光直视，嘴角带着笃定的微笑，正向号召在稳定光线中自然流淌，仿佛这温暖轮廓就是给所有观众的最后安全承诺。
+
+字数：
+35mm中景稳定驻足(9)，陈卓站在健身房中央过道(11)，上午阳光从右侧低角度涌入(13)，为他镀上通透温暖的轮廓光(13)。器械区向远方整齐延伸(9)，在背景中形成充满秩序感的纵深(13)。镜头平稳如初(6)，坚定而友善地收束全篇(10)。他目光直视(5)，嘴角带着笃定的微笑(9)，正向号召在稳定光线中自然流淌(14)，仿佛这温暖轮廓就是给所有观众的最后安全承诺(22)。
+总计：9+11+13+13+9+13+6+10+5+9+14+22 = 124字。很好。
+
+现在写prompt。我需要确保prompt包含fusionText，并且是一个完整的描述。
+
+为了精确，我可以把prompt设计为：
+"16:9 cinematic, no text or watermarks. [fusionText] Character Chen Zhuo consistent appearance."
+
+但这样太简单。让我写得完整一些，像一个真正的视频生成提示。
+
+SC00 prompt:
+Cinematic 16:9, no text/watermarks/subtitles. Chen Zhuo maintains consistent visual appearance throughout. In a community gym entrance at 7 AM, morning sunlight streams through 45-degree left floor-to-ceiling windows, creating golden light columns with floating dust particles. Camera slowly pushes in from a medium shot of the entrance to a medium close-up of Chen Zhuo. Treadmills and dumbbell racks form dark silhouettes in the background. Warm sunrise glow spreads behind him. He turns from curious to serious expression, lip-syncing. Soft morning light, relaxed yet subtly suspenseful atmosphere.
+
+等等，用户说"包含融合段"，所以fusionText必须在prompt里。我可以在prompt中直接引用fusionText，或者把fusionText作为主体。
+
+让我重新理解：用户可能需要"prompt"字段来存放用于AI视频生成的完整提示词，而"fusionText"是导演分镜描述。fusionText是叙事化的，prompt是技术+叙事的完整版。
+
+可以这样：
+prompt: "16:9 cinematic shot, no text or watermarks. Chen Zhuo consistent appearance. Scene: " + fusionText + " Technical: camera slowly pushes in, 45-degree left sunlight, floating dust, warm key light, soft fill, relaxed suspenseful mood."
+
+但为了简洁，我可以把prompt写成一个流畅的段落，其中fusionText就是主体。
+
+或者更直接：prompt = fusionText + " 16:9 cinematic. No text/watermarks. Character: Chen Zhuo. Lip-sync."
+
+我觉得这样就可以了，但用户可能期望prompt更长。让我写一个中等长度的，大约300-500字符。
+
+SC00 prompt:
+Cinematic 16:9, no text or watermarks. Chen Zhuo maintains consistent appearance. In a community gym entrance at 7 AM, morning sunlight streams through 45-degree left floor-to-ceiling windows, creating golden light columns with floating dust particles. Camera slowly pushes in from the entrance to a medium close-up of Chen Zhuo. Treadmills and dumbbell racks form dark silhouettes. Warm sunrise glow spreads behind him. He turns from curious to serious, lip-syncing. Soft morning light, relaxed yet subtly suspenseful atmosphere.
+
+字数统计：
+Cinematic 16:9(14), no text or watermarks(23). Chen Zhuo maintains consistent appearance(38). In a community gym entrance at 7 AM(36), morning sunlight streams through 45-degree left floor-to-ceiling windows(57), creating golden light columns with floating dust particles(51). Camera slowly pushes in from the entrance to a medium close-up of Chen Zhuo(69). Treadmills and dumbbell racks form dark silhouettes(47). Warm sunrise glow spreads behind him(36). He turns from curious to serious, lip-syncing(43). Soft morning light, relaxed yet subtly suspenseful atmosphere(49).
+总计：14+23+38+36+57+51+69+47+36+43+49 = 363字符（含空格和标点）。
+
+等等，我需要精确计算，或者至少给出合理数字。在JSON中，promptCharCount应该是准确的字符串长度。
+
+我可以手动数，或者大致估算。由于用户无法直接验证我数字的精确性（除非复制粘贴），但我应尽量准确。不过作为AI，我在这里无法精确数每个字符，只能估算。
+
+让我尽量精确地数。实际上，我可以用一种方法：在写prompt的时候，我就按字符计数。
+
+或者，我可以写一个稍微固定格式的prompt，使其长度容易估算。
+
+让我尝试另一种方式：让prompt相对短，200-400字符，这样估算误差不会太大。
+
+实际上，我注意到用户示例中promptCharCount是1234，这只是一个示例数字。我可以给每个prompt一个合理的数字。
+
+为了保险，我输出JSON后，手动计算每个prompt的长度。
+
+让我重新写prompt，确保格式清晰：
+
+SC00 prompt: "16:9 cinematic, no text or watermarks. Chen Zhuo consistent appearance. At 7 AM gym entrance, morning sunlight streams through left windows creating golden light columns with floating dust. Camera slowly pushes in from entrance to medium close-up. Treadmills and dumbbell racks form dark silhouettes. Warm sunrise glow behind him. Curious to serious expression, lip-syncing. Soft morning light, relaxed yet subtly suspenseful."
+
+让我数一下这个：
+1. 16:9 cinematic(16) + 2. no text or watermarks(23) = 39
+3. Chen Zhuo consistent appearance(33) = 72
+4. At 7 AM gym entrance(21) = 93
+5. morning sunlight streams through left windows creating golden light columns with floating dust(79) = 172
+6. Camera slowly pushes in from entrance to medium close-up(51) = 223
+7. Treadmills and dumbbell racks form dark silhouettes(48) = 271
+8. Warm sunrise glow behind him(27) = 298
+9. Curious to serious expression(27) = 325
+10. lip-syncing(11) = 336
+11. Soft morning light(18) = 354
+12. relaxed yet subtly suspenseful(28) = 382
+
+所以promptCharCount: 382
+
+SC01 prompt: "16:9 cinematic, no text or watermarks. Chen Zhuo consistent appearance. Gym strength area, morning sunlight from side cutting through space, metal shelves casting striped shadows on rubber floor. Stable tripod medium shot, Chen Zhuo stands sideways before barbell array. Cold metal gleam on his face. Camera motionless like an observing eye, framing his professional calm. Barbell plates gleam coldly, danger signals emerging through rational analysis."
+
+字数：
+1. 16:9 cinematic(16) = 16
+2. no text or watermarks(23) = 39
+3. Chen Zhuo consistent appearance(33) = 72
+4. Gym strength area(17) = 89
+5. morning sunlight from side cutting through space(46) = 135
+6. metal shelves casting striped shadows on rubber floor(50) = 185
+7. Stable tripod medium shot(24) = 209
+8. Chen Zhuo stands sideways before barbell array(45) = 254
+9. Cold metal gleam on his face(28) = 282
+10. Camera motionless like an observing eye(38) = 320
+11. framing his professional calm(28) = 348
+12. Barbell plates gleam coldly(26) = 374
+13. danger signals emerging through rational analysis(47) = 421
+
+promptCharCount: 421
+
+SC02 prompt: "16:9 cinematic, no text or watermarks. Chen Zhuo consistent appearance. Handheld 35mm low-angle follow shot, Chen Zhuo walks from deep strength area toward squat rack. Side light suddenly intensifies, black barbell plates reflect cold light, wall shadows stretched long and sharp. Lens breathes with his steps, danger condensing in air. He accelerates speech, warning turning to urgency. Outside window light grows stronger, invisible shackles tightening with movement."
+
+字数：
+1. 16:9 cinematic(16) = 16
+2. no text or watermarks(23) = 39
+3. Chen Zhuo consistent appearance(33) = 72
+4. Handheld 35mm low-angle follow shot(36) = 108
+5. Chen Zhuo walks from deep strength area toward squat rack(51) = 159
+6. Side light suddenly intensifies(29) = 188
+7. black barbell plates reflect cold light(36) = 224
+8. wall shadows stretched long and sharp(35) = 259
+9. Lens breathes with his steps(27) = 286
+10. danger condensing in air(24) = 310
+11. He accelerates speech(21) = 331
+12. warning turning to urgency(28) = 359
+13. Outside window light grows stronger(33) = 392
+14. invisible shackles tightening with movement(42) = 434
+
+promptCharCount: 434
+
+SC03 prompt: "16:9 cinematic, no text or watermarks. Chen Zhuo consistent appearance. Handheld 50mm urgent close-up, Chen Zhuo approaches camera from light-dark boundary. Overhead cold white light and warm window light tear at his neck and shoulders creating gray-blue intersection. Half face sinks into shadow, only tense outline remains. First aid box sign flickers faintly in background like ultimatum. Lens breathing with his approach, command rising through oppressive frame. Dangerous urgency permeates his tense tone and eyes."
+
+字数：
+1. 16:9 cinematic(16) = 16
+2. no text or watermarks(23) = 39
+3. Chen Zhuo consistent appearance(33) = 72
+4. Handheld 50mm urgent close-up(30) = 102
+5. Chen Zhuo approaches camera from light-dark boundary(50) = 152
+6. Overhead cold white light and warm window light tear at his neck and shoulders creating gray-blue intersection(91) = 243
+7. Half face sinks into shadow(27) = 270
+8. only tense outline remains(26) = 296
+9. First aid box sign flickers faintly in background like ultimatum(59) = 355
+10. Lens breathing with his approach(31) = 386
+11. command rising through oppressive frame(37) = 423
+12. Dangerous urgency permeates his tense tone and eyes(50) = 473
+
+promptCharCount: 473
+
+SC04 prompt: "16:9 cinematic, no text or watermarks. Chen Zhuo consistent appearance. Stable 50mm medium eye-level shot, Chen Zhuo sits on bench edge leaning forward, relaxed and sincere posture. Sunlight pours evenly through front windows, shadows completely softened. Water dispenser white mist rises subtly in backlight. Lens steadily supports his affinity and rationality like friendly conversation. As tone returns to professional, soft light reflects care in his eyes. Danger alarm lifted, only reliable advice settling."
+
+字数：
+1. 16:9 cinematic(16) = 16
+2. no text or watermarks(23) = 39
+3. Chen Zhuo consistent appearance(33) = 72
+4. Stable 50mm medium eye-level shot(32) = 104
+5. Chen Zhuo sits on bench edge leaning forward(43) = 147
+6. relaxed and sincere posture(26) = 173
+7. Sunlight pours evenly through front windows(40) = 213
+8. shadows completely softened(26) = 239
+9. Water dispenser white mist rises subtly in backlight(51) = 290
+10. Lens steadily supports his affinity and rationality like friendly conversation(67) = 357
+11. As tone returns to professional(30) = 387
+12. soft light reflects care in his eyes(37) = 424
+13. Danger alarm lifted(19) = 443
+14. only reliable advice settling(29) = 472
+
+promptCharCount: 472
+
+SC05 prompt: "16:9 cinematic, no text or watermarks. Chen Zhuo consistent appearance. 35mm stable medium shot, Chen Zhuo stands in gym central aisle. Morning sunlight from right low angle floods in, plating him with warm transparent rim light. Equipment area extends orderly toward background creating depth. Lens remains steady as rock, concluding with determination and friendliness. He looks straight ahead, corner of mouth carrying confident smile. Positive call flows naturally in stable light, as if this warm outline is final safety promise to audience."
+
+字数：
+1. 16:9 cinematic(16) = 16
+2. no text or watermarks(23) = 39
+3. Chen Zhuo consistent appearance(33) = 72
+4. 35mm stable medium shot(24) = 96
+5. Chen Zhuo stands in gym central aisle(37) = 133
+6. Morning sunlight from right low angle floods in(44) = 177
+7. plating him with warm transparent rim light(41) = 218
+8. Equipment area extends orderly toward background creating depth(59) = 277
+9. Lens remains steady as rock(26) = 303
+10. concluding with determination and friendliness(43) = 346
+11. He looks straight ahead(23) = 369
+12. corner of mouth carrying confident smile(38) = 407
+13. Positive call flows naturally in stable light(43) = 450
+14. as if this warm outline is final safety promise to audience(58) = 508
+
+promptCharCount: 508
+
+等等，我需要确保fusionText确实在prompt中。用户要求"包含融合段"，我的prompt中并没有直接包含fusionText，而是重写了。这可能不符合要求。
+
+让我重新思考。"完整Prompt（包含融合段）"意味着prompt应该包含fusionText作为其组成部分。我可以在prompt中直接引用fusionText。
+
+例如：
+"16:9 cinematic, no text or watermarks. [fusionText] Character: Chen Zhuo, consistent appearance."
+
+这样最保险，也确保fusionText确实在prompt中。
+
+让我重新设计prompt：
+
+SC00 prompt: "16:9 cinematic, no text or watermarks. Chen Zhuo consistent appearance. 清晨七点，镜头从健身房入口缓缓推进，晨光穿过左侧落地窗在陈卓身侧拉出温暖光柱。空气中浮尘闪烁，背景器械形成深色剪影。随着推近，他脸上的好奇逐渐沉淀为严肃，仿佛即将揭开隐秘真相。柔和阳光在他身后铺展成金色背景，氛围轻松却暗藏悬念。 Camera slowly pushes in, 45-degree left sunlight, floating dust particles, warm morning glow."
+
+等等，这样prompt就变成中英混合了。用户输入是中文，fusionText是中文，可能prompt也应该是中文？或者中英混合？用户没有指定prompt语言。
+
+考虑到这是给AI的提示词，可能中文更合适。但视频生成模型通常英文更好。不过用户全程用中文，fusionText是中文，所以prompt用中文也可以。
+
+让我试试中文prompt，包含fusionText。
+
+SC00 prompt: "16:9画幅，无字幕无水印，角色陈卓视觉形象一致。清晨七点，镜头从健身房入口缓缓推进，晨光穿过左侧落地窗在陈卓身侧拉出温暖光柱。空气中浮尘闪烁，背景器械形成深色剪影。随着推近，他脸上的好奇逐渐沉淀为严肃，仿佛即将揭开隐秘真相。柔和阳光在他身后铺展成金色背景，氛围轻松却暗藏悬念。运镜：从入口中景缓推至半身；灯光：清晨阳光左窗斜射，温暖光柱，浮尘闪烁。"
+
+字数：这个prompt很长。让我估算：
+16:9画幅(5) = 5
+无字幕无水印(7) = 12
+角色陈卓视觉形象一致(10) = 22
+fusionText(111) = 133
+运镜：从入口中景缓推至半身(13) = 146
+灯光：清晨阳光左窗斜射，温暖光柱，浮尘闪烁(22) = 168
+总计约168字（不含标点和空格），加上标点空格可能200+。
+
+等等，用户要求promptCharCount，我需要在JSON中写准确的数字。
+
+让我采用这种格式：prompt = "16:9 cinematic, no text, no watermarks. Chen Zhuo consistent appearance. " + fusionText（中文） + " Technical details."
+
+这样中英混合，可能有点奇怪。但fusionText是导演描述，放在prompt里没问题。
+
+或者，我可以让prompt完全是中文，因为fusionText是中文。这样最一致。
+
+但用户没有严格限制prompt语言。我可以让prompt以中文为主，技术参数用英文缩写。
+
+实际上，让我看看：用户要求"完整Prompt（包含融合段）"。最简单的方式是prompt就是fusionText的完整版，加上技术前缀。
+
+我决定采用：
+prompt = "16:9 cinematic. No text/watermarks. Chen Zhuo consistent appearance. " + fusionText
+
+这样长度可控，且明确包含fusionText。
+
+让我数一下SC00：
+"16:9 cinematic. No text/watermarks. Chen Zhuo consistent appearance. " = 63 characters（含空格）
+fusionText = 111 characters（中文算1个，标点算1个）
+总计约 174 characters。但英文单词每个字母算一个字符，空格也算。
+
+让我精确数前缀：
+"16:9 cinematic. No text/watermarks. Chen Zhuo consistent appearance. "
+1. 16:9 cinematic. = 16
+2. No text/watermarks. = 21 (N=1,o=2, =3,t=4,e=5,x=6,t=7,/=8,w=9,a=10,t=11,e=12,r=13,m=14,a=15,r=16,k=17,s=18,.=19,space=20? 等等，我需要准确。)
+
+实际上，字符计数通常包括所有字符（字母、数字、标点、空格）。在JSON字符串中，我可以用len()来模拟。
+
+"16:9 cinematic. No text/watermarks. Chen Zhuo consistent appearance. "
+
+16:9(3) + space(1) + cinematic.(10) + space(1) + No(2) + space(1) + text/watermarks.(17) + space(1) + Chen(4) + space(1) + Zhuo(4) + space(1) + consistent(10) + space(1) + appearance.(11) + space(1) = 
+3+1+10+1+2+1+17+1+4+1+4+1+10+1+11+1 = 68
+
+等等，cinematic. 是 c-i-n-e-m-a-t-i-c = 10字符 + . = 11? c(1)i(2)n(3)e(4)m(5)a(6)t(7)i(8)c(9).(10)
+实际上：
+16:9 = 3
+space = 1
+cinematic = 9
+. = 1
+space = 1
+No = 2
+space = 1
+text/watermarks = 15
+. = 1
+space = 1
+Chen = 4
+space = 1
+Zhuo = 4
+space = 1
+consistent = 10
+space = 1
+appearance = 10
+. = 1
+space = 1
+
+总计：3+1+9+1+1+2+1+15+1+1+4+1+4+1+10+1+10+1+1 = 66
+
+然后fusionText：
+清晨七点(4)，镜头从健身房入口缓缓推进(11)，晨光穿过左侧落地窗在陈卓身侧拉出温暖光柱(22)。空气中浮尘闪烁(8)，背景器械形成深色剪影(10)。随着推近(5)，他脸上的好奇逐渐沉淀为严肃(15)，仿佛即将揭开隐秘真相(11)。柔和阳光在他身后铺展成金色背景(16)，氛围轻松却暗藏悬念(9)。
+总字符（不含标点）：4+11+22+8+10+5+15+11+16+9 = 111
+加上标点：，(9个)=9，。(5个)=5，共14个标点。总125。
+
+但中文每个汉字是一个字符，标点也是一个字符。
+让我重新计算整个fusionText的字符数（包括标点）：
+清(1)晨(2)七(3)点(4)，(5)镜(6)头(7)从(8)健(9)身(10)房(11)入(12)口(13)缓(14)缓(15)推(16)进(17)，(18)晨(19)光(20)穿(21)过(22)左(23)侧(24)落(25)地(26)窗(27)在(28)陈(29)卓(30)身(31)侧(32)拉(33)出(34)温(35)暖(36)光(37)柱(38)。(39)空(40)气(41)中(42)浮(43)尘(44)闪(45)烁(46)，(47)背(48)景(49)器(50)械(51)形(52)成(53)深(54)色(55)剪(56)影(57)。(58)随(59)着(60)推(61)近(62)，(63)他(64)脸(65)上(66)的(67)好(68)奇(69)逐(70)渐(71)沉(72)淀(73)为(74)严(75)肃(76)，(77)仿(78)佛(79)即(80)将(81)揭(82)开(83)隐(84)秘(85)真(86)相(87)。(88)柔(89)和(90)阳(91)光(92)在(93)他(94)身(95)后(96)铺(97)展(98)成(99)金(100)色(101)背(102)景(103)，(104)氛(105)围(106)轻(107)松(108)却(109)暗(110)藏(111)悬(112)念(113)。(114)
+
+共114字符。
+
+加上前缀66和fusionText的114，总180。
+
+等等，我需要包含fusionText，但prompt可以比fusionText长，包含更多技术细节。
+
+让我写一个包含fusionText的prompt，并精确计算。
+
+SC00 prompt:
+"16:9 cinematic. No text/watermarks. Chen Zhuo consistent appearance. 清晨七点，镜头从健身房入口缓缓推进，晨光穿过左侧落地窗在陈卓身侧拉出温暖光柱。空气中浮尘闪烁，背景器械形成深色剪影。随着推近，他脸上的好奇逐渐沉淀为严肃，仿佛即将揭开隐秘真相。柔和阳光在他身后铺展成金色背景，氛围轻松却暗藏悬念。 Technical: slow push-in, 45-degree left sunlight, floating dust, warm glow, silhouette."
+
+让我数整个字符串。这很繁琐，但我会尽量精确。
+
+前缀部分（英文）：
+"16:9 cinematic. No text/watermarks. Chen Zhuo consistent appearance. "
+字符：
+1-3: 16:9
+4: space
+5-13: cinematic (9)
+14: .
+15: space
+16-17: No
+18: space
+19-33: text/watermarks (15)
+34: .
+35: space
+36-39: Chen (4)
+40: space
+41-44: Zhuo (4)
+45: space
+46-55: consistent (10)
+56: space
+57-66: appearance (10)
+67: .
+68: space
+总计：68
+
+fusionText部分：
+"清晨七点，镜头从健身房入口缓缓推进，晨光穿过左侧落地窗在陈卓身侧拉出温暖光柱。空气中浮尘闪烁，背景器械形成深色剪影。随着推近，他脸上的好奇逐渐沉淀为严肃，仿佛即将揭开隐秘真相。柔和阳光在他身后铺展成金色背景，氛围轻松却暗藏悬念。"
+我已数过：114字符（含标点）。
+
+Technical后缀：
+" Technical: slow push-in, 45-degree left sunlight, floating dust, warm glow, silhouette."
+T(1)e(2)c(3)h(4)n(5)i(6)c(7)a(8)l(9):(10)space(11)s(12)l(13)o(14)w(15)space(16)p(17)u(18)s(19)h(20)-(21)i(22)n(23),(24)space(25)4(26)5(27)-(28)d(29)e(30)g(31)r(32)e(33)e(34)space(35)l(36)e(37)f(38)t(39)space(40)s(41)u(42)n(43)l(44)i(45)g(46)h(47)t(48),(49)space(50)f(51)l(52)o(53)a(54)t(55)i(56)n(57)g(58)space(59)d(60)u(61)s(62)t(63),(64)space(65)w(66)a(67)r(68)m(69)space(70)g(71)l(72)o(73)w(74),(75)space(76)s(77)i(78)l(79)h(80)o(81)u(82)e(83)t(84)t(85)e(86).(87)
+总计：87
+
+总prompt长度：68 + 114 + 87 = 269
+
+但等等，"16:9"中的冒号算1个，"9"算1个，所以"16:9"是3字符。是的。
+
+我需要确保JSON格式完全正确，没有多余的空格或换行。但prompt内部可以有正常标点。
+
+让我检查所有6个镜头的fusionText字数，确保在80-150范围内。
+
+SC00: 114字符（含标点），中文每个字1字符，很好。
+SC01: 108字？让我数一下。
+
+"稳定机位凝视力量区，上午阳光从正侧方切割空间，金属货架在橡胶地面烙下条纹阴影。陈卓在杠铃阵列前侧身驻足，冷硬的金属光泽映在他脸上。镜头纹丝不动，像一双审视的眼睛，将他的专业冷静框定在画面中央。杠铃片泛着冷光，危险信号在理性剖析中悄然初显。"
+
+稳(1)定(2)机(3)位(4)凝(5)视(6)力(7)量(8)区(9)，(10)上(11)午(12)阳(13)光(14)从(15)正(16)侧(17)方(18)切(19)割(20)空(21)间(22)，(23)金(24)属(25)货(26)架(27)在(28)橡(29)胶(30)地(31)面(32)烙(33)下(34)条(35)纹(36)阴(37)影(38)。(39)陈(40)卓(41)在(42)杠(43)铃(44)阵(45)列(46)前(47)侧(48)身(49)驻(50)足(51)，(52)冷(53)硬(54)的(55)金(56)属(57)光(58)泽(59)映(60)在(61)他(62)脸(63)上(64)。(65)镜(66)头(67)纹(68)丝(69)不(70)动(71)，(72)像(73)一(74)双(75)审(76)视(77)的(78)眼(79)睛(80)，(81)将(82)他(83)的(84)专(85)业(86)冷(87)静(88)框(89)定(90)在(91)画(92)面(93)中(94)央(95)。(96)杠(97)铃(98)片(99)泛(100)着(101)冷(102)光(103)，(104)危(105)险(106)信(107)号(108)在(109)理(110)性(111)剖(112)析(113)中(114)悄(115)然(116)初(117)显(118)。(119)
+
+119字符。很好。
+
+SC02: "手持35mm低角度跟拍，陈卓从力量区深处走向深蹲架，每一步都让压迫感层层叠加。侧光骤然转强，黑色杠铃片迸出冷冽反光，墙面人影被拉得瘦长锋利。镜头微微晃动，伴随他的脚步逼近，危险气息在空气中凝结。他语速加快，警示转为紧迫，窗外光线愈加强烈，仿佛无形的枷锁正随移动收紧。"
+
+手(1)持(2)3(3)5(4)m(5)m(6)低(7)角(8)度(9)跟(10)拍(11)，(12)陈(13)卓(14)从(15)力(16)量(17)区(18)深(19)处(20)走(21)向(22)深(23)蹲(24)架(25)，(26)每(27)一(28)步(29)都(30)让(31)压(32)迫(33)感(34)层(35)层(36)叠(37)加(38)。(39)侧(40)光(41)骤(42)然(43)转(44)强(45)，(46)黑(47)色(48)杠(49)铃(50)片(51)迸(52)出(53)冷(54)冽(55)反(56)光(57)，(58)墙(59)面(60)人(61)影(62)被(63)拉(64)得(65)瘦(66)长(67)锋(68)利(69)。(70)镜(71)头(72)微(73)微(74)晃(75)动(76)，(77)伴(78)随(79)他(80)的(81)脚(82)步(83)逼(84)近(85)，(86)危(87)险(88)气(89)息(90)在(91)空(92)气(93)中(94)凝(95)结(96)。(97)他(98)语(99)速(100)加(101)快(102)，(103)警(104)示(105)转(106)为(107)紧(108)迫(109)，(110)窗(111)外(112)光(113)线(114)愈(115)加(116)强(117)烈(118)，(119)仿(120)佛(121)无(122)形(123)的(124)枷(125)锁(126)正(127)随(128)移(129)动(130)收(131)紧(132)。(133)
+
+133字符。很好。
+
+SC03: "手持50mm紧迫近景，陈卓从明暗交界处向镜头逼近。顶灯冷白光与窗外暖光在他肩颈撕扯出青灰交界，半张脸沉进阴影，只剩紧绷的轮廓。背景中急救箱标识隐约闪烁，像最后通牒。镜头随他的迫近产生轻微呼吸感，命令感在压迫性画面中陡然升起。危急气息透过他急促的语调和眼神，狠狠压在观众胸口。"
+
+手(1)持(2)5(3)0(4)m(5)m(6)紧(7)迫(8)近(9)景(10)，(11)陈(12)卓(13)从(14)明(15)暗(16)交(17)界(18)处(19)向(20)镜(21)头(22)逼(23)近(24)。(25)顶(26)灯(27)冷(28)白(29)光(30)与(31)窗(32)外(33)暖(34)光(35)在(36)他(37)肩(38)颈(39)撕(40)扯(41)出(42)青(43)灰(44)交(45)界(46)，(47)半(48)张(49)脸(50)沉(51)进(52)阴(53)影(54)，(55)只(56)剩(57)紧(58)绷(59)的(60)轮(61)廓(62)。(63)背(64)景(65)中(66)急(67)救(68)箱(69)标(70)识(71)隐(72)约(73)闪(74)烁(75)，(76)像(77)最(78)后(79)通(80)牒(81)。(82)镜(83)头(84)随(85)他(86)的(87)迫(88)近(89)产(90)生(91)轻(92)微(93)呼(94)吸(95)感(96)，(97)命(98)令(99)感(100)在(101)压(102)迫(103)性(104)画(105)面(106)中(107)陡(108)然(109)升(110)起(111)。(112)危(113)急(114)气(115)息(116)透(117)过(118)他(119)急(120)促(121)的(122)语(123)调(124)和(125)眼(126)神(127)，(128)狠(129)狠(130)压(131)在(132)观(133)众(134)胸(135)口(136)。(137)
+
+137字符。很好。
+
+SC04: "稳定50mm中景平视，陈卓坐在长椅边缘身体前倾，姿态放松而真诚。阳光从正面落地窗均匀涌入，阴影被彻底柔化，身后饮水机细微的白气在逆光中袅袅上升。镜头稳稳托住他的亲和与理性，像是朋友间的恳谈。随着语气回归专业，柔和光线将他眼底的关怀映得透亮，危险警报在此刻被卸下，只剩下可靠建议沉淀。"
+
+稳(1)定(2)5(3)0(4)m(5)m(6)中(7)景(8)平(9)视(10)，(11)陈(12)卓(13)坐(14)在(15)长(16)椅(17)边(18)缘(19)身(20)体(21)前(22)倾(23)，(24)姿(25)态(26)放(27)松(28)而(29)真(30)诚(31)。(32)阳(33)光(34)从(35)正(36)面(37)落(38)地(39)窗(40)均(41)匀(42)涌(43)入(44)，(45)阴(46)影(47)被(48)彻(49)底(50)柔(51)化(52)，(53)身(54)后(55)饮(56)水(57)机(58)细(59)微(60)的(61)白(62)气(63)在(64)逆(65)光(66)中(67)袅(68)袅(69)上(70)升(71)。(72)镜(73)头(74)稳(75)稳(76)托(77)住(78)他(79)的(80)亲(81)和(82)与(83)理(84)性(85)，(86)像(87)是(88)朋(89)友(90)间(91)的(92)恳(93)谈(94)。(95)随(96)着(97)语(98)气(99)回(100)归(101)专(102)业(103)，(104)柔(105)和(106)光(107)线(108)将(109)他(110)眼(111)底(112)的(113)关(114)怀(115)映(116)得(117)透(118)亮(119)，(120)危(121)险(122)警(123)报(124)在(125)此(126)刻(127)被(128)卸(129)下(130)，(131)只(132)剩(133)下(134)可(135)靠(136)建(137)议(138)沉(139)淀(140)。(141)
+
+141字符。很好。
+
+SC05: "35mm中景稳定驻足，陈卓站在健身房中央过道，上午阳光从右侧低角度涌入，为他镀上通透温暖的轮廓光。器械区向远方整齐延伸，在背景中形成充满秩序感的纵深。镜头平稳如初，坚定而友善地收束全篇。他目光直视，嘴角带着笃定的微笑，正向号召在稳定光线中自然流淌，仿佛这温暖轮廓就是给所有观众的最后安全承诺。"
+
+3(1)5(2)m(3)m(4)中(5)景(6)稳(7)定(8)驻(9)足(10)，(11)陈(12)卓(13)站(14)在(15)健(16)身(17)房(18)中(19)央(20)过(21)道(22)，(23)上(24)午(25)阳(26)光(27)从(28)右(29)侧(30)低(31)角(32)度(33)涌(34)入(35)，(36)为(37)他(38)镀(39)上(40)通(41)透(42)温(43)暖(44)的(45)轮(46)廓(47)光(48)。(49)器(50)械(51)区(52)向(53)远(54)方(55)整(56)齐(57)延(58)伸(59)，(60)在(61)背(62)景(63)中(64)形(65)成(66)充(67)满(68)秩(69)序(70)感(71)的(72)纵(73)深(74)。(75)镜(76)头(77)平(78)稳(79)如(80)初(81)，(82)坚(83)定(84)而(85)友(86)善(87)地(88)收(89)束(90)全(91)篇(92)。(93)他(94)目(95)光(96)直(97)视(98)，(99)嘴(100)角(101)带(102)着(103)笃(104)定(105)的(106)微(107)笑(108)，(109)正(110)向(111)号(112)召(113)在(114)稳(115)定(116)光(117)线(118)中(119)自(120)然(121)流(122)淌(123)，(124)仿(125)佛(126)这(127)温(128)暖(129)轮(130)廓(131)就(132)是(133)给(134)所(135)有(136)观(137)众(138)的(139)最(140)后(141)安(142)全(143)承(144)诺(145)。(146)
+
+146字符。很好。
+
+现在，prompt的设计。我采用统一格式：
+"16:9 cinematic. No text/watermarks. Chen Zhuo consistent appearance. " + fusionText + " Technical: [key tech details]."
+
+但为了简化，我可以直接让prompt等于fusionText，因为fusionText已经包含了叙事化的运镜、灯光、情绪。这样prompt就完全包含fusionText。
+
+但是用户要求"完整Prompt"，意味着可能还需要额外信息。我可以在prompt开头加上技术约束，结尾加上画幅声明。
+
+最终格式：
+"16:9 cinematic. No text or watermarks. Chen Zhuo consistent appearance. [fusionText]"
+
+让我计算每个prompt的精确字符数。
+
+对于SC00：
+Prefix: "16:9 cinematic. No text or watermarks. Chen Zhuo consistent appearance. "
+Let me count carefully:
+1:1
+6:2
+::3
+9:4
+(space):5
+c:6
+i:7
+n:8
+e:9
+m:10
+a:11
+t:12
+i:13
+c:14
+.:15
+(space):16
+N:17
+o:18
+(space):19
+t:20
+e:21
+x:22
+t:23
+(space):24
+o:25
+r:26
+(space):27
+w:28
+a:29
+t:30
+e:31
+r:32
+m:33
+a:34
+r:35
+k:36
+s:37
+.:38
+(space):39
+C:40
+h:41
+e:42
+n:43
+(space):44
+Z:45
+h:46
+u:47
+o:48
+(space):49
+c:50
+o:51
+n:52
+s:53
+i:54
+s:55
+t:56
+e:57
+n:58
+t:59
+(space):60
+a:61
+p:62
+p:63
+e:64
+a:65
+r:66
+a:67
+n:68
+c:69
+e:70
+.:71
+(space):72
+
+Prefix length = 72
+
+fusionText length = 114 (counted above)
+
+Total = 72 + 114 = 186
+
+But wait, I need to make sure the prompt is exactly this. Let me write it out:
+"16:9 cinematic. No text or watermarks. Chen Zhuo consistent appearance. 清晨七点，镜头从健身房入口缓缓推进，晨光穿过左侧落地窗在陈卓身侧拉出温暖光柱。空气中浮尘闪烁，背景器械形成深色剪影。随着推近，他脸上的好奇逐渐沉淀为严肃，仿佛即将揭开隐秘真相。柔和阳光在他身后铺展成金色背景，氛围轻松却暗藏悬念。"
+
+Actually, I should verify the fusionText length again with the exact string:
+
+清晨七点，镜头从健身房入口缓缓推进，晨光穿过左侧落地窗在陈卓身侧拉出温暖光柱。空气中浮尘闪烁，背景器械形成深色剪影。随着推近，他脸上的好奇逐渐沉淀为严肃，仿佛即将揭开隐秘真相。柔和阳光在他身后铺展成金色背景，氛围轻松却暗藏悬念。
+
+清(1)晨(2)七(3)点(4)，(5)镜(6)头(7)从(8)健(9)身(10)房(11)入(12)口(13)缓(14)缓(15)推(16)进(17)，(18)晨(19)光(20)穿(21)过(22)左(23)侧(24)落(25)地(26)窗(27)在(28)陈(29)卓(30)身(31)侧(32)拉(33)出(34)温(35)暖(36)光(37)柱(38)。(39)空(40)气(41)中(42)浮(43)尘(44)闪(45)烁(46)，(47)背(48)景(49)器(50)械(51)形(52)成(53)深(54)色(55)剪(56)影(57)。(58)随(59)着(60)推(61)近(62)，(63)他(64)脸(65)上(66)的(67)好(68)奇(69)逐(70)渐(71)沉(72)淀(73)为(74)严(75)肃(76)，(77)仿(78)佛(79)即(80)将(81)揭(82)开(83)隐(84)秘(85)真(86)相(87)。(88)柔(89)和(90)阳(91)光(92)在(93)他(94)身(95)后(96)铺(97)展(98)成(99)金(100)色(101)背(102)景(103)，(104)氛(105)围(106)轻(107)松(108)却(109)暗(110)藏(111)悬(112)念(113)。(114)
+
+Yes, 114.
+
+Total SC00: 72 + 114 = 186.
+
+SC01:
+Prefix: same = 72
+FusionText: 119
+Total: 191
+
+SC02:
+Prefix: same = 72
+FusionText: 133
+Total: 205
+
+SC03:
+Prefix: same = 72
+FusionText: 137
+Total: 209
+
+SC04:
+Prefix: same = 72
+FusionText: 141
+Total: 213
+
+SC05:
+Prefix: same = 72
+FusionText: 146
+Total: 218
+
+Wait, but in my earlier prefix I had "or" instead of a slash? Let me check. I wrote "No text or watermarks." That's:
+N-o- -t-e-x-t- -o-r- -w-a-t-e-r-m-a-r-k-s-. = 2+1+4+1+2+1+10+1 = 22? Let me recount.
+
+"No text or watermarks."
+N(1)o(2) (3)t(4)e(5)x(6)t(7) (8)o(9)r(10) (11)w(12)a(13)t(14)e(15)r(16)m(17)a(18)r(19)k(20)s(21).(22)
+
+22 characters.
+
+But earlier I counted "No text or watermarks. " as 23? No, I need to recount the full prefix carefully.
+
+Prefix string: "16:9 cinematic. No text or watermarks. Chen Zhuo consistent appearance. "
+
+1. "16:9" = 3
+2. " " = 1
+3. "cinematic." = 10 (c-i-n-e-m-a-t-i-c = 9, +. = 10)
+4. " " = 1
+5. "No" = 2
+6. " " = 1
+7. "text" = 4
+8. " " = 1
+9. "or" = 2
+10. " " = 1
+11. "watermarks." = 11 (w-a-t-e-r-m-a-r-k-s = 10, +. = 11)
+12. " " = 1
+13. "Chen" = 4
+14. " " = 1
+15. "Zhuo" = 4
+16. " " = 1
+17. "consistent" = 10
+18. " " = 1
+19. "appearance." = 11 (a-p-p-e-a-r-a-n-c-e = 10, +. = 11)
+20. " " = 1
+
+Total: 3+1+10+1+2+1+4+1+2+1+11+1+4+1+4+1+10+1+11+1 = let's add:
+3+1=4
+4+10=14
+14+1=15
+15+2=17
+17+1=18
+18+4=22
+22+1=23
+23+2=25
+25+1=26
+26+11=37
+37+1=38
+38+4=42
+42+1=43
+43+4=47
+47+1=48
+48+10=58
+58+1=59
+59+11=70
+70+1=71
+
+So prefix is exactly 71 characters.
+
+Now I'll recalculate totals:
+SC00: 71 + 114 = 185
+SC01: 71 + 119 = 190
+SC02: 71 + 133 = 204
+SC03: 71 + 137 = 208
+SC04: 71 + 141 = 212
+SC05: 71 + 146 = 217
+
+But actually, I should verify SC01 fusionText length again.
+
+"稳定机位凝视力量区，上午阳光从正侧方切割空间，金属货架在橡胶地面烙下条纹阴影。陈卓在杠铃阵列前侧身驻足，冷硬的金属光泽映在他脸上。镜头纹丝不动，像一双审视的眼睛，将他的专业冷静框定在画面中央。杠铃片泛着冷光，危险信号在理性剖析中悄然初显。"
+
+稳(1)定(2)机(3)位(4)凝(5)视(6)力(7)量(8)区(9)，(10)上(11)午(12)阳(13)光(14)从(15)正(16)侧(17)方(18)切(19)割(20)空(21)间(22)，(23)金(24)属(25)货(26)架(27)在(28)橡(29)胶(30)地(31)面(32)烙(33)下(34)条(35)纹(36)阴(37)影(38)。(39)陈(40)卓(41)在(42)杠(43)铃(44)阵(45)列(46)前(47)侧(48)身(49)驻(50)足(51)，(52)冷(53)硬(54)的(55)金(56)属(57)光(58)泽(59)映(60)在(61)他(62)脸(63)上(64)。(65)镜(66)头(67)纹(68)丝(69)不(70)动(71)，(72)像(73)一(74)双(75)审(76)视(77)的(78)眼(79)睛(80)，(81)将(82)他(83)的(84)专(85)业(86)冷(87)静(88)框(89)定(90)在(91)画(92)面(93)中(94)央(95)。(96)杠(97)铃(98)片(99)泛(100)着(101)冷(102)光(103)，(104)危(105)险(106)信(107)号(108)在(109)理(110)性(111)剖(112)析(113)中(114)悄(115)然(116)初(117)显(118)。(119)
+
+Yes, 119.
+
+SC02:
+"手持35mm低角度跟拍，陈卓从力量区深处走向深蹲架，每一步都让压迫感层层叠加。侧光骤然转强，黑色杠铃片迸出冷冽反光，墙面人影被拉得瘦长锋利。镜头微微晃动，伴随他的脚步逼近，危险气息在空气中凝结。他语速加快，警示转为紧迫，窗外光线愈加强烈，仿佛无形的枷锁正随移动收紧。"
+
+手(1)持(2)3(3)5(4)m(5)m(6)低(7)角(8)度(9)跟(10)拍(11)，(12)陈(13)卓(14)从(15)力(16)量(17)区(18)深(19)处(20)走(21)向(22)深(23)蹲(24)架(25)，(26)每(27)一(28)步(29)都(30)让(31)压(32)迫(33)感(34)层(35)层(36)叠(37)加(38)。(39)侧(40)光(41)骤(42)然(43)转(44)强(45)，(46)黑(47)色(48)杠(49)铃(50)片(51)迸(52)出(53)冷(54)冽(55)反(56)光(57)，(58)墙(59)面(60)人(61)影(62)被(63)拉(64)得(65)瘦(66)长(67)锋(68)利(69)。(70)镜(71)头(72)微(73)微(74)晃(75)动(76)，(77)伴(78)随(79)
