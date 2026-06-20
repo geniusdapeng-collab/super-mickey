@@ -324,10 +324,10 @@ class RenderSubmitterCore {
     return {
       model: this.endpoint,
       content,
-      metadata: { max_new_tokens: 8192 },
       ratio: '16:9',
-      resolution: '1080p',
-      duration
+      duration,
+      generate_audio: true,
+      watermark: true
     };
   }
 
