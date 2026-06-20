@@ -299,10 +299,14 @@ class RequirementListBuilder {
       }
     }
 
-    // 提取创意指数
-    const intensityMatch = text.match(/创意指数\s*[::]?\s*(0?\.\d+|\d+)/i);
-    if (intensityMatch) {
-      result.creativeIntensity = safeParseFloat(intensityMatch[1]);
+    // 提取创意指数（优先使用metadata传入的值）
+    if (metadata.creativeIntensity !== undefined && metadata.creativeIntensity !== null) {
+      result.creativeIntensity = safeParseFloat(metadata.creativeIntensity);
+    } else {
+      const intensityMatch = text.match(/创意指数\s*[::]?\s*(0?\.\d+|\d+)/i);
+      if (intensityMatch) {
+        result.creativeIntensity = safeParseFloat(intensityMatch[1]);
+      }
     }
     // 检测"天花板般的创造力"等描述
     if (text.includes('天花板') || text.includes('顶级') || text.includes('极致')) {

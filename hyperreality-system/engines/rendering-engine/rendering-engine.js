@@ -171,6 +171,7 @@ class RenderingEngine {
   
   /**
    * v6.37-P0: 解析 characterRef 字符串为 image 引用数组
+   * 同时提取实际的目录名（从路径中）
    */
   _parseCharacterRef(characterRef) {
     if (!characterRef || characterRef === 'NONE') return [];
@@ -186,8 +187,13 @@ class RenderingEngine {
         
         paths.forEach(path => {
           const angleMatch = path.match(/-(\w+)\.png$/);
+          // 从路径提取实际目录名，如 image://characters/chen-zhuo/front.png → chen-zhuo
+          const dirMatch = path.match(/characters\/([^\/]+)\//);
+          const charDir = dirMatch ? dirMatch[1] : charName;
+          
           refs.push({
-            characterId: charName,
+            characterId: charName,      // 显示名（如"陈卓"）
+            characterDir: charDir,      // 实际目录名（如"chen-zhuo"）
             path: path,
             angle: angleMatch ? angleMatch[1] : 'unknown'
           });
@@ -200,11 +206,12 @@ class RenderingEngine {
 
   /**
    * 生成绑定清单
-   * v1.2.7-fix-A1: 从 characterRef 解析定妆照（修复 imageRefs 不存在的bug）
+   * v1.2.7-fix-A2: 从 characterRef 解析 + 自动扫描 portraits 目录补全4角度
    */
   _generateBindingManifest(prompts) {
     const characters = {};
     const shots = [];
+    const REQUIRED_ANGLES = ['front', 'threeQuarter', 'closeup', 'side'];
 
     for (const prompt of prompts) {
       const shotId = prompt.shotId;
@@ -223,21 +230,55 @@ class RenderingEngine {
           characters[charId] = {
             id: charId,
             name: charId,
-            requiredAngles: ['front', 'profile', 'threeQuarter', 'closeup'],
+            requiredAngles: REQUIRED_ANGLES,
             portraits: {}
           };
+
+          // v1.2.7-fix-A2: 自动扫描 portraits 目录，补全4角度
+          // 使用 characterDir（实际目录名，如 chen-zhuo）而非 characterId（显示名，如陈卓）
+          const charDirPath = path.join(this.config.charactersDir, ref.characterDir || charId);
+          const portraitsDir = path.join(charDirPath, 'portraits');
+          
+          if (fs.existsSync(portraitsDir)) {
+            const files = fs.readdirSync(portraitsDir);
+            for (const angle of REQUIRED_ANGLES) {
+              // 查找匹配角度的文件（支持前缀，如 chen-zhuo-front.png）
+              const matchedFile = files.find(f => f.includes(`-${angle}.png`) || f === `${angle}.png`);
+              if (matchedFile) {
+                // 生成包含角色目录的完整相对路径，如 chen-zhuo/portraits/chen-zhuo-front.png
+                const relativePath = path.join(ref.characterDir || charId, 'portraits', matchedFile);
+                characters[charId].portraits[angle] = relativePath;
+                console.log(`[BindingManifest] 角色 ${charId} ${angle}: ${relativePath}`);
+              }
+            }
+          }
+          
+          // 如果 portraits 目录不存在，尝试直接查找 charDir
+          if (!fs.existsSync(portraitsDir)) {
+            const files = fs.readdirSync(charDirPath).filter(f => f.endsWith('.png') || f.endsWith('.jpg'));
+            for (const angle of REQUIRED_ANGLES) {
+              const matchedFile = files.find(f => f.includes(`-${angle}.png`) || f === `${angle}.png`);
+              if (matchedFile) {
+                // 生成包含角色目录的完整相对路径
+                const relativePath = path.join(ref.characterDir || charId, matchedFile);
+                characters[charId].portraits[angle] = relativePath;
+                console.log(`[BindingManifest] 角色 ${charId} ${angle}: ${relativePath}`);
+              }
+            }
+          }
         }
 
-        // 添加定妆照路径
-        if (ref.path) {
-          characters[charId].portraits[ref.angle || 'unknown'] = ref.path;
+        // 添加从characterRef解析的路径（如果扫描没找到）
+        if (ref.path && ref.angle) {
+          if (!characters[charId].portraits[ref.angle]) {
+            characters[charId].portraits[ref.angle] = ref.path;
+          }
         }
       }
 
       shots.push({
         shotId,
         requiredCharacters: charsInShot,
-        // v1.2.7-fix-A1: 用实际时长和字符数（非硬编码12和.length）
         duration: prompt.duration || 12,
         promptLength: prompt.promptCharCount || (typeof prompt.prompt === 'string' ? prompt.prompt.length : 0) || 0
       });

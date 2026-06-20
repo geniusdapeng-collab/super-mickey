@@ -256,6 +256,20 @@ class RenderSubmitterCore {
     return { valid: errors.length === 0, errors };
   }
 
+  _detectMimeType(filePath) {
+    const header = fs.readFileSync(filePath).slice(0, 12);
+    // JPEG: FF D8 FF
+    if (header[0] === 0xFF && header[1] === 0xD8) return 'image/jpeg';
+    // PNG: 89 50 4E 47
+    if (header[0] === 0x89 && header[1] === 0x50 && header[2] === 0x4E) return 'image/png';
+    // WebP: 52 49 46 46 ... 57 45 42 50
+    if (header[0] === 0x52 && header[1] === 0x49 && header[2] === 0x46 && header[3] === 0x46) {
+      if (header[8] === 0x57 && header[9] === 0x45 && header[10] === 0x42 && header[11] === 0x50) return 'image/webp';
+    }
+    // Fallback to extension
+    return filePath.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+  }
+
   /**
    * 构建API Payload（强制绑定reference_image）
    */
@@ -275,33 +289,34 @@ class RenderSubmitterCore {
 
       console.log(`  📎 绑定角色: ${charId}`);
 
-      for (const angle of REQUIRED_ANGLES) {
-        const filePath = charManifest.portraits[angle];
-        if (!filePath) {
-          throw new Error(`PAYLOAD_BUILD_FAILED: 角色 ${charId} 缺少 ${angle} 角度`);
-        }
-
-        const fullPath = filePath.startsWith('/') 
-          ? filePath 
-          : path.join(this.charactersDir, filePath);
-        
-        if (!fs.existsSync(fullPath)) {
-          throw new Error(`PAYLOAD_BUILD_FAILED: 文件不存在 ${fullPath}`);
-        }
-
-        const base64 = fs.readFileSync(fullPath).toString('base64');
-        if (!base64 || base64.length < 100) {
-          throw new Error(`PAYLOAD_BUILD_FAILED: 文件读取失败或损坏 ${fullPath}`);
-        }
-
-        const mimeType = fullPath.endsWith('.png') ? 'image/png' : 'image/jpeg';
-        content.push({
-          type: 'image_url',
-          image_url: { url: `data:${mimeType};base64,${base64}` },
-          role: 'reference_image'
-        });
-        refCount++;
+      // 只传 front 一张定妆照，避免数据量过大导致 Seedance 内部错误
+      const primaryAngle = 'front';
+      const filePath = charManifest.portraits[primaryAngle];
+      
+      if (!filePath) {
+        throw new Error(`PAYLOAD_BUILD_FAILED: 角色 ${charId} 缺少 ${primaryAngle} 角度`);
       }
+
+      const fullPath = filePath.startsWith('/') 
+        ? filePath 
+        : path.join(this.charactersDir, filePath);
+      
+      if (!fs.existsSync(fullPath)) {
+        throw new Error(`PAYLOAD_BUILD_FAILED: 文件不存在 ${fullPath}`);
+      }
+
+      const base64 = fs.readFileSync(fullPath).toString('base64');
+      if (!base64 || base64.length < 100) {
+        throw new Error(`PAYLOAD_BUILD_FAILED: 文件读取失败或损坏 ${fullPath}`);
+      }
+
+      const mimeType = this._detectMimeType(fullPath);
+      content.push({
+        type: 'image_url',
+        image_url: { url: `data:${mimeType};base64,${base64}` },
+        role: 'reference_image'
+      });
+      refCount++;
     }
 
     console.log(`🎬 ${shot.shotId || shot.id} | Prompt:${prompt.length}字符 | 绑定${refCount}张参考图(${shotChars.join('+')})`);

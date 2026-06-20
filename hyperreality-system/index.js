@@ -10,6 +10,7 @@ const { PostProductionEngine } = require('./engines/post-production-engine/post-
 const { RequirementListBuilder } = require('./engines/script-engine/core/requirement-list-builder');
 const { CreativeIntensityEngine } = require('./engines/script-engine/core/creative-intensity-engine');
 const { FieldGuard } = require('./engines/field-guard');
+const { routeAndEnhance } = require('../skills/hollywood-cinematography/cinematography-skill-router');
 const fs = require('fs');
 const path = require('path');
 
@@ -217,6 +218,47 @@ class HyperrealitySystem {
         }
         // 非严格模式下继续，但记录错误
         result.errors.push({ stage: 'FieldGuard-Layer2', message: err.message });
+      }
+
+      // ========== 🆕 好莱坞导演技能注入 ==========
+      console.log('\n🎬 [Director Skills] 好莱坞导演技能注入...');
+      try {
+        const { routeAndEnhance } = require('../skills/hollywood-cinematography/cinematography-skill-router');
+        const { enhancedShots, report } = routeAndEnhance(productionResult.shots, {
+          minScore: 5,
+          maxSkillsPerShot: 2
+        });
+        
+        // 更新 shots
+        productionResult.shots = enhancedShots;
+        
+        // 将导演风格同步到 prompts
+        for (let i = 0; i < productionResult.prompts.length; i++) {
+          const shot = enhancedShots.find(s => s.shotId === productionResult.prompts[i].shotId);
+          if (shot && shot._appliedSkills) {
+            productionResult.prompts[i].directorStyle = shot._appliedSkills
+              .map(s => `${s.type}_${s.director}_${s.emotion}`)
+              .join(' | ');
+            productionResult.prompts[i]._appliedSkills = shot._appliedSkills;
+          }
+        }
+        
+        console.log(`   ✅ 导演技能注入完成`);
+        console.log(`      增强镜头: ${report.enhancedShots}/${report.totalShots}`);
+        console.log(`      使用技能: ${report.skillsUsed.length}个`);
+        if (report.skillsUsed.length > 0) {
+          console.log(`      技能列表: ${report.skillsUsed.slice(0, 5).join(', ')}${report.skillsUsed.length > 5 ? '...' : ''}`);
+        }
+        
+        result.stages.directorSkills = {
+          enhancedShots: report.enhancedShots,
+          totalShots: report.totalShots,
+          skillsUsed: report.skillsUsed,
+          details: report.details
+        };
+      } catch (err) {
+        console.warn(`   ⚠️ 导演技能注入失败: ${err.message}`);
+        result.errors.push({ stage: 'DirectorSkills', message: err.message });
       }
 
       // ========== 🆕 提示词审核确认环节 ==========

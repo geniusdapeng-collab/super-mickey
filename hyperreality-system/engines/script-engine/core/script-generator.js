@@ -275,6 +275,20 @@ ${meta.series?.totalEpisodes > 1 ? `
 ${meta.series?.currentEpisode > 1 ? '- **本集无片头标题画面**（片头仅第一集有）' : ''}
 ${meta.noNextEpisodePreview ? '- **结尾禁止预告下一集**（不提及后续内容）' : ''}
 ` : ''}
+
+## 创意指数指导（创意指数 = ${meta._creativeIntensity?.intensity || meta.creativeIntensity || '未设置'}）
+${meta._creativeIntensity?.instructions?.script ? meta._creativeIntensity.instructions.script : ''}
+${meta._creativeIntensity?.instructions?.production ? `
+## 视觉表现指导
+${meta._creativeIntensity.instructions.production}` : ''}
+${meta._creativeIntensity?.instructions?.rendering ? `
+## 渲染质感指导
+${meta._creativeIntensity.instructions.rendering}` : ''}
+
+${meta._directorStyle ? `
+## 导演风格指导
+${meta._directorStyle}` : ''}
+
 5. 高潮场景必须包含情感张力和视觉冲击力
 
 请直接输出 JSON，不要包含任何其他解释文字。`;
