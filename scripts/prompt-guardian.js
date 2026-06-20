@@ -59,12 +59,35 @@ class PromptGuardian {
       }
     ];
     
-    // 台词净化规则
+    // 台词净化规则（保留原始）
     this.dialogueRules = [
       { pattern: /\【台词\】/g, replace: '【台词】', reason: '统一台词标记格式' },
       { pattern: /\|/g, replace: '，', reason: '竖杠会干扰音频生成' },
       { pattern: /\\n/g, replace: ' ', reason: '换行符会截断音频' },
       { pattern: /\s+/g, replace: ' ', reason: '多余空格' },
+    ];
+    
+    // 声音描述规则（新增：环境音、音效、配乐描述）
+    this.audioRules = [
+      { pattern: /【音效】/, type: 'sound_effect', reason: '音效标记' },
+      { pattern: /【环境音】/, type: 'ambient', reason: '环境音标记' },
+      { pattern: /【配乐】/, type: 'music', reason: '配乐标记' },
+    ];
+    
+    // 多镜头时间戳格式检查（新增）
+    this.timestampRules = [
+      { pattern: /\[00:(\d{2})\]/g, valid: true, reason: '单镜头时间戳格式' },
+      { pattern: /\[00:(\d{2})-00:(\d{2})\]/g, valid: true, reason: '多镜头时间戳范围格式' },
+    ];
+    
+    // 种子值规则（新增：批量生成时建议锁定seed）
+    this.seedRules = [
+      { pattern: /seed[=:](\d+)/i, type: 'seed_locked', reason: '已锁定种子值' },
+    ];
+    
+    // 负向提示词规则（新增）
+    this.negativePromptRules = [
+      { pattern: /【负向】/g, type: 'negative_prompt', reason: '负向提示词标记' },
     ];
     
     // 引用格式修正：@image1 -> 图片1
@@ -80,9 +103,10 @@ class PromptGuardian {
    * 主入口：自动修复Prompt
    * @param {string} prompt - 原始prompt
    * @param {Array} characters - 角色数组 [{id, role, costume}]
+   * @param {Object} options - 可选参数 { isBatch }
    * @returns {Object} { prompt, fixes, safe }
    */
-  autoFix(prompt, characters = []) {
+  autoFix(prompt, characters = [], options = {}) {
     this.fixLog = [];
     let fixedPrompt = prompt;
     let safe = true;
@@ -114,7 +138,21 @@ class PromptGuardian {
       if (this.strictMode) safe = false;
     }
 
-    // Step 5: 引用格式修正（@image1 -> 图片1）
+    // Step 4: 声音描述检查（新增：环境音、音效、配乐标记）
+    const audioResult = this._checkAudioDescription(fixedPrompt);
+    if (audioResult.found) {
+      this.fixLog.push(audioResult.fix);
+      console.log(`  ✅ 声音描述: 检测到 ${audioResult.fix.count} 处声音标记`);
+    }
+
+    // Step 5: 多镜头时间戳检查（新增）
+    const timestampResult = this._checkTimestampFormat(fixedPrompt);
+    if (timestampResult.found) {
+      this.fixLog.push(timestampResult.fix);
+      console.log(`  ✅ 时间戳: 检测到 ${timestampResult.fix.count} 处多镜头标记`);
+    }
+
+    // Step 6: 引用格式修正（@image1 -> 图片1）
     const refResult = this._fixReferenceFormat(fixedPrompt);
     if (refResult.fixed) {
       fixedPrompt = refResult.prompt;
@@ -122,7 +160,14 @@ class PromptGuardian {
       console.log(`  ✅ 引用格式: ${refResult.fix.action}`);
     }
 
-    // Step 6: 外观特征锚定（详细描述服装配饰）
+    // Step 7: 负向提示词检查（新增）
+    const negativeResult = this._checkNegativePrompt(fixedPrompt);
+    if (negativeResult.found) {
+      this.fixLog.push(negativeResult.fix);
+      console.log(`  ✅ 负向提示词: ${negativeResult.fix.action}`);
+    }
+
+    // Step 8: 外观特征锚定（详细描述服装配饰）
     const anchorResult = this._addAppearanceAnchor(fixedPrompt, characters);
     if (anchorResult.fixed) {
       fixedPrompt = anchorResult.prompt;
@@ -130,7 +175,14 @@ class PromptGuardian {
       console.log(`  ✅ 外观锚定: ${anchorResult.fix.action}`);
     }
 
-    // Step 7: API参数完整性检查（仅检查，不修改prompt）
+    // Step 9: 种子值检查（新增：批量生成建议）
+    const seedResult = this._checkSeedValue(fixedPrompt, options);
+    if (seedResult.found) {
+      this.fixLog.push(seedResult.fix);
+      console.log(`  ✅ 种子值: ${seedResult.fix.action}`);
+    }
+
+    // Step 10: API参数完整性检查（仅检查，不修改prompt）
     const apiResult = this._checkApiParams(fixedPrompt, characters);
     if (!apiResult.valid) {
       this.fixLog.push(...apiResult.issues);
@@ -396,8 +448,105 @@ class PromptGuardian {
   }
 
   /**
-   * 保存修复日志
+   * 声音描述检查：检测环境音、音效、配乐标记
    */
+  _checkAudioDescription(prompt) {
+    const found = [];
+    for (const rule of this.audioRules) {
+      if (rule.pattern.test(prompt)) {
+        found.push(rule.type);
+      }
+    }
+    
+    return {
+      found: found.length > 0,
+      fix: {
+        type: 'audio_description',
+        action: `检测到 ${found.length} 处声音描述标记 (${found.join(', ')})`,
+        reason: '声音描述有助于生成匹配的音频',
+        count: found.length
+      }
+    };
+  }
+
+  /**
+   * 多镜头时间戳格式检查
+   */
+  _checkTimestampFormat(prompt) {
+    let count = 0;
+    for (const rule of this.timestampRules) {
+      const matches = prompt.match(rule.pattern);
+      if (matches) {
+        count += matches.length;
+      }
+    }
+    
+    return {
+      found: count > 0,
+      fix: {
+        type: 'timestamp_format',
+        action: count > 0 ? `检测到 ${count} 处多镜头时间戳标记` : '未使用多镜头时间戳',
+        reason: '时间戳格式 [00:00-00:04] 用于多镜头叙事',
+        count
+      }
+    };
+  }
+
+  /**
+   * 负向提示词检查
+   */
+  _checkNegativePrompt(prompt) {
+    let found = false;
+    for (const rule of this.negativePromptRules) {
+      if (rule.pattern.test(prompt)) {
+        found = true;
+        break;
+      }
+    }
+    
+    return {
+      found,
+      fix: {
+        type: 'negative_prompt',
+        action: found ? '已使用负向提示词【负向】标记' : '未使用负向提示词',
+        reason: '负向提示词可排除不想要的元素'
+      }
+    };
+  }
+
+  /**
+   * 种子值检查（批量生成时建议锁定）
+   */
+  _checkSeedValue(prompt, options = {}) {
+    let hasSeed = false;
+    for (const rule of this.seedRules) {
+      if (rule.pattern.test(prompt)) {
+        hasSeed = true;
+        break;
+      }
+    }
+    
+    // 批量生成且未锁定seed时提示
+    if (options.isBatch && !hasSeed) {
+      return {
+        found: true,
+        fix: {
+          type: 'seed_value',
+          action: '批量生成未锁定seed值，建议添加 seed:12345 以保持角色一致性',
+          reason: '固定seed值可排除随机因素，确保角色细节一致'
+        }
+      };
+    }
+    
+    return {
+      found: hasSeed,
+      fix: {
+        type: 'seed_value',
+        action: hasSeed ? '已锁定种子值' : '未使用种子值（单条生成可选）',
+        reason: '种子值控制生成随机性'
+      }
+    };
+  }
   _saveLog(original, fixed, fixes, safe) {
     const log = {
       timestamp: new Date().toISOString(),

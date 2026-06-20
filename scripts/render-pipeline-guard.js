@@ -174,6 +174,57 @@ class RenderPipelineGuard {
             fix: '重新读取图片文件并转为base64'
           };
         }
+      },
+      {
+        id: 'MULTIMODAL_LIMIT',
+        name: '多模态参考数量限制',
+        check: (payload) => {
+          const images = payload.content?.filter(c => c.type === 'image_url') || [];
+          const videos = payload.content?.filter(c => c.type === 'video_url') || [];
+          const audios = payload.content?.filter(c => c.type === 'audio_url') || [];
+          const total = images.length + videos.length + audios.length;
+          
+          return {
+            pass: total <= 12,
+            message: total <= 12 ? null : `参考素材总计 ${total} 个，超过上限 12 个（图片≤9，视频≤3，音频≤3）`,
+            fix: `减少参考素材数量：当前图片${images.length}张、视频${videos.length}段、音频${audios.length}段`
+          };
+        }
+      },
+      {
+        id: 'RESOLUTION_OPT',
+        name: '分辨率成本优化',
+        check: (payload) => {
+          const resolution = payload.resolution;
+          if (!resolution) return { pass: true }; // 未设置=豁免
+          
+          // 检查是否使用1080p进行预览（浪费成本）
+          if (resolution === '1080p' && payload._isPreview) {
+            return {
+              pass: false,
+              message: '预览阶段使用1080p，建议先用720p或mini预览',
+              fix: '预览阶段使用 resolution: "720p" 或 Seedance 2.0 mini 降低成本',
+              severity: 'warning'
+            };
+          }
+          
+          return { pass: true };
+        }
+      },
+      {
+        id: 'NEGATIVE_PROMPT',
+        name: '负向提示词检查',
+        check: (payload) => {
+          const text = payload.content?.find(c => c.type === 'text')?.text || '';
+          const hasNegative = /【负向】/.test(text);
+          
+          return {
+            pass: true, // 不阻塞，仅提示
+            message: hasNegative ? null : '未使用负向提示词【负向】标记',
+            fix: '如需排除特定元素，可添加【负向】不想要的元素描述',
+            severity: 'warning'
+          };
+        }
       }
     ];
   }
