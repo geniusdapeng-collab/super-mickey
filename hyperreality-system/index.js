@@ -39,6 +39,7 @@ class HyperrealitySystem {
    * @param {string} intent - 用户意图
    * @param {object} metadata - 元数据
    * @param {object} options - { skipPromptReview, skipRender, skipPostProduction }
+   * 注意：需求清单确认不可跳过！已移除 skipRequirementConfirmation 选项。
    * @returns {object} 完整创作结果
    */
   async create(intent, metadata = {}, options = {}) {
@@ -75,36 +76,31 @@ class HyperrealitySystem {
         console.log(`      类型: ${requirementList.videoTypeName} | 时长: ${requirementList.targetDuration}s | 风格: ${requirementList.style.primary}`);
         console.log(`      角色: ${requirementList.characters.length}个 | 置信度: ${(requirementList._analysis.confidence * 100).toFixed(0)}%`);
 
-        // 生成 Markdown 供人工确认
-        if (!options.skipRequirementConfirmation) {
-          console.log('\n📋 [需求清单确认] 等待人工确认...');
+        // 生成 Markdown 供人工确认 - 需求清单确认不可跳过！
+        console.log('\n📋 [需求清单确认] 等待人工确认...');
 
-          const markdown = this.requirementListBuilder.generateMarkdown(requirementList);
-          const requirementConfirmation = await this._confirmRequirementList(markdown, requirementList);
-          result.confirmations.requirementList = requirementConfirmation;
+        const markdown = this.requirementListBuilder.generateMarkdown(requirementList);
+        const requirementConfirmation = await this._confirmRequirementList(markdown, requirementList);
+        result.confirmations.requirementList = requirementConfirmation;
 
-          if (!requirementConfirmation.approved) {
-            console.log('   ❌ 需求清单未确认，流程中止');
-            result.success = false;
-            result.stages.requirementReview = {
-              status: 'rejected',
-              reason: requirementConfirmation.reason || '用户未确认需求清单',
-              suggestions: requirementConfirmation.suggestions || []
-            };
-            return result;
-          }
+        if (!requirementConfirmation.approved) {
+          console.log('   ❌ 需求清单未确认，流程中止');
+          result.success = false;
+          result.stages.requirementReview = {
+            status: 'rejected',
+            reason: requirementConfirmation.reason || '用户未确认需求清单',
+            suggestions: requirementConfirmation.suggestions || []
+          };
+          return result;
+        }
 
-          console.log('   ✅ 需求清单已确认，继续创作');
+        console.log('   ✅ 需求清单已确认，继续创作');
 
-          // 如果用户提供了修改意见，重新生成
-          if (requirementConfirmation.suggestions?.length > 0) {
-            console.log(`   🔄 根据用户反馈重新生成...`);
-            requirementList.contentConstraints = requirementList.contentConstraints || [];
-            requirementList.contentConstraints.push(...requirementConfirmation.suggestions.map(s => `用户要求: ${s}`));
-          }
-        } else {
-          console.log('\n⚠️ [需求清单确认] 跳过（调试模式）');
-          result.confirmations.requirementList = { approved: true, skipped: true };
+        // 如果用户提供了修改意见，重新生成
+        if (requirementConfirmation.suggestions?.length > 0) {
+          console.log(`   🔄 根据用户反馈重新生成...`);
+          requirementList.contentConstraints = requirementList.contentConstraints || [];
+          requirementList.contentConstraints.push(...requirementConfirmation.suggestions.map(s => `用户要求: ${s}`));
         }
 
         // 将需求清单转换为 ScriptEngine 可用的 metadata
