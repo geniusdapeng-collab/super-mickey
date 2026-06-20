@@ -105,7 +105,7 @@ class FieldGuard {
     console.log(`\n${this.logPrefix} ${context} shot summary:`);
     for (const shot of shots) {
       // v6.37: dialogue 是统一格式字符串，用 | 分隔统计条数
-      const dialogueStr = shot.dialogue || '';
+      const dialogueStr = typeof shot.dialogue === 'string' ? shot.dialogue : String(shot.dialogue || '');
       const dialogueCount = dialogueStr === 'NONE' || !dialogueStr
         ? 0
         : (dialogueStr.split('||').length || (dialogueStr.includes('|') ? 1 : 0));

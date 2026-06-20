@@ -407,7 +407,7 @@ ${meta.noNextEpisodePreview ? '- **结尾禁止预告下一集**（不提及后�
       const metadataChars = userIntent.metadata?.characters || [];
       if (metadataChars.length > 0) {
         const overrideCharacters = metadataChars.map(c => ({
-          character_id: c.id || c.name,
+          character_id: c.character_id || c.id || c.name, // 支持 character_id 或 id
           name: c.name,
           role: c.role || 'protagonist',
           visual_anchor: {

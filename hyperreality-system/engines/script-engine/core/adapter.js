@@ -264,6 +264,8 @@ class ScriptBlueprintAdapter {
    * 解析定妆照路径
    */
   _resolvePortraitPaths(characterId, referenceImages) {
+    const fs = require('fs');
+    const path = require('path');
     const paths = {};
     
     if (referenceImages && referenceImages.length > 0) {
@@ -275,16 +277,33 @@ class ScriptBlueprintAdapter {
       }
     }
     
-    // 如果没有提供路径，尝试默认路径
+    // 如果没有提供路径，尝试默认路径（支持 portraits/ 子目录和带前缀文件名）
     if (Object.keys(paths).length === 0) {
       const defaultAngles = ['front', 'threeQuarter', 'closeup', 'side'];
-      // v1.2.7-fix-A10: 移除 taotie 特例，统一用 characterId
       const charDir = characterId;
+      const searchDirs = [
+        path.join(this.config.charactersDir, charDir),
+        path.join(this.config.charactersDir, charDir, 'portraits')
+      ];
       
-      for (const angle of defaultAngles) {
-        const defaultPath = path.join(this.config.charactersDir, charDir, `${angle}.jpg`);
-        if (require('fs').existsSync(defaultPath)) {
-          paths[angle] = defaultPath;
+      for (const searchDir of searchDirs) {
+        for (const angle of defaultAngles) {
+          const possibleNames = [
+            `${angle}`,
+            `${charDir}-${angle}`,
+            `${charDir}_${angle}`
+          ];
+          for (const name of possibleNames) {
+            for (const ext of ['.jpg', '.png', '.jpeg', '.webp']) {
+              const filePath = path.join(searchDir, `${name}${ext}`);
+              if (fs.existsSync(filePath)) {
+                paths[angle] = filePath;
+                break;
+              }
+            }
+            if (paths[angle]) break;
+          }
+          if (paths[angle]) break;
         }
       }
     }

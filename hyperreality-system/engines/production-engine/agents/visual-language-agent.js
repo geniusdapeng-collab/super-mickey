@@ -101,7 +101,7 @@ ${shotsInfo}
 2. cameraString: 运镜描述文本（30-50字，动态描述）
 3. lighting: {key_light, fill_light, time_of_day, atmosphere}
 4. lightingString: 灯光场景化描述（30-50字）
-5. timeline: 运镜时间轴（动态切分2-4段，不等分）
+5. timeline: 运镜时间轴（动态切分4-6段，根据情绪起伏设计，每段包含时间范围、运镜动作、画面目的，必须详细具体）
 
 设计要点:
 - 台词密集处：短切+手持

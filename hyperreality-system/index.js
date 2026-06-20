@@ -17,9 +17,18 @@ class HyperrealitySystem {
   constructor(options = {}) {
     this.requirementListBuilder = new RequirementListBuilder(options.requirementListBuilder);
     this.creativeIntensityEngine = new CreativeIntensityEngine(options.creativeIntensityEngine);
-    this.scriptEngine = new ScriptEngine(options.scriptEngine);
-    this.productionEngine = new ProductionEngine(options.productionEngine);
-    this.renderingEngine = new RenderingEngine(options.renderingEngine);
+    this.scriptEngine = new ScriptEngine({
+      ...options.scriptEngine,
+      charactersDir: options.scriptEngine?.charactersDir || path.join(__dirname, '../characters')
+    });
+    this.productionEngine = new ProductionEngine({
+      ...options.productionEngine,
+      charactersDir: options.productionEngine?.charactersDir || path.join(__dirname, '../characters')
+    });
+    this.renderingEngine = new RenderingEngine({
+      ...options.renderingEngine,
+      charactersDir: options.renderingEngine?.charactersDir || path.join(__dirname, '../characters')
+    });
     this.postProductionEngine = new PostProductionEngine(options.postProductionEngine);
     this.fieldGuard = new FieldGuard({ strict: true, logPrefix: '[Hyperreality]' });
     this.version = '2.0.5';

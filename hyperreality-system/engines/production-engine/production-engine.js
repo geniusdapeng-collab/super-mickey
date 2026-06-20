@@ -854,7 +854,12 @@ class ProductionEngine {
     const path = require('path');
 
     const refs = (scene.characters || []).map(cid => {
-      const char = characters.find(c => c.character_id === cid);
+      // 先通过 character_id 查找角色
+      let char = characters.find(c => c.character_id === cid);
+      // 如果没找到，再通过 name 查找（scene.characters 可能存储的是中文名）
+      if (!char) {
+        char = characters.find(c => c.name === cid);
+      }
       if (!char) return null;
 
       // v1.2.7-fix-A2: 优先使用角色已有的真实定妆照路径
@@ -885,24 +890,43 @@ class ProductionEngine {
         return `${char.name}: ${uniquePaths.join(', ')}`;
       }
 
-      // 兜底：检查默认目录是否有定妆照文件（不再凭空生成路径）
-      const charDir = cid;
-      const defaultAngles = ['front', 'profile', 'three-quarter', 'closeup'];
+      // 兜底：检查默认目录是否有定妆照文件（支持 portraits/ 子目录和带前缀文件名）
+      const charDir = char.character_id || cid; // 使用 character_id 作为目录名
+      const defaultAngles = ['front', 'profile', 'three-quarter', 'closeup', 'side', 'threeQuarter'];
+      const searchDirs = [
+        path.join(this.config?.charactersDir || 'characters', charDir),
+        path.join(this.config?.charactersDir || 'characters', charDir, 'portraits')
+      ];
       const foundPaths = [];
 
-      for (const angle of defaultAngles) {
-        // 尝试多种扩展名
-        for (const ext of ['.png', '.jpg', '.jpeg', '.webp']) {
-          const filePath = path.join(this.config?.charactersDir || 'characters', charDir, `${angle}${ext}`);
-          try {
-            if (fs.existsSync(filePath)) {
-              foundPaths.push(`image://characters/${charDir}/${angle}${ext}`);
-              break;
+      console.log(`[_buildCharacterRef] 搜索定妆照: charDir=${charDir}, charactersDir=${this.config?.charactersDir}, searchDirs=${JSON.stringify(searchDirs)}`);
+
+      for (const searchDir of searchDirs) {
+        for (const angle of defaultAngles) {
+          // 尝试多种扩展名和文件名格式
+          const possibleNames = [
+            `${angle}`,
+            `${charDir}-${angle}`,
+            `${charDir}_${angle}`
+          ];
+          for (const name of possibleNames) {
+            for (const ext of ['.png', '.jpg', '.jpeg', '.webp']) {
+              const filePath = path.join(searchDir, `${name}${ext}`);
+              try {
+                if (fs.existsSync(filePath)) {
+                  foundPaths.push(`image://characters/${charDir}/${angle}${ext}`);
+                  console.log(`[_buildCharacterRef] 找到定妆照: ${filePath}`);
+                  break;
+                }
+              } catch (e) {
+                // 路径检查失败，跳过
+              }
             }
-          } catch (e) {
-            // 路径检查失败，跳过
+            if (foundPaths.length > 0) break;
           }
+          if (foundPaths.length > 0) break;
         }
+        if (foundPaths.length > 0) break;
       }
 
       if (foundPaths.length > 0) {
