@@ -18,6 +18,8 @@
 
 const fs = require('fs');
 const path = require('path');
+const { PromptGuardian } = require('./prompt-guardian');
+const { RenderPipelineGuard } = require('./render-pipeline-guard');
 
 const REQUIRED_ANGLES = ['front', 'threeQuarter', 'closeup', 'side'];
 
@@ -272,13 +274,37 @@ class RenderSubmitterCore {
 
   /**
    * 构建API Payload（强制绑定reference_image）
+   * 
+   * 【关键经验 - 2026-06-20】
+   * 1. image_url 必须指定 role: "reference_image"
+   * 2. 必须传 generate_audio: true（确保台词音频渲染）
+   * 3. prompt中必须明确描述角色服装（如"穿警服的"），否则场景描述会覆盖服装
+   * 4. 台词用纯文本，不要加竖杠 | 等特殊符号
    */
   buildPayload(shot, manifest) {
-    const prompt = shot.prompt || shot.visualPrompt || '';
+    let prompt = shot.prompt || shot.visualPrompt || '';
     const duration = shot.isOpening ? 9 : (shot.duration || 12);
     
-    const content = [{ type: 'text', text: prompt }];
+    // 🛡️ 自动修复Prompt（PromptGuardian）
+    const guardian = new PromptGuardian();
     const shotChars = this.extractCharactersFromShot(shot);
+    const charInfos = shotChars.map(charId => {
+      const charManifest = manifest.characters[charId];
+      return {
+        id: charId,
+        name: charManifest?.name || charId,
+        role: charManifest?.role || '',
+        description: charManifest?.description || ''
+      };
+    });
+    
+    const fixResult = guardian.autoFix(prompt, charInfos);
+    if (fixResult.changed) {
+      console.log(`  🛡️ PromptGuardian: 自动修复 ${fixResult.fixes.length} 处`);
+      prompt = fixResult.prompt;
+    }
+    
+    const content = [{ type: 'text', text: prompt }];
     let refCount = 0;
 
     for (const charId of shotChars) {
@@ -289,46 +315,72 @@ class RenderSubmitterCore {
 
       console.log(`  📎 绑定角色: ${charId}`);
 
-      // 只传 front 一张定妆照，避免数据量过大导致 Seedance 内部错误
-      const primaryAngle = 'front';
-      const filePath = charManifest.portraits[primaryAngle];
+      // 传全部4个角度，确保角色一致性
+      const angles = ['front', 'threeQuarter', 'closeup', 'side'];
       
-      if (!filePath) {
-        throw new Error(`PAYLOAD_BUILD_FAILED: 角色 ${charId} 缺少 ${primaryAngle} 角度`);
-      }
+      for (const angle of angles) {
+        const filePath = charManifest.portraits[angle];
+        if (!filePath) {
+          console.warn(`    ⚠️ 角色 ${charId} 缺少 ${angle} 角度，跳过`);
+          continue;
+        }
 
-      const fullPath = filePath.startsWith('/') 
-        ? filePath 
-        : path.join(this.charactersDir, filePath);
-      
-      if (!fs.existsSync(fullPath)) {
-        throw new Error(`PAYLOAD_BUILD_FAILED: 文件不存在 ${fullPath}`);
-      }
+        const fullPath = filePath.startsWith('/') 
+          ? filePath 
+          : path.join(this.charactersDir, filePath);
+        
+        if (!fs.existsSync(fullPath)) {
+          console.warn(`    ⚠️ 文件不存在 ${fullPath}，跳过`);
+          continue;
+        }
 
-      const base64 = fs.readFileSync(fullPath).toString('base64');
-      if (!base64 || base64.length < 100) {
-        throw new Error(`PAYLOAD_BUILD_FAILED: 文件读取失败或损坏 ${fullPath}`);
-      }
+        const base64 = fs.readFileSync(fullPath).toString('base64');
+        if (!base64 || base64.length < 100) {
+          console.warn(`    ⚠️ 文件读取失败或损坏 ${fullPath}，跳过`);
+          continue;
+        }
 
-      const mimeType = this._detectMimeType(fullPath);
-      content.push({
-        type: 'image_url',
-        image_url: { url: `data:${mimeType};base64,${base64}` },
-        role: 'reference_image'
-      });
-      refCount++;
+        const mimeType = this._detectMimeType(fullPath);
+        content.push({
+          type: 'image_url',
+          image_url: { url: `data:${mimeType};base64,${base64}` },
+          role: 'reference_image'  // ✅ 必须指定角色
+        });
+        refCount++;
+      }
     }
 
     console.log(`🎬 ${shot.shotId || shot.id} | Prompt:${prompt.length}字符 | 绑定${refCount}张参考图(${shotChars.join('+')})`);
 
-    return {
+    const payload = {
       model: this.endpoint,
       content,
       ratio: '16:9',
       duration,
-      generate_audio: true,
-      watermark: true
+      generate_audio: true  // ✅ 必须生成台词音频
     };
+
+    // 🔒 强制检查（PipelineGuard）
+    const pipelineGuard = new RenderPipelineGuard();
+    const guardResult = pipelineGuard.check(payload);
+    
+    if (!guardResult.pass) {
+      console.error(`⛔ PipelineGuard 检查失败，阻止提交！`);
+      for (const error of guardResult.errors) {
+        console.error(`   ❌ [${error.rule}] ${error.message}`);
+        console.error(`      修复: ${error.fix}`);
+      }
+      throw new Error(`PIPELINE_GUARD_FAILED: ${guardResult.errors.map(e => e.message).join('; ')}`);
+    }
+    
+    if (guardResult.warnings.length > 0) {
+      console.log(`⚠️ PipelineGuard 警告:`);
+      for (const warning of guardResult.warnings) {
+        console.log(`   [${warning.rule}] ${warning.message} | 建议: ${warning.fix}`);
+      }
+    }
+
+    return payload;
   }
 
   /**
