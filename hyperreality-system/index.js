@@ -248,7 +248,7 @@ class HyperrealitySystem {
           if (shot && shot._appliedSkills) {
             productionResult.prompts[i].directorStyle = shot._appliedSkills
               .map(s => `${s.type}_${s.director}_${s.emotion}`)
-              .join(' | ');
+              .join(', ');
             productionResult.prompts[i]._appliedSkills = shot._appliedSkills;
           }
         }

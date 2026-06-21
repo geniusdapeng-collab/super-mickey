@@ -74,7 +74,7 @@ class SceneDesignAgent extends BaseAgent {
 
     const shotsInfo = shots.map(s => {
       const dialogue = s.dialogue?.lines?.map(l => `"${l.content}"`).join('; ') || s.dialogue || '';
-      return `镜头 ${s.shotId}: ${s.duration || '?'}s | 台词: ${dialogue.substring(0, 80)}`;
+      return `镜头 ${s.shotId}: ${s.duration || '?'}s; 台词: ${dialogue.substring(0, 80)}`;
     }).join('\n');
 
     return `## 角色

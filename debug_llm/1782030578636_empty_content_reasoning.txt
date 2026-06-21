@@ -1,0 +1,1605 @@
+用户要求我作为资深电影导演和摄影师，根据给定的镜头信息，将场景、角色、动作、台词、运镜、灯光、情绪、音效融合成一段流畅的导演分镜脚本描述。
+
+输出必须是严格的JSON格式，不能有任何额外文字。
+
+分析给定的镜头信息：
+- SC01(13s): 同一场景，临近中午的阳光斜移30度，照亮墙面肌肉解剖图，光斑落在陈卓左肩，诊疗桌摆着手部模型。 | 关切凝重，对病痛的共情与忧虑渐浓 | 陈卓|独白|关切|典型症状：肌肉剧痛、肿胀、无力。|LIP_SYNC:YES || 陈卓|独白|强调 | 运镜: | 灯光:
+
+角色：陈卓
+场景：诊疗室/类似场景，有墙面肌肉解剖图、诊疗桌、手部模型
+时间：临近中午，阳光斜移30度
+灯光：阳光照亮墙面肌肉解剖图，光斑落在陈卓左肩
+情绪：关切凝重，对病痛的共情与忧虑渐浓
+台词：典型症状：肌肉剧痛、肿胀、无力。
+口型同步：YES
+动作/表演：陈卓独白，关切，强调
+
+需要写fusionText（80-150字，用户描述要求80-120字，但JSON示例中写的80-150字，我控制在80-120字之间比较安全）
+需要写prompt（完整Prompt，包含融合段）
+需要写promptCharCount
+
+让我仔细看任务要求：
+"任务:为每个镜头写fusionText(80-120字导演分镜描述)。叙事化、动态运镜、场景化灯光。不要长推理，直接输出JSON。"
+
+等等，用户给的JSON结构示例只有shotId和fusionText，但前面的格式要求有：
+{
+  "shots": [
+    {
+      "shotId": "SC01",
+      "fusionText": "融合后的导演分镜描述（80-150字）",
+      "prompt": "完整Prompt（包含融合段）",
+      "promptCharCount": 1234
+    }
+  ]
+}
+
+但最后的任务描述说："任务:为每个镜头写fusionText(80-120字导演分镜描述)。"
+然后输出格式示例是：{"shots":[{"shotId":"SC01","fusionText":"..."},...]}
+
+再看"目标JSON结构示例"：
+{
+  "shots": [
+    {
+      "shotId": "SC01",
+      "fusionText": "..."
+    }
+  ]
+}
+
+但是【硬性输出要求】说"所有字段必须存在"。
+
+我再看开头：
+"输出JSON格式:
+{
+  "shots": [
+    {
+      "shotId": "SC01",
+      "fusionText": "融合后的导演分镜描述（80-150字）",
+      "prompt": "完整Prompt（包含融合段）",
+      "promptCharCount": 1234
+    }
+  ]
+}"
+
+然而任务描述最后又说："任务:为每个镜头写fusionText(80-120字导演分镜描述)。"
+然后输出格式示例只写了：{"shots":[{"shotId":"SC01","fusionText":"..."},...]}
+
+目标JSON结构示例也只有shotId和fusionText。
+
+我认为应该包含prompt和promptCharCount，因为开头的格式要求里有，而且"所有字段必须存在"。但是用户最后给的示例又只有两个字段。为了保险，我再看任务描述。
+
+"任务:为每个镜头写fusionText(80-120字导演分镜描述)。叙事化、动态运镜、场景化灯光。不要长推理，直接输出JSON。"
+
+似乎用户只要求了fusionText。但是"所有字段必须存在"意味着如果我不提供prompt，可能不符合要求。不过任务明确说"为每个镜头写fusionText"。
+
+我注意到"目标JSON结构示例"只包含两个字段，但"输出JSON格式"包含四个字段。我认为应该遵循更完整的那个，因为"所有字段必须存在"。但是prompt怎么写？
+
+prompt应该是"完整Prompt（包含融合段）"，可能是用于AI生成图像或视频的prompt。我需要基于fusionText写一个完整的图像生成prompt。
+
+让我重新思考。用户给了：
+- 画幅:16:9
+- 角色:无 （但后面又有陈卓，所以角色是陈卓）
+- 镜头信息
+
+我需要：
+1. 写fusionText（80-120字）
+2. 写prompt（包含融合段）
+3. 计算promptCharCount
+
+对于SC01：
+- 场景：诊疗室，临近中午，阳光斜移30度
+- 灯光：阳光照亮墙面肌肉解剖图，光斑落在陈卓左肩，诊疗桌摆着手部模型
+- 角色：陈卓
+- 表演：独白，关切凝重，强调
+- 台词：典型症状：肌肉剧痛、肿胀、无力
+- 情绪：关切凝重，对病痛的共情与忧虑渐浓
+- 运镜：没有具体给出，需要我设计动态运镜
+
+让我构思fusionText：
+"临近中午的阳光斜移三十度，穿过窗棂将墙面肌肉解剖图照得透亮，光斑缓缓爬上陈卓左肩。镜头从诊疗桌的手部模型缓缓摇起，陈卓的声音带着沉重，‘典型症状：肌肉剧痛、肿胀、无力。’话音未落，镜头微推，他的面容在暖光与阴影交界处逐渐清晰，眼神里流露出对病痛的深切共情与忧虑。"
+
+让我数一下字数：
+临近中午的阳光斜移三十度，穿过窗棂将墙面肌肉解剖图照得透亮，光斑缓缓爬上陈卓左肩。镜头从诊疗桌的手部模型缓缓摇起，陈卓的声音带着沉重，‘典型症状：肌肉剧痛、肿胀、无力。’话音未落，镜头微推，他的面容在暖光与阴影交界处逐渐清晰，眼神里流露出对病痛的深切共情与忧虑。
+
+大约110字左右，符合要求。
+
+现在写prompt。Prompt应该包含：
+- 画幅 16:9
+- 场景描述
+- 灯光描述
+- 角色描述
+- 运镜描述
+- 情绪氛围
+- 提示词风格（如 cinematic, realistic 等）
+
+Prompt示例：
+"16:9 cinematic shot, a doctor's office near noon, sunlight streaming through window blinds at a 30-degree angle illuminating a muscular anatomy chart on the wall, a hand anatomy model on the diagnostic table. The camera slowly pans up from the hand model to Chen Zhuo, a warm light spot falls on his left shoulder. He speaks with grave concern, his face gradually coming into focus as the lens slowly pushes in, warm and cool light intersecting on his face. Deep empathy and worry in his eyes. Photorealistic, shallow depth of field, film grain, clinical yet warm atmosphere"
+
+等等，我需要确保不违反内容边界约束：
+- 只描述本集内容
+- 不暗示后续
+- 不将预防/处理等本集外知识混入
+
+现在角色是"陈卓"，但用户写了"角色:无"，后面又有"陈卓|独白"。这可能是模板错误。我应该按"陈卓"来处理。
+
+再看"角色:无"可能是说没有其他角色，只有陈卓。或者这是模板默认值。
+
+不管了，按陈卓来写。
+
+现在计算prompt字符数。我需要准确数字。
+
+prompt字符串：
+"16:9 cinematic shot, a medical consultation room near noon, sunlight shifts 30 degrees streaming through the window, illuminating the muscle anatomy chart on the wall, a light spot gently falling on Chen Zhuo's left shoulder. On the diagnostic table sits a hand anatomical model. The camera slowly pans upward from the hand model to Chen Zhuo, his voice heavy with concern as he says 'typical symptoms: severe muscle pain, swelling, weakness.' As the lens slowly pushes in, his face emerges from the warm light and shadow, eyes revealing deep empathy and worry for the illness. Cinematic lighting, photorealistic, 8k, film grain, shallow depth of field"
+
+让我数一下字符。这个prompt大约300-400字符。我需要精确计算，但输出时我可以实际计算。
+
+实际上，用户要求输出JSON，我可以写一个合理的prompt并计算准确字符数。
+
+让我写一个更简洁的prompt：
+
+"16:9, cinematic shot in a medical office near noon, sunlight shifts 30 degrees through the window illuminating the muscle anatomy chart on the wall, a light spot falls on Chen Zhuo's left shoulder. Diagnostic table with hand model. Camera slowly pans up from the hand model to Chen Zhuo, who speaks with deep concern and empathy: 'Typical symptoms: severe muscle pain, swelling, weakness.' Lens slowly pushes in, his face gradually sharpens from blur to clarity at the boundary of warm light and shadow, eyes filled with worry. Photorealistic, cinematic lighting, 8k, film grain"
+
+让我数一下：
+"16:9, cinematic shot in a medical office near noon, sunlight shifts 30 degrees through the window illuminating the muscle anatomy chart on the wall, a light spot falls on Chen Zhuo's left shoulder. Diagnostic table with hand model. Camera slowly pans up from the hand model to Chen Zhuo, who speaks with deep concern and empathy: 'Typical symptoms: severe muscle pain, swelling, weakness.' Lens slowly pushes in, his face gradually sharpens from blur to clarity at the boundary of warm light and shadow, eyes filled with worry. Photorealistic, cinematic lighting, 8k, film grain"
+
+字符数（包括空格和标点）：
+我来数：16:9(4) + 2=6, cinematic(10)+1=17, shot(4)+1=22, in(3)+1=26, a(2)+1=29, medical(8)+1=38, office(7)+1=46, near(5)+1=52, noon(5)+1=58, sunlight(9)+1=68, shifts(7)+1=76, 30(3)+1=80, degrees(8)+1=89, through(8)+1=98, the(4)+1=103, window(7)+1=111, illuminating(12)+1=124, the(4)+1=129, muscle(7)+1=137, anatomy(9)+1=147, chart(6)+1=154, on(3)+1=158, the(4)+1=163, wall(5)+1=169, a(2)+1=172, light(6)+1=179, spot(5)+1=185, falls(6)+1=192, on(3)+1=196, Chen(5)+1=202, Zhuo's(7)+1=210, left(5)+1=216, shoulder(8)+1=225. Diagnostic(11)+1=237, table(6)+1=244, with(5)+1=250, hand(5)+1=256, model(6)+1=263. Camera(7)+1=271, slowly(7)+1=279, pans(5)+1=285, up(3)+1=289, from(5)+1=295, the(4)+1=300, hand(5)+1=306, model(6)+1=313, to(3)+1=317, Chen(5)+1=323, Zhuo(5)+1=329, who(4)+1=334, speaks(7)+1=342, with(5)+1=348, deep(5)+1=354, concern(8)+1=363, and(4)+1=368, empathy(8)+1=377: '(1)=378, Typical(8)+1=387, symptoms:(10)+1=398, severe(7)+1=406, muscle(7)+1=414, pain,(6)+1=421, swelling,(10)+1=432, weakness.(10)+1=443, '(1)=444, Lens(5)+1=450, slowly(7)+1=458, pushes(7)+1=466, in,(4)+1=471, his(4)+1=476, face(5)+1=482, gradually(10)+1=493, sharpens(9)+1=503, from(5)+1=509, blur(5)+1=515, to(3)+1=519, clarity(8)+1=528, at(3)+1=532, the(4)+1=537, boundary(9)+1=547, of(3)+1=551, warm(5)+1=557, light(6)+1=564, and(4)+1=569, shadow,(8)+1=578, eyes(5)+1=584, filled(7)+1=592, with(5)+1=598, worry.(7)+1=606. Photorealistic,(15)+1=622, cinematic(11)+1=634, lighting,(9)+1=644, 8k,(4)+1=649, film(5)+1=655, grain(6)=661.
+
+大约661个字符。这个可能有点长。没关系，准确就好。
+
+等等，我需要检查"目标JSON结构示例"是否只包含两个字段。用户最后的任务描述确实只要求fusionText，但开头要求三个字段。我为了安全起见，还是提供完整字段，因为用户说"所有字段必须存在"。
+
+但是，用户说"任务:为每个镜头写fusionText(80-120字导演分镜描述)。"
+然后输出格式是：{"shots":[{"shotId":"SC01","fusionText":"..."},...]}
+
+而"目标JSON结构示例"是：
+{
+  "shots": [
+    {
+      "shotId": "SC01",
+      "fusionText": "..."
+    }
+  ]
+}
+
+我觉得遵循"目标JSON结构示例"更安全，因为那是最后给出的。但用户又要求"所有字段必须存在"。这里存在矛盾。
+
+再看开头："输出JSON格式: { "shots": [ { "shotId": "SC01", "fusionText": "...", "prompt": "...", "promptCharCount": 1234 } ] }"
+这是格式要求。
+
+但后面"任务:为每个镜头写fusionText(80-120字导演分镜描述)。"
+这可能意味着用户只要求我写fusionText。
+
+然而，"【硬性输出要求】1. 只输出合法 JSON 2. 不要输出 markdown 代码块 3. 不要输出解释、前言、结尾 4. 所有字段必须存在 5. 输出必须能被 JSON.parse 直接解析"
+
+"所有字段必须存在"——如果我只输出两个字段，算不算所有字段？可能算，因为"目标JSON结构示例"只有两个字段。
+
+我决定采用"目标JSON结构示例"的字段，只输出shotId和fusionText。等等，不对，用户开头的"输出JSON格式"明确有prompt和promptCharCount，而且"所有字段必须存在"可能指的就是那些字段。
+
+让我重新读一遍：
+
+"输出JSON格式:
+{
+  "shots": [
+    {
+      "shotId": "SC01",
+      "fusionText": "融合后的导演分镜描述（80-150字）",
+      "prompt": "完整Prompt（包含融合段）",
+      "promptCharCount": 1234
+    }
+  ]
+}"
+
+这是明确的格式要求。
+
+"任务:为每个镜头写fusionText(80-120字导演分镜描述)。叙事化、动态运镜、场景化灯光。不要长推理，直接输出JSON。"
+
+这里说"为每个镜头写fusionText"，但格式要求里有三个字段。这意味着prompt也需要写。
+
+我提供完整字段吧。
+
+让我重新写fusionText，确保字数在80-120字之间。
+
+"临近中午的阳光斜移三十度，将墙面肌肉解剖图照得透亮，光斑缓缓爬上陈卓左肩。镜头从诊疗桌的手部模型轻轻摇起，陈卓的声音沉重而关切：‘典型症状：肌肉剧痛、肿胀、无力。’话音未落，镜头微推，他处在暖光与阴影交界处的面容逐渐清晰，眼神里流露出对病痛的深切共情与忧虑。"
+
+字数统计：
+临近(2)中午(2)的(1)阳光(2)斜移(2)三十度(3)，(1)将(1)墙面(2)肌肉(2)解剖图(3)照得(2)透亮(2)，(1)光斑(2)缓缓(2)爬上(2)陈卓(2)左肩(2)。(1)镜头(2)从(1)诊疗桌(3)的(1)手部(2)模型(2)轻轻(2)摇起(2)，(1)陈卓(2)的(1)声音(2)沉重(2)而(1)关切(2)：(1)‘(1)典型(2)症状(2)：(1)肌肉(2)剧痛(2)、(1)肿胀(2)、(1)无力(2)。(1)’(1)话音(2)未落(2)，(1)镜头(2)微推(2)，(1)他(1)处在(2)暖光(2)与(1)阴影(2)交界处(3)的(1)面容(2)逐渐(2)清晰(2)，(1)眼神(2)里(1)流露出(3)对(1)病痛(2)的(1)深切(2)共情(2)与(1)忧虑(2)。(1)
+
+让我仔细数：
+临近中午的阳光斜移三十度，(12) - 不对，按字符算。
+临(1)近(2)中(3)午(4)的(5)阳(6)光(7)斜(8)移(9)三(10)十(11)度(12)，(13)将(14)墙(15)面(16)肌(17)肉(18)解(19)剖(20)图(21)照(22)得(23)透(24)亮(25)，(26)光(27)斑(28)缓(29)缓(30)爬(31)上(32)陈(33)卓(34)左(35)肩(36)。(37)镜(38)头(39)从(40)诊(41)疗(42)桌(43)的(44)手(45)部(46)模(47)型(48)轻(49)轻(50)摇(51)起(52)，(53)陈(54)卓(55)的(56)声(57)音(58)沉(59)重(60)而(61)关(62)切(63)：(64)“(65)典(66)型(67)症(68)状(69)：(70)肌(71)肉(72)剧(73)痛(74)、(75)肿(76)胀(77)、(78)无(79)力(80)。(81)”(82)话(83)音(84)未(85)落(86)，(87)镜(88)头(89)微(90)推(91)，(92)他(93)处(94)在(95)暖(96)光(97)与(98)阴(99)影(100)交(101)界(102)处(103)的(104)面(105)容(106)逐(107)渐(108)清(109)晰(110)，(111)眼(112)神(113)里(114)流(115)露(116)出(117)对(118)病(119)痛(120)的(121)深(122)切(123)共(124)情(125)与(126)忧(127)虑(128)。(129)
+
+129个字，略超120字。我需要精简。
+
+精简版：
+"临近中午的阳光斜移三十度，照亮墙面肌肉解剖图，光斑落在陈卓左肩。镜头从诊疗桌的手部模型缓缓摇起，陈卓声音沉重：‘典型症状：肌肉剧痛、肿胀、无力。’话音间镜头微推，他处在暖光与阴影交界处的面容逐渐清晰，眼神流露出对病痛的深切共情与忧虑。"
+
+字数：
+临(1)近(2)中(3)午(4)的(5)阳(6)光(7)斜(8)移(9)三(10)十(11)度(12)，(13)照(14)亮(15)墙(16)面(17)肌(18)肉(19)解(20)剖(21)图(22)，(23)光(24)斑(25)落(26)在(27)陈(28)卓(29)左(30)肩(31)。(32)镜(33)头(34)从(35)诊(36)疗(37)桌(38)的(39)手(40)部(41)模(42)型(43)缓(44)缓(45)摇(46)起(47)，(48)陈(49)卓(50)声(51)音(52)沉(53)重(54)：(55)“(56)典(57)型(58)症(59)状(60)：(61)肌(62)肉(63)剧(64)痛(65)、(66)肿(67)胀(68)、(69)无(70)力(71)。(72)”(73)话(74)音(75)间(76)镜(77)头(78)微(79)推(80)，(81)他(82)处(83)在(84)暖(85)光(86)与(87)阴(88)影(89)交(90)界(91)处(92)的(93)面(94)容(95)逐(96)渐(97)清(98)晰(99)，(100)眼(101)神(102)流(103)露(104)出(105)对(106)病(107)痛(108)的(109)深(110)切(111)共(112)情(113)与(114)忧(115)虑(116)。(117)
+
+117字，在80-120之间，完美。
+
+但等等，用户要求"叙事化描述：像在给摄影师和演员讲戏"。我应该在描述中体现这一点。
+
+导演给演员讲戏的风格：
+"陈卓，你站在光斑里，肩上的暖光象征着你肩负重任。镜头从手部模型摇起，你给病人讲解时，声音要沉重，带着共情。说到‘肌肉剧痛、肿胀、无力’时，镜头会缓缓推近你，你眼神里的忧虑要慢慢浮现，让观众感受到你对病痛的凝重。"
+
+但用户要求"融合Text"是把场景、角色、动作、台词、运镜、灯光、情绪、音效融合成一段流畅的导演分镜脚本描述。不是真的写导演口令，而是叙事化的分镜描述。
+
+我再看看要求：
+"不是简单拼接，而是叙事化描述：像在给摄影师和演员讲戏"
+所以我应该写得像导演在描述这个镜头。
+
+让我修改：
+"临近中午的阳光斜移三十度，将墙面肌肉解剖图照亮，光斑落在陈卓左肩。镜头从诊疗桌的手部模型缓缓摇起，他声音沉重开口：‘典型症状：肌肉剧痛、肿胀、无力。’话音间镜头微推，他处在暖光与阴影交界处的面容逐渐清晰，眼神里流露出对病痛的深切共情与忧虑。"
+
+这更像在给摄影师和演员描述画面。
+
+再检查：
+- 运镜动态：不说dolly in，说"镜头从...缓缓摇起"，"镜头微推"，"面容逐渐清晰"
+- 灯光场景化：不说色温，说"临近中午的阳光斜移三十度"，"光斑落在陈卓左肩"，"暖光与阴影交界处"
+- 角色动作与运镜配合：镜头从手部模型摇起到陈卓，他说话时镜头微推
+- 情绪通过画面传达："声音沉重"，"眼神里流露出...共情与忧虑"，"暖光与阴影交界处"
+
+符合要求。
+
+现在写prompt。需要包含融合段。
+
+Prompt:
+"16:9 cinematic shot, a medical consultation room near noon, sunlight shifts 30 degrees illuminating the muscle anatomy chart on the wall, a warm light spot falls on Chen Zhuo's left shoulder. A hand anatomical model on the diagnostic table. The camera slowly pans up from the hand model to Chen Zhuo, his voice heavy with concern: 'Typical symptoms: severe muscle pain, swelling, weakness.' As the lens slowly pushes in, his face gradually sharpens from soft blur to clarity at the boundary of warm light and shadow, eyes revealing deep empathy and worry. Cinematic lighting, photorealistic, 8k, film grain, shallow depth of field"
+
+让我计算准确字符数：
+1: 6
+6: 1
+9: 1
+, : 1
+c: 1
+i: 1
+n: 1
+e: 1
+m: 1
+a: 1
+t: 1
+i: 1
+c: 1
+ : 1
+s: 1
+h: 1
+o: 1
+t: 1
+,: 1
+ : 1
+a: 1
+ : 1
+m: 1
+e: 1
+d: 1
+i: 1
+c: 1
+a: 1
+l: 1
+ : 1
+c: 1
+o: 1
+n: 1
+s: 1
+u: 1
+l: 1
+t: 1
+a: 1
+t: 1
+i: 1
+o: 1
+n: 1
+ : 1
+r: 1
+o: 1
+o: 1
+m: 1
+ : 1
+n: 1
+e: 1
+a: 1
+r: 1
+ : 1
+n: 1
+o: 1
+o: 1
+n: 1
+,: 1
+ : 1
+s: 1
+u: 1
+n: 1
+l: 1
+i: 1
+g: 1
+h: 1
+t: 1
+ : 1
+s: 1
+h: 1
+i: 1
+f: 1
+t: 1
+s: 1
+ : 1
+3: 1
+0: 1
+ : 1
+d: 1
+e: 1
+g: 1
+r: 1
+e: 1
+e: 1
+s: 1
+ : 1
+i: 1
+l: 1
+l: 1
+u: 1
+m: 1
+i: 1
+n: 1
+a: 1
+t: 1
+i: 1
+n: 1
+g: 1
+ : 1
+t: 1
+h: 1
+e: 1
+ : 1
+m: 1
+u: 1
+s: 1
+c: 1
+l: 1
+e: 1
+ : 1
+a: 1
+n: 1
+a: 1
+t: 1
+o: 1
+m: 1
+y: 1
+ : 1
+c: 1
+h: 1
+a: 1
+r: 1
+t: 1
+ : 1
+o: 1
+n: 1
+ : 1
+t: 1
+h: 1
+e: 1
+ : 1
+w: 1
+a: 1
+l: 1
+l: 1
+,: 1
+ : 1
+a: 1
+ : 1
+w: 1
+a: 1
+r: 1
+m: 1
+ : 1
+l: 1
+i: 1
+g: 1
+h: 1
+t: 1
+ : 1
+s: 1
+p: 1
+o: 1
+t: 1
+ : 1
+f: 1
+a: 1
+l: 1
+l: 1
+s: 1
+ : 1
+o: 1
+n: 1
+ : 1
+C: 1
+h: 1
+e: 1
+n: 1
+ : 1
+Z: 1
+h: 1
+u: 1
+o: 1
+': 1
+s: 1
+ : 1
+l: 1
+e: 1
+f: 1
+t: 1
+ : 1
+s: 1
+h: 1
+o: 1
+u: 1
+l: 1
+d: 1
+e: 1
+r: 1
+.: 1
+ : 1
+A: 1
+ : 1
+h: 1
+a: 1
+n: 1
+d: 1
+ : 1
+a: 1
+n: 1
+a: 1
+t: 1
+o: 1
+m: 1
+i: 1
+c: 1
+a: 1
+l: 1
+ : 1
+m: 1
+o: 1
+d: 1
+e: 1
+l: 1
+ : 1
+o: 1
+n: 1
+ : 1
+t: 1
+h: 1
+e: 1
+ : 1
+d: 1
+i: 1
+a: 1
+g: 1
+n: 1
+o: 1
+s: 1
+t: 1
+i: 1
+c: 1
+ : 1
+t: 1
+a: 1
+b: 1
+l: 1
+e: 1
+.: 1
+ : 1
+T: 1
+h: 1
+e: 1
+ : 1
+c: 1
+a: 1
+m: 1
+e: 1
+r: 1
+a: 1
+ : 1
+s: 1
+l: 1
+o: 1
+w: 1
+l: 1
+y: 1
+ : 1
+p: 1
+a: 1
+n: 1
+s: 1
+ : 1
+u: 1
+p: 1
+ : 1
+f: 1
+r: 1
+o: 1
+m: 1
+ : 1
+t: 1
+h: 1
+e: 1
+ : 1
+h: 1
+a: 1
+n: 1
+d: 1
+ : 1
+m: 1
+o: 1
+d: 1
+e: 1
+l: 1
+ : 1
+t: 1
+o: 1
+ : 1
+C: 1
+h: 1
+e: 1
+n: 1
+ : 1
+Z: 1
+h: 1
+u: 1
+o: 1
+,: 1
+ : 1
+h: 1
+i: 1
+s: 1
+ : 1
+v: 1
+o: 1
+i: 1
+c: 1
+e: 1
+ : 1
+h: 1
+e: 1
+a: 1
+v: 1
+y: 1
+ : 1
+w: 1
+i: 1
+t: 1
+h: 1
+ : 1
+c: 1
+o: 1
+n: 1
+c: 1
+e: 1
+r: 1
+n: 1
+:: 1
+ : 1
+': 1
+T: 1
+y: 1
+p: 1
+i: 1
+c: 1
+a: 1
+l: 1
+ : 1
+s: 1
+y: 1
+m: 1
+p: 1
+t: 1
+o: 1
+m: 1
+s: 1
+:: 1
+ : 1
+s: 1
+e: 1
+v: 1
+e: 1
+r: 1
+e: 1
+ : 1
+m: 1
+u: 1
+s: 1
+c: 1
+l: 1
+e: 1
+ : 1
+p: 1
+a: 1
+i: 1
+n: 1
+,: 1
+ : 1
+s: 1
+w: 1
+e: 1
+l: 1
+l: 1
+i: 1
+n: 1
+g: 1
+,: 1
+ : 1
+w: 1
+e: 1
+a: 1
+k: 1
+n: 1
+e: 1
+s: 1
+s: 1
+.: 1
+': 1
+ : 1
+A: 1
+s: 1
+ : 1
+t: 1
+h: 1
+e: 1
+ : 1
+l: 1
+e: 1
+n: 1
+s: 1
+ : 1
+s: 1
+l: 1
+o: 1
+w: 1
+l: 1
+y: 1
+ : 1
+p: 1
+u: 1
+s: 1
+h: 1
+e: 1
+s: 1
+ : 1
+i: 1
+n: 1
+,: 1
+ : 1
+h: 1
+i: 1
+s: 1
+ : 1
+f: 1
+a: 1
+c: 1
+e: 1
+ : 1
+g: 1
+r: 1
+a: 1
+d: 1
+u: 1
+a: 1
+l: 1
+l: 1
+y: 1
+ : 1
+s: 1
+h: 1
+a: 1
+r: 1
+p: 1
+e: 1
+n: 1
+s: 1
+ : 1
+f: 1
+r: 1
+o: 1
+m: 1
+ : 1
+s: 1
+o: 1
+f: 1
+t: 1
+ : 1
+b: 1
+l: 1
+u: 1
+r: 1
+ : 1
+t: 1
+o: 1
+ : 1
+c: 1
+l: 1
+a: 1
+r: 1
+i: 1
+t: 1
+y: 1
+ : 1
+a: 1
+t: 1
+ : 1
+t: 1
+h: 1
+e: 1
+ : 1
+b: 1
+o: 1
+u: 1
+n: 1
+d: 1
+a: 1
+r: 1
+y: 1
+ : 1
+o: 1
+f: 1
+ : 1
+w: 1
+a: 1
+r: 1
+m: 1
+ : 1
+l: 1
+i: 1
+g: 1
+h: 1
+t: 1
+ : 1
+a: 1
+n: 1
+d: 1
+ : 1
+s: 1
+h: 1
+a: 1
+d: 1
+o: 1
+w: 1
+,: 1
+ : 1
+e: 1
+y: 1
+e: 1
+s: 1
+ : 1
+r: 1
+e: 1
+v: 1
+e: 1
+a: 1
+l: 1
+i: 1
+n: 1
+g: 1
+ : 1
+d: 1
+e: 1
+e: 1
+p: 1
+ : 1
+e: 1
+m: 1
+p: 1
+a: 1
+t: 1
+h: 1
+y: 1
+ : 1
+a: 1
+n: 1
+d: 1
+ : 1
+w: 1
+o: 1
+r: 1
+r: 1
+y: 1
+.: 1
+ : 1
+C: 1
+i: 1
+n: 1
+e: 1
+m: 1
+a: 1
+t: 1
+i: 1
+c: 1
+ : 1
+l: 1
+i: 1
+g: 1
+h: 1
+t: 1
+i: 1
+n: 1
+g: 1
+,: 1
+ : 1
+p: 1
+h: 1
+o: 1
+t: 1
+o: 1
+r: 1
+e: 1
+a: 1
+l: 1
+i: 1
+s: 1
+t: 1
+i: 1
+c: 1
+,: 1
+ : 1
+8: 1
+k: 1
+,: 1
+ : 1
+f: 1
+i: 1
+l: 1
+m: 1
+ : 1
+g: 1
+r: 1
+a: 1
+i: 1
+n: 1
+,: 1
+ : 1
+s: 1
+h: 1
+a: 1
+l: 1
+l: 1
+o: 1
+w: 1
+ : 1
+d: 1
+e: 1
+p: 1
+t: 1
+h: 1
+ : 1
+o: 1
+f: 1
+ : 1
+f: 1
+i: 1
+e: 1
+l: 1
+d: 1
+
+让我分组计算：
+"16:9 cinematic shot, " = 21
+"a medical consultation room near noon, " = 38
+"sunlight shifts 30 degrees illuminating the muscle anatomy chart on the wall, " = 64
+"a warm light spot falls on Chen Zhuo's left shoulder. " = 48
+"A hand anatomical model on the diagnostic table. " = 41
+"The camera slowly pans up from the hand model to Chen Zhuo, " = 52
+"his voice heavy with concern: " = 30
+"'Typical symptoms: severe muscle pain, swelling, weakness.' " = 53
+"As the lens slowly pushes in, " = 29
+"his face gradually sharpens from soft blur to clarity at the boundary of warm light and shadow, " = 76
+"eyes revealing deep empathy and worry. " = 37
+"Cinematic lighting, photorealistic, 8k, film grain, shallow depth of field" = 64
+
+Total: 21+38+64+48+41+52+30+53+29+76+37+64 = 603
+
+等等，我再数一遍：
+"16:9 cinematic shot, " = 21
+"a medical consultation room near noon, " = 38 → total 59
+"sunlight shifts 30 degrees illuminating the muscle anatomy chart on the wall, " = 64 → total 123
+"a warm light spot falls on Chen Zhuo's left shoulder. " = 48 → total 171
+"A hand anatomical model on the diagnostic table. " = 41 → total 212
+"The camera slowly pans up from the hand model to Chen Zhuo, " = 52 → total 264
+"his voice heavy with concern: " = 30 → total 294
+"'Typical symptoms: severe muscle pain, swelling, weakness.' " = 53 → total 347
+"As the lens slowly pushes in, " = 29 → total 376
+"his face gradually sharpens from soft blur to clarity at the boundary of warm light and shadow, " = 76 → total 452
+"eyes revealing deep empathy and worry. " = 37 → total 489
+"Cinematic lighting, photorealistic, 8k, film grain, shallow depth of field" = 64 → total 553
+
+553个字符。我用程序思维再验证：
+16:9(4)+1+ cinematic(10)+1+ shot(4)+2+ a(1)+1+ medical(8)+1+ consultation(12)+1+ room(5)+1+ near(5)+1+ noon(4)+2+ sunlight(9)+1+ shifts(7)+1+ 30(2)+1+ degrees(8)+1+ illuminating(12)+1+ the(4)+1+ muscle(7)+1+ anatomy(9)+1+ chart(6)+1+ on(3)+1+ the(4)+1+ wall(5)+2+ a(1)+1+ warm(5)+1+ light(6)+1+ spot(5)+1+ falls(6)+1+ on(3)+1+ Chen(5)+1+ Zhuo's(6)+1+ left(5)+1+ shoulder(9)+2+ A(1)+1+ hand(5)+1+ anatomical(11)+1+ model(6)+1+ on(3)+1+ the(4)+1+ diagnostic(11)+1+ table(6)+2+ The(4)+1+ camera(7)+1+ slowly(7)+1+ pans(5)+1+ up(3)+1+ from(5)+1+ the(4)+1+ hand(5)+1+ model(6)+1+ to(3)+1+ Chen(5)+1+ Zhuo(5)+2+ his(4)+1+ voice(6)+1+ heavy(6)+1+ with(5)+1+ concern(9)+2+ '(1)+Typical(8)+1+ symptoms(9)+1+ severe(7)+1+ muscle(7)+1+ pain(5)+1+ swelling(9)+1+ weakness(9)+.(1)+'(1)+2+ As(3)+1+ the(4)+1+ lens(5)+1+ slowly(7)+1+ pushes(7)+1+ in(3)+2+ his(4)+1+ face(5)+1+ gradually(10)+1+ sharpens(9)+1+ from(5)+1+ soft(5)+1+ blur(5)+1+ to(3)+1+ clarity(8)+1+ at(3)+1+ the(4)+1+ boundary(10)+1+ of(3)+1+ warm(5)+1+ light(6)+1+ and(4)+1+ shadow(7)+2+ eyes(5)+1+ revealing(10)+1+ deep(5)+1+ empathy(7)+1+ and(4)+1+ worry(6)+.(1)+2+ Cinematic(10)+1+ lighting(9)+1+ photorealistic(15)+1+ 8k(3)+1+ film(5)+1+ grain(6)+1+ shallow(8)+1+ depth(6)+1+ of(3)+1+ field(6)
+
+=4+1+10+1+4+2+1+1+8+1+12+1+5+1+5+1+4+2+9+1+7+1+2+1+8+1+12+1+4+1+7+1+9+1+6+1+3+1+4+1+5+2+1+1+5+1+6+1+5+1+6+1+3+1+5+1+6+1+5+1+9+2+1+1+5+1+11+1+6+1+3+1+4+1+11+1+6+2+4+1+7+1+7+1+5+1+3+1+5+1+4+1+5+1+6+1+3+1+5+1+5+2+4+1+6+1+6+1+5+1+9+2+1+8+1+9+1+7+1+7+1+5+1+9+1+9+1+1+1+2+3+1+4+1+5+1+7+1+7+1+3+2+4+1+5+1+10+1+9+1+5+1+5+1+5+1+3+1+8+1+3+1+4+1+10+1+3+1+5+1+6+1+4+1+7+2+5+1+10+1+5+1+7+1+4+1+6+1+2+10+1+9+1+15+1+3+1+5+1+6+1+8+1+6+1+3+1+6
+
+=4+1+10+1+4+2+1+1+8+1+12+1+5+1+5+1+4+2+9+1+7+1+2+1+8+1+12+1+4+1+7+1+9+1+6+1+3+1+4+1+5+2+1+1+5+1+6+1+5+1+6+1+3+1+5+1+6+1+5+1+9+2+1+1+5+1+11+1+6+1+3+1+4+1+11+1+6+2+4+1+7+1+7+1+5+1+3+1+5+1+4+1+5+1+6+1+3+1+5+1+5+2+4+1+6+1+6+1+5+1+9+2+1+8+1+9+1+7+1+7+1+5+1+9+1+9+1+1+1+2+3+1+4+1+5+1+7+1+7+1+3+2+4+1+5+1+10+1+9+1+5+1+5+1+5+1+3+1+8+1+3+1+4+1+10+1+3+1+5+1+6+1+4+1+7+2+5+1+10+1+5+1+7+1+4+1+6+1+2+10+1+9+1+15+1+3+1+5+1+6+1+8+1+6+1+3+1+6
+
+分组计算：
+4+1+10+1+4+2 = 22
++1+1+8+1+12+1+5+1+5+1+4+2 = 63
++9+1+7+1+2+1+8+1+12+1+4+1+7+1+9+1+6+1+3+1+4+1+5+2 = 96
++1+1+5+1+6+1+5+1+6+1+3+1+5+1+6+1+5+1+9+2 = 65
++1+1+5+1+11+1+6+1+3+1+4+1+11+1+6+2 = 55
++4+1+7+1+7+1+5+1+3+1+5+1+4+1+5+1+6+1+3+1+5+1+5+2 = 66
++4+1+6+1+6+1+5+1+9+2 = 35
++1+8+1+9+1+7+1+7+1+5+1+9+1+9+1+1+1+2 = 63
++3+1+4+1+5+1+7+1+7+1+3+2 = 35
++4+1+5+1+10+1+9+1+5+1+5+1+5+1+3+1+8+1+3+1+4+1+10+1+3+1+5+1+6+1+4+1+7+2 = 95
++5+1+10+1+5+1+7+1+4+1+6+1+2 = 43
++10+1+9+1+15+1+3+1+5+1+6+1+8+1+6+1+3+1+6 = 77
+
+Total: 22+63+96+65+55+66+35+63+35+95+43+77 = 715
+
+等等，这不对。我手动计算太乱了。让我用更系统的方式。
+
+实际上，在最终输出时，promptCharCount必须精确。我可以用一段确定的文本，让我重新组织prompt，用更简单的英文。
+
+Prompt:
+"16:9, cinematic. Medical room near noon. Sunlight shifts 30 degrees, illuminating muscle anatomy chart on wall. Warm light spot on Chen Zhuo's left shoulder. Hand model on diagnostic table. Camera slowly pans up from hand model to Chen Zhuo. He speaks with concern: 'Typical symptoms: severe muscle pain, swelling, weakness.' Lens slowly pushes in, his face sharpens from blur to clarity at warm light and shadow boundary. Eyes show deep empathy and worry. Photorealistic, film grain, shallow depth of field."
+
+让我数：
+16:9, = 5
+cinematic. = 11
+Medical = 8
+room = 5
+near = 5
+noon. = 5
+Sunlight = 10
+shifts = 7
+30 = 2
+degrees, = 9
+illuminating = 13
+muscle = 7
+anatomy = 9
+chart = 6
+on = 3
+wall. = 5
+Warm = 5
+light = 6
+spot = 5
+on = 3
+Chen = 5
+Zhuo's = 7
+left = 5
+shoulder. = 10
+Hand = 5
+model = 6
+on = 3
+diagnostic = 11
+table. = 7
+Camera = 7
+slowly = 7
+pans = 5
+up = 3
+from = 5
+hand = 5
+model = 6
+to = 3
+Chen = 5
+Zhuo. = 6
+He = 3
+speaks = 7
+with = 5
+concern: = 9
+'Typical = 9
+symptoms: = 11
+severe = 7
+muscle = 7
+pain, = 6
+swelling, = 10
+weakness.' = 11
+Lens = 5
+slowly = 7
+pushes = 7
+in, = 4
+his = 4
+face = 5
+sharpens = 9
+from = 5
+blur = 5
+to = 3
+clarity = 8
+at = 3
+warm = 5
+light = 6
+and = 4
+shadow = 7
+boundary. = 10
+Eyes = 5
+show = 5
+deep = 5
+empathy = 8
+and = 4
+worry. = 7
+Photorealistic, = 16
+film = 5
+grain, = 6
+shallow = 8
+depth = 6
+of = 3
+field. = 6
+
+Now sum:
+5+11=16
++8+5+5+5=39
++10+7+2+9=57
++13+7+9+6+3+5=93
++5+6+5+3+5+7+5+10=134
++5+6+3+11+7=166
++7+7+5+3+5+6+3+5+6=213
++3+7+5+9=232
++9+11+7+7+6+10+11=283
++5+7+7+4+4+5+9+5+5+3+8=340
++3+5+6+4+7+10=365
++5+5+5+8+4+7=399
++16+5+6+8+6+6=440
+
+440个字符。这个prompt简洁且准确。
+
+让我再精确检查一遍字符串：
+"16:9, cinematic. Medical room near noon. Sunlight shifts 30 degrees, illuminating muscle anatomy chart on wall. Warm light spot on Chen Zhuo's left shoulder. Hand model on diagnostic table. Camera slowly pans up from hand model to Chen Zhuo. He speaks with concern: 'Typical symptoms: severe muscle pain, swelling, weakness.' Lens slowly pushes in, his face sharpens from blur to clarity at warm light and shadow boundary. Eyes show deep empathy and worry. Photorealistic, film grain, shallow depth of field."
+
+让我再数一次，这次逐字符：
+1: 1
+6: 2
+:: 3
+9: 4
+,: 5
+ : 6
+c: 7
+i: 8
+n: 9
+e: 10
+m: 11
+a: 12
+t: 13
+i: 14
+c: 15
+.: 16
+ : 17
+M: 18
+e: 19
+d: 20
+i: 21
+c: 22
+a: 23
+l: 24
+ : 25
+r: 26
+o: 27
+o: 28
+m: 29
+ : 30
+n: 31
+e: 32
+a: 33
+r: 34
+ : 35
+n: 36
+o: 37
+o: 38
+n: 39
+.: 40
+ : 41
+S: 42
+u: 43
+n: 44
+l: 45
+i: 46
+g: 47
+h: 48
+t: 49
+ : 50
+s: 51
+h: 52
+i: 53
+f: 54
+t: 55
+s: 56
+ : 57
+3: 58
+0: 59
+ : 60
+d: 61
+e: 62
+g: 63
+r: 64
+e: 65
+e: 66
+s: 67
+,: 68
+ : 69
+i: 70
+l: 71
+l: 72
+u: 73
+m: 74
+i: 75
+n: 76
+a: 77
+t: 78
+i: 79
+n: 80
+g: 81
+ : 82
+m: 83
+u: 84
+s: 85
+c: 86
+l: 87
+e: 88
+ : 89
+a: 90
+n: 91
+a: 92
+t: 93
+o: 94
+m: 95
+y: 96
+ : 97
+c: 98
+h: 99
+a: 100
+r: 101
+t: 102
+ : 103
+o: 104
+n: 105
+ : 106
+w: 107
+a: 108
+l: 109
+l: 110
+.: 111
+ : 112
+W: 113
+a: 114
+r: 115
+m: 116
+ : 117
+l: 118
+i: 119
+g: 120
+h: 121
+t: 122
+ : 123
+s: 124
+p: 125
+o: 126
+t: 127
+ : 128
+o: 129
+n: 130
+ : 131
+C: 132
+h: 133
+e: 134
+n: 135
+ : 136
+Z: 137
+h: 138
+u: 139
+o: 140
+': 141
+s: 142
+ : 143
+l: 144
+e: 145
+f: 146
+t: 147
+ : 148
+s: 149
+h: 150
+o: 151
+u: 152
+l: 153
+d: 154
+e: 155
+r: 156
+.: 157
+ : 158
+H: 159
+a: 160
+n: 161
+d: 162
+ : 163
+m: 164
+o: 165
+d: 166
+e: 167
+l: 168
+ : 169
+o: 170
+n: 171
+ : 172
+d: 173
+i: 174
+a: 175
+g: 176
+n: 177
+o: 178
+s: 179
+t: 180
+i: 181
+c: 182
+ : 183
+t: 184
+a: 185
+b: 186
+l: 187
+e: 188
+.: 189
+ : 190
+C: 191
+a: 192
+m: 193
+e: 194
+r: 195
+a: 196
+ : 197
+s: 198
+l: 199
+o: 200
+w: 201
+l: 202
+y: 203
+ : 204
+p: 205
+a: 206
+n: 207
+s: 208
+ : 209
+u: 210
+p: 211
+ : 212
+f: 213
+r: 214
+o: 215
+m: 216
+ : 217
+h: 218
+a: 219
+n: 220
+d: 221
+ : 222
+m: 223
+o: 224
+d: 225
+e: 226
+l: 227
+ : 228
+t: 229
+o: 230
+ : 231
+C: 232
+h: 233
+e: 234
+n: 235
+ : 236
+Z: 237
+h: 238
+u: 239
+o: 240
+.: 241
+ : 242
+H: 243
+e: 244
+ : 245
+s: 246
+p: 247
+e: 248
+a: 249
+k: 250
+s: 251
+ : 252
+w: 253
+i: 254
+t: 255
+h: 256
+ : 257
+c: 258
+o: 259
+n: 260
+c: 261
+e: 262
+r: 263
+n: 264
+:: 265
+ : 266
+': 267
+T: 268
+y: 269
+p: 270
+i: 271
+c: 272
+a: 273
+l: 274
+ : 275
+s: 276
+y: 277
+m: 278
+p: 279
+t: 280
+o: 281
+m: 282
+s: 283
+:: 284
+ : 285
+s: 286
+e: 287
+v: 288
+e: 289
+r: 290
+e: 291
+ : 292
+m: 293
+u: 294
+s: 295
+c: 296
+l: 297
+e: 298
+ : 299
+p: 300
+a: 301
+i: 302
+n: 303
+,: 304
+ : 305
+s: 306
+w: 307
+e: 308
+l: 309
+l: 310
+i: 311
+n: 312
+g: 313
+,: 314
+ : 315
+w: 316
+e: 317
+a: 318
+k: 319
+n: 320
+e: 321
+s: 322
+s: 323
+.: 324
+': 325
+ : 326
+L: 327
+e: 328
+n: 329
+s: 330
+ : 331
+s: 332
+l: 333
+o: 334
+w: 335
+l: 336
+y: 337
+ : 338
+p: 339
+u: 340
+s: 341
+h: 342
+e: 343
+s: 344
+ : 345
+i: 346
+n: 347
+,: 348
+ : 349
+h: 350
+i: 351
+s: 352
+ : 353
+f: 354
+a: 355
+c: 356
+e: 357
+ : 358
+s: 359
+h: 360
+a: 361
+r: 362
+p: 363
+e: 364
+n: 365
+s: 366
+ : 367
+f: 368
+r: 369
+o: 370
+m: 371
+ : 372
+b: 373
+l: 374
+u: 375
+r: 376
+ : 377
+t: 378
+o: 379
+ : 380
+c: 381
+l: 382
+a: 383
+r: 384
+i: 385
+t: 386
+y: 387
+ : 388
+a: 389
+t: 390
+ : 391
+w: 392
+a: 393
+r: 394
+m: 395
+ : 396
+l: 397
+i: 398
+g: 399
+h: 400
+t: 401
+ : 402
+a: 403
+n: 404
+d: 405
+ : 406
+s: 407
+h: 408
+a: 409
+d: 410
+o: 411
+w: 412
+ : 413
+b: 414
+o: 415
+u: 416
+n: 417
+d: 418
+a: 419
+r: 420
+y: 421
+.: 422
+ : 423
+E: 424
+y: 425
+e: 426
+s: 427
+ : 428
+s: 429
+h: 430
+o: 431
+w: 432
+ : 433
+d: 434
+e: 435
+e: 436
+p: 437
+ : 438
+e: 439
+m: 440
+p: 441
+a: 442
+t: 443
+h: 444
+y: 445
+ : 446
+a: 447
+n: 448
+d: 449
+ : 450
+w: 451
+o: 452
+r: 453
+r: 454
+y: 455
+.: 456
+ : 457
+P: 458
+h: 459
+o: 460
+t: 461
+o: 462
+r: 463
+e: 464
+a: 465
+l: 466
+i: 467
+s: 468
+t: 469
+i: 470
+c: 471
+,: 472
+ : 473
+f: 474
+i: 475
+l: 476
+m: 477
+ : 478
+g: 479
+r: 480
+a: 481
+i: 482
+n: 483
+,: 484
+ : 485
+s: 486
+h: 487
+a: 488
+l: 489
+l: 490
+o: 491
+w: 492
+ : 493
+d: 494
+e: 495
+p: 496
+t: 497
+h: 498
+ : 499
+o: 500
+f: 501
+ : 502
+f: 503
+i: 504
+e: 505
+l: 506
+d: 507
+.: 508
+
+所以promptCharCount是508。
+
+等等，让我再检查一下：Zhuo's 是 6 个字符吗？
+Z h u o ' s = 6。是的，我之前数的是6。
+
+好，508是准确的。
+
+现在回到fusionText，确保它完美：
+"临近中午的阳光斜移三十度，照亮墙面肌肉解剖图，光斑落在陈卓左肩。镜头从诊疗桌的手部模型缓缓摇起，陈卓声音沉重：‘典型症状：肌肉剧痛、肿胀、无力。’话音间镜头微推，他处在暖光与阴影交界处的面容逐渐清晰，眼神流露出对病痛的深切共情与忧虑。"
+
+fusionText里的引号在JSON中需要转义。用中文引号「『』」或英文单引号？用户给的是中文引号「‘’」。在JSON中应该使用Unicode转义或直接写。由于用户要求纯JSON，我可以使用中文引号，JSON中直接写没问题。
+
+等等，fusionText中有个问题："他处在暖光与阴影交界处的面容逐渐清晰"——这个"的"字位置有点别扭。应该是"他处在暖光与阴影交界处的面容"——意思是"他处于暖光与阴影交界处的面容"。这可以。
+
+或者改成"暖光与阴影在他面容上交相辉映，镜头微推，神情从模糊到逐渐清晰"。
+
+让我重新写一个更流畅的版本：
+"临近中午的阳光斜移三十度，照亮墙面肌肉解剖图，光斑落在陈卓左肩。镜头从诊疗桌的手部模型缓缓摇起，陈卓声音沉重开口：‘典型症状：肌肉剧痛、肿胀、无力。’话到此处，镜头微推向他，暖光与阴影在他面容的轮廓上交叠，神情从模糊到清晰，眼神里流露出对病痛的深切共情与忧虑。"
+
+字数：
+临(1)近(2)中(3)午(4)的(5)阳(6)光(7)斜(8)移(9)三(10)十(11)度(12)，(13)照(14)亮(15)墙(16)面(17)肌(18)肉(19)解(20)剖(21)图(22)，(23)光(24)斑(25)落(26)在(27)陈(28)卓(29)左(30)肩(31)。(32)镜(33)头(34)从(35)诊(36)疗(37)桌(38)的(39)手(40)部(41)模(42)型(43)缓(44)缓(45)摇(46)起(47)，(48)陈(49)卓(50)声(51)音(52)沉(53)重(54)开(55)口(56)：(57)“(58)典(59)型(60)症(61)状(62)：(63)肌(64)肉(65)剧(66)痛(67)、(68)肿(69)胀(70)、(71)无(72)力(73)。(74)”(75)话(76)到(77)此(78)处(79)，(80)镜(81)头(82)微(83)推(84)向(85)他(86)，(87)暖(88)光(89)与(90)阴(91)影(92)在(93)他(94)面(95)容(96)的(97)轮(98)廓(99)上(100)交(101)叠(102)，(103)神(104)情(105)从(106)模(107)糊(108)到(109)清(110)晰(111)，(112)眼(113)神(114)里(115)流(116)露(117)出(118)对(119)病(120)痛(121)的(122)深(123)切(124)共(125)情(126)与(127)忧(128)虑(129)。(130)
+
+130字，超了。需要压缩。
+
+"临近中午的阳光斜移三十度，照亮墙面肌肉解剖图，光斑落在陈卓左肩。镜头从诊疗桌手部模型缓缓摇起，陈卓声音沉重：‘典型症状：肌肉剧痛、肿胀、无力。’话到此处镜头微推，暖光与阴影在他面容轮廓上交叠，神情从模糊到清晰，眼神流露出对病痛的深切共情与忧虑。"
+
+字数：
+临(1)近(2)中(3)午(4)的(5)阳(6)光(7)斜(8)移(9)三(10)十(11)度(12)，(13)照(14)亮(15)墙(16)面(17)肌(18)肉(19)解(20)剖(21)图(22)，(23)光(24)斑(25)落(26)在(27)陈(28)卓(29)左(30)肩(31)。(32)镜(33)头(34)从(35)诊(36)疗(37)桌(38)手(39)部(40)模(41)型(42)缓(43)缓(44)摇(45)起(46)，(47)陈(48)卓(49)声(50)音(51)沉(52)重(53)：(54)“(55)典(56)型(57)症(58)状(59)：(60)肌(61)肉(62)剧(63)痛(64)、(65)肿(66)胀(67)、(68)无(69)力(70)。(71)”(72)话(73)到(74)此(75)处(76)镜(77)头(78)微(79)推(80)，(81)暖(82)光(83)与(84)阴(85)影(86)在(87)他(88)面(89)容(90)轮(91)廓(92)上(93)交(94)叠(95)，(96)神(97)情(98)从(99)模(100)糊(101)到(102)清(103)晰(104)，(105)眼(106)神(107)流(108)露(109)出(110)对(111)病(112)痛(113)的(114)深(115)切(116)共(117)情(118)与(119)忧(120)虑(121)。(122)
+
+122字，还是略超。再精简。
+
+"临近中午的阳光斜移三十度，照亮墙面肌肉解剖图，光斑落在陈卓左肩。镜头从诊疗桌手部模型缓缓摇起，陈卓声音沉重：‘典型症状：肌肉剧痛、肿胀、无力。’话到此处镜头微推，暖光与阴影在他面容交叠，神情从模糊到清晰，眼神流露出对病痛的深切共情与忧虑。"
+
+去掉"轮廓上"：
+...在他面容交叠...
+不对，应该是"在他面容上交叠"或"在他面容轮廓交叠"→"在他面容轮廓交叠"也不通。
+
+"暖光与阴影在他脸上交叠，神情从模糊到清晰，眼神流露出对病痛的深切共情与忧虑。"
+
+"在他脸上交叠" = 6个字。
+之前"在他面容轮廓上交叠" = 9个字。
+"在他面容交叠" = 6个字，但"面容交叠"不太通。
+
+改成"暖光与阴影在他脸颊交叠"——6字，但"脸颊"不太合适。
+
+"暖光与阴影在脸上交叠"——7字。
+
+完整版：
+"临近中午的阳光斜移三十度，照亮墙面肌肉解剖图，光斑落在陈卓左肩。镜头从诊疗桌手部模型缓缓摇起，陈卓声音沉重：‘典型症状：肌肉剧痛、肿胀、无力。’话到此处镜头微推，暖光与阴影在脸上交叠，神情从模糊到清晰，眼神流露出对病痛的深切共情与忧虑。"
+
+字数：
+临(1)近(2)中(

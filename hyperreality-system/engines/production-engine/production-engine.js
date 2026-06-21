@@ -1,7 +1,7 @@
 // hyperreality-system/engines/production-engine/production-engine.js
-// Production Engine - 制作引擎（Layer 2）
-// 深度融合：直接消费 ScriptBlueprint 输出，驱动镜头生成
-// 版本：v1.0.0 | 日期：2026-06-08
+// Production Engine - 制作引擎(Layer 2)
+// 深度融合:直接消费 ScriptBlueprint 输出,驱动镜头生成
+// 版本:v1.0.0 | 日期:2026-06-08
 
 const path = require('path');
 
@@ -18,13 +18,13 @@ const DEFAULT_AGENT_CONFIG = {
   enableLLMAgents: true,
   llmTimeout: 300000, // 单次调用上限 5 分钟
   llmMaxRetries: 2, // 重试 2 次
-  llmModel: 'kimi-k2p6', // 深度模型（推理）：SceneDesign / VisualLanguage / PromptFusion
-  fastModel: 'kimi-k2p6', // 全部用 k2.6（k2 已下线）
-  totalDeadlineMs: 540000, // 【修复】收紧到 9 分钟，给 Layer1(105s)+收尾留余量，避开外部 SIGTERM
-  memThresholdMB: 1200, // 【新增】堆内存降级阈值（MB）
+  llmModel: 'kimi-k2p6', // 深度模型(推理):SceneDesign / VisualLanguage / PromptFusion
+  fastModel: 'kimi-k2p6', // 全部用 k2.6(k2 已下线)
+  totalDeadlineMs: 540000, // 【修复】收紧到 9 分钟,给 Layer1(105s)+收尾留余量,避开外部 SIGTERM
+  memThresholdMB: 1200, // 【新增】堆内存降级阈值(MB)
   promptFusionConcurrency: 3 // 【新增】PromptFusion 并发度
 };
-// 注：实际部署时这些模块会从 systems/ 复制到 production-engine/modules/
+// 注:实际部署时这些模块会从 systems/ 复制到 production-engine/modules/
 const SYSTEMS_PATH = path.join(__dirname, '../../../systems');
 
 // 动态加载现有模块
@@ -49,17 +49,17 @@ class ProductionEngine {
       outputDir: options.outputDir || '/tmp/hyperreality-output',
       ...options
     };
-    
+
     // v2.0.0-LLM-Agent: 初始化Agent配置
     this.agentConfig = {
       ...DEFAULT_AGENT_CONFIG,
       ...options.agentConfig,
       maxPromptLength: this.config.maxPromptLength
     };
-    
+
     // v2.0.0-LLM-Agent: 初始化Agents
     this._initAgents();
-    
+
     this.modules = {};
     this.logs = [];
     this._initResourceGuard();
@@ -68,7 +68,7 @@ class ProductionEngine {
 
   /**
    * 【新增】运行时更新 Agent 配置
-   * 修复：create() 中收到的 agentConfig 可在此应用到已实例化的引擎
+   * 修复:create() 中收到的 agentConfig 可在此应用到已实例化的引擎
    */
   updateAgentConfig(agentConfig = {}) {
     const before = this.agentConfig.enableLLMAgents;
@@ -93,7 +93,7 @@ class ProductionEngine {
   }
 
   /**
-   * 【新增】Checkpoint 初始化（断点续跑）
+   * 【新增】Checkpoint 初始化(断点续跑)
    */
   _initCheckpoint() {
     this._checkpointDir = this.agentConfig.checkpointDir || this.config.outputDir;
@@ -101,7 +101,7 @@ class ProductionEngine {
   }
 
   /**
-   * 【新增】加载最新 checkpoint（断点续跑）
+   * 【新增】加载最新 checkpoint(断点续跑)
    * 返回最近完成的 Phase 及其 shots
    */
   _loadLatestCheckpoint() {
@@ -113,7 +113,7 @@ class ProductionEngine {
         const file = path.join(this._checkpointDir, `checkpoint-${phase}.json`);
         if (fs.existsSync(file)) {
           const data = JSON.parse(fs.readFileSync(file, 'utf8'));
-          this.log('RESUME', `📂 发现 ${phase} checkpoint（${data.shots?.length || 0} 镜头，保存于 ${data.savedAt || 'unknown'}）`);
+          this.log('RESUME', `📂 发现 ${phase} checkpoint(${data.shots?.length || 0} 镜头,保存于 ${data.savedAt || 'unknown'})`);
           return data;
         }
       }
@@ -124,7 +124,7 @@ class ProductionEngine {
   }
 
   /**
-   * 【新增】清除 checkpoint（成功完成后调用）
+   * 【新增】清除 checkpoint(成功完成后调用)
    */
   _clearCheckpoints() {
     try {
@@ -137,14 +137,14 @@ class ProductionEngine {
   }
 
   /**
-   * 【新增】内存检查，超过阈值进入低资源模式
+   * 【新增】内存检查,超过阈值进入低资源模式
    */
   _checkMemory(tag = '') {
     const mem = process.memoryUsage();
     const heapMB = Math.round(mem.heapUsed / 1024 / 1024);
     if (heapMB > this._memThresholdMB) {
       this._lowResourceMode = true;
-      this.log('MEM-WARN', `⚠️ 堆内存 ${heapMB}MB 超阈值 ${this._memThresholdMB}MB @ ${tag}，进入低资源模式`);
+      this.log('MEM-WARN', `⚠️ 堆内存 ${heapMB}MB 超阈值 ${this._memThresholdMB}MB @ ${tag},进入低资源模式`);
       if (global.gc) {
         global.gc();
         const after = Math.round(process.memoryUsage().heapUsed / 1024 / 1024);
@@ -155,7 +155,7 @@ class ProductionEngine {
   }
 
   /**
-   * 【新增】预算剩余（毫秒）
+   * 【新增】预算剩余(毫秒)
    */
   _budgetRemaining() {
     if (!this._globalDeadline) return Infinity;
@@ -163,14 +163,14 @@ class ProductionEngine {
   }
 
   /**
-   * 【新增】预算守卫：是否还能承担 needMs
+   * 【新增】预算守卫:是否还能承担 needMs
    */
   _canAfford(needMs) {
     return this._budgetRemaining() > needMs;
   }
 
   /**
-   * 【新增】增量保存 checkpoint（进程被杀也能恢复部分结果）
+   * 【新增】增量保存 checkpoint(进程被杀也能恢复部分结果)
    */
   async _saveCheckpoint(phase, shots, extra = {}) {
     try {
@@ -204,12 +204,12 @@ class ProductionEngine {
     const fastModel = this.agentConfig.fastModel || deepModel;
 
     this.agents = {
-      // 深度模型：创造性主任务
+      // 深度模型:创造性主任务
       sceneDesign: new SceneDesignAgent({ ...base, llmModel: deepModel }),
       visualLanguage: new VisualLanguageAgent({ ...base, llmModel: deepModel }),
       promptFusion: new PromptFusionAgent({ ...base, llmModel: deepModel, maxPromptLength: this.config.maxPromptLength }),
 
-      // 快速模型：结构化小任务（音效/片头/审查），可用非推理模型加速
+      // 快速模型:结构化小任务(音效/片头/审查),可用非推理模型加速
       audioDesign: new AudioDesignAgent({ ...base, llmModel: fastModel, llmMaxTokens: 8000 }),
       openingDesign: new OpeningDesignAgent({ ...base, llmModel: fastModel, llmMaxTokens: 8000 }),
       continuityReview: new ContinuityReviewAgent({ ...base, llmModel: fastModel, llmMaxTokens: 8000 })
@@ -219,44 +219,44 @@ class ProductionEngine {
   }
 
   _initModules() {
-    // 加载核心模块（从现有系统复用）
+    // 加载核心模块(从现有系统复用)
     this.modules = {
       // 时长分配
       shotDurationAllocator: loadModule('shot-duration-allocator.js')?.ShotDurationAllocator,
       durationCalculator: loadModule('duration-calculator.js')?.DurationCalculator,
-      
+
       // 运镜系统
       cameraMovement: loadModule('camera-movement-system-v2.js')?.CameraMovementSystem,
       intraShotTimeline: loadModule('camera-movement-system-v3.js')?.IntraShotTimelineGenerator,
-      
+
       // 连续性
       continuityEngine: loadModule('continuity-engine.js')?.ContinuityEngine,
-      
+
       // Prompt 增强
       promptEnhancer: loadModule('intra-shot-prompt-enhancer.js')?.IntraShotPromptEnhancer,
       styleInjector: loadModule('universal-style-injector.js')?.UniversalStyleInjector,
-      
+
       // 质量门
       promptQualityGate: loadModule('prompt-quality-gate.js')?.PromptQualityGate,
-      
+
       // 字符计数
       charCounter: loadModule('char-counter')?.charCounter,
-      
+
       // 片头系统
       openingSystem: loadModule('opening-system-v3.js'),
-      
+
       // 角色系统
       characterManager: loadModule('character-manager-v2.js')?.CharacterManagerV2,
       characterPromptBuilder: loadModule('character-prompt-builder.js')?.CharacterPromptBuilder,
-      
+
       // 校验
       storyboardValidator: loadModule('storyboard-validator.js')?.StoryboardValidator,
       preRenderValidation: loadModule('pre-render-validation.js')?.preRenderValidation,
-      
+
       // 后期
       postProduction: loadModule('post-production-pipeline.js')?.PostProductionPipeline,
     };
-    
+
     // 初始化实例
     for (const [key, Module] of Object.entries(this.modules)) {
       if (Module && typeof Module === 'function') {
@@ -276,31 +276,31 @@ class ProductionEngine {
   }
 
   /**
-   * 主入口：从 ScriptBlueprint 生成完整镜头
+   * 主入口:从 ScriptBlueprint 生成完整镜头
    * @param {object} adaptedBlueprint - 适配器输出的剧本数据
    * @returns {object} { shots, prompts, report }
    */
   /**
    * v2.0.5-彻底修复: LLM Agent输出标准化层
-   * 将LLM Agent的各种输出格式（对象/数组）统一转换为字符串，
+   * 将LLM Agent的各种输出格式(对象/数组)统一转换为字符串,
    * 确保与v1.x的_engineerPrompts完全兼容
    */
   _normalizeLLMOutput(shots, blueprint) {
     return shots.map(shot => {
       const normalized = { ...shot };
-      
+
       // 1. timeline: 数组 → 字符串
       if (Array.isArray(shot.timeline)) {
         normalized.timelineString = shot.timeline.map(seg => 
           `${seg.timeRange || ''}: ${seg.cameraMovement || ''} (${seg.purpose || ''})`
-        ).join(' | ');
+        ).join('; ');
         // 保留原始数组供内部使用，但添加字符串版本
       } else if (shot.timeline?.string && typeof shot.timeline.string === 'string') {
         normalized.timelineString = shot.timeline.string;
       } else if (typeof shot.timeline === 'string') {
         normalized.timelineString = shot.timeline;
       }
-      
+
       // 2. camera: 对象 → 字符串
       if (shot.camera && typeof shot.camera === 'object') {
         if (shot.camera.string && typeof shot.camera.string === 'string') {
@@ -317,7 +317,7 @@ class ProductionEngine {
       } else if (typeof shot.camera === 'string') {
         normalized.cameraString = shot.camera;
       }
-      
+
       // 3. lighting: 对象 → 字符串
       if (shot.lighting && typeof shot.lighting === 'object') {
         if (shot.lighting.string && typeof shot.lighting.string === 'string') {
@@ -338,7 +338,7 @@ class ProductionEngine {
       } else if (typeof shot.lighting === 'string') {
         normalized.lightingString = shot.lighting;
       }
-      
+
       // 4. backgroundSound: 对象 → 字符串
       if (shot.backgroundSound && typeof shot.backgroundSound === 'object') {
         if (shot.backgroundSound.string && typeof shot.backgroundSound.string === 'string') {
@@ -348,39 +348,39 @@ class ProductionEngine {
           if (shot.backgroundSound.ambient) parts.push(`AMBIENT: ${shot.backgroundSound.ambient}`);
           if (shot.backgroundSound.spatial) parts.push(`SPATIAL: ${shot.backgroundSound.spatial}`);
           if (shot.backgroundSound.intensity) parts.push(`INTENSITY: ${JSON.stringify(shot.backgroundSound.intensity)}`);
-          normalized.backgroundSoundString = parts.join(' | ');
+          normalized.backgroundSoundString = parts.join('; ');
         }
       }
-      
-      // 5. 角色信息补全：如果shot没有characters，从blueprint补
+
+      // 5. 角色信息补全:如果shot没有characters,从blueprint补
       if (!shot.characters || shot.characters.length === 0) {
         normalized.characters = blueprint.characters || [];
       }
-      
-      // 6. 角色引用补全：如果characterRef为NONE但有角色，生成描述性引用
+
+      // 6. 角色引用补全:如果characterRef为NONE但有角色,生成描述性引用
       if ((!shot.characterRef || shot.characterRef === 'NONE') && blueprint.characters && blueprint.characters.length > 0) {
         const mainChar = blueprint.characters.find(c => c.role === 'protagonist') || blueprint.characters[0];
         if (mainChar) {
           normalized.characterRef = `${mainChar.name}: ${mainChar.description || mainChar.persona || 'main character'}`;
         }
       }
-      
+
       return normalized;
     });
   }
 
   /**
    * v2.0.5-彻底修复: 质量门适配LLM融合模式
-   * 当fusionText存在时，检查标准放宽（信息在融合段中）
+   * 当fusionText存在时,检查标准放宽(信息在融合段中)
    */
   _runQualityGateAdapted(prompts) {
     const checks = prompts.map(p => {
       const hasFusion = p.prompt && p.prompt.includes('fusion');
-      // 有fusionText时，timeline/camera/lighting可以不在独立字段中
+      // 有fusionText时,timeline/camera/lighting可以不在独立字段中
       const hasTimeline = !!p.timelineString || hasFusion;
       const hasCamera = !!p.cameraString || hasFusion;
       const hasLighting = !!p.lightingString || hasFusion;
-      
+
       return {
         shotId: p.shotId,
         hasPrompt: !!p.prompt && p.prompt.length > 50,
@@ -393,12 +393,12 @@ class ProductionEngine {
         passed: false // 后面计算
       };
     });
-    
+
     checks.forEach(c => {
-      c.passed = c.hasPrompt && c.hasDuration && c.hasTimeline && 
+      c.passed = c.hasPrompt && c.hasDuration && c.hasTimeline &&
                  c.hasCharacter && c.hasMood && c.hasDialogue && c.lengthOk;
     });
-    
+
     const allPassed = checks.every(c => c.passed);
     return { passed: allPassed, checks };
   }
@@ -406,7 +406,7 @@ class ProductionEngine {
   async produce(adaptedBlueprint, runtimeAgentConfig = null) {
     const startTime = Date.now();
 
-    // 【修复】应用运行时配置（双保险：create() 已调 updateAgentConfig，这里再兜一次）
+    // 【修复】应用运行时配置(双保险:create() 已调 updateAgentConfig,这里再兜一次)
     if (runtimeAgentConfig) {
       this.updateAgentConfig(runtimeAgentConfig);
     }
@@ -426,20 +426,20 @@ class ProductionEngine {
     };
 
     try {
-      // ===== Stage 1-2：规则阶段（快）=====
+      // ===== Stage 1-2:规则阶段(快)=====
       result.stages.sceneExtraction = await this._runStage('scene-extraction', () => this._extractScenes(adaptedBlueprint));
       result.stages.durationAllocation = await this._runStage('duration-allocation', () => this._allocateDuration(result.stages.sceneExtraction.shots));
       let currentShots = result.stages.durationAllocation.shots;
 
-      // 规则降级路径（保留原行为）
+      // 规则降级路径(保留原行为)
       if (!this.agentConfig.enableLLMAgents) {
         return await this._produceViaRules(currentShots, adaptedBlueprint, result, startTime);
       }
 
-      // ===== LLM 模式（主路径：断点续跑 + 预算守卫）=====
+      // ===== LLM 模式(主路径:断点续跑 + 预算守卫)=====
       let phase1Failed = false;
 
-      // ===== 断点续跑：尝试加载已完成的 checkpoint =====
+      // ===== 断点续跑:尝试加载已完成的 checkpoint =====
       const ckpt = this._loadLatestCheckpoint();
       let startPhase = 1;
       if (ckpt) {
@@ -450,18 +450,18 @@ class ProductionEngine {
         else if (ckpt.phase === 'phase2') startPhase = 3;
         else if (ckpt.phase === 'phase3') {
           startPhase = 99;
-          this.log('RESUME', '✅ 全部 Phase 已完成，跳过 LLM 直接进 Quality Gate');
+          this.log('RESUME', '✅ 全部 Phase 已完成,跳过 LLM 直接进 Quality Gate');
         }
         result.resumed = true;
       }
 
-      // ----- Phase 1：SceneDesign ∥ OpeningDesign -----
+      // ----- Phase 1:SceneDesign ∥ OpeningDesign -----
       if (startPhase <= 1) {
       try {
         if (!this._canAfford(140000)) {
-          this.log('PHASE-1', `⚠️ 预算不足(剩${this._budgetRemaining()}ms)，保存当前结果退出，下次续跑`);
+          this.log('PHASE-1', `⚠️ 预算不足(剩${this._budgetRemaining()}ms),保存当前结果退出,下次续跑`);
           await this._saveCheckpoint('phase0', currentShots, { opening: result.opening, llmStats: result.llmStats });
-          throw new Error('预算不足，请重跑以断点续跑（LLM 产出已保存）');
+          throw new Error('预算不足,请重跑以断点续跑(LLM 产出已保存)');
         }
         this.log('PHASE-1', 'SceneDesign + OpeningDesign 并行启动...');
         const phase1Start = Date.now();
@@ -500,13 +500,13 @@ class ProductionEngine {
       }
       }
 
-      // ----- Phase 2：VisualLanguage ∥ AudioDesign ∥ ContinuityReview -----
+      // ----- Phase 2:VisualLanguage ∥ AudioDesign ∥ ContinuityReview -----
       if (!phase1Failed && startPhase <= 2) {
         try {
           if (!this._canAfford(80000)) {
-            this.log('PHASE-2', `⚠️ 预算不足(剩${this._budgetRemaining()}ms)，保存退出，下次从 Phase2 续跑`);
+            this.log('PHASE-2', `⚠️ 预算不足(剩${this._budgetRemaining()}ms),保存退出,下次从 Phase2 续跑`);
             await this._saveCheckpoint('phase1', currentShots, { opening: result.opening, llmStats: result.llmStats });
-            throw new Error('预算不足，请重跑以断点续跑（Phase1 LLM 产出已保存）');
+            throw new Error('预算不足,请重跑以断点续跑(Phase1 LLM 产出已保存)');
           }
           this.log('PHASE-2', 'VisualLanguage + AudioDesign + ContinuityReview 并行启动...');
           const phase2Start = Date.now();
@@ -514,7 +514,7 @@ class ProductionEngine {
             'visual-language-agent': this.agents.visualLanguage.process(this._cloneShots(currentShots), adaptedBlueprint),
             'audio-design-agent': this.agents.audioDesign.process(this._cloneShots(currentShots), adaptedBlueprint),
             'continuity-review-agent': this.agents.continuityReview.process(
-              this._cloneShots(currentShots), 
+              this._cloneShots(currentShots),
               adaptedBlueprint,
               {
                 totalEpisodes: adaptedBlueprint.config?._metadata?.series?.totalEpisodes || adaptedBlueprint.config?._metadata?.totalEpisodes || 1,
@@ -539,20 +539,20 @@ class ProductionEngine {
           await this._saveCheckpoint('phase2', currentShots, { opening: result.opening, llmStats: result.llmStats });
           this._checkMemory('phase2');
         } catch (e) {
-          this.log('PHASE-2-FAIL', `❌ ${e.message}，Phase2 失败但继续`);
-          // Phase 2 失败不致命，用已有数据继续
+          this.log('PHASE-2-FAIL', `❌ ${e.message},Phase2 失败但继续`);
+          // Phase 2 失败不致命,用已有数据继续
         }
       }
 
-      // ----- Phase 3：PromptFusion（并发化，每镜头独立 LLM 调用）-----
+      // ----- Phase 3:PromptFusion(并发化,每镜头独立 LLM 调用)-----
       if (!phase1Failed && startPhase <= 3) {
         if (!this._canAfford(120000)) {
-          this.log('PHASE-3', `⚠️ 预算不足(剩${this._budgetRemaining()}ms)，保存退出，下次从 Phase3 续跑`);
+          this.log('PHASE-3', `⚠️ 预算不足(剩${this._budgetRemaining()}ms),保存退出,下次从 Phase3 续跑`);
           await this._saveCheckpoint('phase2', currentShots, { opening: result.opening, llmStats: result.llmStats });
-          throw new Error('预算不足，请重跑以断点续跑（Phase1+2 LLM 产出已保存）');
+          throw new Error('预算不足,请重跑以断点续跑(Phase1+2 LLM 产出已保存)');
         }
         try {
-          this.log('PROMPT-FUSION-AGENT', '开始（并发模式，每镜头独立 LLM 调用）...');
+          this.log('PROMPT-FUSION-AGENT', '开始(并发模式,每镜头独立 LLM 调用)...');
           const phase3Start = Date.now();
           const pfResult = await this.agents.promptFusion.process(this._cloneShots(currentShots), adaptedBlueprint);
           currentShots = this._mergeShotsByShotId(currentShots, pfResult.shots, ['prompt', 'enhanced_prompt', 'negative_prompt']);
@@ -560,12 +560,12 @@ class ProductionEngine {
           this.log('PROMPT-FUSION-AGENT', `完成 (${Date.now() - phase3Start}ms)`);
           await this._saveCheckpoint('phase3', currentShots, { opening: result.opening, llmStats: result.llmStats });
         } catch (e) {
-          this.log('PROMPT-FUSION-FAIL', `❌ ${e.message}，部分镜头降级到规则 Prompt`);
-          // 单镜头已在 PromptFusion 内兜底，整体继续
+          this.log('PROMPT-FUSION-FAIL', `❌ ${e.message},部分镜头降级到规则 Prompt`);
+          // 单镜头已在 PromptFusion 内兜底,整体继续
         }
       }
 
-      // ===== 内容边界后处理（最终防线）=====
+      // ===== 内容边界后处理(最终防线)=====
     currentShots = this._enforceContentBoundaries(currentShots, adaptedBlueprint);
 
     // ===== Quality Gate =====
@@ -577,15 +577,15 @@ class ProductionEngine {
       result.success = true;
       result.timing.total = Date.now() - startTime;
       this.log('PRODUCE', `✅ LLM 制作完成${result.resumed ? '(断点续跑)' : ''} | ${currentShots.length} 镜头 | ${result.timing.total}ms`);
-      this._clearCheckpoints(); // 成功完成，清理 checkpoint
+      this._clearCheckpoints(); // 成功完成,清理 checkpoint
 
     } catch (error) {
       result.success = false;
       result.errors.push({ stage: 'production', message: error.message });
       this.log('ERROR', `❌ ${error.message}`);
-      this.log('ERROR', `💡 若为预算不足，直接重跑同一命令即可从 checkpoint 续跑，LLM 产出不会丢`);
+      this.log('ERROR', `💡 若为预算不足,直接重跑同一命令即可从 checkpoint 续跑,LLM 产出不会丢`);
 
-      // 【新增】最后兜底：用规则引擎抢救产出
+      // 【新增】最后兜底:用规则引擎抢救产出
       try {
         this.log('RECOVERY', '尝试规则兜底恢复...');
         const baseShots = result.stages.durationAllocation?.shots || [];
@@ -596,7 +596,7 @@ class ProductionEngine {
           result.success = true;
           result.degraded = true;
           result.timing.total = Date.now() - startTime;
-          this.log('RECOVERY', `✅ 规则兜底成功，产出 ${fallbackShots.length} 个镜头`);
+          this.log('RECOVERY', `✅ 规则兜底成功,产出 ${fallbackShots.length} 个镜头`);
         }
       } catch (e2) {
         result.errors.push({ stage: 'recovery', message: e2.message });
@@ -607,10 +607,10 @@ class ProductionEngine {
   }
 
   /**
-   * 【新增】规则模式完整生产路径（LLM 禁用时）
+   * 【新增】规则模式完整生产路径(LLM 禁用时)
    */
   async _produceViaRules(currentShots, adaptedBlueprint, result, startTime) {
-    this.log('RULES', '启用规则引擎模式（LLM 已禁用）');
+    this.log('RULES', '启用规则引擎模式(LLM 已禁用)');
     result.stages.promptEngineering = await this._runStage('prompt-engineering', () => this._engineerPrompts(currentShots, adaptedBlueprint));
     currentShots = result.stages.promptEngineering.shots;
     result.stages.qualityGate = await this._runStage('quality-gate', () => this._runQualityGate(currentShots));
@@ -630,8 +630,8 @@ class ProductionEngine {
   }
 
   /**
-   * 【新增】规则 Prompt 工程兜底（LLM PromptFusion 失败时）
-   * 优先复用现有 _engineerPrompts，否则用极简拼接
+   * 【新增】规则 Prompt 工程兜底(LLM PromptFusion 失败时)
+   * 优先复用现有 _engineerPrompts,否则用极简拼接
    */
   async _engineerPromptsFallback(shots, blueprint) {
     if (typeof this._engineerPrompts === 'function') {
@@ -639,7 +639,7 @@ class ProductionEngine {
         const r = await this._engineerPrompts(shots, blueprint);
         if (r?.shots?.length) return r.shots;
       } catch (e) {
-        this.log('FALLBACK', `_engineerPrompts 失败: ${e.message}，使用极简拼接`);
+        this.log('FALLBACK', `_engineerPrompts 失败: ${e.message},使用极简拼接`);
       }
     }
     return shots.map(s => ({
@@ -651,7 +651,7 @@ class ProductionEngine {
   }
 
   /**
-   * 【新增】极简 Prompt 拼接（最后兜底）
+   * 【新增】极简 Prompt 拼接(最后兜底)
    */
   _assemblePromptSimple(shot) {
     const parts = [];
@@ -665,14 +665,14 @@ class ProductionEngine {
   }
 
   /**
-   * 【新增】内容边界强制过滤（最后防线）
-   * 检测并清除越界内容（预告下集、提前讲后续知识点等）
+   * 【新增】内容边界强制过滤(最后防线)
+   * 检测并清除越界内容(预告下集、提前讲后续知识点等)
    */
   _enforceContentBoundaries(shots, blueprint) {
     const meta = blueprint.config?._metadata || blueprint._metadata || {};
     const isSeries = meta.isSeries || (meta.series?.totalEpisodes > 1) || (meta.total_episodes > 1);
     const noPreview = meta.noNextEpisodePreview || meta.no_next_episode_preview;
-    
+
     if (!isSeries && !noPreview) return shots;
 
     const forbiddenPatterns = [
@@ -717,7 +717,7 @@ class ProductionEngine {
   async _runStage(stageName, stageFn) {
     const start = Date.now();
     this.log(stageName.toUpperCase(), `开始...`);
-    
+
     try {
       const output = await stageFn();
       const duration = Date.now() - start;
@@ -744,7 +744,7 @@ class ProductionEngine {
     const series = meta.series || {};
     const plan = meta.seriesContentPlan || {};
     const episodeIndex = series.currentEpisode || meta.episode || 1;
-    
+
     // 优先从seriesContentPlan提取
     if (plan.episodes && plan.episodes[episodeIndex - 1]) {
       const ep = plan.episodes[episodeIndex - 1];
@@ -755,8 +755,8 @@ class ProductionEngine {
         previousSummary: null
       };
     }
-    
-    // 回退：从series信息构造
+
+    // 回退:从series信息构造
     return {
       mustCover: series.episodeThemes || [],
       canMention: [],
@@ -772,14 +772,14 @@ class ProductionEngine {
     }
   }
 
-  /** 浅拷贝 shots（并行分支互不污染） */
+  /** 浅拷贝 shots(并行分支互不污染) */
   _cloneShots(shots) {
     return (shots || []).map(s => ({ ...s }));
   }
 
   /**
    * 按 shotId 把 updatedShots 的指定字段合并回 baseShots
-   * - 只在字段非空时覆盖，避免降级返回的空字符串冲掉已有数据
+   * - 只在字段非空时覆盖,避免降级返回的空字符串冲掉已有数据
    */
   _mergeShotsByShotId(baseShots, updatedShots, fields) {
     const map = new Map((updatedShots || []).map(s => [s.shotId, s]));
@@ -795,7 +795,7 @@ class ProductionEngine {
   }
 
   /**
-   * 并行执行多个 Agent 任务（allSettled，单点失败不阻塞其余）
+   * 并行执行多个 Agent 任务(allSettled,单点失败不阻塞其余)
    * 保留每个任务的 [STAGE] 完成 (Xms) 日志格式
    */
   async _runParallel(tasks, label) {
@@ -816,17 +816,17 @@ class ProductionEngine {
       if (r.status === 'fulfilled') {
         values.push(r.value);
       } else {
-        this.log(label, `⚠️ ${keys[i]} 异常: ${r.reason?.message || r.reason}（降级处理，继续）`);
+        this.log(label, `⚠️ ${keys[i]} 异常: ${r.reason?.message || r.reason}(降级处理,继续)`);
         values.push(this._emptyAgentResult(keys[i]));
       }
     });
     return values;
   }
 
-  /** 并行任务异常时的兜底空结果（仅兜底，正常路径不会走到） */
+  /** 并行任务异常时的兜底空结果(仅兜底,正常路径不会走到) */
   _emptyAgentResult(name) {
     if (name === 'opening-design-agent') return { opening: null, degraded: true, degradeReason: 'phase exception' };
-    if (name === 'continuity-review-agent') return { review: { overallScore: 80, issues: [], summary: '并行阶段异常，跳过审查' }, degraded: true, degradeReason: 'phase exception' };
+    if (name === 'continuity-review-agent') return { review: { overallScore: 80, issues: [], summary: '并行阶段异常,跳过审查' }, degraded: true, degradeReason: 'phase exception' };
     return { shots: [], degraded: true, degradeReason: 'phase exception' };
   }
 
@@ -836,7 +836,7 @@ class ProductionEngine {
   _buildMeta(adaptedBlueprint) {
     const worldSetting = adaptedBlueprint.worldSetting || {};
     const config = adaptedBlueprint.config || {};
-    
+
     return {
       title: config.title || '未命名短片',
       worldview: worldSetting.world_id || 'default',
@@ -847,58 +847,58 @@ class ProductionEngine {
       styleNotes: config.style_notes || 'cinematic, hyperrealistic'
     };
   }
-  
+
   _calculateTotalDuration(scenes) {
     if (!scenes || scenes.length === 0) return 0;
     return scenes.reduce((sum, scene) => sum + (scene.timing?.duration || 20), 0);
   }
 
   /**
-   * v6.37-P1+: 构建角色极简锚点（专家反馈强化）
-   * 规则：
-   * 1. 强制3-5个视觉关键词（不含种族/物种）
-   * 2. 禁止详细描述（如"十五米高的巨型身躯"）
+   * v6.37-P1+: 构建角色极简锚点(专家反馈强化)
+   * 规则:
+   * 1. 强制3-5个视觉关键词(不含种族/物种)
+   * 2. 禁止详细描述(如"十五米高的巨型身躯")
    * 3. 颜色词不超过2个
-   * 4. 禁止形容词堆砌（超过3个连续形容词则截断）
-   * 5. 格式：角色名: 种族/物种, 视觉关键词1, 视觉关键词2, 视觉关键词3
-   * 
-   * 正例：白泽: lion-like beast, vertical eye, three white-flame tails, golden hooves
-   * 反例：白泽: 一只十五米高的白色神兽，有着三根尾巴和金色的蹄子（太啰嗦）
+   * 4. 禁止形容词堆砌(超过3个连续形容词则截断)
+   * 5. 格式:角色名: 种族/物种, 视觉关键词1, 视觉关键词2, 视觉关键词3
+   *
+   * 正例:白泽: lion-like beast, vertical eye, three white-flame tails, golden hooves
+   * 反例:白泽: 一只十五米高的白色神兽,有着三根尾巴和金色的蹄子(太啰嗦)
    */
   _buildMinimalAnchor(cid, characters) {
     const char = characters.find(c => c.character_id === cid);
     if (!char) return `${cid}: unknown`;
-    
+
     const race = char.species || char.race || char.gender || 'human';
     const features = char.visual_anchor?.core_features || [];
-    
-    // 颜色词列表（用于检查）
+
+    // 颜色词列表(用于检查)
     const colorWords = ['white', 'black', 'red', 'blue', 'green', 'golden', 'silver', 'purple', 'brown', 'grey', 'gray', 'yellow', 'orange', 'pink', 'cyan', 'teal'];
-    
-    // 形容词列表（用于检查堆砌）
+
+    // 形容词列表(用于检查堆砌)
     const adjectiveWords = ['big', 'huge', 'giant', 'large', 'small', 'tiny', 'massive', 'tall', 'short', 'beautiful', 'magnificent', 'mysterious', 'ancient', 'powerful', 'fierce', 'gentle', 'elegant', 'majestic', 'terrifying', 'sacred', 'divine', 'mythical', 'legendary', 'noble', 'wise', 'brave', 'curious', 'young', 'old'];
-    
+
     // 过滤并优化特征
     const processedFeatures = [];
     let colorCount = 0;
     let adjCount = 0;
-    
+
     for (const feature of features) {
       const lower = feature.toLowerCase();
-      
-      // 跳过详细描述（超过15字符可能太啰嗦）
+
+      // 跳过详细描述(超过15字符可能太啰嗦)
       if (feature.length > 15 && !feature.includes(' ') && !feature.includes('-')) {
-        continue; // 跳过单个超长词（可能是详细描述）
+        continue; // 跳过单个超长词(可能是详细描述)
       }
-      
+
       // 检查颜色词
       const isColor = colorWords.some(c => lower.includes(c));
       if (isColor) {
         if (colorCount >= 2) continue; // 颜色词不超过2个
         colorCount++;
       }
-      
-      // 检查形容词堆砌（连续形容词计数）
+
+      // 检查形容词堆砌(连续形容词计数)
       const isAdjective = adjectiveWords.some(a => lower.includes(a));
       if (isAdjective) {
         adjCount++;
@@ -906,52 +906,52 @@ class ProductionEngine {
       } else {
         adjCount = 0; // 重置计数
       }
-      
+
       processedFeatures.push(feature);
-      
+
       // 强制3-5个关键词
       if (processedFeatures.length >= 5) break;
     }
-    
+
     // 确保至少3个关键词
     while (processedFeatures.length < 3 && features.length > processedFeatures.length) {
       const next = features[processedFeatures.length];
       if (next) processedFeatures.push(next);
       else break;
     }
-    
+
     const keywords = processedFeatures.slice(0, 5).join(', ');
     return `${char.name}: ${race}, ${keywords}`;
   }
-  
+
   /**
-   * Stage 1: 从适配蓝图提取场景，转换为内部镜头结构
+   * Stage 1: 从适配蓝图提取场景,转换为内部镜头结构
    * v6.37-P0: 改造为符合参考文档的字段格式
    */
   _extractScenes(adaptedBlueprint) {
     const scenes = adaptedBlueprint.scenes || [];
     const characters = adaptedBlueprint.characters || [];
     const worldSetting = adaptedBlueprint.worldSetting || {};
-    
+
     // v1.2.5: 系列作品非第一集处理
-    // 修复：兼容adapter返回的顶层_metadata和config._metadata
+    // 修复:兼容adapter返回的顶层_metadata和config._metadata
     const _metadata = adaptedBlueprint.config?._metadata || adaptedBlueprint._metadata || {};
     const isSeriesNonFirst = _metadata.isSeries && _metadata.episodeNumber > 1;
-    
+
     let shots = scenes.map((scene, index) => {
       // v1.2.5: 非第一集将opening类型改为establishing
       let sceneType = scene.scene_type || 'establishing';
       if (isSeriesNonFirst && sceneType === 'opening') {
-        console.log(`[ProductionEngine] 非第一集，场景 ${scene.scene_id} 从 opening 降级为 establishing`);
+        console.log(`[ProductionEngine] 非第一集,场景 ${scene.scene_id} 从 opening 降级为 establishing`);
         sceneType = 'establishing';
       }
-      
-      // 构建角色描述（v6.37-P1+: 强制极简锚点，3-5关键词）
+
+      // 构建角色描述(v6.37-P1+: 强制极简锚点,3-5关键词)
       const characterAnchors = (scene.characters || []).map(cid => {
         return this._buildMinimalAnchor(cid, characters);
       });
-      
-      // 构建对话（v6.37-P0: 统一格式 SPEAKER|TYPE|EMOTION|TEXT|LIP_SYNC:YES）
+
+      // 构建对话(v6.37-P0: 统一格式 SPEAKER|TYPE|EMOTION|TEXT|LIP_SYNC:YES)
       const dialogueLines = (scene.dialogue?.lines || []).map(line => {
         const speaker = line.speaker || '角色';
         const type = line.type || '独白';
@@ -959,106 +959,108 @@ class ProductionEngine {
         const text = line.text || '';
         return `${speaker}|${type}|${emotion}|${text}|LIP_SYNC:YES`;
       });
-      
-      // v6.37-P0: 构建五维空间描述（scene字段）
+
+      // v6.37-P0: 构建五维空间描述(scene字段)
       const sceneDescription = this._buildFiveDimensionScene(scene, worldSetting);
-      
-      // v6.37-P0: 构建 mood（3-5情绪关键词）
+
+      // v6.37-P0: 构建 mood(3-5情绪关键词)
       const mood = this._buildMood(scene);
-      
-      // v6.37-P0: 构建 action（核心动词+交互目标）
+
+      // v6.37-P0: 构建 action(核心动词+交互目标)
       const action = this._buildAction(scene);
-      
+
       return {
         shotId: scene.scene_id || `S${String(index + 1).padStart(2, '0')}`,
         sceneType: sceneType,
         sceneFunction: scene.scene_function || 'establish',
-        
-        // v6.37-P0: 时序（保留对象，后续转为字符串）
+
+        // v6.37-P0: 时序(保留对象,后续转为字符串)
         timing: {
           start: scene.timing?.start || 0,
           duration: scene.timing?.duration || 20,
           end: scene.timing?.end || 20
         },
-        
+
         // v1.2.5: 添加顶层duration字段供FieldGuard使用
         duration: scene.timing?.duration || 20,
-        
-        // v6.37-P0: 场景（五维空间描述法）
+
+        // v6.37-P0: 场景(五维空间描述法)
         scene: sceneDescription,
-        
+
         // v6.37-P0: 情绪
         mood: mood,
-        
-        // v6.37-P0: 角色（极简锚点）
-        character: characterAnchors.join(' | '),
+
+        // v6.37-P0: 角色(极简锚点)
+        // 【v2.1.4-patch5】将 | 改为逗号,避免Seedance渲染乱码
+        character: characterAnchors.join(', '),
         characterRef: this._buildCharacterRef(scene, characters),
-        
+
         // v6.37-P0: 动作
         action: action,
-        
-        // v6.37-P0: 对话（统一格式）
+
+        // v6.37-P0: 对话(统一格式)
         dialogue: dialogueLines.join(' || '),
-        
-        // 保留原始数据（供内部使用）
+
+        // 保留原始数据(供内部使用)
         characters: scene.characters || [],
-        characterDescs: characterAnchors.join(' | '),
-        dialogueText: (scene.dialogue?.lines || []).map(l => l.text).join('；'),
-        
+        // 【v2.1.4-patch5】将 | 改为逗号,避免Seedance渲染乱码
+        characterDescs: characterAnchors.join(', '),
+        dialogueText: (scene.dialogue?.lines || []).map(l => l.text).join(';'),
+
         // 情感
         emotionalTarget: scene.emotional_target || { valence: 0, arousal: 0.5 },
-        
+
         // 视觉方向
         visualDirection: scene.visual_direction || {},
-        
+
         // Prompt 基础
         promptBase: scene.prompt_base || '',
-        
+
         // 世界设定
         worldId: worldSetting.world_id || 'default',
-        
+
         // 状态
         status: 'pending'
       };
     });
-    
-    // v1.2.5: 时长归一化——确保总时长严格等于目标时长
+
+    // v1.2.5: 时长归一化--确保总时长严格等于目标时长
     const targetDuration = adaptedBlueprint.config?.target_duration || adaptedBlueprint.meta?.target_duration || 120;
     shots = this._normalizeDurations(shots, targetDuration);
-    
+
     return { shots, sceneCount: shots.length };
   }
-  
+
   /**
    * v1.2.5: 时长归一化
-   * 将场景时长按比例缩放，使总时长严格等于目标时长
+   * 将场景时长按比例缩放,使总时长严格等于目标时长
    */
   _normalizeDurations(shots, targetDuration) {
     if (!shots || shots.length === 0) return shots;
-    
-    // 计算当前总时长（取最后一个场景的end时间）
+
+    // 计算当前总时长(取最后一个场景的end时间)
     const currentEnd = Math.max(...shots.map(s => s.timing?.end || 0));
     if (currentEnd <= 0) return shots;
-    
-    // 如果已经精确匹配，无需调整
+
+    // 如果已经精确匹配,无需调整
     if (currentEnd === targetDuration) {
       console.log(`[ProductionEngine] 时长已精确匹配: ${targetDuration}s`);
       return shots;
     }
-    
+
     // 计算缩放比例
     const scale = targetDuration / currentEnd;
     console.log(`[ProductionEngine] 时长归一化: ${currentEnd}s → ${targetDuration}s (缩放: ${scale.toFixed(3)})`);
-    
+
     // 按比例缩放每个场景的timing
     let accumulatedEnd = 0;
     for (let i = 0; i < shots.length; i++) {
       const shot = shots[i];
       const origDuration = shot.timing?.duration || 10;
-      
-      // 缩放时长，至少保留3秒
+
+      // 缩放时长,至少保留3秒
       const newDuration = Math.max(3, Math.round(origDuration * scale));
-      
+
       // 更新timing和顶层duration
       shot.timing = {
         start: accumulatedEnd,
@@ -1066,11 +1068,11 @@ class ProductionEngine {
         end: accumulatedEnd + newDuration
       };
       shot.duration = newDuration;
-      
+
       accumulatedEnd += newDuration;
     }
-    
-    // 最后微调：确保总时长精确等于目标
+
+    // 最后微调:确保总时长精确等于目标
     const lastShot = shots[shots.length - 1];
     const diff = targetDuration - lastShot.timing.end;
     if (diff !== 0) {
@@ -1078,45 +1080,45 @@ class ProductionEngine {
       lastShot.timing.end = targetDuration;
       console.log(`[ProductionEngine] 最后微调: ${lastShot.shotId} 时长调整为 ${lastShot.timing.duration}s`);
     }
-    
+
     return shots;
   }
-  
+
   /**
    * v6.37-P0: 构建五维空间描述
    */
   _buildFiveDimensionScene(scene, worldSetting) {
     const dimensions = [];
-    
-    // 1. 宏观地理：星球/大陆/区域
+
+    // 1. 宏观地理:星球/大陆/区域
     const worldName = worldSetting.name || worldSetting.world_id || '未知世界';
     dimensions.push(worldName);
-    
-    // 2. 中观地貌：地形/地貌
+
+    // 2. 中观地貌:地形/地貌
     const setting = scene.setting || '';
     if (setting) dimensions.push(setting);
-    
-    // 3. 微观材质：表面材质/纹理
+
+    // 3. 微观材质:表面材质/纹理
     const materials = scene.materials || scene.surface_details || '';
     if (materials) dimensions.push(materials);
-    
-    // 4. 天气时间：时间/天气/光照
+
+    // 4. 天气时间:时间/天气/光照
     const timeOfDay = scene.time_of_day || scene.lighting?.time_of_day || '';
     if (timeOfDay) dimensions.push(timeOfDay);
-    
-    // 5. 空间深度：前景/中景/背景层次
+
+    // 5. 空间深度:前景/中景/背景层次
     const depth = scene.depth_layers || scene.spatial_depth || 'atmospheric perspective';
     dimensions.push(`spatial depth: ${depth}`);
-    
+
     return dimensions.join(', ');
   }
-  
+
   /**
-   * v6.37-P0: 构建 mood（3-5情绪关键词）
+   * v6.37-P0: 构建 mood(3-5情绪关键词)
    */
   /**
-   * v6.37-P0: 构建 mood（3-5情绪关键词）
-   * B8-fix: 优先从 scene 动态提取，兜底用默认映射
+   * v6.37-P0: 构建 mood(3-5情绪关键词)
+   * B8-fix: 优先从 scene 动态提取,兜底用默认映射
    */
   _buildMood(scene) {
     // B8-fix: 优先使用 LLM 生成的情绪数据
@@ -1139,7 +1141,7 @@ class ProductionEngine {
       if (moods.length >= 3) return moods.slice(0, 5).join(', ');
     }
 
-    // 兜底：按场景类型映射
+    // 兜底:按场景类型映射
     const moodMap = {
       'opening': 'epic, mysterious, awe-inspiring',
       'establishing': 'mysterious, anticipation, wonder',
@@ -1154,7 +1156,7 @@ class ProductionEngine {
   }
 
   /**
-   * v6.37-P0: 构建 action（核心动词+交互目标）
+   * v6.37-P0: 构建 action(核心动词+交互目标)
    * B8-fix: 优先从 scene 动态提取
    */
   _buildAction(scene) {
@@ -1176,7 +1178,7 @@ class ProductionEngine {
       return 'speaking to camera, clear hand gestures, professional delivery';
     }
 
-    // 兜底：按场景类型映射
+    // 兜底:按场景类型映射
     const actionMap = {
       'opening': 'establishing shot, camera slowly descending through atmospheric layers',
       'establishing': 'standing in scene, observing and explaining with focused gaze',
@@ -1188,10 +1190,10 @@ class ProductionEngine {
 
     return actionMap[scene.scene_type] || 'neutral stance, steady breathing';
   }
-  
+
   /**
    * v1.2.7-fix-A2: 构建角色定妆照引用
-   * 修复：优先使用真实定妆照路径，而非凭空生成
+   * 修复:优先使用真实定妆照路径,而非凭空生成
    */
   _buildCharacterRef(scene, characters) {
     const fs = require('fs');
@@ -1200,7 +1202,7 @@ class ProductionEngine {
     const refs = (scene.characters || []).map(cid => {
       // 先通过 character_id 查找角色
       let char = characters.find(c => c.character_id === cid);
-      // 如果没找到，再通过 name 查找（scene.characters 可能存储的是中文名）
+      // 如果没找到,再通过 name 查找(scene.characters 可能存储的是中文名)
       if (!char) {
         char = characters.find(c => c.name === cid);
       }
@@ -1209,19 +1211,19 @@ class ProductionEngine {
       // v1.2.7-fix-A2: 优先使用角色已有的真实定妆照路径
       const existingPaths = [];
 
-      // 来源1: visual_anchor.reference_images（LLM生成或角色覆盖注入的）
+      // 来源1: visual_anchor.reference_images(LLM生成或角色覆盖注入的)
       const refImages = char.visual_anchor?.reference_images || [];
       if (Array.isArray(refImages) && refImages.length > 0) {
         existingPaths.push(...refImages.filter(p => p && typeof p === 'string'));
       }
 
-      // 来源2: portraits 对象（adapter 解析的真实文件路径）
+      // 来源2: portraits 对象(adapter 解析的真实文件路径)
       if (char.portraits && typeof char.portraits === 'object') {
         const portraitPaths = Object.values(char.portraits).filter(p => p && typeof p === 'string');
         existingPaths.push(...portraitPaths);
       }
 
-      // 来源3: portraitPaths 数组（用户直接传入的）
+      // 来源3: portraitPaths 数组(用户直接传入的)
       if (Array.isArray(char.portraitPaths)) {
         existingPaths.push(...char.portraitPaths.filter(p => p && typeof p === 'string'));
       }
@@ -1230,11 +1232,11 @@ class ProductionEngine {
       const uniquePaths = [...new Set(existingPaths)];
 
       if (uniquePaths.length > 0) {
-        // 有真实路径，直接使用
+        // 有真实路径,直接使用
         return `${char.name}: ${uniquePaths.join(', ')}`;
       }
 
-      // 兜底：检查默认目录是否有定妆照文件（支持 portraits/ 子目录和带前缀文件名）
+      // 兜底:检查默认目录是否有定妆照文件(支持 portraits/ 子目录和带前缀文件名)
       const charDir = char.character_id || cid; // 使用 character_id 作为目录名
       const defaultAngles = ['front', 'profile', 'three-quarter', 'closeup', 'side', 'threeQuarter'];
       const searchDirs = [
@@ -1263,7 +1265,7 @@ class ProductionEngine {
                   break;
                 }
               } catch (e) {
-                // 路径检查失败，跳过
+                // 路径检查失败,跳过
               }
             }
             if (foundPaths.length > 0) break;
@@ -1277,31 +1279,31 @@ class ProductionEngine {
         return `${char.name}: ${foundPaths.join(', ')}`;
       }
 
-      // 最终兜底：标记为无定妆照（而非虚构路径）
-      console.warn(`[ProductionEngine] ⚠️ 角色 ${char.name}(${cid}) 无定妆照，characterRef 标记为 NONE`);
+      // 最终兜底:标记为无定妆照(而非虚构路径)
+      console.warn(`[ProductionEngine] ⚠️ 角色 ${char.name}(${cid}) 无定妆照,characterRef 标记为 NONE`);
       return null;
     }).filter(Boolean);
 
-    return refs.join(' | ') || 'NONE';
+    return refs.join(', ') || 'NONE';
   }
 
   /**
-   * Stage 2: 时长分配（精细化）
+   * Stage 2: 时长分配(精细化)
    * v6.37-P0: 新增 timeline 字段
    */
   _allocateDuration(shots) {
     const allocator = this.modules.shotDurationAllocator;
     if (!allocator) {
-      // 回退：使用剧本引擎的时长
+      // 回退:使用剧本引擎的时长
       return { shots };
     }
-    
+
     // 基于内容重要性、台词长度、视觉复杂度三维度重新分配
     const allocatedShots = shots.map((shot, index) => {
-      // 台词越长，时长越长
+      // 台词越长,时长越长
       const dialogueLength = shot.dialogue?.length || 0;
       const dialogueFactor = Math.min(dialogueLength / 30, 1.5); // 30字基准
-      
+
       // 场景类型权重
       const typeWeights = {
         'opening': 1.2,
@@ -1311,18 +1313,18 @@ class ProductionEngine {
         'establishing': 1.0
       };
       const typeWeight = typeWeights[shot.sceneType] || 1.0;
-      
+
       // 基础时长 × 调整因子
       const baseDuration = shot.timing.duration;
       const adjustedDuration = Math.round(baseDuration * typeWeight * (1 + dialogueFactor * 0.2));
-      
+
       // 限制在合理范围
       const finalDuration = Math.max(10, Math.min(40, adjustedDuration));
-      
-      // v6.37-P1+: 构建 timeline 字段（结构化对象 + 字符串）
-      // v1.2.5: 使用已归一化的时长，不再重新分配
+
+      // v6.37-P1+: 构建 timeline 字段(结构化对象 + 字符串)
+      // v1.2.5: 使用已归一化的时长,不再重新分配
       const timelineResult = this._buildTimeline(shot, index, baseDuration);
-      
+
       return {
         ...shot,
         // v6.37-P1+: timeline 结构化对象
@@ -1336,26 +1338,26 @@ class ProductionEngine {
         }
       };
     });
-    
+
     return { shots: allocatedShots };
   }
-  
+
   /**
    * v6.37-P0: 构建 timeline 字段
-   * 格式：T00:XX-T00:XX / duration: Xs / type: XXX / mood: XXX
+   * 格式:T00:XX-T00:XX / duration: Xs / type: XXX / mood: XXX
    */
   _buildTimeline(shot, index, duration) {
     const startTime = shot.timing.start || 0;
     const endTime = startTime + duration;
     const type = shot.sceneType || 'normal';
     const mood = shot.mood || 'neutral';
-    
+
     const formatTime = (seconds) => {
       const mins = Math.floor(seconds / 60);
       const secs = Math.floor(seconds % 60);
       return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
     };
-    
+
     // v6.37-P1+: 结构化对象 + 字符串
     const timelineObj = {
       start: `T${formatTime(startTime)}`,
@@ -1364,9 +1366,9 @@ class ProductionEngine {
       type: type,
       mood: mood
     };
-    
+
     const timelineStr = `${timelineObj.start}-${timelineObj.end} / duration: ${timelineObj.duration}s / type: ${timelineObj.type} / mood: ${timelineObj.mood}`;
-    
+
     return {
       object: timelineObj,
       string: timelineStr
@@ -1375,21 +1377,21 @@ class ProductionEngine {
 
   /**
    * Stage 3: 运镜设计
-   * v6.37-P0: 改造 camera 字段为字符串格式，新增 lighting 字段
+   * v6.37-P0: 改造 camera 字段为字符串格式,新增 lighting 字段
    */
   _designCameraMovement(shots) {
     const cameraSystem = this.modules.cameraMovement;
-    
+
     const designedShots = shots.map(shot => {
       // 基于场景类型推断运镜
       const cameraConfig = this._inferCameraConfig(shot);
-      
-      // v6.37-P1+: 构建 camera 字段（结构化对象 + 字符串）
+
+      // v6.37-P1+: 构建 camera 字段(结构化对象 + 字符串)
       const cameraResult = this._buildCameraString(cameraConfig, shot);
-      
-      // v6.37-P1+: 构建 lighting 字段（结构化对象 + 字符串）
+
+      // v6.37-P1+: 构建 lighting 字段(结构化对象 + 字符串)
       const lightingResult = this._buildLighting(shot, cameraConfig);
-      
+
       return {
         ...shot,
         camera: cameraResult, // 结构化对象
@@ -1401,16 +1403,16 @@ class ProductionEngine {
         }
       };
     });
-    
+
     return { shots: designedShots };
   }
-  
+
   /**
-   * v6.37-P0: 构建 camera 字符串（12级机位+14运镜+焦距+速度）
+   * v6.37-P0: 构建 camera 字符串(12级机位+14运镜+焦距+速度)
    */
   /**
-   * v6.37-P1+: 构建 camera 字段（结构化对象 + 字符串）
-   * 专家反馈：字段级结构化，对象用于程序解析，字符串用于Prompt融合
+   * v6.37-P1+: 构建 camera 字段(结构化对象 + 字符串)
+   * 专家反馈:字段级结构化,对象用于程序解析,字符串用于Prompt融合
    */
   _buildCameraString(cameraConfig, shot) {
     const shotSizeMap = {
@@ -1420,7 +1422,7 @@ class ProductionEngine {
       'extreme_close_up': 'extreme close-up',
       'establishing': 'establishing'
     };
-    
+
     const movementMap = {
       '缓慢推进': 'dolly in',
       '稳定机位': 'static',
@@ -1428,21 +1430,21 @@ class ProductionEngine {
       '快速推近': 'push in',
       '缓慢后拉': 'pull back'
     };
-    
+
     const focalMap = {
       'slow': '24mm',
       'normal': '35mm',
       'fast': '85mm',
       'dynamic': '50mm'
     };
-    
+
     const speedMap = {
       'slow': 0.3,
       'normal': 1.0,
       'fast': 1.5,
       'dynamic': 0.8
     };
-    
+
     // 结构化对象
     const cameraObj = {
       shotSize: shotSizeMap[cameraConfig.shotType] || 'medium',
@@ -1452,18 +1454,18 @@ class ProductionEngine {
       aperture: 'f/2.8', // 默认值
       focus: 'normal' // 默认值
     };
-    
-    // 字符串格式（用于Prompt融合）
+
+    // 字符串格式(用于Prompt融合)
     const cameraStr = `${cameraObj.shotSize} shot, ${cameraObj.movement}, ${cameraObj.lens} lens, speed ${cameraObj.speed}`;
-    
+
     return {
       object: cameraObj,
       string: cameraStr
     };
   }
-  
+
   /**
-   * v6.37-P0: 构建 lighting 字段（主光方向+色温K值+特效光）
+   * v6.37-P0: 构建 lighting 字段(主光方向+色温K值+特效光)
    */
   _buildLighting(shot, cameraConfig) {
     const lightingMap = {
@@ -1498,10 +1500,10 @@ class ProductionEngine {
         special: 'practical source'
       }
     };
-    
+
     const lightingObj = lightingMap[shot.sceneType] || lightingMap['establishing'];
-    
-    // 字符串格式（用于Prompt融合）
+
+    // 字符串格式(用于Prompt融合)
     const keyLight = lightingObj.keyLight;
     const fillLight = lightingObj.fillLight;
     let lightingStr = `${keyLight.direction} ${keyLight.colorTemp}K, ${keyLight.effect}`;
@@ -1511,7 +1513,7 @@ class ProductionEngine {
     if (lightingObj.special) {
       lightingStr += `, ${lightingObj.special}`;
     }
-    
+
     return {
       object: lightingObj,
       string: lightingStr
@@ -1554,7 +1556,7 @@ class ProductionEngine {
         transition: 'fade'
       }
     };
-    
+
     return configs[shot.sceneType] || configs['establishing'];
   }
 
@@ -1564,12 +1566,12 @@ class ProductionEngine {
   _generateCameraTimeline(duration, cameraConfig) {
     const segments = 4;
     const segmentDuration = duration / segments;
-    
+
     const timeline = [];
     for (let i = 0; i < segments; i++) {
       const start = i * segmentDuration;
       const end = (i + 1) * segmentDuration;
-      
+
       timeline.push({
         segment: i + 1,
         timeRange: `${start.toFixed(1)}s-${end.toFixed(1)}s`,
@@ -1579,7 +1581,7 @@ class ProductionEngine {
         purpose: this._getSegmentPurpose(i, cameraConfig)
       });
     }
-    
+
     return timeline;
   }
 
@@ -1591,7 +1593,7 @@ class ProductionEngine {
       '快速推近': ['远景突袭', '中景冲刺', '近景逼近', '特写定格'],
       '缓慢后拉': ['近景特写', '中景展开', '全景揭示', '远景收尾']
     };
-    
+
     const movements = variations[baseMovement] || variations['稳定机位'];
     return movements[index] || movements[movements.length - 1];
   }
@@ -1603,7 +1605,7 @@ class ProductionEngine {
       'close_up': ['中景', '近景', '特写', '极特写'],
       'extreme_close_up': ['近景', '特写', '极特写', '微距']
     };
-    
+
     const types = progression[baseType] || progression['medium'];
     return types[index] || types[types.length - 1];
   }
@@ -1619,24 +1621,24 @@ class ProductionEngine {
   }
 
   /**
-   * Stage 4: Prompt 工程（核心）
-   * v6.37-P0: 按参考文档融合顺序构建 Prompt，产出标准字段格式
-   * 保留卓越系统特有字段：mouthAction, importance, visualComplexity, qualityScore, enhanced
+   * Stage 4: Prompt 工程(核心)
+   * v6.37-P0: 按参考文档融合顺序构建 Prompt,产出标准字段格式
+   * 保留卓越系统特有字段:mouthAction, importance, visualComplexity, qualityScore, enhanced
    */
   _engineerPrompts(shots, blueprint) {
     const prompts = [];
     const engineeredShots = [];
-    
+
     for (const shot of shots) {
-      // v2.0.5-彻底修复: 优先使用标准化后的字段（由_normalizeLLMOutput处理过）
-      // 如果标准化字段存在，直接使用；否则做兜底处理
-      const cameraStr = shot.cameraString || 
-                        shot.camera?.string || 
+      // v2.0.5-彻底修复: 优先使用标准化后的字段(由_normalizeLLMOutput处理过)
+      // 如果标准化字段存在,直接使用;否则做兜底处理
+      const cameraStr = shot.cameraString ||
+                        shot.camera?.string ||
                         (typeof shot.camera === 'string' ? shot.camera : '') || '';
-      const lightingStr = shot.lightingString || 
-                          shot.lighting?.string || 
+      const lightingStr = shot.lightingString ||
+                          shot.lighting?.string ||
                           (typeof shot.lighting === 'string' ? shot.lighting : '') || '';
-      
+
       // v2.0.5-彻底修复: timeline优先使用标准化后的timelineString
       let timelineStr = shot.timelineString || '';
       if (!timelineStr) {
@@ -1647,10 +1649,10 @@ class ProductionEngine {
         } else if (Array.isArray(shot.timeline)) {
           timelineStr = shot.timeline.map(seg => 
             `${seg.timeRange || ''}: ${seg.cameraMovement || ''}`
-          ).join(' | ');
+          ).join('; ');
         }
       }
-      
+
       // v2.0.5-彻底修复: 确保backgroundSound有string版本
       let bgSoundResult;
       if (shot.backgroundSoundString && typeof shot.backgroundSoundString === 'string') {
@@ -1668,17 +1670,17 @@ class ProductionEngine {
         backgroundSound: bgSoundResult
       };
       const prompt = this._buildShotPrompt(shotWithSound, blueprint, { cameraStr, lightingStr, timelineStr });
-      
+
       // 字符计数
       const promptLength = this._countChars(prompt.fullPrompt);
-      
-      // v6.37-P1+: 构建标准输出对象（严格按 v6.37 标准字段）
+
+      // v6.37-P1+: 构建标准输出对象(严格按 v6.37 标准字段)
       // 正片 S01+: 14 核心字段 | 片头 S00: + audioLayer + titleOverlay
       // v2.0.4-fix: 添加人物介绍卡片
       const characterCards = this._buildCharacterCards(shot, blueprint);
 
       const standardOutput = {
-        // === 标准字段（v6.37-production+）===
+        // === 标准字段(v6.37-production+)===
         shotId: shot.shotId,
         duration: shot.timing?.duration || 20,
         scene: shot.scene || '',
@@ -1688,7 +1690,7 @@ class ProductionEngine {
         lighting: shot.lighting?.object || shot.lighting || '',
         lightingString: lightingStr,
         characterRef: shot.characterRef || 'NONE',
-        // v2.0.5-fix: 如果shot.character不存在，从blueprint获取主角名
+        // v2.0.5-fix: 如果shot.character不存在,从blueprint获取主角名
         character: shot.character || this._getMainCharacterName(blueprint) || 'NONE',
         action: shot.action || '',
         dialogue: shot.dialogue || 'NONE',
@@ -1701,13 +1703,13 @@ class ProductionEngine {
         // v2.0.4-fix: 人物介绍卡片
         characterCards: characterCards
       };
-      
-      // 片头专属字段（仅 S00）
+
+      // 片头专属字段(仅 S00)
       const _meta = blueprint.config?._metadata || blueprint._metadata || {};
       const isSeries = _meta.isSeries || false;
       const episodeNumber = _meta.episodeNumber || 1;
       const hasOpening = isSeries ? (episodeNumber === 1) : true;
-      
+
       if (shot.sceneType === 'opening' && hasOpening) {
         const audioLayer = this._buildAudioLayer(shot);
         const titleOverlay = this._buildTitleOverlay(blueprint);
@@ -1716,35 +1718,35 @@ class ProductionEngine {
         standardOutput.titleOverlay = titleOverlay.object;
         standardOutput.titleOverlayString = titleOverlay.string;
       }
-      
+
       engineeredShots.push(standardOutput);
       prompts.push(standardOutput);
     }
-    
+
     return { shots: engineeredShots, prompts };
   }
-  
+
   /**
-   * v6.37-P0: 构建 mouthAction 字段（供Seedance对口型）
+   * v6.37-P0: 构建 mouthAction 字段(供Seedance对口型)
    */
   _buildMouthAction(shot) {
     const actionMap = {
-      'opening': '嘴部自然闭合，面对镜头，准备开口',
-      'establishing': '嘴部微张，观察时自然呼吸',
-      'conflict': '嘴部紧闭，紧张时咬紧牙关',
-      'emotional_climax': '嘴部张大，情感爆发时大声呼喊',
-      'resolution': '嘴部放松，微笑，平静呼吸'
+      'opening': '嘴部自然闭合,面对镜头,准备开口',
+      'establishing': '嘴部微张,观察时自然呼吸',
+      'conflict': '嘴部紧闭,紧张时咬紧牙关',
+      'emotional_climax': '嘴部张大,情感爆发时大声呼喊',
+      'resolution': '嘴部放松,微笑,平静呼吸'
     };
-    
+
     return actionMap[shot.sceneType] || '嘴部自然闭合';
   }
-  
+
   /**
-   * v6.37-P0: 构建 backgroundSound 字段（三段式）
+   * v6.37-P0: 构建 backgroundSound 字段(三段式)
    */
   _buildBackgroundSound(shot) {
     const type = shot.sceneType || 'normal';
-    
+
     const soundMap = {
       'opening': {
         ambient: 'deep earth rumble 20-60Hz, epic atmosphere',
@@ -1772,25 +1774,26 @@ class ProductionEngine {
         intensity: { fading: '0-5s', quiet: '5-10s' }
       }
     };
-    
+
     const soundObj = soundMap[type] || {
       ambient: 'neutral atmosphere',
       spatial: 'centered mono',
       intensity: { steady: '100%' }
     };
-    
-    // 字符串格式（用于Prompt融合）
+
+    // 字符串格式(用于Prompt融合)
     const intensityStr = Object.entries(soundObj.intensity).map(([k, v]) => `${k} ${v}`).join(', ');
-    const soundStr = `AMBIENT: ${soundObj.ambient} | SPATIAL: ${soundObj.spatial} | INTENSITY: ${intensityStr}`;
-    
+    // 【v2.1.4-patch5】将竖杠改为分号，避免Seedance渲染乱码
+    const soundStr = `AMBIENT: ${soundObj.ambient}; SPATIAL: ${soundObj.spatial}; INTENSITY: ${intensityStr}`;
+
     return {
       object: soundObj,
       string: soundStr
     };
   }
-  
+
   /**
-   * v6.37-P1+: 构建 audioLayer 字段（片头专属，结构化对象）
+   * v6.37-P1+: 构建 audioLayer 字段(片头专属,结构化对象)
    */
   _buildAudioLayer(shot) {
     const segments = [
@@ -1799,32 +1802,32 @@ class ProductionEngine {
       { time: '5-8s', sound: 'string section long note' },
       { time: '8-10s', sound: 'timpani strike' }
     ];
-    
+
     const audioStr = segments.map(s => s.sound).join(', ');
-    
+
     return {
       object: { segments },
       string: audioStr
     };
   }
-  
+
   /**
-   * v6.37-P1+: 构建 titleOverlay 字段（片头专属，结构化对象）
+   * v6.37-P1+: 构建 titleOverlay 字段(片头专属,结构化对象)
    */
   _buildTitleOverlay(blueprint) {
     const config = blueprint.config || {};
     const worldSetting = blueprint.worldSetting || {};
     // v1.2.5-fix: 兼容顶层_metadata和config._metadata
     const _metadata = config._metadata || blueprint._metadata || {};
-    
+
     // v1.2.5: 系列作品片头逻辑
     const isSeries = _metadata.isSeries || false;
     const episodeNumber = _metadata.episodeNumber || 1;
     const totalEpisodes = _metadata.totalEpisodes || 1;
-    
+
     // 只有第一集显示完整片头title
     const showTitle = isSeries ? (episodeNumber === 1) : true;
-    
+
     const titleObj = {
       mainTitle: showTitle ? (config.title || '未命名') : '',
       subtitle: showTitle ? (worldSetting.name || '系列作品') : '',
@@ -1832,11 +1835,11 @@ class ProductionEngine {
       titleAnim: showTitle ? 'light-vein carving growth 3.0-5.0s' : 'none',
       episodeInfo: isSeries ? `第${episodeNumber}集 / 共${totalEpisodes}集` : ''
     };
-    
-    const titleStr = showTitle 
-      ? `MAIN_TITLE: "${titleObj.mainTitle}" | SUBTITLE: "${titleObj.subtitle}" | PRODUCER: "${titleObj.producer}" | TITLE_ANIM: ${titleObj.titleAnim}`
-      : `EPISODE: ${titleObj.episodeInfo} | TITLE_ANIM: none`;
-    
+
+    const titleStr = showTitle
+      ? `MAIN_TITLE: "${titleObj.mainTitle}"; SUBTITLE: "${titleObj.subtitle}"; PRODUCER: "${titleObj.producer}"; TITLE_ANIM: ${titleObj.titleAnim}`
+      : `EPISODE: ${titleObj.episodeInfo}; TITLE_ANIM: none`;
+
     return {
       object: titleObj,
       string: titleStr
@@ -1844,32 +1847,32 @@ class ProductionEngine {
   }
 
   /**
-   * 🔊 v2.0-B+: 音频场景映射（极致视听融合）
+   * 🔊 v2.0-B+: 音频场景映射(极致视听融合)
    */
   _getAudioSceneMap() {
     return {
-      'beach': { env: '海浪轻拍沙滩的白噪音，海鸟远处鸣叫', action: '白沙从指缝流下沙沙声', emotion: '温暖治愈的氛围音' },
-      'ocean': { env: '海浪拍打礁石，海风呼啸', action: '水花溅起声', emotion: '自由辽阔的海洋气息' },
-      'forest': { env: '风吹树叶沙沙声，远处溪流潺潺', action: '脚步声踩落叶', emotion: '宁静安详的自然氛围' },
-      'city': { env: '车流白噪音，远处鸣笛', action: '快门声、键盘敲击', emotion: '都市节奏感' },
+      'beach': { env: '海浪轻拍沙滩的白噪音,海鸟远处鸣叫', action: '白沙从指缝流下沙沙声', emotion: '温暖治愈的氛围音' },
+      'ocean': { env: '海浪拍打礁石,海风呼啸', action: '水花溅起声', emotion: '自由辽阔的海洋气息' },
+      'forest': { env: '风吹树叶沙沙声,远处溪流潺潺', action: '脚步声踩落叶', emotion: '宁静安详的自然氛围' },
+      'city': { env: '车流白噪音,远处鸣笛', action: '快门声、键盘敲击', emotion: '都市节奏感' },
       'home': { env: '室内温暖环境音', action: '婴儿咯咯笑声', emotion: '温馨家庭氛围' },
-      'mountain': { env: '山风呼啸，远处鸟鸣', action: '雪粉飞扬声', emotion: '壮丽寂静的高山氛围' },
+      'mountain': { env: '山风呼啸,远处鸟鸣', action: '雪粉飞扬声', emotion: '壮丽寂静的高山氛围' },
       'studio': { env: '摄影棚安静环境', action: '快门咔嚓声', emotion: '专业专注的工作氛围' }
     };
   }
 
   /**
-   * 🔊 v2.0-B+: 构建音频描述（自然语言格式，Seedance可理解）
+   * 🔊 v2.0-B+: 构建音频描述(自然语言格式,Seedance可理解)
    */
   _buildAudioDescription(shot) {
     const parts = [];
     const sceneName = (shot.sceneName || shot.scene || shot.setting || '').toLowerCase();
     const emotion = (shot.emotionPhase || shot.emotion || 'neutral').toLowerCase();
     const timeOfDay = (shot.timeOfDay || shot.lighting?.timeOfDay || 'golden hour').toLowerCase();
-    
+
     const audioMap = this._getAudioSceneMap();
     let template = null;
-    
+
     // 匹配场景类型
     for (const [key, t] of Object.entries(audioMap)) {
       if (sceneName.includes(key)) {
@@ -1877,22 +1880,22 @@ class ProductionEngine {
         break;
       }
     }
-    
-    // 回退：基于时间
+
+    // 回退:基于时间
     if (!template) {
       if (timeOfDay.includes('night') || timeOfDay.includes('dusk')) {
-        template = { env: '夜晚虫鸣，远处低语', action: '轻柔脚步声', emotion: '神秘宁静的夜晚氛围' };
+        template = { env: '夜晚虫鸣,远处低语', action: '轻柔脚步声', emotion: '神秘宁静的夜晚氛围' };
       } else {
         template = { env: '白天环境音', action: '自然动作声', emotion: '明亮日常氛围' };
       }
     }
-    
+
     // L1: 环境音 - 自然语言格式
     parts.push(`伴随${template.env}`);
-    
+
     // L2: 动作音 - 自然语言格式
     parts.push(`动作产生${template.action}`);
-    
+
     // L3: 情绪音 - 自然语言格式
     const emotionAudioMap = {
       'warm': '温暖治愈的轻音乐渐入',
@@ -1901,62 +1904,62 @@ class ProductionEngine {
       'sad': '低沉的弦乐余韵',
       'epic': '宏大的交响乐铺垫',
       'peaceful': '宁静的钢琴轻弹',
-      'establishing': '环境音渐显，氛围建立',
-      'climax': '全频段饱满，情绪峰值',
-      'resolve': '音乐渐弱，余音缭绕'
+      'establishing': '环境音渐显,氛围建立',
+      'climax': '全频段饱满,情绪峰值',
+      'resolve': '音乐渐弱,余音缭绕'
     };
     const emotionSound = emotionAudioMap[emotion] || template.emotion;
     parts.push(`氛围弥漫${emotionSound}`);
-    
-    // L4: 声画同步（如果含对话）
+
+    // L4: 声画同步(如果含对话)
     if (shot.dialogueText || shot.hasDialogue) {
-      parts.push('声画精准同步，嘴型与发音对齐');
+      parts.push('声画精准同步,嘴型与发音对齐');
     }
-    
-    return parts.join('，');
+
+    return parts.join(',');
   }
 
   /**
-   * 构建单个镜头的完整 Prompt（v2.0-B+: 七层架构 + 极致视听融合 + v6.37-P0 字段对齐）
-   * 
-   * 融合顺序（按参考文档 v6.37-Peng）：
-   * CharacterRef → Timeline → Dialogue → AudioLayer(片头) → TitleOverlay(片头) → 
-   * BackgroundSound → Character → Action → Scene → Mood → Camera → Lighting → 
+   * 构建单个镜头的完整 Prompt(v2.0-B+: 七层架构 + 极致视听融合 + v6.37-P0 字段对齐)
+   *
+   * 融合顺序(按参考文档 v6.37-Peng):
+   * CharacterRef → Timeline → Dialogue → AudioLayer(片头) → TitleOverlay(片头) →
+   * BackgroundSound → Character → Action → Scene → Mood → Camera → Lighting →
    * PhysicsLayer → ColorScience → NegativePrompt → RenderStyle → DirectorStyle
-   * 
-   * 七层结构：
-   * L1: 约束层（P0必加）- 画幅/帧率/无字幕
-   * L2: 基础层（P0必加）- 写实度/HDR/胶片质感
-   * L3: 空间层（P1防平庸）- scene字段（五维空间）
-   * L4: 主体层（P2防漂移）- character/action/dialogue
-   * L5: 动态层（P1防平庸）- camera/timeline
-   * L6: 风格层（P2防漂移）- mood/lighting
-   * L7: 音频层（🔊 新增）- backgroundSound/audioLayer
-   * L8: 内部层（扩展）- PhysicsLayer/ColorScience/NegativePrompt/RenderStyle/DirectorStyle
-   * L9: 质控层（P0必加）- 负面约束/角色一致性
+   *
+   * 七层结构:
+   * L1: 约束层(P0必加)- 画幅/帧率/无字幕
+   * L2: 基础层(P0必加)- 写实度/HDR/胶片质感
+   * L3: 空间层(P1防平庸)- scene字段(五维空间)
+   * L4: 主体层(P2防漂移)- character/action/dialogue
+   * L5: 动态层(P1防平庸)- camera/timeline
+   * L6: 风格层(P2防漂移)- mood/lighting
+   * L7: 音频层(🔊 新增)- backgroundSound/audioLayer
+   * L8: 内部层(扩展)- PhysicsLayer/ColorScience/NegativePrompt/RenderStyle/DirectorStyle
+   * L9: 质控层(P0必加)- 负面约束/角色一致性
    */
   /**
-   * 构建单个镜头的完整 Prompt（v6.37-P1+: 优先级截断 + 结构化对象）
+   * 构建单个镜头的完整 Prompt(v6.37-P1+: 优先级截断 + 结构化对象)
    */
   _buildShotPrompt(shot, blueprint, structuredStrings = {}) {
     const { cameraStr, lightingStr, timelineStr } = structuredStrings;
-    
-    // v2.0.4-fix: 如果 shot 有 fusionText（LLM融合产出），优先使用作为L3-L7基础
+
+    // v2.0.4-fix: 如果 shot 有 fusionText(LLM融合产出),优先使用作为L3-L7基础
     const hasFusion = shot.fusionText && shot.fusionText.length > 10;
-    
-    // v1.2.5: 从blueprint metadata中提取系列信息，控制片头和结尾
-    // 修复：兼容顶层_metadata和config._metadata
+
+    // v1.2.5: 从blueprint metadata中提取系列信息,控制片头和结尾
+    // 修复:兼容顶层_metadata和config._metadata
     const _meta = blueprint._metadata || blueprint.config?._metadata || {};
     const isSeries = _meta.isSeries || false;
     const episodeNumber = _meta.episodeNumber || 1;
     const hasOpening = _meta.hasOpening !== false; // 默认true
     const noNextEpisodePreview = blueprint._metadata?.noNextEpisodePreview || false;
-    
-    // 检查当前镜头是否为片头/结尾，根据系列规则调整
+
+    // 检查当前镜头是否为片头/结尾,根据系列规则调整
     const isOpeningShot = shot.sceneType === 'opening' || shot.sceneType === 'establish';
     const isResolutionShot = shot.sceneType === 'resolution';
-    
-    // 定义优先级和截断策略（专家反馈）
+
+    // 定义优先级和截断策略(专家反馈)
     const priorityMap = {
       'L1_constraint': { priority: 'P0', strategy: 'never' },
       'L2_base': { priority: 'P0', strategy: 'never' },
@@ -1972,23 +1975,23 @@ class ProductionEngine {
       'L8_internal': { priority: 'P2', strategy: 'truncate' },
       'L9_negative': { priority: 'P0', strategy: 'keep_top_3' }
     };
-    
+
     const parts = [];
     const partMeta = [];
-    
-    // === L1: 约束层（P0必加）===
-    // v1.2.5: 从blueprint.config读取画幅，默认16:9横屏
+
+    // === L1: 约束层(P0必加)===
+    // v1.2.5: 从blueprint.config读取画幅,默认16:9横屏
     const ratio = blueprint.config?.aspectRatio || '16:9';
     parts.push(`【约束】${ratio} cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic`);
     partMeta.push({ id: 'L1_constraint', priority: 'P0' });
-    
-    // === L2: 基础层（P0必加）===
+
+    // === L2: 基础层(P0必加)===
     parts.push('【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film');
     partMeta.push({ id: 'L2_base', priority: 'P0' });
-    
-    // === L3: 空间层（P1）===
+
+    // === L3: 空间层(P1)===
     if (hasFusion) {
-      // v2.0.4-fix: LLM融合段直接放入，包含场景/角色/动作/运镜/灯光/情绪的叙事化描述
+      // v2.0.4-fix: LLM融合段直接放入,包含场景/角色/动作/运镜/灯光/情绪的叙事化描述
       parts.push(`【场景】${shot.fusionText}`);
       partMeta.push({ id: 'L3-L7_fusion', priority: 'P1' });
     } else {
@@ -1996,99 +1999,99 @@ class ProductionEngine {
         parts.push(`【场景】${shot.scene}`);
         partMeta.push({ id: 'L3_scene', priority: 'P1' });
       }
-      
-      // === L4: 主体层（P0-P1）===
+
+      // === L4: 主体层(P0-P1)===
       if (shot.character && shot.character !== 'NONE') {
         parts.push(`【角色】${shot.character}`);
         partMeta.push({ id: 'L4_character', priority: 'P0' });
       }
-      
+
       if (shot.action) {
         parts.push(`【动作】${shot.action}`);
         partMeta.push({ id: 'L4_action', priority: 'P1' });
       }
     }
-    
-    // v2.0.4-fix: 注入定妆照引用（characterRef）到prompt中
+
+    // v2.0.4-fix: 注入定妆照引用(characterRef)到prompt中
     if (shot.characterRef && shot.characterRef !== 'NONE') {
       parts.push(`【定妆照】${shot.characterRef}`);
       partMeta.push({ id: 'L4_characterRef', priority: 'P0' });
     }
 
     if (shot.dialogue && shot.dialogue !== '') {
-      // 【v2.1.4-patch4】替换竖杠为分号，避免Seedance渲染乱码
+      // 【v2.1.4-patch4】替换竖杠为分号,避免Seedance渲染乱码
       const safeDialogue = shot.dialogue.replace(/\|/g, '; ').replace(/;/g, '; ');
       parts.push(`【台词】${safeDialogue}`);
       partMeta.push({ id: 'L4_dialogue', priority: 'P0' });
     }
-    
-    // === L5: 动态层（P1-P2）===
-    // v2.0.5-fix: 确保始终是字符串，防止对象污染prompt
+
+    // === L5: 动态层(P1-P2)===
+    // v2.0.5-fix: 确保始终是字符串,防止对象污染prompt
     const camera = cameraStr || (typeof shot.camera === 'string' ? shot.camera : '');
     if (camera) {
       parts.push(`【运镜】${camera}`);
       partMeta.push({ id: 'L5_camera', priority: 'P1' });
     }
-    
+
     const timeline = timelineStr || (typeof shot.timeline === 'string' ? shot.timeline : '');
     if (timeline) {
       parts.push(`【时间轴】${timeline}`);
       partMeta.push({ id: 'L5_timeline', priority: 'P2' });
     }
-    
-    // === L6: 风格层（P1-P2）===
+
+    // === L6: 风格层(P1-P2)===
     if (shot.mood) {
       parts.push(`【情绪】${shot.mood}`);
       partMeta.push({ id: 'L6_mood', priority: 'P2' });
     }
-    
+
     const lighting = lightingStr || (typeof shot.lighting === 'string' ? shot.lighting : '');
     if (lighting) {
       parts.push(`【灯光】${lighting}`);
       partMeta.push({ id: 'L6_lighting', priority: 'P1' });
     }
-    
-    // === L7: 音频层（P1）===
-    // v6.37-P1+: 使用字符串版本（避免对象输出）
+
+    // === L7: 音频层(P1)===
+    // v6.37-P1+: 使用字符串版本(避免对象输出)
     const bgSound = shot.backgroundSound?.string || shot.backgroundSound;
     if (bgSound && typeof bgSound === 'string') {
       parts.push(`【音频】${bgSound}`);
       partMeta.push({ id: 'L7_audio', priority: 'P1' });
     }
-    
+
     const audioLayer = shot.audioLayer?.string || shot.audioLayer;
     if (audioLayer && audioLayer !== '' && typeof audioLayer === 'string') {
       parts.push(`【音频层】${audioLayer}`);
       partMeta.push({ id: 'L7_audio', priority: 'P1' });
     }
-    
-    // === L8: 内部层（P2）===
+
+    // === L8: 内部层(P2)===
     if (shot.physicsLayer && shot.physicsLayer !== '') {
       parts.push(`【物理】${shot.physicsLayer}`);
       partMeta.push({ id: 'L8_internal', priority: 'P2' });
     }
-    
+
     if (shot.colorScience && shot.colorScience !== '') {
       parts.push(`【色彩】${shot.colorScience}`);
       partMeta.push({ id: 'L8_internal', priority: 'P2' });
     }
-    
+
     if (shot.renderStyle && shot.renderStyle !== '') {
       parts.push(`【渲染】${shot.renderStyle}`);
       partMeta.push({ id: 'L8_internal', priority: 'P2' });
     }
-    
+
     if (shot.directorStyle && shot.directorStyle !== '') {
       parts.push(`【导演】${shot.directorStyle}`);
       partMeta.push({ id: 'L8_internal', priority: 'P2' });
     }
-    
-    // === L9: 质控层（P0）===
+
+    // === L9: 质控层(P0)===
     if (shot.worldId && shot.worldId !== 'default') {
       parts.push(`${shot.worldId} world`);
     }
-    
-    // === L9: 质控层（P0）===
+
+    // === L9: 质控层(P0)===
     const negativeConstraints = [
       '【负面约束】no watermark, no logo, no text overlay, no subtitle, no caption',
       '【负面约束】blurry, low resolution, pixelated, compression artifacts',
@@ -2097,88 +2100,91 @@ class ProductionEngine {
       '【负面约束】flat lighting, overexposed, crushed blacks, double shadows',
       '【负面约束】unnatural physics, fake water, static water, cardboard texture, plastic foliage'
     ];
-    
+
     if (shot.characters?.length > 0 || shot.character) {
       negativeConstraints.push('【负面约束】distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose');
     }
-    
+
     if (shot.worldId && shot.worldId !== 'default') {
       negativeConstraints.push('【负面约束】natural eye colors only, no metallic shine');
     }
     parts.push(...negativeConstraints);
     partMeta.push({ id: 'L9_negative', priority: 'P0' });
-    
+
     if (shot.characters?.length > 0) {
-      parts.push(`【角色一致性】保持${shot.characters.join('、')}形象一致，杜绝分身重影`);
+      parts.push(`【角色一致性】保持${shot.characters.join('、')}形象一致,杜绝分身重影`);
     }
-    
-    const fullPrompt = parts.join('，');
-    
-    // v6.37-P1+: 优先级截断（专家反馈）
+
+    const fullPrompt = parts.join(',');
+
+    // v6.37-P1+: 优先级截断(专家反馈)
     const truncated = this._truncateWithPriority(fullPrompt, this.config.maxPromptLength, partMeta, parts);
-    
+
+    // 【v2.1.4-patch5】兜底过滤：最终prompt中任何残留的竖杠全部过滤，防止Seedance渲染乱码
+    const stripPipes = (str) => str.replace(/\|/g, '; ');
+
     return {
-      fullPrompt: truncated,
-      rawPrompt: fullPrompt,
+      fullPrompt: stripPipes(truncated),
+      rawPrompt: fullPrompt, // 保留原始prompt用于调试
       parts,
       partMeta,
       wasTruncated: fullPrompt.length !== truncated.length,
       audioIncluded: !!shot.backgroundSound
     };
   }
-  
+
   /**
-   * v1.2.7-fix-A3: 优先级截断（保持 L1-L9 原始顺序）
-   * 修复：截断时不再重排 parts，保持 v6.37 规定的融合顺序
+   * v1.2.7-fix-A3: 优先级截断(保持 L1-L9 原始顺序)
+   * 修复:截断时不再重排 parts,保持 v6.37 规定的融合顺序
    */
   _truncateWithPriority(prompt, maxLength, partMeta, parts) {
     if (prompt.length <= maxLength) return prompt;
 
-    // 阶段1: 最小化所有 P2 部分（保持原位）
+    // 阶段1: 最小化所有 P2 部分(保持原位)
     let workingParts = parts.map((p, i) => {
       if (partMeta[i]?.priority === 'P2') return this._minimizePart(p, 'P2');
       return p;
     });
-    let result = workingParts.join('，');
+    let result = workingParts.join(',');
     if (result.length <= maxLength) return result;
 
-    // 阶段2: 最小化所有 P1 部分（P2 已最小化，保持原位）
+    // 阶段2: 最小化所有 P1 部分(P2 已最小化,保持原位)
     workingParts = parts.map((p, i) => {
       if (partMeta[i]?.priority === 'P2') return this._minimizePart(p, 'P2');
       if (partMeta[i]?.priority === 'P1') return this._minimizePart(p, 'P1');
       return p;
     });
-    result = workingParts.join('，');
+    result = workingParts.join(',');
     if (result.length <= maxLength) return result;
 
-    // 阶段3: 逐个移除 P2 部分（从后往前移除，保持其余顺序）
+    // 阶段3: 逐个移除 P2 部分(从后往前移除,保持其余顺序)
     const p2Indices = partMeta
       .map((m, i) => m?.priority === 'P2' ? i : -1)
       .filter(i => i >= 0);
 
     for (const idx of p2Indices.slice().reverse()) {
       workingParts[idx] = null; // 标记移除
-      result = workingParts.filter(p => p !== null).join('，');
+      result = workingParts.filter(p => p !== null).join(',');
       if (result.length <= maxLength) return result;
     }
 
-    // 阶段4: 逐个移除 P1 部分（从后往前）
+    // 阶段4: 逐个移除 P1 部分(从后往前)
     const p1Indices = partMeta
       .map((m, i) => m?.priority === 'P1' ? i : -1)
       .filter(i => i >= 0);
 
     for (const idx of p1Indices.slice().reverse()) {
       workingParts[idx] = null;
-      result = workingParts.filter(p => p !== null).join('，');
+      result = workingParts.filter(p => p !== null).join(',');
       if (result.length <= maxLength) return result;
     }
 
-    // 阶段5: 最后兜底——保留前N个字符（P0字段在前，至少保留 L1+L2）
+    // 阶段5: 最后兜底--保留前N个字符(P0字段在前,至少保留 L1+L2)
     return result.substring(0, maxLength);
   }
 
   /**
-   * 最小化部分（按策略）
+   * 最小化部分(按策略)
    * v1.2.7-fix-A6: P1 用英文逗号和中文逗号都尝试分割
    */
   _minimizePart(part, priority) {
@@ -2187,47 +2193,47 @@ class ProductionEngine {
       return part.substring(0, 20) + '...';
     }
     if (priority === 'P1') {
-      // P1: 保留核心（第一个逗号前的内容，兼容中英文逗号）
-      const core = part.split(/[,，]/)[0];
+      // P1: 保留核心(第一个逗号前的内容,兼容中英文逗号)
+      const core = part.split(/[,,]/)[0];
       return core.length < part.length ? core + '...' : part;
     }
     return part;
   }
 
   /**
-   * 🔊 v2.0-B+: 截断保护（保留音频层和角色一致性）
+   * 🔊 v2.0-B+: 截断保护(保留音频层和角色一致性)
    */
   _truncatePromptWithAudioProtection(prompt, maxLength) {
     if (prompt.length <= maxLength) return prompt;
-    
-    // 保护末尾：角色一致性 + 音频层（如果存在）
-    const lastPart = '角色一致性：保持形象一致，杜绝分身重影';
-    
+
+    // 保护末尾:角色一致性 + 音频层(如果存在)
+    const lastPart = '角色一致性:保持形象一致,杜绝分身重影';
+
     // 检查是否包含音频描述
     const hasAudio = prompt.includes('伴随') && prompt.includes('氛围弥漫');
     let audioPart = '';
     if (hasAudio) {
-      const audioMatch = prompt.match(/伴随[^，]*，[^，]*氛围弥漫[^，]*(?:，[^，]*声画精准同步[^，]*)?/);
+      const audioMatch = prompt.match(/伴随[^,]*,[^,]*氛围弥漫[^,]*(?:,[^,]*声画精准同步[^,]*)?/);
       if (audioMatch) {
         audioPart = audioMatch[0];
       }
     }
-    
+
     const protectParts = [lastPart];
     if (audioPart) protectParts.unshift(audioPart);
-    
-    const protectText = protectParts.join('，');
+
+    const protectText = protectParts.join(',');
     const availableLength = maxLength - protectText.length - 2;
-    
+
     if (availableLength > 50) {
-      return prompt.substring(0, availableLength) + '，' + protectText;
+      return prompt.substring(0, availableLength) + ',' + protectText;
     }
-    
+
     return prompt.substring(0, maxLength);
   }
 
   /**
-   * 截断 Prompt（旧方法，保留向后兼容）
+   * 截断 Prompt(旧方法,保留向后兼容)
    */
   _truncatePrompt(prompt, maxLength) {
     return this._truncatePromptWithAudioProtection(prompt, maxLength);
@@ -2239,17 +2245,17 @@ class ProductionEngine {
   _buildImageReferences(shot, blueprint) {
     const refs = [];
     const characters = blueprint.characters || [];
-    
+
     for (const cid of (shot.characters || [])) {
       const char = characters.find(c => c.character_id === cid);
       if (!char) continue;
-      
+
       const portraits = char.portraits || {};
-      
+
       // 选择最佳角度
       const angle = this._selectBestAngle(shot.sceneType, Object.keys(portraits));
       const path = portraits[angle];
-      
+
       if (path) {
         refs.push({
           characterId: cid,
@@ -2260,7 +2266,7 @@ class ProductionEngine {
         });
       }
     }
-    
+
     return refs;
   }
 
@@ -2269,7 +2275,7 @@ class ProductionEngine {
    */
   _selectBestAngle(sceneType, availableAngles) {
     if (!availableAngles || availableAngles.length === 0) return null;
-    
+
     const priority = {
       'opening': ['front', 'threeQuarter', 'closeup'],
       'establishing': ['threeQuarter', 'front', 'closeup'],
@@ -2277,13 +2283,13 @@ class ProductionEngine {
       'emotional_climax': ['closeup', 'front', 'threeQuarter'],
       'resolution': ['threeQuarter', 'front', 'closeup']
     };
-    
+
     const preferred = priority[sceneType] || ['threeQuarter', 'front', 'closeup'];
-    
+
     for (const angle of preferred) {
       if (availableAngles.includes(angle)) return angle;
     }
-    
+
     return availableAngles[0];
   }
 
@@ -2297,9 +2303,9 @@ class ProductionEngine {
       'closeup': '近景',
       'side': '另一侧面'
     };
-    
+
     const features = character.visual_anchor?.core_features || [];
-    return `${character.name}${angleDesc[angle] || angle}，${features.join('，')}，超写实`;
+    return `${character.name}${angleDesc[angle] || angle},${features.join(',')},超写实`;
   }
 
   /**
@@ -2307,7 +2313,7 @@ class ProductionEngine {
    */
   _countChars(text) {
     if (!text) return 0;
-    // 计算字符数（包括中英文）
+    // 计算字符数(包括中英文)
     let count = 0;
     for (const char of text) {
       count++;
@@ -2322,7 +2328,7 @@ class ProductionEngine {
   _runQualityGate(prompts) {
     const checks = [];
     for (const p of prompts) {
-      // v2.0.5-fix: 质量门也做类型保护，确保 .trim() 安全
+      // v2.0.5-fix: 质量门也做类型保护,确保 .trim() 安全
       const camStr = String(p.cameraString || (typeof p.camera === 'string' ? p.camera : '') || '');
       const lightStr = String(p.lightingString || (typeof p.lighting === 'string' ? p.lighting : '') || '');
       const tlStr = String(p.timelineString || (typeof p.timeline === 'string' ? p.timeline : '') || '');
@@ -2332,7 +2338,7 @@ class ProductionEngine {
         shotId: p.shotId,
         promptLength: p.promptCharCount || 0,
 
-        // 格式无关：只看字段是否存在且有内容
+        // 格式无关:只看字段是否存在且有内容
         hasScene: !!(p.scene && String(p.scene).trim().length > 8),
         hasMood: !!(p.mood && String(p.mood).trim().length > 1),
         hasCamera: camStr.trim().length > 5,
@@ -2345,13 +2351,13 @@ class ProductionEngine {
 
         withinLimit: (p.promptCharCount || 0) <= this.config.maxPromptLength,
 
-        // 片头专属（S00 在 openingData 中，这里仅保留兼容检查）
+        // 片头专属(S00 在 openingData 中,这里仅保留兼容检查)
         isOpening: p.shotId === 'S00',
         hasAudioLayer: p.shotId === 'S00' ? (!!p.audioLayerString && p.audioLayerString.length > 5) : true,
         hasTitleOverlay: p.shotId === 'S00' ? (!!p.titleOverlayString && p.titleOverlayString.length > 5) : true
       };
 
-      // 对白/角色可为 NONE（无对白、无人物镜头），不强制；其余为核心必过项
+      // 对白/角色可为 NONE(无对白、无人物镜头),不强制;其余为核心必过项
       check.passed =
         check.hasScene && check.hasMood && check.hasCamera && check.hasLighting &&
         check.hasAction && check.hasTimeline && check.hasBackgroundSound &&
@@ -2375,12 +2381,12 @@ class ProductionEngine {
 
   /**
    * Stage 6: 片头生成
-   * v6.37-P0: 产出符合片头结构（15字段）
+   * v6.37-P0: 产出符合片头结构(15字段)
    */
   _generateOpening(blueprint) {
     const config = blueprint.config || {};
     const worldSetting = blueprint.worldSetting || {};
-    // B6-fix: 移除 featured_beast_id 强制要求，通用项目也生成片头
+    // B6-fix: 移除 featured_beast_id 强制要求,通用项目也生成片头
     // const beastId = config.featured_beast_id;
     // if (!beastId) { return { generated: false, reason: '无 featured_beast_id' }; }
 
@@ -2438,8 +2444,8 @@ class ProductionEngine {
         producer: `by ${config.producer || 'Genius'}`,
         titleAnim: 'light-vein carving growth 3.0-5.0s'
       },
-      titleOverlayString: `MAIN_TITLE: "${config.title || '未命名'}" | SUBTITLE: "${worldSetting.name || '系列作品'}" | PRODUCER: "by ${config.producer || 'Genius'}" | TITLE_ANIM: light-vein carving growth 3.0-5.0s`,
-      // 【v2.1.4-patch2】FieldGuard兼容：添加顶层title/subtitle字段
+      titleOverlayString: `MAIN_TITLE: "${config.title || '未命名'}"; SUBTITLE: "${worldSetting.name || '系列作品'}"; PRODUCER: "by ${config.producer || 'Genius'}"; TITLE_ANIM: light-vein carving growth 3.0-5.0s`,
+      // 【v2.1.4-patch2】FieldGuard兼容:添加顶层title/subtitle字段
       title: config.title || '未命名',
       subtitle: worldSetting.name || '系列作品',
       // B7-fix: 复用 _buildBackgroundSound 保证格式一致
@@ -2448,8 +2454,8 @@ class ProductionEngine {
       prompt: '', // 由 Prompt 工程构建
       promptCharCount: 0
     };
-    
-    // 构建片头 Prompt（传入结构化字符串）
+
+    // 构建片头 Prompt(传入结构化字符串)
     const prompt = this._buildShotPrompt(openingData, blueprint, {
       cameraStr: openingData.cameraString,
       lightingStr: openingData.lightingString,
@@ -2457,8 +2463,8 @@ class ProductionEngine {
     });
     openingData.prompt = prompt.fullPrompt;
     openingData.promptCharCount = this._countChars(prompt.fullPrompt);
-    
-    return { 
+
+    return {
       generated: true,
       openingData,
       shotId: 'S00',
@@ -2466,72 +2472,72 @@ class ProductionEngine {
       beastId: null
     };
   }
-  
+
   _buildOpeningScene(worldSetting) {
     const worldName = worldSetting.name || worldSetting.world_id || 'Unknown World';
     const atmosphere = worldSetting.atmosphere || 'mysterious';
     const timeOfDay = worldSetting.time_of_day || 'golden hour';
     const depth = worldSetting.spatial_depth || 'atmospheric layers';
-    
+
     return `${worldName}, ${atmosphere} atmosphere, ${timeOfDay} lighting, ${depth}, spatial depth: infinite`;
   }
 
   /**
    * Stage 7: 连续性检查
-   * v6.37-P0: 适配新字段结构（characterRef 替代 imageRefs）
+   * v6.37-P0: 适配新字段结构(characterRef 替代 imageRefs)
    */
   _checkContinuity(prompts) {
     const issues = [];
-    
-    // 检查角色连续性（从 characterRef 解析）
+
+    // 检查角色连续性(从 characterRef 解析)
     const characterMentions = prompts.map((p, idx) => {
       const chars = this._parseCharacterRefForContinuity(p.characterRef);
       return { idx, chars };
     });
-    
+
     // 检查时序连续性
     for (let i = 1; i < prompts.length; i++) {
       const prev = prompts[i - 1];
       const curr = prompts[i];
-      
+
       const prevChars = this._parseCharacterRefForContinuity(prev.characterRef);
       const currChars = this._parseCharacterRefForContinuity(curr.characterRef);
-      
+
       // 检查是否有共享角色
       const sharedChars = prevChars.filter(c => currChars.includes(c));
-      
+
       if (sharedChars.length === 0 && prevChars.length > 0 && currChars.length > 0) {
         issues.push({
           type: 'character_gap',
           between: [prev.shotId, curr.shotId],
-          message: '相邻镜头无共享角色，可能导致叙事断裂'
+          message: '相邻镜头无共享角色,可能导致叙事断裂'
         });
       }
     }
-    
+
     return {
       passed: issues.length === 0,
       issues,
       promptCount: prompts.length
     };
   }
-  
+
   /**
-   * v6.37-P0: 从 characterRef 解析角色名（用于连续性检查）
+   * v6.37-P0: 从 characterRef 解析角色名(用于连续性检查)
    */
   _parseCharacterRefForContinuity(characterRef) {
     if (!characterRef || characterRef === 'NONE') return [];
-    
+
     const chars = [];
-    const parts = characterRef.split(' | ');
-    
+    const parts = characterRef.split('; ');
+
     for (const part of parts) {
       const match = part.match(/(.+?):\s*/);
       if (match) {
         chars.push(match[1].trim());
       }
     }
-    
+
     return chars;
   }
 
@@ -2540,20 +2546,20 @@ class ProductionEngine {
    */
   _getMainCharacterName(blueprint) {
     const characters = blueprint.characters || [];
-    // 找 protagonist 角色，或第一个角色
+    // 找 protagonist 角色,或第一个角色
     const protagonist = characters.find(c => c.role === 'protagonist') || characters[0];
     return protagonist?.name || null;
   }
 
   /**
-   * v6.37+: 构建 portraits 数组（FieldGuard 要求的关键字段）
+   * v6.37+: 构建 portraits 数组(FieldGuard 要求的关键字段)
    */
   _buildPortraits(shot, blueprint) {
     const portraits = [];
     const characters = shot.characters || blueprint.characters || [];
-    
+
     for (const char of characters) {
-      // v6.37+: 预生产阶段如果没有定妆照，生成占位符记录，避免FieldGuard警告
+      // v6.37+: 预生产阶段如果没有定妆照,生成占位符记录,避免FieldGuard警告
       portraits.push({
         character: char.name || char.id || 'unknown',
         characterId: char.id || char.name || 'unknown',
@@ -2562,21 +2568,21 @@ class ProductionEngine {
         source: char.portraitUrl ? 'character_system' : 'pending'
       });
     }
-    
+
     return portraits;
   }
 
   /**
-   * v6.37+: 构建 characterCards 数组（FieldGuard 要求的关键字段）
+   * v6.37+: 构建 characterCards 数组(FieldGuard 要求的关键字段)
    */
   _buildCharacterCards(shot, blueprint) {
     const cards = [];
     // v2.0.5-彻底修复: 优先从blueprint获取完整角色信息
-    // _normalizeLLMOutput已经确保shot.characters被填充，但blueprint.characters更完整
+    // _normalizeLLMOutput已经确保shot.characters被填充,但blueprint.characters更完整
     const characters = blueprint.characters || shot.characters || [];
-    
+
     if (characters.length === 0) {
-      // 兜底：如果完全没有角色信息，尝试从blueprint.config或meta提取
+      // 兜底:如果完全没有角色信息,尝试从blueprint.config或meta提取
       const config = blueprint.config || {};
       const meta = blueprint.meta || {};
       if (config.character || meta.character) {
@@ -2591,7 +2597,7 @@ class ProductionEngine {
       }
       return cards;
     }
-    
+
     for (const char of characters) {
       cards.push({
         // v2.0.5-彻底修复: 支持character_id和id两种字段名
@@ -2602,7 +2608,7 @@ class ProductionEngine {
         voiceProfile: char.voiceProfile || char.voice_profile || {}
       });
     }
-    
+
     return cards;
   }
 
@@ -2610,7 +2616,7 @@ class ProductionEngine {
    * 生成生产报告
    */
   generateReport(result) {
-    // v1.2.6-fix: 标准输出对象没有 timing 字段，用顶层 duration；prompts 用 promptCharCount
+    // v1.2.6-fix: 标准输出对象没有 timing 字段,用顶层 duration;prompts 用 promptCharCount
     const totalDuration = (result.shots || []).reduce((sum, s) => {
       return sum + (s.duration || s.timing?.duration || 0);
     }, 0);
