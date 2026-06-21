@@ -3,10 +3,15 @@
  * 负责: 全局审查6维度连续性（新增环节）
  */
 const { BaseAgent } = require('./base-agent');
+const { CrossEpisodeValidator } = require('./cross-episode-validator');
 
 class ContinuityReviewAgent extends BaseAgent {
   constructor(options = {}) {
     super({ name: 'ContinuityReviewAgent', ...options });
+    this.crossEpisodeValidator = new CrossEpisodeValidator({
+      llmEngine: options.llmEngine || null,
+      ...options.crossEpisode
+    });
   }
 
   _getSystemPrompt() {
@@ -38,7 +43,7 @@ class ContinuityReviewAgent extends BaseAgent {
 6. 时长分配: 重点场景时长是否足够，过渡场景是否过长`;
   }
 
-  async process(shots, blueprint) {
+  async process(shots, blueprint, options = {}) {
     console.log(`[ContinuityReviewAgent] 开始审查 ${shots.length} 个镜头...`);
 
     const prompt = this._buildPrompt(shots, blueprint);
@@ -55,8 +60,42 @@ class ContinuityReviewAgent extends BaseAgent {
       return { review: llmResult.result, degraded: true, degradeReason: llmResult.degradeReason };
     }
 
-    console.log(`[ContinuityReviewAgent] 完成 ✓`);
-    return { review: llmResult.result.review, degraded: false, degradeReason: null };
+    console.log(`[ContinuityReviewAgent] 连续性审查完成 ✓`);
+
+    // 【v2.1.4】跨集边界校验（仅多集任务）
+    let boundaryReport = null;
+    const totalEpisodes = options.totalEpisodes || blueprint?.meta?.total_episodes || 
+                          blueprint?.meta?.series?.totalEpisodes || 1;
+    const episodeIndex = options.episodeIndex || blueprint?.meta?.episode || 
+                         blueprint?.meta?.series?.currentEpisode || 1;
+
+    if (totalEpisodes > 1) {
+      console.log(`[ContinuityReviewAgent] 开始跨集边界校验（第${episodeIndex}集/共${totalEpisodes}集）...`);
+      
+      try {
+        const scriptText = CrossEpisodeValidator.extractScriptText(shots);
+        const contract = options.episodeContract || this._buildContractFromBlueprint(blueprint);
+        
+        boundaryReport = await this.crossEpisodeValidator.validate({
+          script: scriptText,
+          contract,
+          episodeIndex,
+          totalEpisodes,
+          overrideReason: options.boundaryOverrideReason || null
+        });
+
+        console.log(`[ContinuityReviewAgent] 跨集边界校验完成: ${boundaryReport.summary}`);
+      } catch (err) {
+        console.warn(`[ContinuityReviewAgent] 跨集边界校验失败: ${err.message}，跳过`);
+      }
+    }
+
+    return { 
+      review: llmResult.result.review, 
+      degraded: false, 
+      degradeReason: null,
+      boundaryReport // 【v2.1.4】附加边界报告
+    };
   }
 
   _buildPrompt(shots, blueprint) {
@@ -95,6 +134,21 @@ ${shotsInfo}
         issues: [],
         summary: '连续性审查（降级模式）：基础规则检查通过。'
       }
+    };
+  }
+
+  /**
+   * 【v2.1.4】从blueprint构造边界契约
+   */
+  _buildContractFromBlueprint(blueprint) {
+    const meta = blueprint?.meta || {};
+    const series = meta.series || {};
+    
+    return {
+      mustCover: series.mustCover || series.episodeThemes || [],
+      canMention: series.canMention || [],
+      mustNotCover: series.mustNotCover || [],
+      previousSummary: series.previousSummary || null
     };
   }
 }

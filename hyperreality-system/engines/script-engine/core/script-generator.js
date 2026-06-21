@@ -5,6 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 const { ScriptBlueprint } = require('./script-blueprint');
+const { buildBoundaryPrompt, extractSeriesPlan, extractPreviousSummary } = require('./boundary-prompt-templates');
 
 // 复用现有LLM引擎
 const LLM_ENGINE_PATH = path.join(__dirname, '../../../../systems/llm-reasoning-engine.js');
@@ -267,17 +268,21 @@ ${meta.characters?.length > 0 ? `
 ## 角色信息（必须严格使用，禁止自创角色）
 ${meta.characters.map(c => `- ${c.name} (ID: ${c.id || c.name}): ${c.description || '主讲人'}`).join('\n')}
 ` : ''}
-${meta.series?.totalEpisodes > 1 || meta.total_episodes > 1 ? `
-## 系列作品约束（极其重要 - 违反则剧本作废）
-- 这是第 ${meta.series?.currentEpisode || meta.episode || 1} 集 / 共 ${meta.series?.totalEpisodes || meta.total_episodes} 集
-- 本集主题：${meta.series?.episodeTitles?.[meta.series?.currentEpisode - 1] || meta.title}
-- 内容边界：只讲本集主题，不跨集（不重复已讲内容，不提前讲后续内容）
-- **严禁在台词或叙述中提及后续集数内容**（如"下一集""下次再说""后续介绍"）
-- **严禁在结尾预告或暗示下一集内容**
-- **严禁提前讲本集范围外的知识点**（如本集讲原因，就不能讲处理预防）
-${meta.series?.currentEpisode > 1 || meta.episode > 1 ? '- **本集无片头标题画面**（片头仅第一集有）' : ''}
-${meta.noNextEpisodePreview ? '- **结尾禁止预告下一集**（不提及后续内容）' : ''}
-` : ''}
+${(() => {
+  // 【v2.1.4】跨集边界约束 - 使用新的边界契约提示词
+  const seriesPlan = extractSeriesPlan(meta);
+  if (!seriesPlan || seriesPlan.totalEpisodes <= 1) return '';
+  
+  const episodeIndex = meta.series?.currentEpisode || meta.episode || 1;
+  const previousSummary = extractPreviousSummary(meta);
+  
+  return buildBoundaryPrompt({
+    episodeIndex,
+    totalEpisodes: seriesPlan.totalEpisodes,
+    seriesPlan,
+    previousSummary
+  });
+})()}
 
 ## 创意指数指导（创意指数 = ${meta._creativeIntensity?.intensity || meta.creativeIntensity || '未设置'}）
 ${meta._creativeIntensity?.instructions?.script ? meta._creativeIntensity.instructions.script : ''}

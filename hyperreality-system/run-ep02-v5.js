@@ -77,6 +77,37 @@ async function runPreproduction() {
         'image://characters/chen-zhuo/portraits/chen-zhuo-side.png'
       ]
     }],
+    // 【v2.1.4】系列内容边界规划（用于跨集边界守护）
+    seriesContentPlan: {
+      seriesTitle: '横纹肌溶解科普',
+      totalEpisodes: 3,
+      episodes: [
+        {
+          index: 1,
+          title: '横纹肌溶解的症状以及实验室检查',
+          coreTopics: ['症状表现', '实验室检查指标', '早期识别'],
+          mustCover: ['症状表现', '实验室检查'],
+          canMention: ['发病原因一句话'],
+          mustNotCover: ['详细病因分析', '治疗方案', '预防策略']
+        },
+        {
+          index: 2,
+          title: '为什么会发生横纹肌溶解，常见的原因分析',
+          coreTopics: ['常见病因', '发病机制', '高危人群'],
+          mustCover: ['常见病因', '发病机制'],
+          canMention: ['症状回顾一句话'],
+          mustNotCover: ['详细症状描述', '检查指标解读', '治疗方案', '预防策略']
+        },
+        {
+          index: 3,
+          title: '怎么处理和预防横纹肌溶解',
+          coreTopics: ['治疗方法', '预防措施', '康复建议'],
+          mustCover: ['治疗方法', '预防措施'],
+          canMention: ['症状回顾一句话', '病因回顾一句话'],
+          mustNotCover: ['详细症状描述', '详细病因分析']
+        }
+      ]
+    },
     videoType: 'EDU',
     narrativeMode: 'monologue'
   };
