@@ -64,10 +64,8 @@ class ContinuityReviewAgent extends BaseAgent {
 
     // 【v2.1.4】跨集边界校验（仅多集任务）
     let boundaryReport = null;
-    const totalEpisodes = options.totalEpisodes || blueprint?.meta?.total_episodes || 
-                          blueprint?.meta?.series?.totalEpisodes || 1;
-    const episodeIndex = options.episodeIndex || blueprint?.meta?.episode || 
-                         blueprint?.meta?.series?.currentEpisode || 1;
+    const totalEpisodes = options.totalEpisodes || blueprint?.config?._metadata?.series?.totalEpisodes || 1;
+    const episodeIndex = options.episodeIndex || blueprint?.config?._metadata?.series?.currentEpisode || 1;
 
     if (totalEpisodes > 1) {
       console.log(`[ContinuityReviewAgent] 开始跨集边界校验（第${episodeIndex}集/共${totalEpisodes}集）...`);
@@ -139,10 +137,26 @@ ${shotsInfo}
 
   /**
    * 【v2.1.4】从blueprint构造边界契约
+   * blueprint结构: { config: { _metadata: {...} }, scenes: [...] }
    */
   _buildContractFromBlueprint(blueprint) {
-    const meta = blueprint?.meta || {};
+    const meta = blueprint?.config?._metadata || {};
     const series = meta.series || {};
+    const plan = meta.seriesContentPlan || {};
+    
+    // 优先从seriesContentPlan提取
+    if (plan.episodes && plan.episodes.length > 0) {
+      const episodeIndex = meta.series?.currentEpisode || meta.episode || 1;
+      const ep = plan.episodes[episodeIndex - 1];
+      if (ep) {
+        return {
+          mustCover: ep.mustCover || ep.coreTopics || [],
+          canMention: ep.canMention || [],
+          mustNotCover: ep.mustNotCover || [],
+          previousSummary: null
+        };
+      }
+    }
     
     return {
       mustCover: series.mustCover || series.episodeThemes || [],

@@ -313,15 +313,31 @@ class RequirementListBuilder {
       result.creativeIntensity = 1.0;
     }
 
-    // 提取系列信息
+    // 提取系列信息（从文本和metadata）
     const seriesMatch = text.match(/(\d+)\s*集/);
     if (seriesMatch) {
       result.totalEpisodes = safeParseInt(seriesMatch[1]);
       result.isSeries = true;
     }
+    // 【v2.1.4】优先从metadata提取系列信息
+    if (metadata.series) {
+      result.isSeries = true;
+      result.totalEpisodes = metadata.series.totalEpisodes || result.totalEpisodes;
+      result.currentEpisode = metadata.series.currentEpisode || metadata.series.episode || result.currentEpisode;
+      if (metadata.series.episodeTitles) {
+        result.episodeTitles = metadata.series.episodeTitles;
+      }
+    } else if (metadata.total_episodes) {
+      result.isSeries = true;
+      result.totalEpisodes = metadata.total_episodes;
+    }
     const episodeMatch = text.match(/第\s*(\d+)\s*集/);
     if (episodeMatch) {
       result.currentEpisode = safeParseInt(episodeMatch[1]);
+    }
+    // metadata中的episode优先
+    if (metadata.episode || metadata.currentEpisode) {
+      result.currentEpisode = metadata.episode || metadata.currentEpisode;
     }
 
     // 提取角色信息
@@ -846,6 +862,8 @@ ${r.uncertainties.length ? `## ⚠️ 待确认项\n\n${r.uncertainties.map((u, 
         episode: requirementList.episode,
         total_episodes: requirementList.totalEpisodes
       } : null,
+      // 【v2.1.4】传递系列内容规划
+      seriesContentPlan: requirementList.seriesContentPlan || null,
       // 🆕 v1.2.6-fix4b: 传递 characters 数组（角色覆盖的前置条件）
       characters: requirementList.characters || []
     };

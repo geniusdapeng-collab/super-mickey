@@ -537,12 +537,14 @@ ${meta._directorStyle}` : ''}
         narrative_mode: userIntent.parsed?.narrative_mode || 'dramatic',
         target_duration: userIntent.metadata?.target_duration || 120,
         _metadata: {
-          isSeries: userIntent.metadata?.series?.totalEpisodes > 1,
-          episodeNumber: userIntent.metadata?.series?.currentEpisode || 1,
-          totalEpisodes: userIntent.metadata?.series?.totalEpisodes || 1,
+          isSeries: userIntent.metadata?.series?.totalEpisodes > 1 || userIntent.metadata?.series?.total_episodes > 1,
+          episodeNumber: userIntent.metadata?.series?.currentEpisode || userIntent.metadata?.series?.episode || 1,
+          totalEpisodes: userIntent.metadata?.series?.totalEpisodes || userIntent.metadata?.series?.total_episodes || 1,
           hasOpening: userIntent.metadata?.hasOpening !== false,
           noNextEpisodePreview: userIntent.metadata?.noNextEpisodePreview || false,
           aspectRatio: userIntent.metadata?.aspectRatio || '16:9',
+          // 【v2.1.4】传递系列内容规划
+          seriesContentPlan: userIntent.metadata?.seriesContentPlan || null,
           ...userIntent.metadata?._metadata
         }
       };

@@ -111,7 +111,10 @@ class HyperrealitySystem {
           ...metadata,
           ...scriptEngineMeta,
           // 显式保留 characters：用户传入的优先（含 portraitPaths 等详细信息）
-          characters: metadata.characters || scriptEngineMeta.characters || []
+          characters: metadata.characters || scriptEngineMeta.characters || [],
+          // 【v2.1.4】保留原始metadata中的系列信息（用户传入的优先）
+          series: metadata.series || scriptEngineMeta.series || null,
+          seriesContentPlan: metadata.seriesContentPlan || scriptEngineMeta.seriesContentPlan || null
         };
         metadata = enhancedMetadata;
 
@@ -199,7 +202,9 @@ class HyperrealitySystem {
           status: s.status
         })),
         prompts: productionResult.prompts,
-        quality: productionResult.stages.qualityGate
+        quality: productionResult.stages.qualityGate,
+        // 【v2.1.4】跨集边界校验报告
+        boundaryReport: productionResult.stages.boundaryReport || null
       };
       result.stages.productionEngine.timing = Date.now() - stage2Start;
 

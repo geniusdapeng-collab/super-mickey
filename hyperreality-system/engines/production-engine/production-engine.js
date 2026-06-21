@@ -501,12 +501,25 @@ class ProductionEngine {
           const [vlResult, adResult, crResult] = await this._runParallel({
             'visual-language-agent': this.agents.visualLanguage.process(this._cloneShots(currentShots), adaptedBlueprint),
             'audio-design-agent': this.agents.audioDesign.process(this._cloneShots(currentShots), adaptedBlueprint),
-            'continuity-review-agent': this.agents.continuityReview.process(this._cloneShots(currentShots), adaptedBlueprint)
+            'continuity-review-agent': this.agents.continuityReview.process(
+              this._cloneShots(currentShots), 
+              adaptedBlueprint,
+              {
+                totalEpisodes: adaptedBlueprint.config?._metadata?.series?.totalEpisodes || adaptedBlueprint.config?._metadata?.totalEpisodes || 1,
+                episodeIndex: adaptedBlueprint.config?._metadata?.series?.currentEpisode || adaptedBlueprint.config?._metadata?.episode || 1,
+                episodeContract: this._buildEpisodeContract(adaptedBlueprint)
+              }
+            )
           }, 'PHASE-2');
 
           currentShots = this._mergeShotsByShotId(currentShots, vlResult.shots, ['visual_elements', 'lighting', 'color_temperature', 'camera_movement']);
           currentShots = this._mergeShotsByShotId(currentShots, adResult.shots, ['audio', 'music', 'sound_effects']);
           result.stages.continuity = { agent: 'continuityReview', ...crResult };
+          // 【v2.1.4】保存跨集边界校验报告
+          if (crResult.boundaryReport) {
+            result.stages.boundaryReport = crResult.boundaryReport;
+            this.log('BOUNDARY-GUARD', `跨集边界校验: ${crResult.boundaryReport.summary}`);
+          }
           result.llmStats.visualLanguage = vlResult.timing;
           result.llmStats.audioDesign = adResult.timing;
           result.llmStats.continuityReview = crResult.timing;
@@ -709,6 +722,35 @@ class ProductionEngine {
   _shouldGenerateOpening(adaptedBlueprint) {
     const _meta = adaptedBlueprint.config?._metadata || adaptedBlueprint._metadata || {};
     return _meta.isSeries ? (_meta.episodeNumber === 1) : (_meta.hasOpening !== false);
+  }
+
+  /** 【v2.1.4】从adaptedBlueprint构造边界契约 */
+  /** 【v2.1.4】从adaptedBlueprint构造边界契约 */
+  _buildEpisodeContract(adaptedBlueprint) {
+    // adaptedBlueprint结构: { config: { _metadata: {...} }, scenes: [...] }
+    const meta = adaptedBlueprint.config?._metadata || {};
+    const series = meta.series || {};
+    const plan = meta.seriesContentPlan || {};
+    const episodeIndex = series.currentEpisode || meta.episode || 1;
+    
+    // 优先从seriesContentPlan提取
+    if (plan.episodes && plan.episodes[episodeIndex - 1]) {
+      const ep = plan.episodes[episodeIndex - 1];
+      return {
+        mustCover: ep.mustCover || ep.coreTopics || [],
+        canMention: ep.canMention || [],
+        mustNotCover: ep.mustNotCover || [],
+        previousSummary: null
+      };
+    }
+    
+    // 回退：从series信息构造
+    return {
+      mustCover: series.episodeThemes || [],
+      canMention: [],
+      mustNotCover: [],
+      previousSummary: null
+    };
   }
 
   /** 把全局截止时间下发给所有 Agent */
