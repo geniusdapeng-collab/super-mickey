@@ -473,9 +473,21 @@ class ProductionEngine {
         }, 'PHASE-1');
 
         currentShots = this._mergeShotsByShotId(currentShots, sdResult.shots, ['scene', 'mood', 'action', 'emotional_target']);
-        if (odResult) {
+        if (odResult && odResult.openingData) {
           result.stages.opening = { agent: 'openingDesign', ...odResult };
-          result.opening = odResult.openingData || null;
+          result.opening = odResult.openingData;
+          // 【v2.1.4-patch3】将openingData注入到sceneType=opening的shot中
+          const openingShot = currentShots.find(s => s.sceneType === 'opening');
+          if (openingShot) {
+            const od = odResult.openingData;
+            openingShot.title = od.title || od.titleOverlay?.mainTitle || '';
+            openingShot.subtitle = od.subtitle || od.titleOverlay?.subtitle || '';
+            openingShot.titleOverlay = od.titleOverlay || null;
+            openingShot.audioLayer = od.audioLayer || null;
+            openingShot.lightingString = od.lightingString || openingShot.lightingString;
+            openingShot.cameraString = od.cameraString || openingShot.cameraString;
+            console.log(`[ProductionEngine] OpeningDesign数据已注入到 ${openingShot.shotId}`);
+          }
         }
         result.llmStats.sceneDesign = sdResult.timing;
         result.llmStats.openingDesign = odResult?.timing;
@@ -2004,7 +2016,9 @@ class ProductionEngine {
     }
 
     if (shot.dialogue && shot.dialogue !== '') {
-      parts.push(`【台词】${shot.dialogue}`);
+      // 【v2.1.4-patch4】替换竖杠为分号，避免Seedance渲染乱码
+      const safeDialogue = shot.dialogue.replace(/\|/g, '; ').replace(/;/g, '; ');
+      parts.push(`【台词】${safeDialogue}`);
       partMeta.push({ id: 'L4_dialogue', priority: 'P0' });
     }
     
