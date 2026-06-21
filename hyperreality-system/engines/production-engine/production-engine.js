@@ -2425,6 +2425,9 @@ class ProductionEngine {
         titleAnim: 'light-vein carving growth 3.0-5.0s'
       },
       titleOverlayString: `MAIN_TITLE: "${config.title || '未命名'}" | SUBTITLE: "${worldSetting.name || '系列作品'}" | PRODUCER: "by ${config.producer || 'Genius'}" | TITLE_ANIM: light-vein carving growth 3.0-5.0s`,
+      // 【v2.1.4-patch2】FieldGuard兼容：添加顶层title/subtitle字段
+      title: config.title || '未命名',
+      subtitle: worldSetting.name || '系列作品',
       // B7-fix: 复用 _buildBackgroundSound 保证格式一致
       backgroundSound: openingBgSound.object,
       backgroundSoundString: openingBgSound.string,

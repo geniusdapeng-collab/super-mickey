@@ -205,7 +205,8 @@ function extractShotMetadata(shot) {
   const desc = (shot.description || shot.prompt || '').toLowerCase();
   const camera = (shot.camera || shot.cameraMovement || '').toLowerCase();
   const mood = (shot.mood || shot.emotion || '').toLowerCase();
-  const lighting = (shot.lighting || '').toLowerCase();
+  // 【v2.1.4-patch2】兼容lighting对象/字符串两种格式
+  const lighting = (shot.lightingString || (typeof shot.lighting === 'string' ? shot.lighting : '') || '').toLowerCase();
   
   // 检测影片类型
   if (/科幻|alien|space|planet|starship|robot/i.test(desc)) meta.type = 'sci-fi';
