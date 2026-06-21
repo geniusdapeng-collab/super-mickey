@@ -183,7 +183,12 @@ class HyperrealitySystem {
       console.log('\n🎬 [Layer 2] 制作引擎 - 生成镜头...');
       const stage2Start = Date.now();
 
-      const productionResult = await this.productionEngine.produce(adapted);
+      // 【修复】应用运行时 agentConfig（解决配置不生效问题）
+      if (options.productionEngine?.agentConfig) {
+        this.productionEngine.updateAgentConfig(options.productionEngine.agentConfig);
+      }
+
+      const productionResult = await this.productionEngine.produce(adapted, options.productionEngine?.agentConfig);
 
       result.stages.productionEngine = {
         shots: productionResult.shots.map(s => ({

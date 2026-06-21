@@ -9,6 +9,7 @@ class PromptFusionAgent extends BaseAgent {
   constructor(options = {}) {
     super({ name: 'PromptFusionAgent', enabled: true, llmTimeout: 600000, ...options });
     this.maxPromptLength = options.maxPromptLength || 1500;
+    this.concurrency = options.concurrency || 3; // 【新增】并发度
   }
 
   _getSystemPrompt() {
@@ -33,6 +34,11 @@ class PromptFusionAgent extends BaseAgent {
 4. 角色动作与运镜要配合：角色走动时镜头跟随，角色停顿时镜头稳定;
 5. 情绪要通过画面传达：紧张时画面摇晃/快切，平静时长镜头/柔和光线;
 
+内容边界约束（极其重要）：
+- 只描述本集内容，严禁暗示或提及后续集数（禁止"下一集""下次再说""后续介绍"等）
+- 结尾场景严禁预告后续内容，只总结本集已讲知识点
+- 严禁将本集范围外的知识点（如预防/处理）混入当前描述
+
 约束:
 - 不能添加文本/字幕/水印;
 - 不能改变画幅比例;
@@ -40,48 +46,79 @@ class PromptFusionAgent extends BaseAgent {
   }
 
   async process(shots, blueprint) {
-    console.log(`[PromptFusionAgent] 开始处理 ${shots.length} 个镜头（全量模式）...`);
+    console.log(`[PromptFusionAgent] 开始处理 ${shots.length} 个镜头（并发=${this.concurrency}）`);
 
     const ratio = blueprint.config?.aspectRatio || '16:9';
     const characters = blueprint.character_system?.characters || [];
 
-    const prompt = this._buildBatchPrompt(shots, ratio, characters);
-    const schema = { shots: [{ shotId: 'SC01', fusionText: '...' }] };
+    const results = new Array(shots.length);
+    let index = 0;
+    let failed = 0;
+
+    // 并发 worker 池（限流，避免 6 路同时打 LLM 导致 OOM/限流）
+    const worker = async () => {
+      while (index < shots.length) {
+        const i = index++;
+        const shot = shots[i];
+        try {
+          const fused = await this._fuseSingleShot(shot, ratio, characters);
+          results[i] = fused;
+        } catch (e) {
+          failed++;
+          console.warn(`[PromptFusionAgent] 镜头 ${shot.shot_id || i} 融合失败: ${e.message}，规则兜底`);
+          results[i] = this._fallbackSingleShot(shot, ratio);
+        }
+      }
+    };
+
+    await Promise.all(Array.from({ length: Math.min(this.concurrency, shots.length) }, () => worker()));
+
+    if (failed > 0) {
+      console.warn(`[PromptFusionAgent] ⚠️ ${failed}/${shots.length} 镜头降级为规则 Prompt`);
+    }
+    console.log(`[PromptFusionAgent] 完成 ✓ | 降级: ${failed}/${shots.length}`);
+    return { shots: results, degraded: failed > 0, degradeReason: null };
+  }
+
+  /**
+   * 【新增】单镜头 LLM 融合
+   */
+  async _fuseSingleShot(shot, ratio, characters) {
+    const prompt = this._buildBatchPrompt([shot], ratio, characters);
+    const schema = { shots: [{ shotId: shot.shotId, fusionText: '...' }] };
 
     const llmResult = await this._callLLM(prompt, schema, () => {
-      return this._fallbackBatch(shots, ratio);
+      throw new Error('LLM fallback'); // 让外层 catch 处理
     });
 
-    const results = shots.map((shot) => {
-      const fusionEntry = llmResult.result?.shots?.find(s => s.shotId === shot.shotId);
-      const fusionText = fusionEntry?.fusionText || '';
-      
-      if (!fusionText && llmResult.degraded) {
-        const fallbackPrompt = this._assembleFullPrompt(shot, '', ratio);
-        return {
-          ...shot,
-          fusionText: '',
-          prompt: fallbackPrompt,
-          promptCharCount: this._countChars(fallbackPrompt),
-          degraded: true,
-          degradeReason: llmResult.degradeReason
-        };
-      }
-      
-      const fullPrompt = this._assembleFullPrompt(shot, fusionText, ratio);
-      return {
-        ...shot,
-        fusionText,
-        prompt: fullPrompt,
-        promptCharCount: this._countChars(fullPrompt),
-        degraded: false,
-        degradeReason: null
-      };
-    });
+    const fusionEntry = llmResult.result?.shots?.find(s => s.shotId === shot.shotId);
+    const fusionText = fusionEntry?.fusionText || '';
+    const fullPrompt = this._assembleFullPrompt(shot, fusionText, ratio);
 
-    const degradedCount = results.filter(s => s.degraded).length;
-    console.log(`[PromptFusionAgent] 完成 ✓ | 降级: ${degradedCount}/${shots.length}`);
-    return { shots: results, degraded: degradedCount > 0, degradeReason: null };
+    return {
+      ...shot,
+      fusionText,
+      prompt: fullPrompt,
+      promptCharCount: this._countChars(fullPrompt),
+      degraded: false,
+      degradeReason: null
+    };
+  }
+
+  /**
+   * 【新增】单镜头规则兜底
+   */
+  _fallbackSingleShot(shot, ratio) {
+    const fallbackPrompt = this._assembleFullPrompt(shot, '', ratio);
+    return {
+      ...shot,
+      fusionText: '',
+      prompt: fallbackPrompt,
+      promptCharCount: this._countChars(fallbackPrompt),
+      degraded: true,
+      degradeReason: '单镜头 LLM 融合失败，规则兜底',
+      _pf_fallback: true // 标记此镜头为兜底，便于质量门识别
+    };
   }
 
   /**

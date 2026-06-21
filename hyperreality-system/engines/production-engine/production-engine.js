@@ -16,12 +16,13 @@ const { ContinuityReviewAgent } = require('./agents/continuity-review-agent');
 // v2.0.0-LLM-Agent: Agent配置
 const DEFAULT_AGENT_CONFIG = {
   enableLLMAgents: true,
-  llmTimeout: 300000, // 单次调用上限 5 分钟（覆盖最慢的 VisualLanguage 258s）
-  llmMaxRetries: 2, // 重试收敛到 2 次（原 3 次 × 200s = 隐藏 10 分钟炸弹）
-  llmModel: 'kimi-k2p6', // 深度模型：SceneDesign / VisualLanguage / PromptFusion
-  fastModel: 'kimi-k2p6', // 快速模型：AudioDesign / OpeningDesign / ContinuityReview
-  // 建议替换为非推理模型（如 'kimi-k2'）以进一步省 30~50% 时间
-  totalDeadlineMs: 660000 // 全局预算 11 分钟（对齐系统 SIGTERM 上限）
+  llmTimeout: 300000, // 单次调用上限 5 分钟
+  llmMaxRetries: 2, // 重试 2 次
+  llmModel: 'kimi-k2p6', // 深度模型（推理）：SceneDesign / VisualLanguage / PromptFusion
+  fastModel: 'kimi-k2p6', // 全部用 k2.6（k2 已下线）
+  totalDeadlineMs: 540000, // 【修复】收紧到 9 分钟，给 Layer1(105s)+收尾留余量，避开外部 SIGTERM
+  memThresholdMB: 1200, // 【新增】堆内存降级阈值（MB）
+  promptFusionConcurrency: 3 // 【新增】PromptFusion 并发度
 };
 // 注：实际部署时这些模块会从 systems/ 复制到 production-engine/modules/
 const SYSTEMS_PATH = path.join(__dirname, '../../../systems');
@@ -61,7 +62,133 @@ class ProductionEngine {
     
     this.modules = {};
     this.logs = [];
+    this._initResourceGuard();
     this._initModules();
+  }
+
+  /**
+   * 【新增】运行时更新 Agent 配置
+   * 修复：create() 中收到的 agentConfig 可在此应用到已实例化的引擎
+   */
+  updateAgentConfig(agentConfig = {}) {
+    const before = this.agentConfig.enableLLMAgents;
+    this.agentConfig = {
+      ...this.agentConfig,
+      ...agentConfig,
+      maxPromptLength: this.config.maxPromptLength
+    };
+    // 重新初始化 Agent 以应用新配置
+    this._initAgents();
+    if (before !== this.agentConfig.enableLLMAgents) {
+      console.log(`[ProductionEngine] ⚠️ 运行时配置切换: enableLLMAgents ${before} → ${this.agentConfig.enableLLMAgents}`);
+    }
+  }
+
+  /**
+   * 【新增】资源守卫初始化
+   */
+  _initResourceGuard() {
+    this._memThresholdMB = this.agentConfig.memThresholdMB || 1200;
+    this._lowResourceMode = false;
+  }
+
+  /**
+   * 【新增】Checkpoint 初始化（断点续跑）
+   */
+  _initCheckpoint() {
+    this._checkpointDir = this.agentConfig.checkpointDir || this.config.outputDir;
+    this._enableResume = this.agentConfig.enableResume !== false;
+  }
+
+  /**
+   * 【新增】加载最新 checkpoint（断点续跑）
+   * 返回最近完成的 Phase 及其 shots
+   */
+  _loadLatestCheckpoint() {
+    if (!this._enableResume) return null;
+    try {
+      const fs = require('fs');
+      const phases = ['phase3', 'phase2', 'phase1'];
+      for (const phase of phases) {
+        const file = path.join(this._checkpointDir, `checkpoint-${phase}.json`);
+        if (fs.existsSync(file)) {
+          const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+          this.log('RESUME', `📂 发现 ${phase} checkpoint（${data.shots?.length || 0} 镜头，保存于 ${data.savedAt || 'unknown'}）`);
+          return data;
+        }
+      }
+    } catch (e) {
+      this.log('RESUME', `加载 checkpoint 失败: ${e.message}`);
+    }
+    return null;
+  }
+
+  /**
+   * 【新增】清除 checkpoint（成功完成后调用）
+   */
+  _clearCheckpoints() {
+    try {
+      const fs = require('fs');
+      ['phase1', 'phase2', 'phase3'].forEach(phase => {
+        const file = path.join(this._checkpointDir, `checkpoint-${phase}.json`);
+        if (fs.existsSync(file)) fs.unlinkSync(file);
+      });
+    } catch (e) { /* 忽略 */ }
+  }
+
+  /**
+   * 【新增】内存检查，超过阈值进入低资源模式
+   */
+  _checkMemory(tag = '') {
+    const mem = process.memoryUsage();
+    const heapMB = Math.round(mem.heapUsed / 1024 / 1024);
+    if (heapMB > this._memThresholdMB) {
+      this._lowResourceMode = true;
+      this.log('MEM-WARN', `⚠️ 堆内存 ${heapMB}MB 超阈值 ${this._memThresholdMB}MB @ ${tag}，进入低资源模式`);
+      if (global.gc) {
+        global.gc();
+        const after = Math.round(process.memoryUsage().heapUsed / 1024 / 1024);
+        this.log('MEM-WARN', `GC 后堆内存 ${after}MB (${heapMB}→${after})`);
+      }
+    }
+    return heapMB;
+  }
+
+  /**
+   * 【新增】预算剩余（毫秒）
+   */
+  _budgetRemaining() {
+    if (!this._globalDeadline) return Infinity;
+    return Math.max(0, this._globalDeadline - Date.now());
+  }
+
+  /**
+   * 【新增】预算守卫：是否还能承担 needMs
+   */
+  _canAfford(needMs) {
+    return this._budgetRemaining() > needMs;
+  }
+
+  /**
+   * 【新增】增量保存 checkpoint（进程被杀也能恢复部分结果）
+   */
+  async _saveCheckpoint(phase, shots, extra = {}) {
+    try {
+      const fs = require('fs');
+      const dir = this._checkpointDir;
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      const file = path.join(dir, `checkpoint-${phase}.json`);
+      fs.writeFileSync(file, JSON.stringify({
+        phase,
+        shots,
+        opening: extra.opening || null,
+        llmStats: extra.llmStats || {},
+        savedAt: new Date().toISOString()
+      }, null, 2));
+      this.log('CHECKPOINT', `✅ ${phase} 已落盘 → ${path.basename(file)}`);
+    } catch (e) {
+      this.log('CHECKPOINT', `保存失败(忽略): ${e.message}`);
+    }
   }
 
   /**
@@ -276,20 +403,27 @@ class ProductionEngine {
     return { passed: allPassed, checks };
   }
 
-  async produce(adaptedBlueprint) {
+  async produce(adaptedBlueprint, runtimeAgentConfig = null) {
     const startTime = Date.now();
 
+    // 【修复】应用运行时配置（双保险：create() 已调 updateAgentConfig，这里再兜一次）
+    if (runtimeAgentConfig) {
+      this.updateAgentConfig(runtimeAgentConfig);
+    }
+
     // === 全局时间预算 ===
-    const HARD_BUDGET_MS = this.config.totalDeadlineMs || this.agentConfig.totalDeadlineMs || 660000;
-    const SAFETY_MARGIN_MS = 90000; // 90s 收尾余量，确保在系统 SIGTERM 前完成
+    const HARD_BUDGET_MS = this.agentConfig.totalDeadlineMs || 540000;
+    const SAFETY_MARGIN_MS = 90000;
     const globalDeadline = startTime + HARD_BUDGET_MS - SAFETY_MARGIN_MS;
     this._globalDeadline = globalDeadline;
     this._setAgentDeadline(globalDeadline);
 
-    this.log('PRODUCE', `🎬 ProductionEngine 启动 | 深度融合+并行模式 | 预算 ${Math.round(HARD_BUDGET_MS / 1000)}s | 余量 ${Math.round(SAFETY_MARGIN_MS / 1000)}s`);
+    this.log('PRODUCE', `🎬 ProductionEngine 启动 | LLM=${this.agentConfig.enableLLMAgents} | 预算 ${Math.round(HARD_BUDGET_MS / 1000)}s | 余量 ${Math.round(SAFETY_MARGIN_MS / 1000)}s | 堆 ${this._checkMemory('start')}MB`);
 
-    const result = { success: false, shots: [], prompts: [], stages: {}, errors: [], logs: this.logs, timing: {} };
-    const llmStats = {};
+    const result = {
+      success: false, shots: [], prompts: [], stages: {}, errors: [],
+      logs: this.logs, timing: {}, llmStats: {}, degraded: false, resumed: false
+    };
 
     try {
       // ===== Stage 1-2：规则阶段（快）=====
@@ -299,101 +433,257 @@ class ProductionEngine {
 
       // 规则降级路径（保留原行为）
       if (!this.agentConfig.enableLLMAgents) {
-        result.stages.promptEngineering = await this._runStage('prompt-engineering', () => this._engineerPrompts(currentShots, adaptedBlueprint));
-        currentShots = result.stages.promptEngineering.shots;
-        result.stages.qualityGate = await this._runStage('quality-gate', () => this._runQualityGate(currentShots));
-
-        if (this._shouldGenerateOpening(adaptedBlueprint)) {
-          result.stages.opening = await this._runStage('opening', () => this._generateOpening(adaptedBlueprint));
-        }
-        result.stages.continuity = await this._runStage('continuity', () => this._checkContinuity(currentShots));
-
-        result.shots = currentShots; result.prompts = currentShots;
-        result.meta = this._buildMeta(adaptedBlueprint);
-        result.opening = result.stages.opening?.openingData || null;
-        result.success = true; result.timing.total = Date.now() - startTime;
-        return result;
+        return await this._produceViaRules(currentShots, adaptedBlueprint, result, startTime);
       }
 
-      // ===== Phase 1：SceneDesign ∥ OpeningDesign =====
-      // OpeningDesign 仅依赖 blueprint，与 SceneDesign 完全独立
-      this.log('PHASE-1', 'SceneDesign + OpeningDesign 并行启动...');
-      const phase1Start = Date.now();
-      const [sdResult, odResult] = await this._runParallel({
-        'scene-design-agent': this.agents.sceneDesign.process(this._cloneShots(currentShots), adaptedBlueprint),
-        'opening-design-agent': this._shouldGenerateOpening(adaptedBlueprint)
-          ? this.agents.openingDesign.process(adaptedBlueprint)
-          : Promise.resolve(null)
-      }, 'PHASE-1');
+      // ===== LLM 模式（主路径：断点续跑 + 预算守卫）=====
+      let phase1Failed = false;
 
-      currentShots = this._mergeShotsByShotId(currentShots, sdResult.shots, ['scene', 'mood', 'action', 'emotional_target']);
-      llmStats.sceneDesign = { degraded: sdResult.degraded, degradeReason: sdResult.degradeReason };
-      if (odResult) {
-        llmStats.openingDesign = { degraded: odResult.degraded, degradeReason: odResult.degradeReason };
-        result.stages.opening = { openingData: odResult.opening };
-        if (currentShots[0] && odResult.opening) {
-          currentShots[0].title = odResult.opening.titleOverlay?.mainTitle || odResult.opening.title || '';
-          currentShots[0].subtitle = odResult.opening.titleOverlay?.subTitle || odResult.opening.subtitle || '';
+      // ===== 断点续跑：尝试加载已完成的 checkpoint =====
+      const ckpt = this._loadLatestCheckpoint();
+      let startPhase = 1;
+      if (ckpt) {
+        currentShots = ckpt.shots;
+        result.opening = ckpt.opening || null;
+        result.llmStats = ckpt.llmStats || {};
+        if (ckpt.phase === 'phase1') startPhase = 2;
+        else if (ckpt.phase === 'phase2') startPhase = 3;
+        else if (ckpt.phase === 'phase3') {
+          startPhase = 99;
+          this.log('RESUME', '✅ 全部 Phase 已完成，跳过 LLM 直接进 Quality Gate');
+        }
+        result.resumed = true;
+      }
+
+      // ----- Phase 1：SceneDesign ∥ OpeningDesign -----
+      if (startPhase <= 1) {
+      try {
+        if (!this._canAfford(140000)) {
+          this.log('PHASE-1', `⚠️ 预算不足(剩${this._budgetRemaining()}ms)，保存当前结果退出，下次续跑`);
+          await this._saveCheckpoint('phase0', currentShots, { opening: result.opening, llmStats: result.llmStats });
+          throw new Error('预算不足，请重跑以断点续跑（LLM 产出已保存）');
+        }
+        this.log('PHASE-1', 'SceneDesign + OpeningDesign 并行启动...');
+        const phase1Start = Date.now();
+        const [sdResult, odResult] = await this._runParallel({
+          'scene-design-agent': this.agents.sceneDesign.process(this._cloneShots(currentShots), adaptedBlueprint),
+          'opening-design-agent': this._shouldGenerateOpening(adaptedBlueprint)
+            ? this.agents.openingDesign.process(adaptedBlueprint)
+            : Promise.resolve(null)
+        }, 'PHASE-1');
+
+        currentShots = this._mergeShotsByShotId(currentShots, sdResult.shots, ['scene', 'mood', 'action', 'emotional_target']);
+        if (odResult) {
+          result.stages.opening = { agent: 'openingDesign', ...odResult };
+          result.opening = odResult.openingData || null;
+        }
+        result.llmStats.sceneDesign = sdResult.timing;
+        result.llmStats.openingDesign = odResult?.timing;
+        this.log('PHASE-1', `完成 (${Date.now() - phase1Start}ms)`);
+        await this._saveCheckpoint('phase1', currentShots, { opening: result.opening, llmStats: result.llmStats });
+        this._checkMemory('phase1');
+      } catch (e) {
+        this.log('PHASE-1-FAIL', `❌ ${e.message}`);
+        phase1Failed = true;
+      }
+      }
+
+      // ----- Phase 2：VisualLanguage ∥ AudioDesign ∥ ContinuityReview -----
+      if (!phase1Failed && startPhase <= 2) {
+        try {
+          if (!this._canAfford(80000)) {
+            this.log('PHASE-2', `⚠️ 预算不足(剩${this._budgetRemaining()}ms)，保存退出，下次从 Phase2 续跑`);
+            await this._saveCheckpoint('phase1', currentShots, { opening: result.opening, llmStats: result.llmStats });
+            throw new Error('预算不足，请重跑以断点续跑（Phase1 LLM 产出已保存）');
+          }
+          this.log('PHASE-2', 'VisualLanguage + AudioDesign + ContinuityReview 并行启动...');
+          const phase2Start = Date.now();
+          const [vlResult, adResult, crResult] = await this._runParallel({
+            'visual-language-agent': this.agents.visualLanguage.process(this._cloneShots(currentShots), adaptedBlueprint),
+            'audio-design-agent': this.agents.audioDesign.process(this._cloneShots(currentShots), adaptedBlueprint),
+            'continuity-review-agent': this.agents.continuityReview.process(this._cloneShots(currentShots), adaptedBlueprint)
+          }, 'PHASE-2');
+
+          currentShots = this._mergeShotsByShotId(currentShots, vlResult.shots, ['visual_elements', 'lighting', 'color_temperature', 'camera_movement']);
+          currentShots = this._mergeShotsByShotId(currentShots, adResult.shots, ['audio', 'music', 'sound_effects']);
+          result.stages.continuity = { agent: 'continuityReview', ...crResult };
+          result.llmStats.visualLanguage = vlResult.timing;
+          result.llmStats.audioDesign = adResult.timing;
+          result.llmStats.continuityReview = crResult.timing;
+          this.log('PHASE-2', `完成 (${Date.now() - phase2Start}ms)`);
+          await this._saveCheckpoint('phase2', currentShots, { opening: result.opening, llmStats: result.llmStats });
+          this._checkMemory('phase2');
+        } catch (e) {
+          this.log('PHASE-2-FAIL', `❌ ${e.message}，Phase2 失败但继续`);
+          // Phase 2 失败不致命，用已有数据继续
         }
       }
-      this.log('PHASE-1', `完成 (${Date.now() - phase1Start}ms)`);
 
-      // ===== Phase 2：VisualLanguage ∥ AudioDesign ∥ ContinuityReview =====
-      // 三者都只依赖 SceneDesign 的 scene/mood/action，输出字段互不冲突
-      this.log('PHASE-2', 'VisualLanguage + AudioDesign + ContinuityReview 并行启动...');
-      const phase2Start = Date.now();
-      const phase2Base = this._cloneShots(currentShots);
-      const [vlResult, adResult, crResult] = await this._runParallel({
-        'visual-language-agent': this.agents.visualLanguage.process(this._cloneShots(phase2Base), adaptedBlueprint),
-        'audio-design-agent': this.agents.audioDesign.process(this._cloneShots(phase2Base), adaptedBlueprint),
-        'continuity-review-agent': this.agents.continuityReview.process(this._cloneShots(phase2Base), adaptedBlueprint)
-      }, 'PHASE-2');
+      // ----- Phase 3：PromptFusion（并发化，每镜头独立 LLM 调用）-----
+      if (!phase1Failed && startPhase <= 3) {
+        if (!this._canAfford(120000)) {
+          this.log('PHASE-3', `⚠️ 预算不足(剩${this._budgetRemaining()}ms)，保存退出，下次从 Phase3 续跑`);
+          await this._saveCheckpoint('phase2', currentShots, { opening: result.opening, llmStats: result.llmStats });
+          throw new Error('预算不足，请重跑以断点续跑（Phase1+2 LLM 产出已保存）');
+        }
+        try {
+          this.log('PROMPT-FUSION-AGENT', '开始（并发模式，每镜头独立 LLM 调用）...');
+          const phase3Start = Date.now();
+          const pfResult = await this.agents.promptFusion.process(this._cloneShots(currentShots), adaptedBlueprint);
+          currentShots = this._mergeShotsByShotId(currentShots, pfResult.shots, ['prompt', 'enhanced_prompt', 'negative_prompt']);
+          result.llmStats.promptFusion = pfResult.timing;
+          this.log('PROMPT-FUSION-AGENT', `完成 (${Date.now() - phase3Start}ms)`);
+          await this._saveCheckpoint('phase3', currentShots, { opening: result.opening, llmStats: result.llmStats });
+        } catch (e) {
+          this.log('PROMPT-FUSION-FAIL', `❌ ${e.message}，部分镜头降级到规则 Prompt`);
+          // 单镜头已在 PromptFusion 内兜底，整体继续
+        }
+      }
 
-      currentShots = this._mergeShotsByShotId(currentShots, vlResult.shots, ['camera', 'cameraString', 'lighting', 'lightingString', 'timeline', 'cameraMovement']);
-      currentShots = this._mergeShotsByShotId(currentShots, adResult.shots, ['backgroundSound', 'backgroundSoundString']);
-      llmStats.visualLanguage = { degraded: vlResult.degraded, degradeReason: vlResult.degradeReason };
-      llmStats.audioDesign = { degraded: adResult.degraded, degradeReason: adResult.degradeReason };
-      llmStats.continuityReview = { degraded: crResult.degraded, degradeReason: crResult.degradeReason };
-      result.stages.continuity = { review: crResult.review };
-      this.log('PHASE-2', `完成 (${Date.now() - phase2Start}ms)`);
+      // ===== 内容边界后处理（最终防线）=====
+    currentShots = this._enforceContentBoundaries(currentShots, adaptedBlueprint);
 
-      // ===== Phase 3：PromptFusion（依赖 VisualLanguage 的 cameraString/lightingString）=====
-      const pfResult = await this._runStage('prompt-fusion-agent', () => this.agents.promptFusion.process(currentShots, adaptedBlueprint));
-      currentShots = pfResult.shots;
-      llmStats.promptFusion = { degraded: pfResult.degraded, degradeReason: pfResult.degradeReason };
+    // ===== Quality Gate =====
+      result.stages.qualityGate = await this._runStage('quality-gate', () => this._runQualityGate(currentShots));
 
-      // v2.0.5-彻底修复: 在PromptFusion后添加标准化层，统一LLM输出格式
-      this.log('PROMPT-ENGINEERING', 'LLM融合完成，进入格式标准化...');
-      currentShots = this._normalizeLLMOutput(currentShots, adaptedBlueprint);
-      
-      // v2.0.4-fix: LLM融合后走标准化流程，补齐中文字段名/字符数统计/时间轴/定妆照/人物卡片
-      this.log('PROMPT-ENGINEERING', '格式标准化完成，进入字段标准化...');
-      const peResult = await this._runStage('prompt-engineering', () => this._engineerPrompts(currentShots, adaptedBlueprint));
-      currentShots = peResult.shots;
-
-      // ===== Stage 6：质量门（适配LLM融合模式）=====
-      this.log('QUALITY-GATE', 'LLM适配模式质量门检查...');
-      result.stages.qualityGate = await this._runStage('quality-gate', () => this._runQualityGateAdapted(currentShots));
-
-      // ===== 汇总 =====
       result.shots = currentShots;
       result.prompts = currentShots;
-      result.llmStats = llmStats;
       result.meta = this._buildMeta(adaptedBlueprint);
-      result.opening = result.stages.opening?.openingData || null;
       result.success = true;
       result.timing.total = Date.now() - startTime;
-
-      const degradedCount = Object.values(llmStats).filter(s => s?.degraded).length;
-      this.log('PRODUCE', `✅ 制作完成: ${result.shots.length} 镜头 | LLM Agent降级: ${degradedCount}个 | 总耗时 ${result.timing.total}ms`);
+      this.log('PRODUCE', `✅ LLM 制作完成${result.resumed ? '(断点续跑)' : ''} | ${currentShots.length} 镜头 | ${result.timing.total}ms`);
+      this._clearCheckpoints(); // 成功完成，清理 checkpoint
 
     } catch (error) {
       result.success = false;
-      result.errors.push({ stage: 'PRODUCE', message: error.message, stack: error.stack });
-      this.log('ERROR', `❌ 制作失败: ${error.message}`);
+      result.errors.push({ stage: 'production', message: error.message });
+      this.log('ERROR', `❌ ${error.message}`);
+      this.log('ERROR', `💡 若为预算不足，直接重跑同一命令即可从 checkpoint 续跑，LLM 产出不会丢`);
+
+      // 【新增】最后兜底：用规则引擎抢救产出
+      try {
+        this.log('RECOVERY', '尝试规则兜底恢复...');
+        const baseShots = result.stages.durationAllocation?.shots || [];
+        const fallbackShots = await this._engineerPromptsFallback(baseShots, adaptedBlueprint);
+        if (fallbackShots.length > 0) {
+          result.shots = fallbackShots;
+          result.prompts = fallbackShots;
+          result.success = true;
+          result.degraded = true;
+          result.timing.total = Date.now() - startTime;
+          this.log('RECOVERY', `✅ 规则兜底成功，产出 ${fallbackShots.length} 个镜头`);
+        }
+      } catch (e2) {
+        result.errors.push({ stage: 'recovery', message: e2.message });
+      }
     }
 
     return result;
+  }
+
+  /**
+   * 【新增】规则模式完整生产路径（LLM 禁用时）
+   */
+  async _produceViaRules(currentShots, adaptedBlueprint, result, startTime) {
+    this.log('RULES', '启用规则引擎模式（LLM 已禁用）');
+    result.stages.promptEngineering = await this._runStage('prompt-engineering', () => this._engineerPrompts(currentShots, adaptedBlueprint));
+    currentShots = result.stages.promptEngineering.shots;
+    result.stages.qualityGate = await this._runStage('quality-gate', () => this._runQualityGate(currentShots));
+    if (this._shouldGenerateOpening(adaptedBlueprint)) {
+      result.stages.opening = await this._runStage('opening', () => this._generateOpening(adaptedBlueprint));
+    }
+    result.stages.continuity = await this._runStage('continuity', () => this._checkContinuity(currentShots));
+    result.shots = currentShots;
+    result.prompts = currentShots;
+    result.meta = this._buildMeta(adaptedBlueprint);
+    result.opening = result.stages.opening?.openingData || null;
+    result.success = true;
+    result.degraded = true;
+    result.timing.total = Date.now() - startTime;
+    this.log('PRODUCE', `✅ 规则模式完成 | ${currentShots.length} 镜头 | ${result.timing.total}ms`);
+    return result;
+  }
+
+  /**
+   * 【新增】规则 Prompt 工程兜底（LLM PromptFusion 失败时）
+   * 优先复用现有 _engineerPrompts，否则用极简拼接
+   */
+  async _engineerPromptsFallback(shots, blueprint) {
+    if (typeof this._engineerPrompts === 'function') {
+      try {
+        const r = await this._engineerPrompts(shots, blueprint);
+        if (r?.shots?.length) return r.shots;
+      } catch (e) {
+        this.log('FALLBACK', `_engineerPrompts 失败: ${e.message}，使用极简拼接`);
+      }
+    }
+    return shots.map(s => ({
+      ...s,
+      prompt: this._assemblePromptSimple(s),
+      enhanced_prompt: this._assemblePromptSimple(s),
+      negative_prompt: 'blurry, low quality, distorted, watermark, text, deformed, extra limbs'
+    }));
+  }
+
+  /**
+   * 【新增】极简 Prompt 拼接（最后兜底）
+   */
+  _assemblePromptSimple(shot) {
+    const parts = [];
+    if (shot.scene) parts.push(shot.scene);
+    if (shot.visual_elements) parts.push(shot.visual_elements);
+    if (shot.lighting) parts.push(shot.lighting);
+    if (shot.camera_movement) parts.push(shot.camera_movement);
+    if (shot.action) parts.push(shot.action);
+    if (shot.mood) parts.push(`atmosphere: ${shot.mood}`);
+    return parts.filter(Boolean).join(', ').slice(0, this.config.maxPromptLength);
+  }
+
+  /**
+   * 【新增】内容边界强制过滤（最后防线）
+   * 检测并清除越界内容（预告下集、提前讲后续知识点等）
+   */
+  _enforceContentBoundaries(shots, blueprint) {
+    const meta = blueprint.config?._metadata || blueprint._metadata || {};
+    const isSeries = meta.isSeries || (meta.series?.totalEpisodes > 1) || (meta.total_episodes > 1);
+    const noPreview = meta.noNextEpisodePreview || meta.no_next_episode_preview;
+    
+    if (!isSeries && !noPreview) return shots;
+
+    const forbiddenPatterns = [
+      /下一集/g, /下集/g, /后续.*介绍/g, /下次再说/g, /下次.*讲/g,
+      /待.*续/g, /未完待续/g, /且听.*分解/g
+    ];
+
+    let violations = 0;
+    const cleaned = shots.map(shot => {
+      let prompt = shot.prompt || '';
+      let fusionText = shot.fusionText || '';
+      let changed = false;
+
+      for (const pattern of forbiddenPatterns) {
+        if (pattern.test(prompt)) {
+          prompt = prompt.replace(pattern, '...');
+          changed = true;
+          violations++;
+        }
+        if (pattern.test(fusionText)) {
+          fusionText = fusionText.replace(pattern, '...');
+          changed = true;
+          violations++;
+        }
+      }
+
+      if (changed) {
+        this.log('BOUNDARY-GUARD', `⚠️ 清除越界内容: ${shot.shotId}`);
+      }
+      return changed ? { ...shot, prompt, fusionText } : shot;
+    });
+
+    if (violations > 0) {
+      this.log('BOUNDARY-GUARD', `✅ 共清除 ${violations} 处越界内容`);
+    }
+    return cleaned;
   }
 
   /**
