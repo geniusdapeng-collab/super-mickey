@@ -2,6 +2,7 @@
  * PromptFusionAgent - Prompt融合Agent（核心）
  * 负责: 将L3-L7元素创造性融合成导演分镜脚本
  * 策略: L1/L2/L9硬约束走规则，L3-L7走LLM融合
+ * v2.1.4-fix8: LLM输出标准字段格式（【约束】【基础】【场景】等）
  */
 const { BaseAgent } = require('./base-agent');
 
@@ -9,40 +10,59 @@ class PromptFusionAgent extends BaseAgent {
   constructor(options = {}) {
     super({ name: 'PromptFusionAgent', enabled: true, llmTimeout: 600000, ...options });
     this.maxPromptLength = options.maxPromptLength || 1500;
-    this.concurrency = options.concurrency || 3; // 【新增】并发度
+    this.concurrency = options.concurrency || 3;
   }
 
   _getSystemPrompt() {
-    return `你是一位资深电影导演和摄影师。根据镜头信息，将场景、角色、动作、台词、运镜、灯光、情绪、音效融合成一段流畅的导演分镜脚本描述。
+    return `你是一位资深电影导演和摄影师。根据镜头信息，为每个镜头生成结构化的导演分镜提示词。
+
+【核心要求】
+你必须按以下标准字段格式输出，每个字段独立清晰，不要混合成一段narrative文本：
+
+字段列表（严格按此顺序）：
+1. 【约束】：画幅、帧率、禁止项（16:9 cinematic, no text, no subtitle, no watermark, 24fps cinematic）
+2. 【基础】：画质基础词（hyperrealistic, ultra-detailed, high dynamic range, film grain, 35mm texture, cinematic film）
+3. 【场景】：具体场景环境描述（地点、时间、空间深度、材质细节）
+4. 【角色】：角色身份、服装、姿态（如：穿警服的陈卓女士，健康科普主讲人）
+5. 【动作】：角色动作与镜头运动（如：镜头缓慢推近，陈卓伸手触碰墙面）
+6. 【定妆照】：角色定妆照引用路径（如：image://characters/chen-zhuo/portraits/chen-zhuo-front.png）
+7. 【台词】：角色直接说的话，格式：【台词】"纯台词内容"（不要写"画外音""旁白"）
+8. 【时间轴】：镜头时间区间（如：T00:00-T00:10）
+9. 【情绪】：3-5个关键词描述情绪氛围
+10. 【音频】：环境音效、背景音乐描述
+11. 【负面约束】：排除项（no watermark, no logo, no cartoon style, no flat lighting等）
+12. 【角色一致性】：保持角色形象一致
 
 输出JSON格式:
 {
   "shots": [
     {
       "shotId": "SC01",
-      "fusionText": "融合后的导演分镜描述（80-150字）",
-      "prompt": "完整Prompt（包含融合段）",
-      "promptCharCount": 1234
+      "fields": {
+        "constraint": "16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic",
+        "baseline": "hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film",
+        "scene": "场景环境描述",
+        "character": "角色描述",
+        "action": "动作与运镜描述",
+        "portraits": "定妆照引用",
+        "dialogue": "【台词】\"纯台词内容\"",
+        "timeline": "时间轴",
+        "mood": "情绪关键词",
+        "audio": "音频描述",
+        "negative": "负面约束列表",
+        "consistency": "角色一致性约束"
+      }
     }
   ]
 }
 
-融合要求:
-1. 不是简单拼接，而是叙事化描述：像在给摄影师和演员讲戏;
-2. 运镜描述要动态：不说"dolly in"，说"镜头缓慢推近，陈卓的表情从模糊到清晰";
-3. 灯光描述要场景化：不说"key light 3200K"，说"夕阳从侧面照来，她的脸部轮廓被镀上金色";
-4. 角色动作与运镜要配合：角色走动时镜头跟随，角色停顿时镜头稳定;
-5. 情绪要通过画面传达：紧张时画面摇晃/快切，平静时长镜头/柔和光线;
-
-内容边界约束（极其重要）：
-- 只描述本集内容，严禁暗示或提及后续集数（禁止"下一集""下次再说""后续介绍"等）
-- 结尾场景严禁预告后续内容，只总结本集已讲知识点
-- 严禁将本集范围外的知识点（如预防/处理）混入当前描述
-
-约束:
-- 不能添加文本/字幕/水印;
-- 不能改变画幅比例;
-- 保持角色视觉锚点一致;`;
+关键要求：
+1. 【台词】字段必须独立，角色直接对镜头说话，不要写"画外音""旁白"
+2. 场景要具体专业（门诊室、宣教室、检查室），不要写"社区健身区"
+3. 不要混合成一段narrative，每个字段独立输出
+4. 只描述本集内容，严禁预告后续集数
+5. 保持角色视觉锚点一致
+6. 负面约束要完整，包含10+条排除项`;
   }
 
   async process(shots, blueprint) {
@@ -55,7 +75,6 @@ class PromptFusionAgent extends BaseAgent {
     let index = 0;
     let failed = 0;
 
-    // 并发 worker 池（限流，避免 6 路同时打 LLM 导致 OOM/限流）
     const worker = async () => {
       while (index < shots.length) {
         const i = index++;
@@ -80,24 +99,24 @@ class PromptFusionAgent extends BaseAgent {
     return { shots: results, degraded: failed > 0, degradeReason: null };
   }
 
-  /**
-   * 【新增】单镜头 LLM 融合
-   */
   async _fuseSingleShot(shot, ratio, characters) {
     const prompt = this._buildBatchPrompt([shot], ratio, characters);
-    const schema = { shots: [{ shotId: shot.shotId, fusionText: '...' }] };
+    const schema = { shots: [{ shotId: shot.shotId, fields: {} }] };
 
     const llmResult = await this._callLLM(prompt, schema, () => {
-      throw new Error('LLM fallback'); // 让外层 catch 处理
+      throw new Error('LLM fallback');
     });
 
     const fusionEntry = llmResult.result?.shots?.find(s => s.shotId === shot.shotId);
-    const fusionText = fusionEntry?.fusionText || '';
-    const fullPrompt = this._assembleFullPrompt(shot, fusionText, ratio);
+    const fields = fusionEntry?.fields || {};
+    
+    // 组装标准格式Prompt
+    const fullPrompt = this._assembleStandardPrompt(shot, fields, ratio);
 
     return {
       ...shot,
-      fusionText,
+      fields,
+      fusionText: fields.scene || '',
       prompt: fullPrompt,
       promptCharCount: this._countChars(fullPrompt),
       degraded: false,
@@ -105,61 +124,92 @@ class PromptFusionAgent extends BaseAgent {
     };
   }
 
-  /**
-   * 【新增】单镜头规则兜底
-   */
   _fallbackSingleShot(shot, ratio) {
     const fallbackPrompt = this._assembleFullPrompt(shot, '', ratio);
     return {
       ...shot,
+      fields: {},
       fusionText: '',
       prompt: fallbackPrompt,
       promptCharCount: this._countChars(fallbackPrompt),
       degraded: true,
       degradeReason: '单镜头 LLM 融合失败，规则兜底',
-      _pf_fallback: true // 标记此镜头为兜底，便于质量门识别
+      _pf_fallback: true
     };
   }
 
   /**
-   * 从结构化 dialogue 中提取纯台词内容
-   * 格式：SPEAKER|TYPE|EMOTION|TEXT|LIP_SYNC → 提取 TEXT
+   * 组装标准格式Prompt（按之前正常版本的字段格式）
    */
-  _extractPureDialogue(dialogue) {
-    if (!dialogue || typeof dialogue !== 'string') return dialogue;
+  _assembleStandardPrompt(shot, fields, ratio) {
+    const parts = [];
 
-    // 检测结构化格式：至少包含4个分隔符
-    const parts = dialogue.split(/[|;]/);
-    if (parts.length >= 5) {
-      // 格式：SPEAKER|TYPE|EMOTION|TEXT|LIP_SYNC
-      // 提取第4个字段（索引3）作为纯台词
-      return parts[3].trim();
+    // 【约束】
+    parts.push(`【约束】${fields.constraint || `${ratio} cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic`}`);
+
+    // 【基础】
+    parts.push(`【基础】${fields.baseline || 'hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film'}`);
+
+    // 【场景】
+    if (fields.scene) parts.push(`【场景】${fields.scene}`);
+
+    // 【角色】
+    if (fields.character) parts.push(`【角色】${fields.character}`);
+
+    // 【动作】
+    if (fields.action) parts.push(`【动作】${fields.action}`);
+
+    // 【定妆照】
+    if (fields.portraits) parts.push(`【定妆照】${fields.portraits}`);
+
+    // 【台词】
+    if (fields.dialogue) parts.push(`【台词】${fields.dialogue}`);
+
+    // 【时间轴】
+    if (fields.timeline) parts.push(`【时间轴】${fields.timeline}`);
+
+    // 【情绪】
+    if (fields.mood) parts.push(`【情绪】${fields.mood}`);
+
+    // 【音频】
+    if (fields.audio) parts.push(`【音频】${fields.audio}`);
+
+    // 【负面约束】
+    if (fields.negative) parts.push(`【负面约束】${fields.negative}`);
+
+    // 【角色一致性】
+    if (fields.consistency) parts.push(`【角色一致性】${fields.consistency}`);
+
+    // 合并
+    let fullPrompt = parts.join('，');
+    
+    // 截断
+    if (this._countChars(fullPrompt) > this.maxPromptLength) {
+      fullPrompt = this._truncateStandardPrompt(fullPrompt);
     }
 
-    return dialogue.trim();
+    return fullPrompt;
   }
 
   /**
-   * 组装完整Prompt（L1硬约束 + LLM融合段 + L9硬约束）
+   * 组装完整Prompt（降级路径，保留原有逻辑）
    */
   _assembleFullPrompt(shot, fusionText, ratio) {
     const parts = [];
 
-    // L1: 约束层（规则硬约束）
+    // L1: 约束层
     parts.push(`${ratio} cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic`);
 
-    // L2: 基础层（规则硬约束）
+    // L2: 基础层
     parts.push('hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film');
 
-    // L3-L7: 融合段（LLM产出）
+    // L3-L7: 融合段
     if (fusionText) {
       parts.push(fusionText);
     } else {
-      // 降级：用原规则拼接
       parts.push(shot.scene || '');
       if (shot.character && shot.character !== 'NONE') parts.push(shot.character);
       if (shot.action) parts.push(shot.action);
-      // v2.1.4-fix7: 提取纯台词，剔除结构化标签
       const pureDialogue = shot.dialogueText || this._extractPureDialogue(shot.dialogue);
       if (pureDialogue && pureDialogue !== '') parts.push(`【台词】"${pureDialogue}"`);
       if (shot.cameraString) parts.push(shot.cameraString);
@@ -168,10 +218,9 @@ class PromptFusionAgent extends BaseAgent {
       if (shot.backgroundSoundString) parts.push(`audio: ${shot.backgroundSoundString}`);
     }
 
-    // L9: 质控层（规则硬约束）
+    // L9: 质控层
     parts.push('no voiceover, no narration, no metal_gloss, no unnatural_eye_color');
 
-    // 合并并截断
     let fullPrompt = parts.filter(p => p).join(', ');
     if (this._countChars(fullPrompt) > this.maxPromptLength) {
       fullPrompt = this._truncateWithPriority(fullPrompt, parts);
@@ -180,11 +229,20 @@ class PromptFusionAgent extends BaseAgent {
     return fullPrompt;
   }
 
-  /**
-   * 优先级截断（保持L1-L9顺序）
-   */
+  _truncateStandardPrompt(fullPrompt) {
+    let prompt = fullPrompt;
+    while (this._countChars(prompt) > this.maxPromptLength) {
+      const lastComma = prompt.lastIndexOf('，');
+      if (lastComma > 0) {
+        prompt = prompt.substring(0, lastComma).trim();
+      } else {
+        break;
+      }
+    }
+    return prompt;
+  }
+
   _truncateWithPriority(fullPrompt, parts) {
-    // 简单截断：从后往前移除，保持L1在前
     let prompt = fullPrompt;
     while (this._countChars(prompt) > this.maxPromptLength) {
       const lastComma = prompt.lastIndexOf(',');
@@ -206,11 +264,19 @@ class PromptFusionAgent extends BaseAgent {
     return Math.ceil(count);
   }
 
+  _extractPureDialogue(dialogue) {
+    if (!dialogue || typeof dialogue !== 'string') return dialogue;
+    const parts = dialogue.split(/[|;]/);
+    if (parts.length >= 5) {
+      return parts[3].trim();
+    }
+    return dialogue.trim();
+  }
+
   _buildBatchPrompt(shots, ratio, characters) {
     const characterInfo = characters.map(c => `- ${c.name}: ${c.description || ''}`).join('\n');
 
     const shotsInfo = shots.map(s => {
-      // v2.1.4-fix7: 提取纯台词，给LLM干净的输入
       const pureDialogue = s.dialogue?.lines?.map(l => l.content).join('; ') || 
                           (s.dialogue ? this._extractPureDialogue(s.dialogue) : '');
       return `${s.shotId}(${s.duration || '?'}s): ${(s.scene || '').substring(0, 50)} | ${s.mood || ''} | ${pureDialogue.substring(0, 50)} | 运镜:${(s.cameraString || '').substring(0, 30)} | 灯光:${(s.lightingString || '').substring(0, 30)}`;
@@ -220,9 +286,16 @@ class PromptFusionAgent extends BaseAgent {
 角色:${characterInfo || '无'}
 镜头:\n${shotsInfo}
 
-任务:为每个镜头写fusionText(80-120字导演分镜描述)。叙事化、动态运镜、场景化灯光。不要长推理，直接输出JSON。
+任务:为每个镜头生成标准字段格式的导演分镜提示词。
 
-输出:{"shots":[{"shotId":"SC01","fusionText":"..."},...]}`;
+要求：
+1. 按标准字段输出：【约束】【基础】【场景】【角色】【动作】【定妆照】【台词】【时间轴】【情绪】【音频】【负面约束】【角色一致性】
+2. 【台词】字段必须独立，角色直接对镜头说话，不要写"画外音""旁白"
+3. 场景要具体专业（门诊室、宣教室、检查室），不要写"社区健身区"
+4. 负面约束要完整，包含10+条排除项
+5. 只输出JSON，不要解释
+
+输出:{"shots":[{"shotId":"SC01","fields":{...}}]}`;
   }
 
   _fallbackBatch(shots, ratio) {
@@ -230,7 +303,7 @@ class PromptFusionAgent extends BaseAgent {
     return {
       shots: shots.map(shot => ({
         shotId: shot.shotId,
-        fusionText: ''
+        fields: {}
       }))
     };
   }
