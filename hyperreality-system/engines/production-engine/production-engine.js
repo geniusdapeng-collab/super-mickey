@@ -2018,11 +2018,19 @@ class ProductionEngine {
       partMeta.push({ id: 'L4_characterRef', priority: 'P0' });
     }
 
-    if (shot.dialogue && shot.dialogue !== '') {
-      // 【v2.1.4-patch4】替换竖杠为分号,避免Seedance渲染乱码
-      const safeDialogue = shot.dialogue.replace(/\|/g, '; ').replace(/;/g, '; ');
-      parts.push(`【台词】${safeDialogue}`);
+    if (shot.dialogueText && shot.dialogueText !== '') {
+      // 【v2.1.4-fix6】台词字段只包含纯台词内容，不包含结构化标签
+      // 使用 shot.dialogueText（纯文本）而非 shot.dialogue（含SPEAKER/TYPE/EMOTION/LIP_SYNC标签）
+      const pureDialogue = shot.dialogueText.replace(/;/g, '；'); // 将分号分隔改为中文分号，更自然
+      parts.push(`【台词】${pureDialogue}`);
       partMeta.push({ id: 'L4_dialogue', priority: 'P0' });
+    } else if (shot.dialogue && shot.dialogue !== '') {
+      // 兜底：如果dialogueText不存在，从dialogue提取纯文本
+      const pureDialogue = shot.dialogue.replace(/[^:]+:([^;]+);/g, '$1').replace(/LIP_SYNC:YES/g, '').replace(/;+/g, '；').replace(/^;+|;+$/g, '').trim();
+      if (pureDialogue) {
+        parts.push(`【台词】${pureDialogue}`);
+        partMeta.push({ id: 'L4_dialogue', priority: 'P0' });
+      }
     }
 
     // === L5: 动态层(P1-P2)===
