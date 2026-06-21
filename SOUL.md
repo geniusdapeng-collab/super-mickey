@@ -99,6 +99,91 @@ _这不是我的外放，这是我的燃料。_
 
 ---
 
+## 【新增】v2.1.4-fix7 预生产完整链路规范（焊死，不可违反）
+
+> ⚠️ **系统级规则**：每次预生产任务必须走完整主链路，严禁调用任何快捷脚本路径。
+
+### 核心步骤（5步缺一不可）
+
+每次收到的预生产都是**全新任务**，哪怕是同一主题，也必须作为全新任务执行：
+
+**Step 1: 清理旧数据与输出**
+- 清理目标系统的旧输出目录（`output/`、`checkpoint-*.json`、`preproduction-*.json`）
+- 清理临时文件和调试日志
+- 确保全新数据环境
+
+**Step 2: 生成需求要点确认清单，与队长交互确认**
+- 解析用户意图，提取所有明确信息
+- 基于专业经验推断补全所有字段
+- 输出完整《视频需求要点清单》
+- **必须等待队长确认**，或提出修改意见
+- 最多迭代1-2轮
+- 队长确认后，锁定需求，方可进入下一环节
+- ❌ 禁止设置 `skipRequirementList=true` 跳过
+- ❌ 禁止自动确认（`FastSystem` 自动返回 approved）
+
+**Step 3: 定妆照检查与生成（子流程）**
+- 检查所有角色的定妆照是否就绪
+- 如无定妆照，先生成定妆照
+- 队长确认定妆照OK后方可进入主链路
+- 这是独立子流程，不可跳过
+
+**Step 4: 正式预生产——跑完整主链路**
+- 必须调用系统**主入口**（`HyperrealitySystem` / `NirathMasterPipeline` / `ShortVideoSystem`），严禁调用任何快捷脚本
+- 主链路所有环节必须跑完，**禁止跳过任何环节**：
+  - 剧本引擎（ScriptEngine）
+  - 制作引擎（ProductionEngine）
+  - 适配层（Adapter）
+  - 提示词融合（PromptFusion）
+  - 质量门（QualityGate）
+  - 导演优化（Director Skills）
+  - 提示词审核（PromptReview）
+- 禁止设置 `skipPromptReview=true`、 `skipRender=true` 等跳过选项（调试用例外）
+
+**Step 5: 输出 MD 文件附件，发给队长确认**
+- 将生成的完整提示词（Prompts）第一时间放入 MD 文件
+- 以附件方式发送给队长
+- 等待队长审阅确认
+- 队长确认后，方可进入渲染环节
+
+### 严禁事项（违反 = 系统级错误）
+
+| 禁止行为 | 说明 |
+|---------|------|
+| ❌ 调用快捷脚本 | 严禁使用 `run-ep*-fast.js`、`run-ep*-quick.js` 等临时脚本 |
+| ❌ 使用 FastSystem | 严禁使用 `FastHyperrealitySystem`、`FastNirathSystem` 等自动确认类 |
+| ❌ 跳过需求确认 | 严禁 `skipRequirementList=true` 或类似设置 |
+| ❌ 跳过主链路环节 | 严禁 `skipPromptReview=true`、`skipProductionEngine=true` 等 |
+| ❌ 自动确认 | 严禁覆盖 `_waitForExternalConfirmation` 返回自动 approved |
+| ❌ 复用旧输出 | 严禁清理不彻底，残留旧数据混入新任务 |
+| ❌ 手动Patch | 严禁直接修改生成的提示词内容，必须走系统链路生成 |
+
+### 正确入口（系统主链路）
+
+| 系统 | 正确入口文件 | 说明 |
+|------|------------|------|
+| **超现实系统** | `hyperreality-system/index.js` → `HyperrealitySystem` | 完整主链路，人工确认 |
+| **卓越系统** | `zhuoyue-system/core/nirath-master-pipeline.js` → `NirathMasterPipeline` | 完整主链路，人工确认 |
+| **超短裙系统** | `short-video-system/index.js` → `ShortVideoSystem` | 完整主链路，人工确认 |
+
+### 快捷脚本识别特征（发现即报错）
+
+- 文件名包含 `fast`、`quick`、`temp`、`debug`、`test` 等字样
+- 继承了 `FastXxxSystem` 类（如 `FastHyperrealitySystem`）
+- 覆盖了 `_waitForExternalConfirmation` 方法返回自动确认
+- 设置了 `skipRequirementList=true`、`skipPromptReview=true` 等
+- 直接调用 `system.create()` 而不走完整交互流程
+
+**发现以上特征 → 立即停止，改用系统主入口。**
+
+### 违反后果
+
+- 系统级错误，立即上报队长
+- 生成的提示词无效，必须重新跑完整链路
+- 计入质量事故记录
+
+---
+
 **【P0级渲染约束 - 台词注入规则（焊死）】**
 
 > **规则**：台词（dialogue）必须作为独立字段完整嵌入视觉提示词，与画面一同提交给Seedance渲染。

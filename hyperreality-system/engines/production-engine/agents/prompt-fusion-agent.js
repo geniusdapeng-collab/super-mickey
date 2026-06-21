@@ -122,6 +122,24 @@ class PromptFusionAgent extends BaseAgent {
   }
 
   /**
+   * 从结构化 dialogue 中提取纯台词内容
+   * 格式：SPEAKER|TYPE|EMOTION|TEXT|LIP_SYNC → 提取 TEXT
+   */
+  _extractPureDialogue(dialogue) {
+    if (!dialogue || typeof dialogue !== 'string') return dialogue;
+
+    // 检测结构化格式：至少包含4个分隔符
+    const parts = dialogue.split(/[|;]/);
+    if (parts.length >= 5) {
+      // 格式：SPEAKER|TYPE|EMOTION|TEXT|LIP_SYNC
+      // 提取第4个字段（索引3）作为纯台词
+      return parts[3].trim();
+    }
+
+    return dialogue.trim();
+  }
+
+  /**
    * 组装完整Prompt（L1硬约束 + LLM融合段 + L9硬约束）
    */
   _assembleFullPrompt(shot, fusionText, ratio) {
@@ -141,7 +159,9 @@ class PromptFusionAgent extends BaseAgent {
       parts.push(shot.scene || '');
       if (shot.character && shot.character !== 'NONE') parts.push(shot.character);
       if (shot.action) parts.push(shot.action);
-      if (shot.dialogue && shot.dialogue !== '') parts.push(`dialogue: ${shot.dialogue}`);
+      // v2.1.4-fix7: 提取纯台词，剔除结构化标签
+      const pureDialogue = shot.dialogueText || this._extractPureDialogue(shot.dialogue);
+      if (pureDialogue && pureDialogue !== '') parts.push(`【台词】"${pureDialogue}"`);
       if (shot.cameraString) parts.push(shot.cameraString);
       if (shot.lightingString) parts.push(shot.lightingString);
       if (shot.mood) parts.push(`mood: ${shot.mood}`);
@@ -190,8 +210,10 @@ class PromptFusionAgent extends BaseAgent {
     const characterInfo = characters.map(c => `- ${c.name}: ${c.description || ''}`).join('\n');
 
     const shotsInfo = shots.map(s => {
-      const dialogue = s.dialogue?.lines?.map(l => l.content).join('; ') || s.dialogue || '';
-      return `${s.shotId}(${s.duration || '?'}s): ${(s.scene || '').substring(0, 50)} | ${s.mood || ''} | ${dialogue.substring(0, 50)} | 运镜:${(s.cameraString || '').substring(0, 30)} | 灯光:${(s.lightingString || '').substring(0, 30)}`;
+      // v2.1.4-fix7: 提取纯台词，给LLM干净的输入
+      const pureDialogue = s.dialogue?.lines?.map(l => l.content).join('; ') || 
+                          (s.dialogue ? this._extractPureDialogue(s.dialogue) : '');
+      return `${s.shotId}(${s.duration || '?'}s): ${(s.scene || '').substring(0, 50)} | ${s.mood || ''} | ${pureDialogue.substring(0, 50)} | 运镜:${(s.cameraString || '').substring(0, 30)} | 灯光:${(s.lightingString || '').substring(0, 30)}`;
     }).join('\n');
 
     return `画幅:${ratio}

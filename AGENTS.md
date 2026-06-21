@@ -54,6 +54,38 @@ Capture what matters. Decisions, context, things to remember. Skip the secrets u
 
 > 详细预生产流程、系统原则、渲染约束见 SOUL.md
 
+## 预生产完整链路（焊死，不可违反）
+
+每次预生产任务必须遵循以下5步，**严禁走快捷脚本路径**：
+
+1. **清理旧数据与输出** — 清理 `output/`、`checkpoint-*.json`、临时文件
+2. **生成需求要点清单，与队长确认** — 必须等待人工确认，禁止自动确认
+3. **定妆照检查与生成** — 子流程，确认OK后方可进入主链路
+4. **跑完整主链路** — 调用系统主入口（`HyperrealitySystem`/`NirathMasterPipeline`/`ShortVideoSystem`），所有环节跑完，禁止跳过
+5. **输出 MD 文件附件，发给队长确认** — 完整提示词以附件发送，等待审阅
+
+**严禁**：调用 `run-*-fast.js`、使用 `FastSystem`、设置 `skipRequirementList=true`、手动Patch提示词
+
+详细规范见 `SOUL.md` → "v2.1.4-fix7 预生产完整链路规范"
+
+---
+
+## 预生产完整链路（焊死，不可违反）
+
+每次预生产任务必须遵循以下5步，**严禁走快捷脚本路径**：
+
+1. **清理旧数据与输出** — 清理 `output/`、`checkpoint-*.json`、临时文件
+2. **生成需求要点清单，与队长确认** — 必须等待人工确认，禁止自动确认
+3. **定妆照检查与生成** — 子流程，确认OK后方可进入主链路
+4. **跑完整主链路** — 调用系统主入口（`HyperrealitySystem`/`NirathMasterPipeline`/`ShortVideoSystem`），所有环节跑完，禁止跳过
+5. **输出 MD 文件附件，发给队长确认** — 完整提示词以附件发送，等待审阅
+
+**严禁**：调用 `run-*-fast.js`、使用 `FastSystem`、设置 `skipRequirementList=true`、手动Patch提示词
+
+详细规范见 `SOUL.md` → "v2.1.4-fix7 预生产完整链路规范"
+
+---
+
 ## External vs Internal
 
 **Safe to do freely:**
