@@ -267,6 +267,11 @@ ${meta.world_setting === 'Nirath' ? `
 ${meta.characters?.length > 0 ? `
 ## 角色信息（必须严格使用，禁止自创角色）
 ${meta.characters.map(c => `- ${c.name} (ID: ${c.id || c.name}): ${c.description || '主讲人'}`).join('\n')}
+
+【角色约束 - 不可违反】
+- 所有场景的角色必须是以上指定的角色，严禁自创其他角色（如"医生""患者""路人"等）
+- 场景描述(setting)和视觉备注(visual_notes)中提到的角色必须与指定角色一致
+- 如果只有一个角色，所有场景都必须是该角色出镜或该角色的视角
 ` : ''}
 ${(() => {
   // 【v2.1.4】跨集边界约束 - 使用新的边界契约提示词
@@ -429,7 +434,7 @@ ${meta._directorStyle}` : ''}
       const metadataChars = userIntent.metadata?.characters || [];
       if (metadataChars.length > 0) {
         const overrideCharacters = metadataChars.map(c => ({
-          character_id: c.character_id || c.id || c.name, // 支持 character_id 或 id
+          character_id: c.character_id || c.id || c.name,
           name: c.name,
           role: c.role || 'protagonist',
           visual_anchor: {
@@ -444,6 +449,7 @@ ${meta._directorStyle}` : ''}
         }));
 
         const primaryName = overrideCharacters[0]?.name || '主讲人';
+        const primaryDesc = metadataChars[0]?.description || primaryName;
         const validNames = overrideCharacters.map(c => c.name);
         const validIds = overrideCharacters.map(c => c.character_id);
 
@@ -500,12 +506,24 @@ ${meta._directorStyle}` : ''}
               scene.dialogue = newDialogue;
             }
 
-            // 3c. 替换场景描述中的角色名
+            // 3c. 替换场景描述中的角色名和身份描述
             if (typeof scene.description === 'string') {
               scene.description = scene.description.replace(/小G|小R|小A|小B/g, primaryName);
             }
             if (typeof scene.scene_description === 'string') {
               scene.scene_description = scene.scene_description.replace(/小G|小R|小A|小B/g, primaryName);
+            }
+            // v2.1.4-fix8: 替换 setting 和 visual_notes 中的错误角色身份
+            if (typeof scene.setting === 'string') {
+              // 强制替换所有可能暗示其他角色的描述
+              scene.setting = scene.setting.replace(/医生|主治医师|主任医师|大夫|医师|医护人员|护士|患者|病人|路人|市民/g, primaryDesc.split(/[,，、]/)[0]);
+              scene.setting = scene.setting.replace(/白色医生服|白大褂|灰色运动服|运动服/g, '警服');
+              scene.setting = scene.setting.replace(/男性|男人|男士|男|中年男子|中年男性/g, '女性');
+            }
+            if (typeof scene.visual_notes === 'string') {
+              scene.visual_notes = scene.visual_notes.replace(/医生|主治医师|主任医师|大夫|医师|医护人员|护士|患者|病人|路人|市民/g, primaryDesc.split(/[,，、]/)[0]);
+              scene.visual_notes = scene.visual_notes.replace(/白色医生服|白大褂|灰色运动服|运动服/g, '警服');
+              scene.visual_notes = scene.visual_notes.replace(/男性|男人|男士|男|中年男子|中年男性/g, '女性');
             }
 
             // 3d. 替换 narration 字段
@@ -528,7 +546,7 @@ ${meta._directorStyle}` : ''}
           parsed.world_setting.characters = overrideCharacters;
         }
 
-        console.log(`[ScriptGenerator] 角色覆盖完成: ${validNames.join(', ')}（已替换所有场景角色引用）`);
+        console.log(`[ScriptGenerator] 角色覆盖完成: ${validNames.join(', ')}（已替换所有场景角色引用和身份描述）`);
       }
 
       // v1.2.5: 注入metadata._metadata到blueprint meta

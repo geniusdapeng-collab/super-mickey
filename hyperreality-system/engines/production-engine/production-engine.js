@@ -480,13 +480,15 @@ class ProductionEngine {
           const openingShot = currentShots.find(s => s.sceneType === 'opening');
           if (openingShot) {
             const od = odResult.openingData;
-            openingShot.title = od.title || od.titleOverlay?.mainTitle || '';
-            openingShot.subtitle = od.subtitle || od.titleOverlay?.subtitle || '';
+            // v2.1.4-fix8: 兼容下划线命名(main_title/sub_title)和驼峰命名(mainTitle/subtitle)
+            const titleOverlay = od.titleOverlay || {};
+            openingShot.title = od.title || titleOverlay.mainTitle || titleOverlay.main_title || '';
+            openingShot.subtitle = od.subtitle || titleOverlay.subtitle || titleOverlay.sub_title || '';
             openingShot.titleOverlay = od.titleOverlay || null;
             openingShot.audioLayer = od.audioLayer || null;
             openingShot.lightingString = od.lightingString || openingShot.lightingString;
             openingShot.cameraString = od.cameraString || openingShot.cameraString;
-            console.log(`[ProductionEngine] OpeningDesign数据已注入到 ${openingShot.shotId}`);
+            console.log(`[ProductionEngine] OpeningDesign数据已注入到 ${openingShot.shotId}: title="${openingShot.title}", subtitle="${openingShot.subtitle}"`);
           }
         }
         result.llmStats.sceneDesign = sdResult.timing;
