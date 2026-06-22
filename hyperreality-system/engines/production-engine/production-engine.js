@@ -502,7 +502,7 @@ class ProductionEngine {
       }
       }
 
-      // ----- Phase 2:VisualLanguage ∥ AudioDesign ∥ ContinuityReview -----
+      // ----- Phase 2:VisualLanguage → AudioDesign → ContinuityReview (串行，避免并发超限SIGKILL) -----
       if (!phase1Failed && startPhase <= 2) {
         try {
           if (!this._canAfford(80000)) {
@@ -510,24 +510,29 @@ class ProductionEngine {
             await this._saveCheckpoint('phase1', currentShots, { opening: result.opening, llmStats: result.llmStats });
             throw new Error('预算不足,请重跑以断点续跑(Phase1 LLM 产出已保存)');
           }
-          this.log('PHASE-2', 'VisualLanguage + AudioDesign + ContinuityReview 并行启动...');
+          this.log('PHASE-2', 'VisualLanguage → AudioDesign → ContinuityReview 串行启动...');
           const phase2Start = Date.now();
-          const [vlResult, adResult, crResult] = await this._runParallel({
-            'visual-language-agent': this.agents.visualLanguage.process(this._cloneShots(currentShots), adaptedBlueprint),
-            'audio-design-agent': this.agents.audioDesign.process(this._cloneShots(currentShots), adaptedBlueprint),
-            'continuity-review-agent': this.agents.continuityReview.process(
-              this._cloneShots(currentShots),
-              adaptedBlueprint,
-              {
-                totalEpisodes: adaptedBlueprint.config?._metadata?.series?.totalEpisodes || adaptedBlueprint.config?._metadata?.totalEpisodes || 1,
-                episodeIndex: adaptedBlueprint.config?._metadata?.series?.currentEpisode || adaptedBlueprint.config?._metadata?.episode || 1,
-                episodeContract: this._buildEpisodeContract(adaptedBlueprint)
-              }
-            )
-          }, 'PHASE-2');
-
+          
+          // 【v2.1.4-fix9-P2】串行执行避免内存/并发超限
+          const vlResult = await this.agents.visualLanguage.process(this._cloneShots(currentShots), adaptedBlueprint);
+          this.log('VISUAL-LANGUAGE-AGENT', `完成`);
           currentShots = this._mergeShotsByShotId(currentShots, vlResult.shots, ['visual_elements', 'lighting', 'color_temperature', 'camera_movement']);
+          
+          const adResult = await this.agents.audioDesign.process(this._cloneShots(currentShots), adaptedBlueprint);
+          this.log('AUDIO-DESIGN-AGENT', `完成`);
           currentShots = this._mergeShotsByShotId(currentShots, adResult.shots, ['audio', 'music', 'sound_effects']);
+          
+          const crResult = await this.agents.continuityReview.process(
+            this._cloneShots(currentShots),
+            adaptedBlueprint,
+            {
+              totalEpisodes: adaptedBlueprint.config?._metadata?.series?.totalEpisodes || adaptedBlueprint.config?._metadata?.totalEpisodes || 1,
+              episodeIndex: adaptedBlueprint.config?._metadata?.series?.currentEpisode || adaptedBlueprint.config?._metadata?.episode || 1,
+              episodeContract: this._buildEpisodeContract(adaptedBlueprint)
+            }
+          );
+          this.log('CONTINUITY-REVIEW-AGENT', `完成`);
+          
           result.stages.continuity = { agent: 'continuityReview', ...crResult };
           // 【v2.1.4】保存跨集边界校验报告
           if (crResult.boundaryReport) {
