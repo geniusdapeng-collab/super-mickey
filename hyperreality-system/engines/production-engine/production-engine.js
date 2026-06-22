@@ -659,14 +659,46 @@ class ProductionEngine {
 
   /**
    * 【新增】极简 Prompt 拼接(最后兜底)
+   * 【v2.1.4-fix9-P12】兜底路径也强制写实场景和动作
    */
   _assemblePromptSimple(shot) {
     const parts = [];
-    if (shot.scene) parts.push(shot.scene);
+    
+    // 场景强制写实检查
+    let sceneDesc = shot.scene || '';
+    const sceneForbidden = ['全息', '虚拟', '投影', '抽象', '光影场域', '数据空间', '元宇宙', '时间操控', '霓虹', '微观世界', '宏观', '抽象几何', '流动光影', '交织光影', '色彩对冲'];
+    if (sceneForbidden.some(w => sceneDesc.includes(w))) {
+      const fallbackScenes = [
+        '医院健康宣教室，白色荧光灯均匀照明，白墙面贴有骨骼肌解剖图与运动损伤海报，木质讲台表面带有细微使用划痕，地面浅灰色防滑PVC地胶',
+        '三甲医院检验科走廊，冷白色LED光源从走廊顶部连续排列向下照射，指示牌清晰指向尿液检验窗口，地面浅色抛光瓷砖，墙面白色医用抗菌涂层',
+        '医生诊室，白色墙面悬挂医学挂图，办公桌摆放听诊器与血压计，检查床铺有蓝色一次性床单，无影灯悬于上方，窗光透入',
+        '医院健康管理中心，嵌入式LED灯带洒下柔和暖白光，接待台后方排列健康宣传展板，前方皮质沙发与实木茶几，地面灰色哑光瓷砖'
+      ];
+      const idx = parseInt(shot.shotId?.replace(/\D/g, '') || '0') || 0;
+      sceneDesc = fallbackScenes[idx % fallbackScenes.length];
+    }
+    if (sceneDesc) parts.push(sceneDesc);
+    
     if (shot.visual_elements) parts.push(shot.visual_elements);
     if (shot.lighting) parts.push(shot.lighting);
     if (shot.camera_movement) parts.push(shot.camera_movement);
-    if (shot.action) parts.push(shot.action);
+    
+    // 动作强制写实检查
+    let actionDesc = shot.action || '';
+    const actionForbidden = ['全息', '虚拟', '投影', '空间扭曲', '时间残影', '霓虹', '数据流', '光即角色', '抽象构图', '梦境流动性', '手绘动画', '湿版摄影', '黑色电影'];
+    if (actionForbidden.some(w => actionDesc.includes(w))) {
+      const fallbackActions = [
+        '镜头缓慢推近，陈卓站立讲台前，自然手势讲解，眼神注视镜头，警服在荧光灯下轮廓清晰',
+        '稳定机位中景，陈卓沿走廊缓步前行，侧头指向检验窗口，白大褂医生从背景走过',
+        '手持微晃跟拍，陈卓靠近检查床，手指轻触医学挂图，无影灯在头顶形成柔和光晕',
+        '固定机位中景，陈卓坐于沙发边缘，双手交叠置于膝上，LED灯带在身后形成均匀轮廓光',
+        '缓慢后拉全景，陈卓站立检验窗口前，转身面向镜头，不锈钢台面反射冷白色光源'
+      ];
+      const idx = parseInt(shot.shotId?.replace(/\D/g, '') || '0') || 0;
+      actionDesc = fallbackActions[idx % fallbackActions.length];
+    }
+    if (actionDesc) parts.push(actionDesc);
+    
     if (shot.mood) parts.push(`atmosphere: ${shot.mood}`);
     return parts.filter(Boolean).join(', ').slice(0, this.config.maxPromptLength);
   }
@@ -1629,26 +1661,64 @@ class ProductionEngine {
   _engineerPrompts(shots, blueprint) {
     const prompts = [];
     const engineeredShots = [];
+    
+    // 【v2.1.4-fix9-P13】兜底路径(_engineerPrompts)也强制写实场景和动作
+    const sceneForbidden = ['全息', '虚拟', '投影', '抽象', '光影场域', '数据空间', '元宇宙', '时间操控', '霓虹', '微观世界', '宏观', '抽象几何', '流动光影', '交织光影', '色彩对冲'];
+    const fallbackScenes = [
+      '医院健康宣教室，白色荧光灯均匀照明，白墙面贴有骨骼肌解剖图与运动损伤海报，木质讲台表面带有细微使用划痕，地面浅灰色防滑PVC地胶',
+      '三甲医院检验科走廊，冷白色LED光源从走廊顶部连续排列向下照射，指示牌清晰指向尿液检验窗口，地面浅色抛光瓷砖，墙面白色医用抗菌涂层',
+      '医生诊室，白色墙面悬挂医学挂图，办公桌摆放听诊器与血压计，检查床铺有蓝色一次性床单，无影灯悬于上方，窗光透入',
+      '医院健康管理中心，嵌入式LED灯带洒下柔和暖白光，接待台后方排列健康宣传展板，前方皮质沙发与实木茶几，地面灰色哑光瓷砖'
+    ];
+    const actionForbidden = ['全息', '虚拟', '投影', '空间扭曲', '时间残影', '霓虹', '数据流', '光即角色', '抽象构图', '梦境流动性', '手绘动画', '湿版摄影', '黑色电影'];
+    const fallbackActions = [
+      '镜头缓慢推近，陈卓站立讲台前，自然手势讲解，眼神注视镜头，警服在荧光灯下轮廓清晰',
+      '稳定机位中景，陈卓沿走廊缓步前行，侧头指向检验窗口，白大褂医生从背景走过',
+      '手持微晃跟拍，陈卓靠近检查床，手指轻触医学挂图，无影灯在头顶形成柔和光晕',
+      '固定机位中景，陈卓坐于沙发边缘，双手交叠置于膝上，LED灯带在身后形成均匀轮廓光',
+      '缓慢后拉全景，陈卓站立检验窗口前，转身面向镜头，不锈钢台面反射冷白色光源'
+    ];
 
     for (const shot of shots) {
+      // 【v2.1.4-fix9-P13】强制写实过滤
+      let filteredScene = shot.scene || '';
+      if (sceneForbidden.some(w => filteredScene.includes(w))) {
+        const idx = parseInt(shot.shotId?.replace(/\D/g, '') || '0') || 0;
+        filteredScene = fallbackScenes[idx % fallbackScenes.length];
+        console.warn(`[ProductionEngine] ⚠️ 镜头 ${shot.shotId} 场景含禁止词汇，兜底替换为写实场景`);
+      }
+      
+      let filteredAction = shot.action || '';
+      if (actionForbidden.some(w => filteredAction.includes(w))) {
+        const idx = parseInt(shot.shotId?.replace(/\D/g, '') || '0') || 0;
+        filteredAction = fallbackActions[idx % fallbackActions.length];
+        console.warn(`[ProductionEngine] ⚠️ 镜头 ${shot.shotId} 动作含禁止词汇，兜底替换为写实动作`);
+      }
+      
+      const filteredShot = {
+        ...shot,
+        scene: filteredScene,
+        action: filteredAction
+      };
+
       // v2.0.5-彻底修复: 优先使用标准化后的字段(由_normalizeLLMOutput处理过)
       // 如果标准化字段存在,直接使用;否则做兜底处理
-      const cameraStr = shot.cameraString ||
-                        shot.camera?.string ||
-                        (typeof shot.camera === 'string' ? shot.camera : '') || '';
-      const lightingStr = shot.lightingString ||
-                          shot.lighting?.string ||
-                          (typeof shot.lighting === 'string' ? shot.lighting : '') || '';
+      const cameraStr = filteredShot.cameraString ||
+                        filteredShot.camera?.string ||
+                        (typeof filteredShot.camera === 'string' ? filteredShot.camera : '') || '';
+      const lightingStr = filteredShot.lightingString ||
+                          filteredShot.lighting?.string ||
+                          (typeof filteredShot.lighting === 'string' ? filteredShot.lighting : '') || '';
 
       // v2.0.5-彻底修复: timeline优先使用标准化后的timelineString
-      let timelineStr = shot.timelineString || '';
+      let timelineStr = filteredShot.timelineString || '';
       if (!timelineStr) {
-        if (shot.timeline?.string && typeof shot.timeline.string === 'string') {
-          timelineStr = shot.timeline.string;
-        } else if (typeof shot.timeline === 'string') {
-          timelineStr = shot.timeline;
-        } else if (Array.isArray(shot.timeline)) {
-          timelineStr = shot.timeline.map(seg => 
+        if (filteredShot.timeline?.string && typeof filteredShot.timeline.string === 'string') {
+          timelineStr = filteredShot.timeline.string;
+        } else if (typeof filteredShot.timeline === 'string') {
+          timelineStr = filteredShot.timeline;
+        } else if (Array.isArray(filteredShot.timeline)) {
+          timelineStr = filteredShot.timeline.map(seg => 
             `${seg.timeRange || ''}: ${seg.cameraMovement || ''}`
           ).join('; ');
         }
@@ -1656,18 +1726,18 @@ class ProductionEngine {
 
       // v2.0.5-彻底修复: 确保backgroundSound有string版本
       let bgSoundResult;
-      if (shot.backgroundSoundString && typeof shot.backgroundSoundString === 'string') {
+      if (filteredShot.backgroundSoundString && typeof filteredShot.backgroundSoundString === 'string') {
         bgSoundResult = {
-          object: shot.backgroundSound || {},
-          string: shot.backgroundSoundString
+          object: filteredShot.backgroundSound || {},
+          string: filteredShot.backgroundSoundString
         };
       } else {
-        bgSoundResult = this._buildBackgroundSound(shot);
+        bgSoundResult = this._buildBackgroundSound(filteredShot);
       }
 
       // v2.0.5-彻底修复: 构建shotWithSound供_buildShotPrompt使用
       const shotWithSound = {
-        ...shot,
+        ...filteredShot,
         backgroundSound: bgSoundResult
       };
       const prompt = this._buildShotPrompt(shotWithSound, blueprint, { cameraStr, lightingStr, timelineStr });
@@ -1678,24 +1748,24 @@ class ProductionEngine {
       // v6.37-P1+: 构建标准输出对象(严格按 v6.37 标准字段)
       // 正片 S01+: 14 核心字段 | 片头 S00: + audioLayer + titleOverlay
       // v2.0.4-fix: 添加人物介绍卡片
-      const characterCards = this._buildCharacterCards(shot, blueprint);
+      const characterCards = this._buildCharacterCards(filteredShot, blueprint);
 
       const standardOutput = {
         // === 标准字段(v6.37-production+)===
-        shotId: shot.shotId,
-        duration: shot.timing?.duration || 20,
-        scene: shot.scene || '',
-        mood: shot.mood || '',
-        camera: shot.camera?.object || shot.camera || '',
+        shotId: filteredShot.shotId,
+        duration: filteredShot.timing?.duration || 20,
+        scene: filteredShot.scene || '',
+        mood: filteredShot.mood || '',
+        camera: filteredShot.camera?.object || filteredShot.camera || '',
         cameraString: cameraStr,
-        lighting: shot.lighting?.object || shot.lighting || '',
+        lighting: filteredShot.lighting?.object || filteredShot.lighting || '',
         lightingString: lightingStr,
-        characterRef: shot.characterRef || 'NONE',
+        characterRef: filteredShot.characterRef || 'NONE',
         // v2.0.5-fix: 如果shot.character不存在,从blueprint获取主角名
-        character: shot.character || this._getMainCharacterName(blueprint) || 'NONE',
-        action: shot.action || '',
-        dialogue: shot.dialogue || 'NONE',
-        timeline: shot.timeline?.object || shot.timeline || {},
+        character: filteredShot.character || this._getMainCharacterName(blueprint) || 'NONE',
+        action: filteredShot.action || '',
+        dialogue: filteredShot.dialogue || 'NONE',
+        timeline: filteredShot.timeline?.object || filteredShot.timeline || {},
         timelineString: timelineStr,
         backgroundSound: bgSoundResult.object,
         backgroundSoundString: bgSoundResult.string,
@@ -1711,8 +1781,8 @@ class ProductionEngine {
       const episodeNumber = _meta.episodeNumber || 1;
       const hasOpening = isSeries ? (episodeNumber === 1) : true;
 
-      if (shot.sceneType === 'opening' && hasOpening) {
-        const audioLayer = this._buildAudioLayer(shot);
+      if (filteredShot.sceneType === 'opening' && hasOpening) {
+        const audioLayer = this._buildAudioLayer(filteredShot);
         const titleOverlay = this._buildTitleOverlay(blueprint);
         standardOutput.audioLayer = audioLayer.object;
         standardOutput.audioLayerString = audioLayer.string;
