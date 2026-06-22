@@ -59,11 +59,12 @@ class PromptFusionAgent extends BaseAgent {
 关键要求：
 1. 【台词】字段必须独立，角色直接对镜头说话，不要写"画外音""旁白"
 2. 场景要具体真实（门诊室、宣教室、检查室），必须是写实环境，禁止科幻/抽象元素
-3. 禁止词汇：全息、虚拟、投影、抽象、光影场域、数据空间、元宇宙、时间操控、霓虹、微观世界、宏观、抽象几何、流动光影、交织光影、色彩对冲
-4. 不要混合成一段narrative，每个字段独立输出
-5. 只描述本集内容，严禁预告后续集数
-6. 保持角色视觉锚点一致
-7. 负面约束要完整，包含10+条排除项`;
+3. 【动作】必须是真实物理动作：推近、跟拍、手持、站立、行走、手势。禁止：全息投影、空间扭曲、时间残影、霓虹色、数据流、抽象构图
+4. 禁止词汇：全息、虚拟、投影、抽象、光影场域、数据空间、元宇宙、时间操控、霓虹、微观世界、宏观、抽象几何、流动光影、交织光影、色彩对冲、空间扭曲、时间残影
+5. 不要混合成一段narrative，每个字段独立输出
+6. 只描述本集内容，严禁预告后续集数
+7. 保持角色视觉锚点一致
+8. 负面约束要完整，包含10+条排除项`;
   }
 
   async process(shots, blueprint) {
@@ -191,7 +192,26 @@ class PromptFusionAgent extends BaseAgent {
     if (characterDesc) parts.push(`【角色】${characterDesc}`);
 
     // 【动作】
-    if (fields.action) parts.push(`【动作】${fields.action}`);
+    // 【v2.1.4-fix9-P9】动作强制写实：禁止科幻/抽象词汇
+    let actionDesc = fields.action || shot.action || '';
+    const actionForbidden = ['全息', '虚拟', '投影', '空间扭曲', '时间残影', '霓虹', '数据流', '光即角色', '抽象构图', '梦境流动性', '手绘动画'];
+    const actionHasForbidden = actionForbidden.some(w => actionDesc.includes(w));
+    if (actionHasForbidden) {
+      console.warn(`[PromptFusionAgent] ⚠️ 镜头 ${shot.shotId} 动作含禁止词汇: "${actionDesc.substring(0, 50)}..."，强制替换为写实动作`);
+      // 提取角色名
+      const charName = shot.character?.name || '陈卓';
+      // 根据场景类型生成写实动作
+      const fallbackActions = [
+        '镜头缓慢推近，陈卓站立讲台前，自然手势讲解，眼神注视镜头，警服在荧光灯下轮廓清晰',
+        '稳定机位中景，陈卓沿走廊缓步前行，侧头指向检验窗口，白大褂医生从背景走过',
+        '手持微晃跟拍，陈卓靠近检查床，手指轻触医学挂图，无影灯在头顶形成柔和光晕',
+        '固定机位中景，陈卓坐于沙发边缘，双手交叠置于膝上，LED灯带在身后形成均匀轮廓光',
+        '缓慢后拉全景，陈卓站立检验窗口前，转身面向镜头，不锈钢台面反射冷白色光源'
+      ];
+      const idx = parseInt(shot.shotId.replace(/\D/g, '')) || 0;
+      actionDesc = fallbackActions[idx % fallbackActions.length];
+    }
+    if (actionDesc) parts.push(`【动作】${actionDesc}`);
 
     // 【定妆照】
     if (fields.portraits) parts.push(`【定妆照】${fields.portraits}`);
