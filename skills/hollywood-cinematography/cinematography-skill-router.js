@@ -203,8 +203,11 @@ function extractShotMetadata(shot) {
   };
   
   const desc = (shot.description || shot.prompt || '').toLowerCase();
-  // 【v2.1.4-patch3】兼容camera对象/字符串两种格式
-  const camera = (shot.cameraString || shot.cameraMovement || (typeof shot.camera === 'string' ? shot.camera : '') || '').toLowerCase();
+  // 【v2.1.4-fix9-P8】安全获取camera字符串：强制转换为字符串
+  const cameraStr = String(shot.cameraString || '');
+  const cameraMovementStr = String(shot.cameraMovement || '');
+  const cameraObjStr = (typeof shot.camera === 'string' ? shot.camera : '');
+  const camera = (cameraStr || cameraMovementStr || cameraObjStr).toLowerCase();
   const mood = (shot.mood || shot.emotion || '').toLowerCase();
   // 【v2.1.4-patch2】兼容lighting对象/字符串两种格式
   const lighting = (shot.lightingString || (typeof shot.lighting === 'string' ? shot.lighting : '') || '').toLowerCase();

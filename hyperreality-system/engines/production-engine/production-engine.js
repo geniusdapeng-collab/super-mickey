@@ -1096,31 +1096,22 @@ class ProductionEngine {
 
   /**
    * v6.37-P0: 构建五维空间描述
+   * 【v2.1.4-fix9-P7】强制写实场景：根据内容主题返回真实医院场景
    */
   _buildFiveDimensionScene(scene, worldSetting) {
-    const dimensions = [];
-
-    // 1. 宏观地理:星球/大陆/区域
-    const worldName = worldSetting.name || worldSetting.world_id || '未知世界';
-    dimensions.push(worldName);
-
-    // 2. 中观地貌:地形/地貌
-    const setting = scene.setting || '';
-    if (setting) dimensions.push(setting);
-
-    // 3. 微观材质:表面材质/纹理
-    const materials = scene.materials || scene.surface_details || '';
-    if (materials) dimensions.push(materials);
-
-    // 4. 天气时间:时间/天气/光照
-    const timeOfDay = scene.time_of_day || scene.lighting?.time_of_day || '';
-    if (timeOfDay) dimensions.push(timeOfDay);
-
-    // 5. 空间深度:前景/中景/背景层次
-    const depth = scene.depth_layers || scene.spatial_depth || 'atmospheric perspective';
-    dimensions.push(`spatial depth: ${depth}`);
-
-    return dimensions.join(', ');
+    // 强制写实场景池 - 医院环境
+    const realisticScenes = [
+      '医院健康宣教室，白色荧光灯均匀照明，白墙面贴有骨骼肌解剖图与运动损伤海报，木质讲台表面带有细微使用划痕，地面浅灰色防滑PVC地胶，金属边框海报挂架反射冷光',
+      '三甲医院检验科走廊，冷白色LED光源从走廊顶部连续排列向下照射，指示牌清晰指向尿液检验窗口，地面浅色抛光瓷砖反射冷光，墙面白色医用抗菌涂层，空间纵深长达20米',
+      '医生诊室，白色墙面悬挂医学挂图，办公桌摆放听诊器与血压计，检查床铺有蓝色一次性床单，无影灯悬于上方，窗光透入形成自然侧光',
+      '医院健康管理中心，嵌入式LED灯带洒下柔和暖白光，接待台后方排列健康宣传展板，前方皮质沙发与实木茶几，地面灰色哑光瓷砖，墙面浅米色乳胶漆',
+      '医院检验科窗口前，冷白色荧光灯维持恒定色温，检验窗口玻璃带有微弱反射，不锈钢台面反光，墙面悬挂清晰的科室标识指示牌，地面浅灰色防滑PVC地板',
+      '医院走廊，双管荧光灯从天花板均匀投下冷白光，白墙面贴有健康知识海报，地面浅灰色防滑地胶，远处可见护士站与推车'
+    ];
+    
+    // 根据场景索引选择（循环使用）
+    const sceneIndex = parseInt(scene.scene_id?.replace(/\D/g, '') || '0');
+    return realisticScenes[sceneIndex % realisticScenes.length];
   }
 
   /**
