@@ -61,10 +61,11 @@ class PromptFusionAgent extends BaseAgent {
 2. 场景要具体真实（门诊室、宣教室、检查室），必须是写实环境，禁止科幻/抽象元素
 3. 【动作】必须是真实物理动作和镜头运动：推近、跟拍、手持、站立、行走、手势、转身、注视镜头。严禁使用：全息投影、空间扭曲、时间残影、霓虹色、数据流、抽象构图、梦境流动性、湿版摄影、光即角色、AI瑕疵、宏大比例、微观世界
 4. 禁止词汇（全字段通用）：全息、虚拟、投影、抽象、光影场域、数据空间、元宇宙、时间操控、霓虹、微观世界、宏观、抽象几何、流动光影、交织光影、色彩对冲、空间扭曲、时间残影、数据流、光即角色、梦境流动性、湿版摄影、AI瑕疵
-5. 不要混合成一段narrative，每个字段独立输出
-6. 只描述本集内容，严禁预告后续集数
-7. 保持角色视觉锚点一致
-8. 负面约束要完整，包含10+条排除项`;
+5. 【场景】中不得出现含文字的物品描述：如"有文字的报告单"、"标牌上的文字"、"商标"、"有字的海报"等。可以描述"空白报告单"、"无文字标识牌"、"图形海报"等不含文字的物品
+6. 不要混合成一段narrative，每个字段独立输出
+7. 只描述本集内容，严禁预告后续集数
+8. 保持角色视觉锚点一致
+9. 负面约束要完整，包含10+条排除项，必须包含全局禁止文字：no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls objects documents signs labels screens clothing packaging, no handwritten text, no printed text, no signage text, no text overlays, no UI elements with text`;
   }
 
   async process(shots, blueprint) {
@@ -147,7 +148,7 @@ class PromptFusionAgent extends BaseAgent {
     const parts = [];
 
     // 【约束】
-    parts.push(`【约束】${fields.constraint || `${ratio} cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic`}`);
+    parts.push(`【约束】${fields.constraint || `${ratio} cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background`}`);
 
     // 【基础】
     parts.push(`【基础】${fields.baseline || 'hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film'}`);
@@ -161,10 +162,10 @@ class PromptFusionAgent extends BaseAgent {
       console.warn(`[PromptFusionAgent] ⚠️ 镜头 ${shot.shotId} 场景含禁止词汇: "${sceneDesc.substring(0, 50)}..."，强制替换为写实场景`);
       // 强制替换为写实场景
       const fallbackScenes = [
-        '医院健康宣教室，白色荧光灯均匀照明，白墙面贴有骨骼肌解剖图与运动损伤海报，木质讲台表面带有细微使用划痕，地面浅灰色防滑PVC地胶',
-        '三甲医院检验科走廊，冷白色LED光源从走廊顶部连续排列向下照射，指示牌清晰指向尿液检验窗口，地面浅色抛光瓷砖，墙面白色医用抗菌涂层',
-        '医生诊室，白色墙面悬挂医学挂图，办公桌摆放听诊器与血压计，检查床铺有蓝色一次性床单，无影灯悬于上方，窗光透入',
-        '医院健康管理中心，嵌入式LED灯带洒下柔和暖白光，接待台后方排列健康宣传展板，前方皮质沙发与实木茶几，地面灰色哑光瓷砖'
+        '医院健康宣教室，白色荧光灯均匀照明，白墙面贴有无文字骨骼肌解剖图与运动损伤海报（纯图形版），木质讲台表面带有细微使用划痕，地面浅灰色防滑PVC地胶',
+        '三甲医院检验科走廊，冷白色LED光源从走廊顶部连续排列向下照射，无文字箭头标识牌指向尿液检验窗口，地面浅色抛光瓷砖，墙面白色医用抗菌涂层',
+        '医生诊室，白色墙面悬挂无文字人体解剖示意图（纯图形版），办公桌摆放听诊器与血压计，检查床铺有蓝色一次性床单，无影灯悬于上方，窗光透入',
+        '医院健康管理中心，嵌入式LED灯带洒下柔和暖白光，接待台后方排列无文字健康宣传展板（纯图形版），前方皮质沙发与实木茶几，地面灰色哑光瓷砖'
       ];
       const index = parseInt(shot.shotId.replace(/\D/g, '')) || 0;
       sceneDesc = fallbackScenes[index % fallbackScenes.length];
@@ -252,7 +253,8 @@ class PromptFusionAgent extends BaseAgent {
     const parts = [];
 
     // L1: 约束层
-    parts.push(`${ratio} cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic`);
+    // 【v2.1.4-fix9-P14】全局禁止文字约束
+    parts.push(`${ratio} cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background`);
 
     // L2: 基础层
     parts.push('hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film');
@@ -266,10 +268,10 @@ class PromptFusionAgent extends BaseAgent {
       const sceneForbidden = ['全息', '虚拟', '投影', '抽象', '光影场域', '数据空间', '元宇宙', '时间操控', '霓虹', '微观世界', '宏观', '抽象几何', '流动光影', '交织光影', '色彩对冲'];
       if (sceneForbidden.some(w => sceneDesc.includes(w))) {
         const fallbackScenes = [
-          '医院健康宣教室，白色荧光灯均匀照明，白墙面贴有骨骼肌解剖图与运动损伤海报，木质讲台表面带有细微使用划痕，地面浅灰色防滑PVC地胶',
-          '三甲医院检验科走廊，冷白色LED光源从走廊顶部连续排列向下照射，指示牌清晰指向尿液检验窗口，地面浅色抛光瓷砖，墙面白色医用抗菌涂层',
-          '医生诊室，白色墙面悬挂医学挂图，办公桌摆放听诊器与血压计，检查床铺有蓝色一次性床单，无影灯悬于上方，窗光透入',
-          '医院健康管理中心，嵌入式LED灯带洒下柔和暖白光，接待台后方排列健康宣传展板，前方皮质沙发与实木茶几，地面灰色哑光瓷砖'
+          '医院健康宣教室，白色荧光灯均匀照明，白墙面贴有无文字骨骼肌解剖图与运动损伤海报（纯图形版），木质讲台表面带有细微使用划痕，地面浅灰色防滑PVC地胶',
+          '三甲医院检验科走廊，冷白色LED光源从走廊顶部连续排列向下照射，无文字箭头标识牌指向尿液检验窗口，地面浅色抛光瓷砖，墙面白色医用抗菌涂层',
+          '医生诊室，白色墙面悬挂无文字人体解剖示意图（纯图形版），办公桌摆放听诊器与血压计，检查床铺有蓝色一次性床单，无影灯悬于上方，窗光透入',
+          '医院健康管理中心，嵌入式LED灯带洒下柔和暖白光，接待台后方排列无文字健康宣传展板（纯图形版），前方皮质沙发与实木茶几，地面灰色哑光瓷砖'
         ];
         const idx = parseInt(shot.shotId?.replace(/\D/g, '') || '0') || 0;
         sceneDesc = fallbackScenes[idx % fallbackScenes.length];
@@ -302,7 +304,12 @@ class PromptFusionAgent extends BaseAgent {
     }
 
     // L9: 质控层
-    parts.push('no voiceover, no narration, no metal_gloss, no unnatural_eye_color');
+    // 【v2.1.4-fix9-P14】全局禁止文字：详细负面约束覆盖所有可能含文字的位置
+    parts.push('no voiceover, no narration, no metal_gloss, no unnatural_eye_color, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters');
+    parts.push('no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background');
+    parts.push('no brand logos with text, no text in medical charts, no text on posters, no text on billboards, no text on packaging, no handwritten text, no printed text, no signage text');
+    parts.push('no text overlays, no UI elements with text, no text on book covers, no text on medicine bottles, no text on report forms, no text on devices, no text on badges, no text on nameplates');
+    parts.push('no text on doors, no text on windows, no text on floors, no text on ceilings');
 
     let fullPrompt = parts.filter(p => p).join(', ');
     if (this._countChars(fullPrompt) > this.maxPromptLength) {
@@ -391,8 +398,8 @@ class PromptFusionAgent extends BaseAgent {
 要求：
 1. 按标准字段输出：【约束】【基础】【场景】【角色】【动作】【定妆照】【台词】【时间轴】【情绪】【音频】【负面约束】【角色一致性】
 2. 【台词】字段必须独立，角色直接对镜头说话，不要写"画外音""旁白"
-3. 场景要具体专业（门诊室、宣教室、检查室），不要写"社区健身区"
-4. 负面约束要完整，包含10+条排除项
+3. 场景要具体专业（门诊室、宣教室、检查室），不要写"社区健身区"。场景中不得出现含文字的物品：如"有文字的报告单"、"标牌上的文字"、"商标"、"有字的海报"等。可以描述"空白报告单"、"无文字标识牌"、"图形海报"等不含文字的物品
+4. 负面约束要完整，包含10+条排除项，必须包含全局禁止文字：no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls objects documents signs labels screens clothing packaging, no handwritten text, no printed text, no signage text, no text overlays, no UI elements with text
 5. 只输出JSON，不要解释
 
 输出:{"shots":[{"shotId":"SC01","fields":{...}}]}`;

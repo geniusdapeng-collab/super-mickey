@@ -669,10 +669,10 @@ class ProductionEngine {
     const sceneForbidden = ['全息', '虚拟', '投影', '抽象', '光影场域', '数据空间', '元宇宙', '时间操控', '霓虹', '微观世界', '宏观', '抽象几何', '流动光影', '交织光影', '色彩对冲'];
     if (sceneForbidden.some(w => sceneDesc.includes(w))) {
       const fallbackScenes = [
-        '医院健康宣教室，白色荧光灯均匀照明，白墙面贴有骨骼肌解剖图与运动损伤海报，木质讲台表面带有细微使用划痕，地面浅灰色防滑PVC地胶',
-        '三甲医院检验科走廊，冷白色LED光源从走廊顶部连续排列向下照射，指示牌清晰指向尿液检验窗口，地面浅色抛光瓷砖，墙面白色医用抗菌涂层',
-        '医生诊室，白色墙面悬挂医学挂图，办公桌摆放听诊器与血压计，检查床铺有蓝色一次性床单，无影灯悬于上方，窗光透入',
-        '医院健康管理中心，嵌入式LED灯带洒下柔和暖白光，接待台后方排列健康宣传展板，前方皮质沙发与实木茶几，地面灰色哑光瓷砖'
+        '医院健康宣教室，白色荧光灯均匀照明，白墙面贴有无文字骨骼肌解剖图与运动损伤海报（纯图形版），木质讲台表面带有细微使用划痕，地面浅灰色防滑PVC地胶',
+        '三甲医院检验科走廊，冷白色LED光源从走廊顶部连续排列向下照射，无文字箭头标识牌指向尿液检验窗口，地面浅色抛光瓷砖，墙面白色医用抗菌涂层',
+        '医生诊室，白色墙面悬挂无文字人体解剖示意图（纯图形版），办公桌摆放听诊器与血压计，检查床铺有蓝色一次性床单，无影灯悬于上方，窗光透入',
+        '医院健康管理中心，嵌入式LED灯带洒下柔和暖白光，接待台后方排列无文字健康宣传展板（纯图形版），前方皮质沙发与实木茶几，地面灰色哑光瓷砖'
       ];
       const idx = parseInt(shot.shotId?.replace(/\D/g, '') || '0') || 0;
       sceneDesc = fallbackScenes[idx % fallbackScenes.length];
@@ -700,6 +700,10 @@ class ProductionEngine {
     if (actionDesc) parts.push(actionDesc);
     
     if (shot.mood) parts.push(`atmosphere: ${shot.mood}`);
+    
+    // 【v2.1.4-fix9-P14】极简路径也强制全局禁止文字
+    parts.push('no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls objects documents signs labels screens clothing packaging, no handwritten text, no printed text, no signage text, no text overlays, no UI elements with text');
+    
     return parts.filter(Boolean).join(', ').slice(0, this.config.maxPromptLength);
   }
 
@@ -1665,10 +1669,10 @@ class ProductionEngine {
     // 【v2.1.4-fix9-P13】兜底路径(_engineerPrompts)也强制写实场景和动作
     const sceneForbidden = ['全息', '虚拟', '投影', '抽象', '光影场域', '数据空间', '元宇宙', '时间操控', '霓虹', '微观世界', '宏观', '抽象几何', '流动光影', '交织光影', '色彩对冲'];
     const fallbackScenes = [
-      '医院健康宣教室，白色荧光灯均匀照明，白墙面贴有骨骼肌解剖图与运动损伤海报，木质讲台表面带有细微使用划痕，地面浅灰色防滑PVC地胶',
-      '三甲医院检验科走廊，冷白色LED光源从走廊顶部连续排列向下照射，指示牌清晰指向尿液检验窗口，地面浅色抛光瓷砖，墙面白色医用抗菌涂层',
-      '医生诊室，白色墙面悬挂医学挂图，办公桌摆放听诊器与血压计，检查床铺有蓝色一次性床单，无影灯悬于上方，窗光透入',
-      '医院健康管理中心，嵌入式LED灯带洒下柔和暖白光，接待台后方排列健康宣传展板，前方皮质沙发与实木茶几，地面灰色哑光瓷砖'
+      '医院健康宣教室，白色荧光灯均匀照明，白墙面贴有无文字骨骼肌解剖图与运动损伤海报（纯图形版），木质讲台表面带有细微使用划痕，地面浅灰色防滑PVC地胶',
+      '三甲医院检验科走廊，冷白色LED光源从走廊顶部连续排列向下照射，无文字箭头标识牌指向尿液检验窗口，地面浅色抛光瓷砖，墙面白色医用抗菌涂层',
+      '医生诊室，白色墙面悬挂无文字人体解剖示意图（纯图形版），办公桌摆放听诊器与血压计，检查床铺有蓝色一次性床单，无影灯悬于上方，窗光透入',
+      '医院健康管理中心，嵌入式LED灯带洒下柔和暖白光，接待台后方排列无文字健康宣传展板（纯图形版），前方皮质沙发与实木茶几，地面灰色哑光瓷砖'
     ];
     const actionForbidden = ['全息', '虚拟', '投影', '空间扭曲', '时间残影', '霓虹', '数据流', '光即角色', '抽象构图', '梦境流动性', '手绘动画', '湿版摄影', '黑色电影'];
     const fallbackActions = [
@@ -2053,7 +2057,9 @@ class ProductionEngine {
     // === L1: 约束层(P0必加)===
     // v1.2.5: 从blueprint.config读取画幅,默认16:9横屏
     const ratio = blueprint.config?.aspectRatio || '16:9';
-    parts.push(`【约束】${ratio} cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic`);
+    // 【v2.1.4-fix9-P14】全局禁止文字约束：所有画面不得出现任何语言文字（中英文字符、标牌、报告单、商标等），仅片头titleOverlay由后期处理
+    const l1Constraint = `${ratio} cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background`;
+    parts.push(`【约束】${l1Constraint}`);
     partMeta.push({ id: 'L1_constraint', priority: 'P0' });
 
     // === L2: 基础层(P0必加)===
@@ -2172,7 +2178,11 @@ class ProductionEngine {
 
     // === L9: 质控层(P0)===
     const negativeConstraints = [
-      '【负面约束】no watermark, no logo, no text overlay, no subtitle, no caption',
+      '【负面约束】no watermark, no logo, no text overlay, no subtitle, no caption, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters',
+      '【负面约束】no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background',
+      '【负面约束】no brand logos with text, no text in medical charts, no text on posters, no text on billboards, no text on packaging, no handwritten text, no printed text, no signage text',
+      '【负面约束】no text overlays, no UI elements with text, no text on book covers, no text on medicine bottles, no text on report forms, no text on devices, no text on badges, no text on nameplates',
+      '【负面约束】no text on doors, no text on windows, no text on floors, no text on ceilings',
       '【负面约束】blurry, low resolution, pixelated, compression artifacts',
       '【负面约束】cartoon, anime, illustration, 3D render look, CGI appearance, plastic look',
       '【负面约束】distorted perspective, impossible geometry, floating objects',
