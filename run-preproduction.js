@@ -28,8 +28,7 @@ const intent = `穿警服的陈卓女士，讲解居民健康护理知识，进�
 const metadata = {
   title: '陈卓健康科普系列 - 第一集：横纹肌溶解的症状及实验室检查',
   // 显式传递创意指数，覆盖系统推断
-  // 【v2.1.4-fix9-P3】降低创意指数强制写实场景（0.82→0.5）
-  creativeIntensity: 0.5,
+  creativeIntensity: 0.82,
   // 显式传递目标时长和范围
   target_duration: 62,
   durationRange: [59, 65],
