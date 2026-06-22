@@ -76,8 +76,13 @@ class SceneDesignAgent extends BaseAgent {
       const dialogue = s.dialogue?.lines?.map(l => `"${l.content}"`).join('; ') || s.dialogue || '';
       return `镜头 ${s.shotId}: ${s.duration || '?'}s; 台词: ${dialogue.substring(0, 80)}`;
     }).join('\n');
+    
+    // 【v2.1.4-fix9-P1】构建导演上下文
+    const directorContext = this._buildDirectorContext(blueprint);
 
-    return `## 角色
+    return `${directorContext}
+
+## 角色
 ${characterDesc || '无'}
 
 ## 镜头
@@ -93,6 +98,35 @@ ${shotsInfo}
 要求: 写实具体、与台词情绪匹配、动作自然、相邻镜头环境连续。
 
 输出JSON: {"shots": [{"shotId":"SC01","scene":"...","mood":"...","action":"...","emotional_target":"..."}]}`;
+  }
+  
+  /**
+   * 【v2.1.4-fix9-P1】构建导演上下文
+   */
+  _buildDirectorContext(blueprint) {
+    const meta = blueprint.metadata || {};
+    const config = blueprint.config || {};
+    const title = meta.title || config.title || '未命名';
+    
+    // 从 config 读取导演上下文信息
+    const contentTheme = config.content_theme || '';
+    const contentSummary = config.content_summary || '';
+    const visualStyle = config.visual_style || 'REAL';
+    const sceneRequirement = config.scene_requirement || '';
+    const characterDescription = config.character_description || '';
+    const forbiddenScenes = config.forbidden_scenes || [];
+    const keyMessages = config.key_messages || [];
+    
+    return `## 🎬 导演指令上下文
+视频标题：${title}
+内容主题：${contentTheme}
+核心内容：${contentSummary}
+视觉风格：${visualStyle}
+场景要求：${sceneRequirement}
+角色设定：${characterDescription}
+关键信息：${keyMessages.join('；') || '无'}
+禁止场景：${forbiddenScenes.join('、') || '无'}
+`;
   }
 
   _fallback(shots) {

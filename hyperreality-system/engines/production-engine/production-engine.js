@@ -1011,6 +1011,9 @@ class ProductionEngine {
 
         // 情感
         emotionalTarget: scene.emotional_target || { valence: 0, arousal: 0.5 },
+        
+        // 【v2.1.4-fix9-P1】附加 blueprint 引用，供 Agent 读取导演上下文
+        _blueprint: adaptedBlueprint,
 
         // 视觉方向
         visualDirection: scene.visual_direction || {},

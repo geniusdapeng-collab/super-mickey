@@ -531,7 +531,7 @@ class HyperrealitySystem {
       const hasImages = p.characterRef && p.characterRef !== 'NONE';
       // v2.0.4-fix: 检查 timelineString 是否存在
       const hasTimeline = !!(p.timelineString && p.timelineString.length > 3);
-      const hasConstraints = p.prompt?.includes('角色一致性') || false;
+      const hasConstraints = typeof p.prompt === 'string' && p.prompt.includes('角色一致性') || false;
       const charCount = p.promptCharCount || (typeof p.prompt === 'string' ? p.prompt.length : 0);
       lines.push(`| ${p.shotId} | ${p.duration || '?'}s | ${charCount} | ${hasImages ? '✓' : '✗'} | ${hasTimeline ? '✓' : '✗'} | ${hasConstraints ? '✓' : '✗'} |`);
     }

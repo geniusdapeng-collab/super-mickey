@@ -1,71 +1,71 @@
 # 📝 提示词审核报告
 
 **镜头数**: 6
-**平均长度**: 677 字符
+**平均长度**: 849 字符
 
 ## 镜头总览
 
-| 镜头 | 长度 | 有定妆照 | 有时间轴 | 有约束 |
-|------|------|----------|----------|--------|
-| SC01 | 647 | ✗ | ✗ | ✗ |
-| SC02 | 699 | ✗ | ✗ | ✗ |
-| SC03 | 701 | ✗ | ✗ | ✗ |
-| SC04 | 699 | ✗ | ✗ | ✗ |
-| SC05 | 656 | ✗ | ✗ | ✗ |
-| SC06 | 661 | ✗ | ✗ | ✗ |
+| 镜头 | 时长 | 字符数 | 有定妆照 | 有时间轴 | 有约束 |
+|------|------|--------|----------|----------|--------|
+| SC01 | 8s | 1042 | ✓ | ✗ | ✓ |
+| SC02 | 12s | 1006 | ✓ | ✗ | ✓ |
+| SC03 | 15s | 1063 | ✓ | ✗ | ✓ |
+| SC04 | 13s | 878 | ✓ | ✗ | ✓ |
+| SC05 | 9s | 214 | ✓ | ✗ | ✗ |
+| SC06 | 8s | 888 | ✓ | ✗ | ✓ |
 
 ## 完整提示词
 
 ### SC01
-**长度**: 647 字符 | **定妆照**: 无
+**长度**: 1042 字符 | **定妆照**: 有 | **时间轴**: 无
 
 ```
-16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic, hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film, 陈卓站在工业风私人健身工作室力量区，清晨7点，东侧高窗透入冷调晨光，空气中的微尘在光束中漂浮，钢架器械投下锐利阴影。, 陈卓: human, 35岁左右女性, 穿警服, 短发干练, 亲和专业, 健康科普讲师, 直视镜头，双手自然垂落身侧，身体重心微前倾，下颌收紧，肩胛骨微微收紧, dialogue: 陈卓|独白|严肃|我是陈卓。今天说个健身圈的恐怖故事。|LIP_SYNC:YES || 陈卓|独白|警告|横纹肌溶解！很多人练着练着就进ICU。|LIP_SYNC:YES, 低角度缓推全景，冷峻晨光中建立力量区空间，钢架器械如巨兽般压迫环绕, 清晨七东侧高窗倾泻冷调晨光，锐利光束切割空间，微尘在光柱中无声翻滚, mood: 冷峻肃杀，暗藏危险气息，压迫感如铅块沉坠在空气中, audio: 通风管道低频嗡鸣，远处车流与铁器微颤，空气沉滞, no voiceover, no narration, no metal_gloss, no unnatural_eye_color
+【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic，【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film，【场景】清晨6:30的城市社区户外塑胶跑道，晨雾未散，空气湿度高，红色颗粒塑胶路面微反光，金属路灯杆上钠灯仍亮着昏黄光晕，远处天际线泛起铁灰色，单杠金属结构表面凝结细密水珠，背景为低层居民楼模糊轮廓，浅景深突出人物主体，【角色】中年女性陈卓，身穿深灰色速干运动外套与黑色运动长裤，白色运动鞋，短发利落服帖，站姿挺拔，面向镜头方向，【动作】固定机位中景，镜头稳定无抖动，陈卓静立于单杠旁，双肩自然下沉，双手垂落于身体两侧，目光直视镜头，晨雾中自然光与钠灯混合照明，冷色温侧光勾勒面部轮廓，【定妆照】image://characters/chen-zhuo/portraits/chen-zhuo-front.png，【台词】【台词】"健身后尿液变成酱油色？这不是开玩笑。"，【时间轴】T00:00-T00:08，【情绪】警觉肃杀，晨光如刀刃般冷冽，压抑紧张，冷峻真实，危机暗示，【音频】清晨户外环境底噪，远处稀疏鸟鸣，微风掠过塑胶跑道的低频摩擦声，路灯电流微弱嗡鸣，无背景音乐，台词干声清晰靠前，【负面约束】no watermark, no logo, no text, no subtitle, no caption, no cartoon style, no anime style, no flat lighting, no overexposure, no oversaturated colors, no blurry face, no distorted hands, no amateur composition, no bright cheerful tone, no vignetting, no 3D render look, no plastic skin, no deformed anatomy，【角色一致性】保持陈卓面部特征、发型、身形与定妆照一致，运动服装颜色与款式前后统一，肤色与光影反应保持连贯，避免面部结构变形或五官漂移
 ```
 
 ---
 
 ### SC02
-**长度**: 699 字符 | **定妆照**: 无
+**长度**: 1006 字符 | **定妆照**: 有 | **时间轴**: 无
 
 ```
-16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic, hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film, 同一场景，镜头推近至中景，晨光从左上方45度角强化，照亮陈卓面部轮廓，背景哑铃架虚化成深色剪影，地面防滑垫纹理隐约可见。, 陈卓: human, 35岁左右女性, 穿警服, 短发干练, 亲和专业, 健康科普讲师, 抬起右手至胸前，手指微曲模拟破裂形态，左手自然下垂，身体轻微侧转十五度, dialogue: 陈卓|独白|专业|简单说，就是肌肉细胞破裂，内容物泄漏。|LIP_SYNC:YES || 陈卓|独白|担忧|肌红蛋白堵住肾脏，引发急性衰竭。|LIP_SYNC:YES || 陈卓|独白|强调|记住：尿变酱油色就是危险信号！|LIP_SYNC:YES, 从全景缓推至中景，晨光如刃勾勒面部棱角，背景哑铃架缓缓沉入浓重暗色剪影, 左上方四十五度晨光如刀削出面颊轮廓，背景哑铃架虚化成深色剪影，仅余地面纹理隐约浮现, mood: 理性克制，忧虑渐浓，如解剖刀般冷静剖析身体危机, audio: 空调气流稳定，哑铃架金属轻振，环境底噪收窄显不安, no voiceover, no narration, no metal_gloss, no unnatural_eye_color
+【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic，【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film，【场景】城市公共标准田径跑道，清晨7:00整，路灯同步熄灭，晨雾由浓转薄，阳光从右侧高层建筑群缝隙中斜切而入，在地面形成狭长锐利的光影分割，空气湿度粒子可见，沥青路面颗粒与白色分道线清晰可辨，【角色】陈卓，健康科普主讲人，身着深灰色运动外套，侧身站立于跑道中线，左肩朝向光源，面部半侧承接阴影，姿态挺拔而静止，【动作】镜头低角度固定机位，缓慢上摇并微推至陈卓上半身，精准捕捉右侧斜射阳光在其左肩勾勒出的锐利光边，晨雾在光柱中呈现体积散射，人物保持侧身对镜姿态，【定妆照】image://characters/chen-zhuo/portraits/chen-zhuo-front.png，【台词】【台词】"典型症状记住三件套。"，【时间轴】T00:00-T00:12，【情绪】凝重，压迫，沉重，肃穆，紧张，【音频】清晨城市低频环境底噪，远处模糊车流与零星鸟鸣，路灯电流声渐次熄灭，晨风轻拂雾气的细微白噪音，低沉压抑的大提琴弦乐铺垫，【负面约束】no watermark, no logo, no cartoon style, no flat lighting, no oversaturation, no blur, no low resolution, no extra limbs, no deformed hands, no text overlay, no subtitle, no caption, no amateur composition, no washed out colors, no digital artifacts, no 3D render look, no plastic skin, no inconsistent anatomy，【角色一致性】保持陈卓面部特征、发型、身形与定妆照一致，确保本集内所有镜头中该角色视觉锚点统一，服装色彩与纹理无漂移
 ```
 
 ---
 
 ### SC03
-**长度**: 701 字符 | **定妆照**: 无
+**长度**: 1063 字符 | **定妆照**: 有 | **时间轴**: 无
 
 ```
-16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic, hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film, 同一工作室，阳光移至侧上方，光比明显加强，局部高光过曝，阴影区域加深，地面橡胶垫颗粒纹理清晰可见，空气仿佛凝滞。, 陈卓: human, 35岁左右女性, 穿警服, 短发干练, 亲和专业, 健康科普讲师, 向前跨出半步，双手突然张开模拟炸裂，双肩微耸，眼神迅速向下扫视再拉回镜头, dialogue: 陈卓|独白|警示|第一个元凶：运动过度，急功近利。|LIP_SYNC:YES || 陈卓|独白|紧张|小白突然狂做深蹲，肌肉细胞直接'炸裂'。|LIP_SYNC:YES || 陈卓|独白|紧迫|肌红蛋白涌进血液，肾脏瞬间过载！|LIP_SYNC:YES, 手持中景微微晃动如急促呼吸，镜头震颤迫近，肌肉炸裂的恐惧在明暗光影中骤然绷紧, 阳光移至侧上方形成凌厉光比，局部高光近乎过曝，阴影如墨浸染，橡胶地垫颗粒颗颗分明, mood: 焦灼紧迫，张力攀升，肌肉炸裂的恐惧感在空气中绷紧, audio: 通风骤响，铁链刺耳碰撞，橡胶摩擦，焦灼感急剧攀升, no voiceover, no narration, no metal_gloss, no unnatural_eye_color
+【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic，【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film，【场景】清晨7:15，城市北侧专业林荫跑道转入段，两侧悬铃木树冠层茂密覆盖，阳光以低角度穿透叶隙在柏油路面形成高对比度斑驳光影，树影与圆形光斑洒落并跳跃于白色棉质面料表面，远处街道清洁作业声隐约可闻，空间纵深向林荫深处延伸，路面沥青颗粒与落叶纹理清晰可见，【角色】陈卓，健康科普主讲人，晨跑者身份，身着简洁白色棉质T恤搭配运动下装，体态匀称，面部特征与定妆照一致，姿态放松但眼神专注冷静，【动作】斯坦尼康手持跟随镜头，自开阔跑道平稳转入北侧林荫段，镜头保持中景缓慢推近至中近景，捕捉动态光斑在陈卓白T恤上的跳跃效果，陈卓保持匀速慢跑节奏，侧脸转向镜头直接对话，【定妆照】image://characters/chen-zhuo/portraits/chen-zhuo-front.png，【台词】【台词】"确诊关键看抽血。"，【时间轴】T00:00-T00:15，【情绪】冷静、专业、抽离、克制、实验室般疏离，【音频】环境音效：清晨城市低频环境底噪、远处扫帚摩擦柏油路面的有节奏扫街声、林间鸟鸣与树叶沙沙声；背景音乐：极简电子氛围音，低频嗡鸣，无旋律性，保持情感距离与实验室般的客观感，【负面约束】no watermark, no logo, no text, no subtitle, no caption, no cartoon style, no flat lighting, no overexposure, no blurry background, no 3D render, no digital art, no anime, no illustration, no distorted face, no extra limbs, no soft focus, no dreamy filter, no vignetting，【角色一致性】保持陈卓面部特征、发型、白色T恤款式与材质一致，确保与定妆照形象完全匹配，禁止改变角色年龄、体型或面部结构，全程维持同一场景光照下的形象连贯性
 ```
 
 ---
 
 ### SC04
-**长度**: 699 字符 | **定妆照**: 无
+**长度**: 878 字符 | **定妆照**: 有 | **时间轴**: 无
 
 ```
-16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic, hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film, 转至工作室力量区深处，背光形成人物轮廓光，窗外光线被云层柔化，整体色温偏暖但对比度降低，铁锈味仿佛从旧器械中渗出。, 陈卓: human, 35岁左右女性, 穿警服, 短发干练, 亲和专业, 健康科普讲师, 缓缓转身背对镜头，右肩下沉，左手扶住杠铃杆，低头停顿两秒后重新转回正面, dialogue: 陈卓|独白|严肃|除了过度运动，高温和中暑也是大敌。|LIP_SYNC:YES || 陈卓|独白|沉重|车祸挤压伤、肌肉长时间缺血坏死。|LIP_SYNC:YES || 陈卓|独白|紧迫|这些外力直接让肌肉'崩溃'溶解！|LIP_SYNC:YES, 低角度固定中近景，背光勾勒出人物沉重轮廓，陈旧铁锈气息仿佛从幽暗器械阴影中缓缓渗出, 窗外光线被云层柔化成暖调薄纱，低对比度中背光勾出人物轮廓，旧器械仿佛渗出铁锈阴影, mood: 沉郁凝重，窒息压抑，旧伤与高温交织成无形的牢笼, audio: 暖通低沉轰鸣，窗外闷雷，老旧风扇吱呀，沉郁窒息, no voiceover, no narration, no metal_gloss, no unnatural_eye_color
+【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic，【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film，【场景】林荫道尽头，清晨7:20，阳光穿透梧桐树叶，在地面形成斑驳光影与明暗交界线，前方可见医院急诊楼灰墙，空间深度从前景树影延伸至背景建筑，【角色】陈卓，仅脚部及下半身入镜，深色长裤，黑色皮鞋，站立于光影分割线上，【动作】低角度固定机位，镜头缓慢上摇，捕捉脚步踏在明暗分割线上的瞬间，背景急诊楼灰墙逐渐显露，自然侧逆光形成戏剧性光影，【定妆照】image://characters/chen-zhuo/portraits/chen-zhuo-front.png，【台词】【台词】"还要看肌红蛋白。"，【时间轴】T00:00-T00:13，【情绪】紧迫暗涌，平静水面下的漩涡，压抑，不安，悬疑，【音频】清晨城市环境底噪，远处医院急诊室隐约的救护车鸣笛声，风吹梧桐叶沙沙声，低沉的环境氛围音，【负面约束】no watermark, no logo, no text, no subtitle, no caption, no cartoon style, no flat lighting, no overexposure, no blurry background, no artificial color, no digital art style, no anime, no 3D render, no stock photo, no deformed anatomy, no vignette, no oversaturation，【角色一致性】保持角色视觉形象一致性，若后续镜头出现陈卓需保持相同面部特征、体型与服装风格
 ```
 
 ---
 
 ### SC05
-**长度**: 656 字符 | **定妆照**: 无
+**长度**: 214 字符 | **定妆照**: 有 | **时间轴**: 无
 
 ```
-16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic, hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film, 工作室角落药柜与补给区，顶光为主光源，面部出现轻微蝶形阴影，背景药瓶与补剂罐反射细碎光斑，氛围私密而阴暗。, 陈卓: human, 35岁左右女性, 穿警服, 短发干练, 亲和专业, 健康科普讲师, 从药柜旁踱步回中心，手指轻敲柜台，突然抬头直视镜头，瞳孔放大，嘴角微颤, dialogue: 陈卓|独白|低沉|最隐蔽的原因：乱吃药和病毒感染。|LIP_SYNC:YES || 陈卓|独白|震惊|他汀、抗病毒药，还有流感，都会诱发！|LIP_SYNC:YES, 手持特写微微仰俯游移，顶光蝶影笼罩面颊，背景药瓶光斑如毒蛇鳞眼在幽暗中阴冷闪烁, 顶光如密室探照灯般打下，鼻下蝶形阴影若隐若现，背景药瓶与补剂罐反射出毒蛇般的细碎冷光, mood: 阴郁惊骇，寒意暗藏，药物与病毒化作隐秘的致命毒蛇, audio: 冷藏柜断续启停，药瓶轻碰，电流嘶嘶，阴冷暗藏杀机, no voiceover, no narration, no metal_gloss, no unnatural_eye_color
+【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic，【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film
 ```
 
 ---
 
 ### SC06
-**长度**: 661 字符 | **定妆照**: 无
+**长度**: 888 字符 | **定妆照**: 有 | **时间轴**: 无
 
 ```
-16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic, hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film, 回到工作室中心主灯位，光线重新均匀明亮，色温回升至中性白，窗外晨雾渐散，空间豁然开朗，器械冷硬的线条变得柔和。, 陈卓: human, 35岁左右女性, 穿警服, 短发干练, 亲和专业, 健康科普讲师, 双手掌心向下平推做停止手势，随后握拳轻捶左胸，最后伸出右手食指指向前方强调立刻, dialogue: 陈卓|独白|亲和|预防就三招：循序渐进，及时补水，别乱吃药。|LIP_SYNC:YES || 陈卓|独白|坚定|一旦发现肌肉剧痛、尿色深，立刻就医！|LIP_SYNC:YES, 稳定中景缓缓向后拉开，中性白光均匀洒满力量区，晨雾散尽后封闭空间豁然开朗重获呼吸, 中心主光位重新均匀明亮，色温回升至晨雾散尽的中性白，器械冷硬线条被柔光驯服, mood: 温暖笃定，充满希望，晨光驱散阴霾传递坚定力量感, audio: 通风渐缓，器械静默，窗外鸟鸣渗入，明朗回升暖意, no voiceover, no narration, no metal_gloss, no unnatural_eye_color
+【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic，【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film，【场景】三甲医院急诊楼入口台阶，清晨7:30，自动玻璃门反复开合泄出白色冷气，门楣急诊红灯高频闪烁，晨光从侧面低角度照射，与门内冷白光形成强烈冷暖色温对撞，地面花岗岩台阶带水渍反光，空间纵深从前景台阶延伸至门厅，环境材质包含金属门框、钢化玻璃、粗糙石材，【角色】无，镜头中未出现具体人物，【动作】固定机位低角度仰拍，镜头微微上摇捕捉门楣红灯闪烁节奏，玻璃门自动开合的机械运动形成动态焦点，冷气外溢与晨光产生体积光散射，【定妆照】无，【台词】【台词】"记住，尿液变色就是红灯。"，【时间轴】T00:00-T00:08，【情绪】坚定亲和，风暴后的锚定感，警示，清醒，专业，【音频】自动门开合机械声，急诊门楣蜂鸣器低频闪烁声，清晨室外环境底噪，远处救护车隐约鸣笛，冷气外泄的气流声，低频沉稳背景音乐铺底，【负面约束】no watermark, no logo, no text, no subtitle, no caption, no cartoon style, no flat lighting, no oversaturated colors, no amateur photography, no smartphone aesthetic, no deformed architecture, no blurry foreground, no lens flare abuse, no vignetting, no CGI look，【角色一致性】本镜头无角色出场，保持急诊楼外观材质和色调与前序镜头一致，门楣红灯闪烁频率稳定，玻璃反光逻辑统一
 ```
 
 ---
@@ -76,6 +76,6 @@
 2. 确认角色定妆照引用正确
 3. 确认负面约束（暗黑风/金属光泽）已包含
 4. 确认角色一致性约束已包含
-5. 确认 Prompt 长度在 980 字符以内
+5. 确认 Prompt 长度在限制以内
 
 **请回复 "确认" 继续渲染，或 "修改" 并指出问题**

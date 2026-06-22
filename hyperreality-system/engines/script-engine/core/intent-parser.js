@@ -37,7 +37,15 @@ class IntentParser {
    * @returns {object} UserIntent 对象
    */
   parse(rawInput, metadata = {}) {
-    const text = rawInput || '';
+    // v2.1.4-fix8: 防御性处理 - rawInput可能是对象
+    let text = '';
+    if (typeof rawInput === 'string') {
+      text = rawInput;
+    } else if (rawInput && typeof rawInput === 'object') {
+      text = (rawInput.text || rawInput.content || rawInput.description || rawInput.title || '').toString();
+    } else {
+      text = (rawInput || '').toString();
+    }
     
     // 第一层：快速分类器
     const fastResult = this._fastClassify(text);

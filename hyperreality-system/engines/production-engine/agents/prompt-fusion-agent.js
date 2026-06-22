@@ -281,8 +281,12 @@ class PromptFusionAgent extends BaseAgent {
                           (s.dialogue ? this._extractPureDialogue(s.dialogue) : '');
       return `${s.shotId}(${s.duration || '?'}s): ${(s.scene || '').substring(0, 50)} | ${s.mood || ''} | ${pureDialogue.substring(0, 50)} | 运镜:${(s.cameraString || '').substring(0, 30)} | 灯光:${(s.lightingString || '').substring(0, 30)}`;
     }).join('\n');
+    
+    // 【v2.1.4-fix9-P1】构建导演上下文
+    const directorContext = this._buildDirectorContext(shots);
 
-    return `画幅:${ratio}
+    return `${directorContext}
+画幅:${ratio}
 角色:${characterInfo || '无'}
 镜头:\n${shotsInfo}
 
@@ -296,6 +300,33 @@ class PromptFusionAgent extends BaseAgent {
 5. 只输出JSON，不要解释
 
 输出:{"shots":[{"shotId":"SC01","fields":{...}}]}`;
+  }
+  
+  /**
+   * 【v2.1.4-fix9-P1】构建导演上下文
+   */
+  _buildDirectorContext(shots) {
+    // 从第一个 shot 的 blueprint 引用中提取上下文
+    const firstShot = shots[0];
+    const blueprint = firstShot?._blueprint || {};
+    const config = blueprint.config || {};
+    
+    const title = blueprint.title || config.title || '未命名';
+    const contentTheme = config.content_theme || '';
+    const sceneRequirement = config.scene_requirement || '';
+    const characterDescription = config.character_description || '';
+    const forbiddenScenes = config.forbidden_scenes || [];
+    const keyMessages = config.key_messages || [];
+    
+    return `## 🎬 导演指令上下文
+视频标题：${title}
+内容主题：${contentTheme}
+场景要求：${sceneRequirement}
+角色设定：${characterDescription}
+关键信息：${keyMessages.join('；') || '无'}
+禁止场景：${forbiddenScenes.join('、') || '无'}
+
+`;
   }
 
   _fallbackBatch(shots, ratio) {

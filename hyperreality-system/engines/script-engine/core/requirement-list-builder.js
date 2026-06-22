@@ -209,7 +209,17 @@ class RequirementListBuilder {
    * 规则库解析 - 快速确定性提取
    */
   _ruleBasedParse(input, metadata) {
-    const text = (input || '').toLowerCase();
+    // v2.1.4-fix8: 防御性处理 - input可能是对象
+    let text = '';
+    if (typeof input === 'string') {
+      text = input.toLowerCase();
+    } else if (input && typeof input === 'object') {
+      // 尝试从对象中提取文本
+      text = (input.text || input.content || input.description || input.title || '').toString().toLowerCase();
+    } else {
+      text = (input || '').toString().toLowerCase();
+    }
+    
     const result = {
       videoType: null,
       platform: null,

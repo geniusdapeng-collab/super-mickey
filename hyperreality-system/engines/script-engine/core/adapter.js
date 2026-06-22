@@ -72,6 +72,15 @@ class ScriptBlueprintAdapter {
       aspectRatio: meta._metadata?.aspectRatio || meta.aspectRatio || '16:9',
       _metadata: meta._metadata || {},
       
+      // 【v2.1.4-fix9-P1】传递导演上下文信息
+      content_theme: meta.content_theme || this._extractContentTheme(meta.title),
+      content_summary: meta.content_summary || '',
+      visual_style: meta.visual_style || 'REAL',
+      scene_requirement: meta.scene_requirement || '',
+      character_description: meta.character_description || '',
+      forbidden_scenes: meta.forbidden_scenes || [],
+      key_messages: meta.key_messages || [],
+      
       // 约束配置
       constraints: {
         max_prompt_length: this.config.maxPromptLength,
@@ -109,7 +118,16 @@ class ScriptBlueprintAdapter {
         
         // 设定
         setting: scene.setting || '',
+        time_of_day: scene.time_of_day || '',
+        atmosphere: scene.atmosphere || '',
+        visual_style: scene.visual_style || '',
+        space_depth: scene.space_depth || '',
+        key_props: scene.key_props || [],
+        director_notes: scene.director_notes || '',
         visual_notes: scene.visual_notes || '',
+        
+        // 【v2.1.4-fix9-P1】场景主题标记
+        scene_theme: scene.scene_theme || '',
         
         // 角色
         characters: scene.characters || [],
@@ -245,6 +263,8 @@ class ScriptBlueprintAdapter {
         character_id: char.character_id,
         name: char.name,
         role: char.role,
+        // 【v2.1.4-fix9-P1】补全 description 字段，确保 LLM 能看到角色完整描述
+        description: char.description || char.visual_anchor?.persona || char.name,
         
         // 视觉锚点
         visual_anchor: {
@@ -437,6 +457,15 @@ class ScriptBlueprintAdapter {
     }
     
     return warnings;
+  }
+  /**
+   * 【v2.1.4-fix9-P1】从标题提取内容主题
+   */
+  _extractContentTheme(title) {
+    if (!title) return '';
+    if (title.includes('横纹肌溶解')) return '横纹肌溶解健康科普';
+    if (title.includes('健康')) return '健康科普';
+    return '';
   }
 }
 
