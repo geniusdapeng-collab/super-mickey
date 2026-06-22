@@ -58,11 +58,12 @@ class PromptFusionAgent extends BaseAgent {
 
 关键要求：
 1. 【台词】字段必须独立，角色直接对镜头说话，不要写"画外音""旁白"
-2. 场景要具体专业（门诊室、宣教室、检查室），不要写"社区健身区"
-3. 不要混合成一段narrative，每个字段独立输出
-4. 只描述本集内容，严禁预告后续集数
-5. 保持角色视觉锚点一致
-6. 负面约束要完整，包含10+条排除项`;
+2. 场景要具体真实（门诊室、宣教室、检查室），必须是写实环境，禁止科幻/抽象元素
+3. 禁止词汇：全息、虚拟、投影、抽象、光影场域、数据空间、元宇宙、时间操控、霓虹、微观世界、宏观、抽象几何、流动光影、交织光影、色彩对冲
+4. 不要混合成一段narrative，每个字段独立输出
+5. 只描述本集内容，严禁预告后续集数
+6. 保持角色视觉锚点一致
+7. 负面约束要完整，包含10+条排除项`;
   }
 
   async process(shots, blueprint) {
@@ -151,7 +152,23 @@ class PromptFusionAgent extends BaseAgent {
     parts.push(`【基础】${fields.baseline || 'hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film'}`);
 
     // 【场景】
-    if (fields.scene) parts.push(`【场景】${fields.scene}`);
+    // 【v2.1.4-fix9-P5】场景强制写实：禁止科幻/抽象词汇
+    let sceneDesc = fields.scene || shot.scene || '';
+    const forbiddenWords = ['全息', '虚拟', '投影', '抽象', '光影场域', '数据空间', '元宇宙', '时间操控', '霓虹', '微观世界', '宏观', '抽象几何', '流动光影', '交织光影', '色彩对冲'];
+    const hasForbidden = forbiddenWords.some(w => sceneDesc.includes(w));
+    if (hasForbidden) {
+      console.warn(`[PromptFusionAgent] ⚠️ 镜头 ${shot.shotId} 场景含禁止词汇: "${sceneDesc.substring(0, 50)}..."，强制替换为写实场景`);
+      // 强制替换为写实场景
+      const fallbackScenes = [
+        '医院健康宣教室，白色荧光灯均匀照明，白墙面贴有骨骼肌解剖图与运动损伤海报，木质讲台表面带有细微使用划痕，地面浅灰色防滑PVC地胶',
+        '三甲医院检验科走廊，冷白色LED光源从走廊顶部连续排列向下照射，指示牌清晰指向尿液检验窗口，地面浅色抛光瓷砖，墙面白色医用抗菌涂层',
+        '医生诊室，白色墙面悬挂医学挂图，办公桌摆放听诊器与血压计，检查床铺有蓝色一次性床单，无影灯悬于上方，窗光透入',
+        '医院健康管理中心，嵌入式LED灯带洒下柔和暖白光，接待台后方排列健康宣传展板，前方皮质沙发与实木茶几，地面灰色哑光瓷砖'
+      ];
+      const index = parseInt(shot.shotId.replace(/\D/g, '')) || 0;
+      sceneDesc = fallbackScenes[index % fallbackScenes.length];
+    }
+    if (sceneDesc) parts.push(`【场景】${sceneDesc}`);
 
     // 【角色】
     // 【v2.1.4-fix9-P4】角色服装锁定：强制使用原始角色设定中的服装
