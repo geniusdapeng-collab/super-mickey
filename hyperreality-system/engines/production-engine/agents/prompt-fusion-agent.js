@@ -154,7 +154,24 @@ class PromptFusionAgent extends BaseAgent {
     if (fields.scene) parts.push(`【场景】${fields.scene}`);
 
     // 【角色】
-    if (fields.character) parts.push(`【角色】${fields.character}`);
+    // 【v2.1.4-fix9-P4】角色服装锁定：强制使用原始角色设定中的服装
+    let characterDesc = fields.character || '';
+    if (characterDesc && shot.character) {
+      // 如果LLM输出的角色描述中没有"警"字，但原始角色设定有，则强制替换
+      const originalChar = shot.character || '';
+      if (originalChar.includes('警') && !characterDesc.includes('警')) {
+        // LLM擅自改了服装，从原始角色描述中提取姓名+服装
+        const nameMatch = originalChar.match(/([^,，]+警[^,，]+)/);
+        if (nameMatch) {
+          characterDesc = characterDesc.replace(/(身着|穿着|身穿|着)[^，]+/, nameMatch[1]);
+          // 如果没替换成功，直接在描述开头插入正确服装
+          if (!characterDesc.includes('警')) {
+            characterDesc = originalChar + '，' + characterDesc;
+          }
+        }
+      }
+    }
+    if (characterDesc) parts.push(`【角色】${characterDesc}`);
 
     // 【动作】
     if (fields.action) parts.push(`【动作】${fields.action}`);
@@ -291,6 +308,12 @@ class PromptFusionAgent extends BaseAgent {
 镜头:\n${shotsInfo}
 
 任务:为每个镜头生成标准字段格式的导演分镜提示词。
+
+【角色服装锁定 - 强制不可修改】
+角色服装必须与角色设定完全一致，禁止根据场景修改：
+- 正确："陈卓女士，穿警服的陈女士，健康科普主讲人，短发，站姿挺拔"
+- 错误："白色医生服"、"白大褂"、"浅蓝色衬衫"（禁止根据场景更换服装）
+【角色】字段必须严格使用角色设定中的原始服装描述，不可自由发挥。
 
 要求：
 1. 按标准字段输出：【约束】【基础】【场景】【角色】【动作】【定妆照】【台词】【时间轴】【情绪】【音频】【负面约束】【角色一致性】
