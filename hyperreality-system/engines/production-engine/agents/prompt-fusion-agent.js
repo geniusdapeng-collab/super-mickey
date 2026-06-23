@@ -163,6 +163,28 @@ class PromptFusionAgent extends BaseAgent {
     // 【v2.1.4-fix10】在 LLM 输出入口统一标准化为 snake_case
     fields = normalizeFields(fields);
     
+    // 【v2.1.4-fix10-fix1】字段完整性检查：LLM 可能只输出部分字段
+    // 从 shot 对象提取已有数据填充缺失字段
+    const requiredFields = [
+      'director_instruction', 'constraint', 'baseline', 'scene', 'lighting',
+      'composition', 'color_palette', 'depth_of_field', 'camera_movement',
+      'character', 'costume', 'makeup', 'action', 'props', 'portraits',
+      'dialogue', 'timeline', 'mood', 'pacing', 'transition', 'audio',
+      'negative', 'bright_constraint', 'character_constraint', 'consistency'
+    ];
+    const missingFields = requiredFields.filter(f => !fields[f] || fields[f] === '');
+    if (missingFields.length > 0) {
+      console.log(`[PromptFusionAgent] ⚠️ 镜头 ${shot.shotId} LLM输出字段不完整，缺失 ${missingFields.length} 个: ${missingFields.join(', ')}`);
+      // 从 shot 对象提取数据填充
+      const shotData = this._extractFieldsFromShot(shot);
+      for (const f of missingFields) {
+        if (shotData[f] && shotData[f] !== '') {
+          fields[f] = shotData[f];
+          console.log(`[PromptFusionAgent]   ✅ 从 shot 填充: ${f}`);
+        }
+      }
+    }
+    
     // 【v2.1.4-fix9-P25-fix7】将 fields 中的关键字段展开到 shot 顶层
     // 确保 FieldGuard 能直接检查到这些字段
     const expandedFields = { ...fields };
@@ -180,6 +202,47 @@ class PromptFusionAgent extends BaseAgent {
       degraded: false,
       degradeReason: null
     };
+  }
+
+  /**
+   * 【v2.1.4-fix10-fix1】从 shot 对象提取字段数据，用于补充 LLM 缺失字段
+   */
+  _extractFieldsFromShot(shot) {
+    const result = {};
+    if (!shot) return result;
+    
+    // 提取已有数据
+    if (shot.scene) result.scene = shot.scene;
+    if (shot.mood) result.mood = shot.mood;
+    if (shot.action) result.action = shot.action;
+    if (shot.character) result.character = typeof shot.character === 'string' ? shot.character : shot.character?.name || '';
+    if (shot.cameraString) result.camera_movement = shot.cameraString;
+    if (shot.lightingString) result.lighting = shot.lightingString;
+    if (shot.backgroundSoundString) result.audio = shot.backgroundSoundString;
+    if (shot.dialogue) {
+      const pureDialogue = shot.dialogueText || this._extractPureDialogue(shot.dialogue);
+      if (pureDialogue) result.dialogue = `【台词】"${pureDialogue}"`;
+    }
+    if (shot.emotionalTarget) {
+      const et = shot.emotionalTarget;
+      result.mood = `${et.valence > 0.5 ? 'positive' : 'neutral'}, ${et.arousal > 0.5 ? 'high energy' : 'calm'}`;
+    }
+    if (shot.duration) {
+      const d = shot.duration;
+      const seg1 = Math.floor(d * 0.3);
+      const seg2 = Math.floor(d * 0.6);
+      result.timeline = `T00:00 - 全景establishing，环境展示；T00:0${seg1} - 中景推进，人物动作；T00:0${seg2} - 情绪收尾，光线平复`;
+    }
+    if (shot.characterRef) result.portraits = shot.characterRef;
+    
+    // 默认负面约束
+    result.negative = 'no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background';
+    result.bright_constraint = 'bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination';
+    result.character_constraint = `只出现${shot.character?.name || '角色'}一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆`;
+    result.director_instruction = '好莱坞大导演质感，电影级画面，写实风格，无特效，无科幻元素';
+    result.consistency = '保持角色形象一致，造型不变，面部特征与体型每帧统一';
+    
+    return result;
   }
 
   _fallbackSingleShot(shot, ratio) {
