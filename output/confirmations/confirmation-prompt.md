@@ -1,89 +1,75 @@
 # 📝 提示词审核报告
 
 **镜头数**: 6
-**平均长度**: 1500 字符
+**平均长度**: 1101 字符
 
 ## 镜头总览
 
 | 镜头 | 时长 | 字符数 | 有定妆照 | 有时间轴 | 有约束 |
 |------|------|--------|----------|----------|--------|
-| SC00 | 11s | 1500 | ✓ | ✓ | ✗ |
-| SC01 | 11s | 1500 | ✓ | ✓ | ✗ |
-| SC02 | 11s | 1500 | ✓ | ✓ | ✗ |
-| SC03 | 15s | 1500 | ✓ | ✓ | ✗ |
-| SC04 | 8s | 1500 | ✓ | ✓ | ✗ |
-| SC05 | 9s | 1500 | ✓ | ✓ | ✗ |
+| SC00 | 9s | 1049 | ✓ | ✗ | ✗ |
+| SC01 | 10s | 1114 | ✓ | ✗ | ✗ |
+| SC02 | 10s | 1124 | ✓ | ✗ | ✗ |
+| SC03 | 12s | 1097 | ✓ | ✗ | ✗ |
+| SC04 | 13s | 1111 | ✓ | ✗ | ✗ |
+| SC05 | 11s | 1112 | ✓ | ✗ | ✗ |
 
 ## 完整提示词
 
 ### SC00
-**长度**: 1500 字符 | **定妆照**: 有 | **时间轴**: T00:00-T00:11 / duration: 11s / type: opening / mood: neutral, calm, intense, dramatic
-
-**人物卡片**:
-- 陈卓 (protagonist): 陈卓
+**长度**: 1049 字符 | **定妆照**: 有 | **时间轴**: 无
 
 ```
-【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background,【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film,【角色】陈卓: human, 穿警服的陈女士, 全民健康科普讲解员, 专业亲和, 站姿挺拔,【定妆照】陈卓: image://characters/陈卓/front.png,【台词】运动后肌肉疼？尿色像浓茶？；这可能是横纹肌溶解！,【负面约束】no watermark, no logo, no text overlay, no subtitle, no caption, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters,【负面约束】no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background,【负面约束】no brand logos with text, no text in medical charts, no text on posters, no text on billboards, no text on packaging, no handwritten text, no printed text, no signage text,【负面约束】no text overlays, no UI elements with text, no text on book covers, no text on medicine bottles, no text on report forms, no text on devices, no text on badges, no text on nameplates,【负面约束】no text on doors, no text on windows, no text on floors, no text on ceilings,【负面约束】blurry, low resolution, pixelated, compression artifacts,【负面约束】cartoon, anime, illustration, 3D render look, CGI appearance, plastic look,【负
+【导演指令】好莱坞大导演质感，电影级画面，写实风格，无特效，无科幻元素，纪实性健康科普影像，严肃警示基调，社会教育片美学，【约束】Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no caption, no watermark，【基础】8K resolution, cinematic quality, highly detailed, photorealistic, intricate textures, sharp focus，【场景】医院健康宣教室，白色荧光灯均匀照明，墙面白色乳胶漆，贴有纯图形骨骼肌解剖海报与运动损伤警示图案，木质讲台位于房间前方，折叠座椅整齐排列，后方有白板架与无文字标识牌，【灯光/照明】主光：顶部LED面板灯 4200K中性白光，均匀漫射无硬阴影；补光：墙面反射光填充侧影，左前侧反光板 3200K暖光柔化面部；背景光：讲台后方窗户自然光 5600K冷白光，轮廓分离；特效：荧光灯管微弱频闪控制，【构图】景别：中景（膝上）；主体位置：画面黄金分割右1/3处，讲台前站立；线条引导：教室纵深由讲台向后排座椅延伸；画框边缘：左侧留白1/4展示图形海报与教室环境，【色彩/色调】主色调：冷白偏青（医院宣教室感）；辅助色：木质讲台暖黄棕色；肤色：自然偏暖；饱和度：中等偏低，克制严肃；对比度：中高，保持清晰层次与警示氛围，【景深】焦点：人物面部；景深：中等（f/2.8），背景适度虚化可辨；前景：讲台边缘轻微虚化；背景：教室纵深渐变模糊，座椅排数渐隐；层次：前景-中景（人物）-背景三层分离，【运镜】0-3s：稳定器缓慢推近（0.2m/s）→ 3-6s：固定机位稳定 → 6-9s：手持微晃（呼吸感，幅度±1.5度），模拟纪实观察视角，【角色】穿警服的陈卓女士，健康科普主讲人，短发整齐，站姿挺拔，表情严肃凝重，传递警示性科普压迫氛围，【服装】藏青色警服外套（毛呢质地，肩章完整，金属纽扣），内搭浅蓝色衬衫（棉质，领口整洁），黑色西裤（直筒版型），黑色皮鞋（光泽适中），【化妆】短发整齐（黑色，长度及耳，发尾微向内扣），素颜淡妆，眉毛自然平直，唇色淡粉，无夸张妆容，肤色均匀自然，【动作】双手自然撑于木质讲台台面，身体微微前倾，目光直视镜头，头部轻微低垂后抬起，呈现警示性压迫姿态，【道具】手持：无；讲台：空白A4文件夹（白色
 ```
 
 ---
 
 ### SC01
-**长度**: 1500 字符 | **定妆照**: 有 | **时间轴**: T00:11-T00:22 / duration: 11s / type: establishing / mood: mysterious, anticipation, wonder
-
-**人物卡片**:
-- 陈卓 (protagonist): 陈卓
+**长度**: 1114 字符 | **定妆照**: 有 | **时间轴**: 无
 
 ```
-【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background,【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film,【角色】陈卓: human, 穿警服的陈女士, 全民健康科普讲解员, 专业亲和, 站姿挺拔,【定妆照】陈卓: image://characters/陈卓/front.png,【台词】肌肉会肿胀无力，一碰就痛。；最危险的是尿液变成酱油色。,【负面约束】no watermark, no logo, no text overlay, no subtitle, no caption, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters,【负面约束】no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background,【负面约束】no brand logos with text, no text in medical charts, no text on posters, no text on billboards, no text on packaging, no handwritten text, no printed text, no signage text,【负面约束】no text overlays, no UI elements with text, no text on book covers, no text on medicine bottles, no text on report forms, no text on devices, no text on badges, no text on nameplates,【负面约束】no text on doors, no text on windows, no text on floors, no text on ceilings,【负面约束】blurry, low resolution, pixelated, compression artifacts,【负面约束】cartoon, anime, illustration, 3D render look, CGI appearance, plastic look
+【导演指令】好莱坞大导演质感，电影级画面，写实风格，无特效，无科幻元素，医院纪实感，【约束】Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no caption, no watermark，【基础】8K resolution, cinematic quality, highly detailed, photorealistic, intricate textures, sharp focus，【场景】三甲医院检验科走廊，冷白色LED顶灯连续排列向下照射，墙面白色瓷砖，悬挂无文字图形标识牌，地面浅灰色防滑地胶，不锈钢检验窗口，走廊纵深约十五米，临床空间真实质感，【灯光/照明】主光：顶部LED面板灯垂直向下照射 5600K冷白光，硬光产生轻微顶光阴影；补光：墙面白色瓷砖反射光 4500K填充阴影；背景光：走廊深处微弱应急灯 6500K；特效：无，【构图】景别：中景（膝上）；主体位置：画面黄金分割右1/3处；线条引导：走廊纵深顶灯连续排列形成消失点；画框边缘：左侧留白1/4展示检验科环境，【色彩/色调】主色调：冷白偏青（医院感）；辅助色：浅灰色地胶，不锈钢金属银灰；肤色：自然偏暖形成冷暖对比；饱和度：中等偏低；对比度：中高，保持清晰层次，【景深】焦点：人物面部；景深：中等（f/2.8），背景适度虚化可辨；前景：无；背景：走廊纵深渐变模糊，顶灯形成微弱光斑；层次：中景（人物）-背景两层分离，【运镜】0-3s：稳定器缓慢推近（0.3m/s）→ 3-7s：固定机位 → 7-10s：手持微晃（呼吸感，幅度±2度），【角色】穿警服的陈卓女士，健康科普主讲人，短发整齐，站姿挺拔，表情严肃关切，【服装】藏青色警服外套（毛呢质地，肩章完整），内搭浅蓝色衬衫（棉质，领口整洁），黑色西裤，黑色皮鞋，【化妆】短发整齐（黑色，长度及耳），素颜淡妆，眉毛自然，唇色淡粉，无夸张妆容，【动作】右手自然抬起轻按左侧上臂做示意动作，左手持空白A4文件夹自然下垂，身体微微前倾，目光直视镜头，【道具】手持：空白A4文件夹（白色，无文字）；背景：不锈钢检验窗口台面，无文字图形标识牌，【定妆照】image://characters/chen-zhuo/portraits/chen-zhuo-front.png，【台词】【台词】"运动后肌肉不是酸痛，是剧痛。"，【时间轴】T00:00 - 中景，陈卓站立检验科走廊中，冷白顶光垂直照射；右手抬起轻按左侧上臂，目光直视镜头
+T00:03 - 近景过渡
 ```
 
 ---
 
 ### SC02
-**长度**: 1500 字符 | **定妆照**: 有 | **时间轴**: T00:22-T00:33 / duration: 11s / type: conflict / mood: tense, determined, brave, confrontational
-
-**人物卡片**:
-- 陈卓 (protagonist): 陈卓
+**长度**: 1124 字符 | **定妆照**: 有 | **时间轴**: 无
 
 ```
-【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background,【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film,【角色】陈卓: human, 穿警服的陈女士, 全民健康科普讲解员, 专业亲和, 站姿挺拔,【定妆照】陈卓: image://characters/陈卓/front.png,【台词】别硬扛！赶紧去医院查三项。；第一项，肌酸激酶。,【负面约束】no watermark, no logo, no text overlay, no subtitle, no caption, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters,【负面约束】no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background,【负面约束】no brand logos with text, no text in medical charts, no text on posters, no text on billboards, no text on packaging, no handwritten text, no printed text, no signage text,【负面约束】no text overlays, no UI elements with text, no text on book covers, no text on medicine bottles, no text on report forms, no text on devices, no text on badges, no text on nameplates,【负面约束】no text on doors, no text on windows, no text on floors, no text on ceilings,【负面约束】blurry, low resolution, pixelated, compression artifacts,【负面约束】cartoon, anime, illustration, 3D render look, CGI appearance, plastic look,【负面
+【导演指令】好莱坞大导演质感，电影级画面，写实风格，无特效，无科幻元素，临床真实感，健康科普纪录片风格，【约束】Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no caption, no watermark，【基础】8K resolution, cinematic quality, highly detailed, photorealistic, intricate textures, sharp focus, ultra high definition, hyperrealistic，【场景】三甲医院医生诊室，白色墙面悬挂纯图形医学挂图（无文字无标识），办公桌摆放听诊器与血压计，检查床铺有蓝色一次性床单，浅木色地板，白色百叶窗半掩，诊室面积约十八平米，墙面干净无字，【灯光/照明】主光：右侧45度顶光 5600K冷白光，硬光直射营造临床紧迫感；补光：左前侧反光板 3200K暖光，填充面部阴影；背景光：窗户自然光 6500K冷白，轮廓分离人物与背景；特效：无，【构图】景别：中景（膝上）；主体位置：画面黄金分割左1/3处；线条引导：办公桌水平线与墙面垂直线构成稳定框架；画框边缘：右侧留白1/4展示诊室环境，【色彩/色调】主色调：冷白偏青（临床诊室感）；辅助色：蓝色一次性床单、银色金属器械冷灰；肤色：自然偏暖；饱和度：中等偏低，克制冷静；对比度：中高，强化紧张层次，【景深】焦点：人物面部；景深：中等（f/2.8），背景适度虚化可辨；前景：办公桌边缘轻微虚化；背景：墙面挂图与检查床渐变模糊；层次：前景-中景（人物）-背景三层分离，【运镜】0-3s：稳定器缓慢推近（0.3m/s）→ 3-6s：固定机位 → 6-10s：手持微晃（呼吸感，幅度±2度），【角色】穿警服的陈卓女士，健康科普主讲人，站姿挺拔，表情忧虑紧迫，【服装】藏青色警服外套（毛呢质地，肩章完整），内搭浅蓝色衬衫（棉质，领口整洁），黑色西裤，黑色皮鞋，【化妆】短发整齐（黑色，长度及耳），素颜淡妆，眉毛自然，唇色淡粉，无夸张妆容，【动作】右手自然抬起至腹部做说明手势，左手轻扶办公桌边缘，身体微微前倾，目光直视镜头，眉头微蹙，【道具】手持：无；桌面：听诊器（黑色橡胶管，金属胸件）、血压计（袖带整齐折叠）、空白病历夹；背景：纯图形医学挂图，蓝色一次性床单检查床，【定妆照】image://characters/chen-zhuo/portraits/chen-zhuo-front.png，【台词】【台词】"伴随恶心、乏力
 ```
 
 ---
 
 ### SC03
-**长度**: 1500 字符 | **定妆照**: 有 | **时间轴**: T00:33-T00:48 / duration: 15s / type: emotional_climax / mood: neutral, calm, intense, dramatic
-
-**人物卡片**:
-- 陈卓 (protagonist): 陈卓
+**长度**: 1097 字符 | **定妆照**: 有 | **时间轴**: 无
 
 ```
-【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background,【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film,【角色】陈卓: human, 穿警服的陈女士, 全民健康科普讲解员, 专业亲和, 站姿挺拔,【定妆照】陈卓: image://characters/陈卓/front.png,【台词】正常值才两百，患者能破五万！；肌红蛋白也会飙升，堵住肾脏！；肌酐和尿素氮，看肾有没有受伤。,【负面约束】no watermark, no logo, no text overlay, no subtitle, no caption, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters,【负面约束】no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background,【负面约束】no brand logos with text, no text in medical charts, no text on posters, no text on billboards, no text on packaging, no handwritten text, no printed text, no signage text,【负面约束】no text overlays, no UI elements with text, no text on book covers, no text on medicine bottles, no text on report forms, no text on devices, no text on badges, no text on nameplates,【负面约束】no text on doors, no text on windows, no text on floors, no text on ceilings,【负面约束】blurry, low resolution, pixelated, compression artifacts,【负面约束】cartoon, anime, illustration, 3D render look, CGI appear
+【导演指令】好莱坞大导演质感，电影级画面，写实风格，无特效，无科幻元素，权威沉稳的视觉基调，【约束】Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no caption, no watermark，【基础】8K resolution, cinematic quality, highly detailed, photorealistic, intricate textures, sharp focus, ultra high definition, hyperrealistic，【场景】医院健康管理中心接待大厅，日间工作时间，嵌入式LED顶灯均匀分布，天花板白色石膏板，地面浅米色抛光瓷砖，接待台为白色人造石台面，后方墙面排列纯图形健康宣传展板（无文字），前方摆放深棕色皮质候诊沙发，空间宽敞明亮，纵深约八米，【灯光/照明】主光：顶部嵌入式LED面板灯 4500K中性暖白光，柔光漫射，均匀覆盖；补光：左前侧反光板 4000K暖白光，填充面部阴影；背景光：墙面展板上方射灯 4000K，分离背景层次；特效：无，【构图】景别：中景（膝上）；主体位置：画面黄金分割左1/3处；线条引导：接待台水平线横贯画面，沙发轮廓形成稳定构图；画框边缘：右侧留白1/3展示背景展板，【色彩/色调】主色调：暖白偏米（温馨医疗感）；辅助色：深棕色皮质沙发、白色台面；肤色：自然偏暖；饱和度：中等偏低，克制专业；对比度：中等，保持柔和层次，【景深】焦点：人物面部；景深：中等（f/2.8），背景展板适度虚化；前景：接待台边缘轻微虚化；背景：墙面展板与沙发形成纵深；层次：前景-中景（人物）-背景三层分离，【运镜】0-4s：稳定器缓慢推近（0.2m/s）→ 4-8s：固定机位 → 8-12s：手持微晃（呼吸感，幅度±1.5度），【角色】穿警服的陈卓女士，健康科普主讲人，短发整齐，站姿挺拔，表情由沉稳转为震惊，【服装】藏青色警服外套（毛呢质地，肩章完整，金属纽扣），内搭浅蓝色衬衫（棉质，领口整洁），黑色西裤（直筒版型），黑色皮鞋（亮面皮质），【化妆】短发整齐（黑色，长度及耳，发梢微贴面颊），素颜淡妆，眉毛自然平直，唇色淡粉，肤色均匀，无夸张妆容，【动作】右手持空白报告单自然下垂于身侧，左手自然下垂，身体挺直站立，目光直视镜头，说到关键处右手微微抬起，面部肌肉紧绷表现震惊，【道具】手持：空白A4报告单（白色，无文字，无表格线）；背景：白色人造石接待台（表面光洁）
 ```
 
 ---
 
 ### SC04
-**长度**: 1500 字符 | **定妆照**: 有 | **时间轴**: T00:48-T00:56 / duration: 8s / type: resolution / mood: peaceful, warm, nostalgic, hopeful
-
-**人物卡片**:
-- 陈卓 (protagonist): 陈卓
+**长度**: 1111 字符 | **定妆照**: 有 | **时间轴**: 无
 
 ```
-【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background,【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film,【角色】陈卓: human, 穿警服的陈女士, 全民健康科普讲解员, 专业亲和, 站姿挺拔,【定妆照】陈卓: image://characters/陈卓/front.png,【台词】记住这三个数，CK、肌红、肾功能。,【负面约束】no watermark, no logo, no text overlay, no subtitle, no caption, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters,【负面约束】no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background,【负面约束】no brand logos with text, no text in medical charts, no text on posters, no text on billboards, no text on packaging, no handwritten text, no printed text, no signage text,【负面约束】no text overlays, no UI elements with text, no text on book covers, no text on medicine bottles, no text on report forms, no text on devices, no text on badges, no text on nameplates,【负面约束】no text on doors, no text on windows, no text on floors, no text on ceilings,【负面约束】blurry, low resolution, pixelated, compression artifacts,【负面约束】cartoon, anime, illustration, 3D render look, CGI appearance, plastic look,【负面约束】dis
+【导演指令】好莱坞大导演质感，电影级画面，写实风格，无特效，无科幻元素，【约束】Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no caption, no watermark，【基础】8K resolution, cinematic quality, highly detailed, photorealistic, intricate textures, sharp focus，【场景】三甲医院检验科走廊，冷白色LED顶灯连续照射，墙面白色瓷砖，地面浅灰色防滑地胶，不锈钢检验窗口，走廊纵深约十五米，无文字标识牌，【灯光/照明】主光：顶部正上方LED面板灯 5600K冷白光，均匀漫射柔光；补光：墙面反射光填充阴影；背景光：走廊尽头窗户自然光 6500K；特效：检验窗口玻璃微弱反射光，【构图】景别：中景（膝上）；主体位置：画面黄金分割右1/3处；线条引导：走廊纵深由近及远；画框边缘：左侧留白1/4展示环境，【色彩/色调】主色调：冷白偏青（医院感）；辅助色：不锈钢金属银灰；肤色：自然偏暖；饱和度：中等偏低；对比度：中高，【景深】焦点：人物面部；景深：中等（f/2.8），背景适度虚化可辨；前景：无；背景：走廊纵深渐变模糊；层次：中景（人物）-背景两层，【运镜】0-4s：固定机位建立构图 → 4-10s：稳定器缓慢推近（0.3m/s） → 10-13s：固定机位强调特写，【角色】穿警服的陈卓女士，健康科普主讲人，短发整齐，站姿挺拔，表情严肃专注，【服装】藏青色警服外套（毛呢质地，肩章完整），内搭浅蓝色衬衫（棉质，领口整洁），黑色西裤，黑色皮鞋，【化妆】短发整齐（黑色，长度及耳），素颜淡妆，眉毛自然，唇色淡粉，【动作】右手持空白文件夹自然下垂贴于腿侧，左手抬起做强调手势，食指微微指向斜下方，身体微微前倾，目光直视镜头，头部微侧，【道具】手持：空白A4文件夹（白色，无文字）；背景：不锈钢检验窗口台面，空白塑料试管架，无文字标识牌，【定妆照】image://characters/chen-zhuo/portraits/chen-zhuo-front.png，【台词】【台词】"再看肌红蛋白，尿里和血里都要查。"，【时间轴】T00:00 - 中景，陈卓站立检验科走廊中央，冷白光从顶部照下；身体挺直，右手持文件夹贴于腿侧，目光直视镜头
+T00:04 - 近景过渡，镜头稳定推近至胸部以上；左手抬起做强调手势，眉头微蹙，表情转为严肃专注
+T00:09 - 特写定格
 ```
 
 ---
 
 ### SC05
-**长度**: 1500 字符 | **定妆照**: 有 | **时间轴**: T00:56-T01:05 / duration: 9s / type: resolution / mood: peaceful, warm, nostalgic, hopeful
-
-**人物卡片**:
-- 陈卓 (protagonist): 陈卓
+**长度**: 1112 字符 | **定妆照**: 有 | **时间轴**: 无
 
 ```
-【约束】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background,【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film,【角色】陈卓: human, 穿警服的陈女士, 全民健康科普讲解员, 专业亲和, 站姿挺拔,【定妆照】陈卓: image://characters/陈卓/front.png,【台词】出现异常别犹豫，立即就医！；我是陈卓，守护你的健康。,【负面约束】no watermark, no logo, no text overlay, no subtitle, no caption, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters,【负面约束】no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background,【负面约束】no brand logos with text, no text in medical charts, no text on posters, no text on billboards, no text on packaging, no handwritten text, no printed text, no signage text,【负面约束】no text overlays, no UI elements with text, no text on book covers, no text on medicine bottles, no text on report forms, no text on devices, no text on badges, no text on nameplates,【负面约束】no text on doors, no text on windows, no text on floors, no text on ceilings,【负面约束】blurry, low resolution, pixelated, compression artifacts,【负面约束】cartoon, anime, illustration, 3D render look, CGI appearance, plastic look,
+【导演指令】好莱坞大导演质感，电影级画面，写实风格，无特效，无科幻元素，【约束】Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no caption, no watermark，【基础】8K resolution, cinematic quality, highly detailed, photorealistic, intricate textures, sharp focus，【场景】三甲医院检验科走廊，冷白色双管荧光灯从天花板均匀照射，墙面白色乳胶漆，地面浅灰色防滑地胶，纯图形健康知识海报张贴在墙面（无文字），不锈钢检验窗口，走廊纵深约十五米，写实医疗环境，【灯光/照明】主光：顶部双管荧光灯 5600K冷白光，均匀漫射；补光：左前侧反光板 4000K中性光，填充面部阴影；背景光：走廊尽头窗户自然光 6500K，分离纵深空间；特效：无，【构图】景别：中景（膝上）；主体位置：画面黄金分割右1/3处；线条引导：走廊纵深线条由近及远；画框边缘：左侧留白1/4展示走廊环境，【色彩/色调】主色调：冷白偏青（医疗警示感）；辅助色：浅灰地面、不锈钢金属银灰；肤色：自然偏暖；饱和度：中等偏低，克制冷静；对比度：中高，保持清晰层次，【景深】焦点：人物面部；景深：中等（f/2.8），背景适度虚化可辨；前景：无；背景：走廊纵深渐变模糊，墙面海报虚化；层次：中景（人物）-背景两层分离，【运镜】0-3s：稳定器缓慢推近（0.3m/s）→ 3-8s：固定机位 → 8-11s：手持微晃跟拍（呼吸感，幅度±2度），【角色】穿警服的陈卓女士，健康科普主讲人，短发整齐，站姿挺拔，表情严肃紧迫，【服装】藏青色警服外套（毛呢质地，肩章完整），内搭浅蓝色衬衫（棉质，领口整洁），黑色西裤，黑色皮鞋，【化妆】短发整齐（黑色，长度及耳），素颜淡妆，眉毛自然，唇色淡粉，无夸张妆容，【动作】右手食指抬起做强调手势，左手自然握拳下垂，身体微微前倾，目光直视镜头，表情严肃紧迫，【道具】手持：空白A4文件夹（白色，无文字）；背景：纯图形健康知识海报（无文字），不锈钢检验窗口台面，【定妆照】image://characters/chen-zhuo/portraits/chen-zhuo-front.png，【台词】【台词】"记住，肌肉剧痛加茶色尿，立刻就医。"，【时间轴】T00:00 - 中景，陈卓站立检验科走廊中，双管荧光灯冷白光照射；身体挺拔，目光直视镜头，准备开口
+T00:03 - 近景过渡
 ```
 
 ---
