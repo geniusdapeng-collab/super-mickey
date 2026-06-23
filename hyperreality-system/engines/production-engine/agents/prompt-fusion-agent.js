@@ -203,9 +203,20 @@ class PromptFusionAgent extends BaseAgent {
    */
   _assembleStandardPrompt(shot, fields, ratio) {
     const parts = [];
+    
+    // 辅助函数：获取字段值（支持驼峰和下划线命名）
+    const getField = (...names) => {
+      for (const name of names) {
+        if (fields[name] !== undefined && fields[name] !== null && fields[name] !== '') {
+          return fields[name];
+        }
+      }
+      return undefined;
+    };
 
     // 【导演指令】⭐ 新增：整体创作意图
-    if (fields.director_instruction) parts.push(`【导演指令】${fields.director_instruction}`);
+    const directorInstruction = getField('director_instruction', 'directorInstruction');
+    if (directorInstruction) parts.push(`【导演指令】${directorInstruction}`);
 
     // 【约束】：必须包含画幅比例、分辨率、格式、帧率
     parts.push(`【约束】${fields.constraint || `Aspect ratio: ${ratio}, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no caption, no watermark, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background`}`);
@@ -233,19 +244,24 @@ class PromptFusionAgent extends BaseAgent {
     if (sceneDesc) parts.push(`【场景】${sceneDesc}`);
 
     // 【灯光/照明】⭐ 新增：专业灯光设计
-    if (fields.lighting) parts.push(`【灯光/照明】${fields.lighting}`);
+    const lightingField = getField('lighting');
+    if (lightingField) parts.push(`【灯光/照明】${lightingField}`);
 
     // 【构图】⭐ 新增：景别+画面比例+主体位置+线条引导
-    if (fields.composition) parts.push(`【构图】${fields.composition}`);
+    const compositionField = getField('composition');
+    if (compositionField) parts.push(`【构图】${compositionField}`);
 
     // 【色彩/色调】⭐ 新增：调色方案+色温倾向+饱和度
-    if (fields.color_palette) parts.push(`【色彩/色调】${fields.color_palette}`);
+    const colorPalette = getField('color_palette', 'colorPalette');
+    if (colorPalette) parts.push(`【色彩/色调】${colorPalette}`);
 
     // 【景深】⭐ 新增：焦点控制+虚化程度+前景/背景层次
-    if (fields.depth_of_field) parts.push(`【景深】${fields.depth_of_field}`);
+    const depthOfField = getField('depth_of_field', 'depthOfField');
+    if (depthOfField) parts.push(`【景深】${depthOfField}`);
 
     // 【运镜】⭐ 新增：镜头运动方式（从【动作】拆分）
-    if (fields.camera_movement) parts.push(`【运镜】${fields.camera_movement}`);
+    const cameraMovement = getField('camera_movement', 'cameraMovement');
+    if (cameraMovement) parts.push(`【运镜】${cameraMovement}`);
 
     // 【角色】
     // 【v2.1.4-fix9-P4】角色服装锁定：强制使用原始角色设定中的服装
@@ -268,14 +284,16 @@ class PromptFusionAgent extends BaseAgent {
     if (characterDesc) parts.push(`【角色】${characterDesc}`);
 
     // 【服装】⭐ 新增：详细服装描述（从【角色】拆分）
-    if (fields.costume) parts.push(`【服装】${fields.costume}`);
+    const costumeField = getField('costume');
+    if (costumeField) parts.push(`【服装】${costumeField}`);
 
     // 【化妆】⭐ 新增：妆容、发型细节
-    if (fields.makeup) parts.push(`【化妆】${fields.makeup}`);
+    const makeupField = getField('makeup');
+    if (makeupField) parts.push(`【化妆】${makeupField}`);
 
     // 【动作】
     // 【v2.1.4-fix9-P9】动作强制写实：禁止科幻/抽象词汇
-    let actionDesc = fields.action || shot.action || '';
+    let actionDesc = getField('action') || shot.action || '';
     const actionForbidden = ['全息', '虚拟', '投影', '空间扭曲', '时间残影', '霓虹', '数据流', '光即角色', '抽象构图', '梦境流动性', '手绘动画'];
     const actionHasForbidden = actionForbidden.some(w => actionDesc.includes(w));
     if (actionHasForbidden) {
@@ -296,17 +314,21 @@ class PromptFusionAgent extends BaseAgent {
     if (actionDesc) parts.push(`【动作】${actionDesc}`);
 
     // 【道具】⭐ 新增：关键道具（手持物、桌面物品、背景物件）
-    if (fields.props) parts.push(`【道具】${fields.props}`);
+    const propsField = getField('props');
+    if (propsField) parts.push(`【道具】${propsField}`);
 
     // 【定妆照】
-    if (fields.portraits) parts.push(`【定妆照】${fields.portraits}`);
+    const portraitsField = getField('portraits');
+    if (portraitsField) parts.push(`【定妆照】${portraitsField}`);
 
     // 【台词】
-    if (fields.dialogue) parts.push(`【台词】${fields.dialogue}`);
+    const dialogueField = getField('dialogue');
+    if (dialogueField) parts.push(`【台词】${dialogueField}`);
 
     // 【时间轴】镜头内部微观导演调度（T00:XX相对时间戳格式）
-    if (fields.timeline) {
-      parts.push(`【时间轴】${fields.timeline}`);
+    const timelineField = getField('timeline');
+    if (timelineField) {
+      parts.push(`【时间轴】${timelineField}`);
     } else {
       // 兜底：使用T00:XX相对时间戳格式，至少3段
       const duration = shot.duration || 10;
@@ -316,20 +338,25 @@ class PromptFusionAgent extends BaseAgent {
     }
 
     // 【情绪】
-    if (fields.mood) parts.push(`【情绪】${fields.mood}`);
+    const moodField = getField('mood');
+    if (moodField) parts.push(`【情绪】${moodField}`);
 
     // 【节奏】⭐ 新增：镜头速度+紧迫感+舒缓度
-    if (fields.pacing) parts.push(`【节奏】${fields.pacing}`);
+    const pacingField = getField('pacing');
+    if (pacingField) parts.push(`【节奏】${pacingField}`);
 
     // 【转场】⭐ 新增：与下一镜头的衔接方式
-    if (fields.transition) parts.push(`【转场】${fields.transition}`);
+    const transitionField = getField('transition');
+    if (transitionField) parts.push(`【转场】${transitionField}`);
 
     // 【音频】
-    if (fields.audio) parts.push(`【音频】${fields.audio}`);
+    const audioField = getField('audio');
+    if (audioField) parts.push(`【音频】${audioField}`);
 
     // 【负面约束】：通用负面词 + 场景特定负面词
-    if (fields.negative) {
-      parts.push(`【负面约束】${fields.negative}`);
+    const negativeField = getField('negative');
+    if (negativeField) {
+      parts.push(`【负面约束】${negativeField}`);
     } else {
       // 兜底：通用负面词 + 教育/医疗场景特定负面词
       parts.push(`【负面约束】no text, no watermark, no caption, no subtitle, no logo, no blurry, no low resolution, no pixelated, no distorted, no artifacts, no compression noise, no extra limbs, no deformed hands, no malformed fingers, no extra fingers, no fused fingers`);
@@ -338,16 +365,18 @@ class PromptFusionAgent extends BaseAgent {
     }
 
     // 【明亮约束】⭐ 新增：亮度/光照强制要求，防止暗场
-    if (fields.bright_constraint) {
-      parts.push(`【明亮约束】${fields.bright_constraint}`);
+    const brightConstraint = getField('bright_constraint', 'brightConstraint');
+    if (brightConstraint) {
+      parts.push(`【明亮约束】${brightConstraint}`);
     } else {
       // 兜底：强制明亮
       parts.push(`【明亮约束】bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination`);
     }
 
     // 【角色约束】⭐ 新增：防止多角色/分身
-    if (fields.character_constraint) {
-      parts.push(`【角色约束】${fields.character_constraint}`);
+    const characterConstraint = getField('character_constraint', 'characterConstraint');
+    if (characterConstraint) {
+      parts.push(`【角色约束】${characterConstraint}`);
     } else if (shot.character && shot.character !== 'NONE') {
       // 兜底：根据角色名自动生成
       const charName = shot.character.name || shot.character;
@@ -355,7 +384,8 @@ class PromptFusionAgent extends BaseAgent {
     }
 
     // 【角色一致性】
-    if (fields.consistency) parts.push(`【角色一致性】${fields.consistency}`);
+    const consistencyField = getField('consistency');
+    if (consistencyField) parts.push(`【角色一致性】${consistencyField}`);
 
     // 合并
     let fullPrompt = parts.join('，');
