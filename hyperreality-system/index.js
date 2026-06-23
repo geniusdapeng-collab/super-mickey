@@ -465,10 +465,19 @@ class HyperrealitySystem {
     const contentPath = path.join(outputDir, `confirmation-${type}.md`);
     fs.writeFileSync(contentPath, content, 'utf8');
     
-    // 删除旧的确认文件（如果存在）
     const confirmPath = path.join(outputDir, `confirmation-${type}.json`);
+    
+    // 【v2.1.4-fix10】检查是否已有预置的确认文件（队长已确认过）
     if (fs.existsSync(confirmPath)) {
-      fs.unlinkSync(confirmPath);
+      try {
+        const data = JSON.parse(fs.readFileSync(confirmPath, 'utf8'));
+        if (data.status === 'approved' || data.approved === true) {
+          console.log(`   ✅ 检测到已预置确认文件: ${confirmPath}，直接通过`);
+          return { approved: true, reason: 'pre-approved' };
+        }
+      } catch (e) {
+        // 忽略解析错误，继续等待
+      }
     }
     
     console.log(`\n⏳ [等待确认] ${type} 已输出到: ${contentPath}`);

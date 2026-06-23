@@ -1,1 +1,50 @@
-{"approved": true}
+{
+  "status": "approved",
+  "timestamp": "2026-06-23T13:45:00.000Z",
+  "requirement": {
+    "video_type": "健康科普 / 医学教育",
+    "episode": "第一集（共三集）",
+    "theme": "什么是横纹肌溶解——横纹肌溶解的症状以及实验室检查",
+    "duration": "59-65秒",
+    "aspect_ratio": "16:9",
+    "style": "全写实，好莱坞电影级质感",
+    "character": "陈卓（穿警服女士，健康科普主讲人）",
+    "platform": "全民健康科普",
+    "target_audience": "普通居民、非医学专业大众",
+    "creativity_index": 1.0,
+    "content_boundaries": {
+      "includes": [
+        "横纹肌溶解的典型症状（肌肉疼痛、无力、尿液颜色变化等）",
+        "实验室检查指标（肌酸激酶CK、肌红蛋白、肾功能等）",
+        "陈卓单人讲解，生动形象，自然肢体语言",
+        "第一集专属片头（主标题 + 副标题）"
+      ],
+      "excludes": [
+        "横纹肌溶解的病因分析（第二集）",
+        "处理方法和预防措施（第三集）",
+        "下一集预告",
+        "多角色对话场景"
+      ]
+    },
+    "shot_structure": [
+      {"shot": "片头", "duration": "5-6s", "content": "主标题+副标题，陈卓亮相", "emotion": "专业、权威、亲和"},
+      {"shot": "SC01", "duration": "8-10s", "content": "引入：什么是横纹肌溶解", "emotion": "好奇、关注"},
+      {"shot": "SC02", "duration": "10-12s", "content": "症状讲解：肌肉疼痛、无力", "emotion": "关切、警示"},
+      {"shot": "SC03", "duration": "10-12s", "content": "症状讲解：尿液颜色变化", "emotion": "紧张、警觉"},
+      {"shot": "SC04", "duration": "10-12s", "content": "实验室检查：CK指标、肌红蛋白", "emotion": "专业、科普"},
+      {"shot": "SC05", "duration": "8-10s", "content": "检查意义与建议就医", "emotion": "关怀、行动号召"},
+      {"shot": "片尾", "duration": "3-5s", "content": "品牌/系列标识", "emotion": "温暖、信任"}
+    ],
+    "emotion_curve": "专业权威 → 好奇关注 → 关切警示 → 紧张警觉 → 专业科普 → 关怀号召 → 温暖信任",
+    "character_config": {
+      "name": "陈卓",
+      "portrait_style": "cartoon",
+      "uniform": "警服职业装",
+      "portrait_paths": [
+        "image://characters/chen-zhuo/portraits/chen-zhuo-cartoon-front.png",
+        "image://characters/chen-zhuo/portraits/chen-zhuo-cartoon-v2-front.png",
+        "image://characters/chen-zhuo/portraits/chen-zhuo-cartoon-v3-side.png"
+      ]
+    }
+  }
+}

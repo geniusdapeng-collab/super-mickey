@@ -1,0 +1,305 @@
+{
+  "phase": "phase2",
+  "shots": [
+    {
+      "shotId": "S01",
+      "sceneType": "establishing",
+      "sceneFunction": "establish",
+      "timing": {
+        "start": 0,
+        "duration": 120,
+        "end": 120
+      },
+      "duration": 120,
+      "scene": "场景A：医院健康宣教室，白色荧光灯均匀照明，乳白墙面贴有无文字骨骼肌解剖示意图与运动损伤图形海报，木质讲台带有细微划痕，地面铺设浅灰色防滑PVC地板",
+      "mood": "平稳专注，医学科普的严谨开场氛围",
+      "character": "",
+      "characterRef": "NONE",
+      "action": "陈卓双手撑住讲台边缘，身体微微前倾，抬手示意墙面解剖图，目光正视前方",
+      "dialogue": "",
+      "characters": [],
+      "characterDescs": "",
+      "dialogueText": "",
+      "emotionalTarget": {
+        "valence": 0,
+        "arousal": 0.5
+      },
+      "visualDirection": {},
+      "promptBase": "",
+      "worldId": "default",
+      "status": "pending",
+      "timeline": {
+        "object": {
+          "start": "T00:00",
+          "end": "T02:00",
+          "duration": 120,
+          "type": "establishing",
+          "mood": "neutral, calm, steady"
+        },
+        "string": "T00:00-T02:00 / duration: 120s / type: establishing / mood: neutral, calm, steady"
+      },
+      "allocation": {
+        "baseDuration": 120,
+        "dialogueFactor": 0,
+        "typeWeight": 1,
+        "preserved": true
+      },
+      "emotional_target": "引入"
+    },
+    {
+      "shotId": "S02",
+      "sceneType": "establishing",
+      "sceneFunction": "establish",
+      "timing": {
+        "start": 120,
+        "duration": 120,
+        "end": 240
+      },
+      "duration": 120,
+      "scene": "场景A：医院健康宣教室，白色荧光灯均匀照明，乳白墙面贴有无文字骨骼肌解剖示意图，讲台旁立有空白展板支架，地面铺设浅灰色防滑PVC地板",
+      "mood": "紧张严肃，传递病理风险的压迫感",
+      "character": "",
+      "characterRef": "NONE",
+      "action": "陈卓从讲台左侧走向墙面，抬手虚指肌肉组织结构，转身时双手交叠于胸前",
+      "dialogue": "",
+      "characters": [],
+      "characterDescs": "",
+      "dialogueText": "",
+      "emotionalTarget": {
+        "valence": 0,
+        "arousal": 0.5
+      },
+      "visualDirection": {},
+      "promptBase": "",
+      "worldId": "default",
+      "status": "pending",
+      "timeline": {
+        "object": {
+          "start": "T02:00",
+          "end": "T04:00",
+          "duration": 120,
+          "type": "establishing",
+          "mood": "neutral, calm, steady"
+        },
+        "string": "T02:00-T04:00 / duration: 120s / type: establishing / mood: neutral, calm, steady"
+      },
+      "allocation": {
+        "baseDuration": 120,
+        "dialogueFactor": 0,
+        "typeWeight": 1,
+        "preserved": true
+      },
+      "emotional_target": "警示"
+    },
+    {
+      "shotId": "S03",
+      "sceneType": "establishing",
+      "sceneFunction": "establish",
+      "timing": {
+        "start": 240,
+        "duration": 120,
+        "end": 360
+      },
+      "duration": 120,
+      "scene": "场景A：医院健康宣教室，白色荧光灯均匀照明，乳白墙面贴有无文字骨骼肌解剖示意图与运动损伤图形海报，木质讲台放着空白教具，地面铺设浅灰色防滑PVC地板",
+      "mood": "凝重紧迫，强调危险行为的严重性",
+      "character": "",
+      "characterRef": "NONE",
+      "action": "陈卓走回讲台中央，单手举起示意停止，另一手向下按压，身体重心缓缓下沉",
+      "dialogue": "",
+      "characters": [],
+      "characterDescs": "",
+      "dialogueText": "",
+      "emotionalTarget": {
+        "valence": 0,
+        "arousal": 0.5
+      },
+      "visualDirection": {},
+      "promptBase": "",
+      "worldId": "default",
+      "status": "pending",
+      "timeline": {
+        "object": {
+          "start": "T04:00",
+          "end": "T06:00",
+          "duration": 120,
+          "type": "establishing",
+          "mood": "neutral, calm, steady"
+        },
+        "string": "T04:00-T06:00 / duration: 120s / type: establishing / mood: neutral, calm, steady"
+      },
+      "allocation": {
+        "baseDuration": 120,
+        "dialogueFactor": 0,
+        "typeWeight": 1,
+        "preserved": true
+      },
+      "emotional_target": "警示"
+    },
+    {
+      "shotId": "S04",
+      "sceneType": "establishing",
+      "sceneFunction": "establish",
+      "timing": {
+        "start": 360,
+        "duration": 120,
+        "end": 480
+      },
+      "duration": 120,
+      "scene": "场景A：医院健康宣教室，白色荧光灯均匀照明，乳白墙面贴有无文字骨骼肌解剖示意图与运动损伤图形海报，讲台旁摆放医学教学模型，地面铺设浅灰色防滑PVC地板",
+      "mood": "焦虑警觉，唤起观众对身体症状的敏感度",
+      "character": "",
+      "characterRef": "NONE",
+      "action": "陈卓侧身指向墙面海报，双手模仿按压动作，缓慢蹲低后站起，模拟自查姿态",
+      "dialogue": "",
+      "characters": [],
+      "characterDescs": "",
+      "dialogueText": "",
+      "emotionalTarget": {
+        "valence": 0,
+        "arousal": 0.5
+      },
+      "visualDirection": {},
+      "promptBase": "",
+      "worldId": "default",
+      "status": "pending",
+      "timeline": {
+        "object": {
+          "start": "T06:00",
+          "end": "T08:00",
+          "duration": 120,
+          "type": "establishing",
+          "mood": "neutral, calm, steady"
+        },
+        "string": "T06:00-T08:00 / duration: 120s / type: establishing / mood: neutral, calm, steady"
+      },
+      "allocation": {
+        "baseDuration": 120,
+        "dialogueFactor": 0,
+        "typeWeight": 1,
+        "preserved": true
+      },
+      "emotional_target": "警示"
+    },
+    {
+      "shotId": "S05",
+      "sceneType": "establishing",
+      "sceneFunction": "establish",
+      "timing": {
+        "start": 480,
+        "duration": 120,
+        "end": 600
+      },
+      "duration": 120,
+      "scene": "场景A：医院健康宣教室，白色荧光灯均匀照明，乳白墙面贴有无文字骨骼肌解剖示意图，木质讲台抽屉半开露出空白教具，地面铺设浅灰色防滑PVC地板",
+      "mood": "冷静专业，建立医患之间的信任感",
+      "character": "",
+      "characterRef": "NONE",
+      "action": "陈卓回到讲台后，双手平摊向下按压示意冷静，取出空白示意卡片举起展示",
+      "dialogue": "",
+      "characters": [],
+      "characterDescs": "",
+      "dialogueText": "",
+      "emotionalTarget": {
+        "valence": 0,
+        "arousal": 0.5
+      },
+      "visualDirection": {},
+      "promptBase": "",
+      "worldId": "default",
+      "status": "pending",
+      "timeline": {
+        "object": {
+          "start": "T08:00",
+          "end": "T10:00",
+          "duration": 120,
+          "type": "establishing",
+          "mood": "neutral, calm, steady"
+        },
+        "string": "T08:00-T10:00 / duration: 120s / type: establishing / mood: neutral, calm, steady"
+      },
+      "allocation": {
+        "baseDuration": 120,
+        "dialogueFactor": 0,
+        "typeWeight": 1,
+        "preserved": true
+      },
+      "emotional_target": "安抚"
+    },
+    {
+      "shotId": "S06",
+      "sceneType": "establishing",
+      "sceneFunction": "establish",
+      "timing": {
+        "start": 600,
+        "duration": -480,
+        "end": 120
+      },
+      "duration": 120,
+      "scene": "场景A：医院健康宣教室，白色荧光灯均匀照明，乳白墙面贴有无文字骨骼肌解剖示意图与运动损伤图形海报，木质讲台表面有水渍擦痕，地面铺设浅灰色防滑PVC地板",
+      "mood": "温和坚定，传递科学防护的安心感",
+      "character": "",
+      "characterRef": "NONE",
+      "action": "陈卓双手自然张开置于身侧，缓缓点头，走至讲台一侧伸手示意方向",
+      "dialogue": "",
+      "characters": [],
+      "characterDescs": "",
+      "dialogueText": "",
+      "emotionalTarget": {
+        "valence": 0,
+        "arousal": 0.5
+      },
+      "visualDirection": {},
+      "promptBase": "",
+      "worldId": "default",
+      "status": "pending",
+      "timeline": {
+        "object": {
+          "start": "T10:00",
+          "end": "T02:00",
+          "duration": -480,
+          "type": "establishing",
+          "mood": "neutral, calm, steady"
+        },
+        "string": "T10:00-T02:00 / duration: -480s / type: establishing / mood: neutral, calm, steady"
+      },
+      "allocation": {
+        "baseDuration": -480,
+        "dialogueFactor": 0,
+        "typeWeight": 1,
+        "preserved": true
+      },
+      "emotional_target": "引导"
+    }
+  ],
+  "opening": {
+    "shotId": "S00",
+    "scene": "极致黑暗中，一束刺目聚光劈开虚空，照亮悬浮的空白场记板，微尘在光柱中翻涌，极简构图充满压迫性留白。",
+    "mood": "冷峻、神秘、压迫感",
+    "camera": {
+      "shot_size": "特写",
+      "movement": "缓慢推轨",
+      "angle": "平视"
+    },
+    "cameraString": "从极致黑暗中缓慢推轨至空白场记板特写，微尘在光束中清晰可见，呼吸感镜头强化窥视感",
+    "lighting": {
+      "key_light": "单束硬光聚光灯",
+      "atmosphere": "高对比度暗调"
+    },
+    "lightingString": "单束硬光从顶部垂直打下，形成极致明暗对比，黑暗吞噬边缘，悬浮微尘勾勒光柱体积",
+    "audioLayer": {
+      "bgm": "极简合成器低频脉冲，伴随单音钢琴泛音",
+      "sound_effects": "低频嗡鸣，聚光灯电流嗡响，心脏骤停般的重击"
+    },
+    "audioLayerString": "极简电子低频脉冲与单音钢琴泛音交织，辅以聚光灯电流嗡响与心脏骤停般的重击",
+    "titleOverlay": {
+      "main_title": "未命名",
+      "sub_title": "单集",
+      "style": "粗体无衬线白字，故障艺术闪切，聚光下冷峻浮现"
+    },
+    "titleOverlayString": "主标题\"未命名\"以粗体无衬线白字配合故障闪切效果在聚光下冷峻浮现；副标题\"单集\"以极简小号字置于底部",
+    "duration": 8
+  },
+  "llmStats": {},
+  "savedAt": "2026-06-23T14:34:45.170Z"
+}

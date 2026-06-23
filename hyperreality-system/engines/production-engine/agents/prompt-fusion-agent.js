@@ -5,7 +5,7 @@
  * v2.1.4-fix8: LLM输出标准字段格式（【约束】【基础】【场景】等）
  */
 const { BaseAgent } = require('./base-agent');
-const { normalizeFields, makeGetter } = require('../field-standardizer');
+const { normalizeFields, makeGetter } = require('../../field-standardizer');
 
 class PromptFusionAgent extends BaseAgent {
   constructor(options = {}) {
@@ -520,7 +520,7 @@ class PromptFusionAgent extends BaseAgent {
     const shotsInfo = shots.map(s => {
       const pureDialogue = s.dialogue?.lines?.map(l => l.content).join('; ') || 
                           (s.dialogue ? this._extractPureDialogue(s.dialogue) : '');
-      return `${s.shotId}(${s.duration || '?'}s): ${(s.scene || '').substring(0, 50)} | ${s.mood || ''} | ${pureDialogue.substring(0, 50)} | 运镜:${(s.cameraString || '').substring(0, 30)} | 灯光:${(s.lightingString || '').substring(0, 30)}`;
+      return `${s.shotId}(${s.duration || '?'}s): ${s.scene || ''} | ${s.mood || ''} | ${pureDialogue} | 运镜:${s.cameraString || ''} | 灯光:${s.lightingString || ''}`;
     }).join('\n');
     
     // 【v2.1.4-fix9-P1】构建导演上下文
