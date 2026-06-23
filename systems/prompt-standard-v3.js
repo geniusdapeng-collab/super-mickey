@@ -92,8 +92,7 @@ const FIELD_DEFINITIONS = {
     blockMapping: [
       '【镜头时间轴】',   // v6.6.9.4-patch9: 标准字段名优先
       '【CAMERA】',
-      '【动态】',
-      '【运镜】'
+      '【运镜】'        // 【v2.1.4-fix10-P25-fix7】移除 '【动态】'（与ACTION冲突）
     ],
     patterns: [
       /【镜头时间轴】/i,   // 标准字段名优先
