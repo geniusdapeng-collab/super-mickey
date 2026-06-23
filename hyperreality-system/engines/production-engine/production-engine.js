@@ -19,13 +19,13 @@ const { globalNegativePromptInjector } = require('../../../systems/global-negati
 // v2.0.0-LLM-Agent: Agent配置
 const DEFAULT_AGENT_CONFIG = {
   enableLLMAgents: true,
-  llmTimeout: 300000, // 单次调用上限 5 分钟
-  llmMaxRetries: 2, // 重试 2 次
-  llmModel: 'kimi-k2p6', // 深度模型(推理):SceneDesign / VisualLanguage / PromptFusion
-  fastModel: 'kimi-k2p6', // 全部用 k2.6(k2 已下线)
-  totalDeadlineMs: 1200000, // 【修复】提升到20分钟，确保Phase-3 PromptFusion有充足时间
-  memThresholdMB: 1200, // 【新增】堆内存降级阈值(MB)
-  promptFusionConcurrency: 3 // 【新增】PromptFusion 并发度
+  llmTimeout: 180000, // 【v2.1.4-fix10-P25-fix3】单次3分钟，避免一次失败吃掉1/3预算
+  llmMaxRetries: 2,
+  llmModel: 'kimi-k2p6',
+  fastModel: 'kimi-k2p6',
+  totalDeadlineMs: 540000, // 【v2.1.4-fix10-P25-fix3】9分钟，对齐硬杀线（~11分钟），留2分钟收尾
+  memThresholdMB: 1800, // 【v2.1.4-fix10-P25-fix3】提升阈值，避免GC风暴
+  promptFusionConcurrency: 2 // 【v2.1.4-fix10-P25-fix3】并发2，平衡速度与稳定性
 };
 // 注:实际部署时这些模块会从 systems/ 复制到 production-engine/modules/
 const SYSTEMS_PATH = path.join(__dirname, '../../../systems');
@@ -46,8 +46,8 @@ function loadModule(name, required = false) {
 class ProductionEngine {
   constructor(options = {}) {
     this.config = {
-      maxPromptLength: 1500,
-      targetPromptLength: 1470,
+      maxPromptLength: 2500, // 【v2.1.4-fix10-P25-fix3】统一为2500，与质量门一致
+      targetPromptLength: 2500, // 【v2.1.4-fix10-P25-fix3】统一为2500，消除分母错配
       referenceImageCount: 2,
       outputDir: options.outputDir || '/tmp/hyperreality-output',
       ...options
@@ -2821,6 +2821,19 @@ class ProductionEngine {
       errors: result.errors,
       timing: result.timing
     };
+  }
+  /**
+   * 【v2.1.4-fix10-P25-fix3】暴露给外部（如 index.js FieldGuard 重算 prompt）
+   */
+  assemblePromptFromFields(shot, fields, ratio) {
+    // 委托给 PromptFusionAgent 的 _assembleStandardPrompt
+    const agent = this.agents?.promptFusion || new PromptFusionAgent({ maxPromptLength: this.config.maxPromptLength });
+    return agent._assembleStandardPrompt(shot, fields, ratio);
+  }
+
+  countChars(s) {
+    const agent = this.agents?.promptFusion || new PromptFusionAgent({ maxPromptLength: this.config.maxPromptLength });
+    return agent._countChars(s);
   }
 }
 

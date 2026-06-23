@@ -219,9 +219,24 @@ class HyperrealitySystem {
       try {
         const normalized = this.fieldGuard.normalizeAndValidate(productionResult.shots, 'Layer2-Production');
         productionResult.shots = normalized.shots;
+        
+        // 【v2.1.4-fix10-P25-fix3】关键修复：标准化后用完整的 25 字段重算 prompt，消除"假完整"
+        for (const shot of productionResult.shots) {
+          if (shot.fields && this.productionEngine.assemblePromptFromFields) {
+            const rebuilt = this.productionEngine.assemblePromptFromFields(shot, shot.fields, shot.ratio || '16:9');
+            shot.prompt = rebuilt;
+            shot.promptCharCount = this.productionEngine.countChars ? this.productionEngine.countChars(rebuilt) : rebuilt.length;
+          }
+        }
+        // prompts 数组也要同步
+        for (const p of (productionResult.prompts || [])) {
+          const shot = productionResult.shots.find(s => s.shotId === p.shotId);
+          if (shot) { p.prompt = shot.prompt; p.promptCharCount = shot.promptCharCount; }
+        }
+        
         // v1.2.6-fix5: 不再用 normalized.shots 覆盖 prompts（prompts 已是标准输出对象，标准化会破坏结构）
         // productionResult.prompts = normalized.shots; // ❌ 删除此行
-        console.log(`   ✅ 字段标准化通过 (${normalized.report.warnings.length} 警告)`);
+        console.log(`   ✅ 字段标准化通过 (${normalized.report.warnings.length} 警告)，prompt 已按 25 字段重算`);
         this.fieldGuard.printShotSummary(normalized.shots, 'Layer2-Production');
       } catch (err) {
         console.error(`   ❌ 字段校验失败: ${err.message}`);

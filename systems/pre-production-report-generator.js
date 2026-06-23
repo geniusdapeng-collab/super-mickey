@@ -11,8 +11,8 @@ const path = require('path');
 class PreProductionReportGenerator {
   constructor(config = {}) {
     this.config = {
-      maxPromptLength: config.maxPromptLength || 1500,
-      targetPromptLength: config.targetPromptLength || 1470,
+      maxPromptLength: config.maxPromptLength || 2500, // 【v2.1.4-fix10-P25-fix3】统一为2500
+      targetPromptLength: config.targetPromptLength || 2500, // 【v2.1.4-fix10-P25-fix3】统一为2500
       maxDuration: config.maxDuration || 15,
       minDuration: config.minDuration || 4,
       defaultRatio: config.defaultRatio || '16:9',
@@ -235,8 +235,8 @@ class PreProductionReportGenerator {
     } else if (promptLength < 200) {
       warnings.push(`Prompt字数过少（${promptLength}<200），可能影响画面质量`);
       risk = 'medium';
-    } else if (promptLength < 850) {
-      warnings.push(`Prompt利用率不足（${promptLength}/1500，${promptCompleteness}%），建议增强至950+字符`);
+    } else if (promptLength < 2000) { // 【v2.1.4-fix10-P25-fix3】阈值提到2000
+      warnings.push(`Prompt 利用率不足（${promptLength}/2500），建议增强至 2200+ 字符`);
       risk = 'medium';
     }
     

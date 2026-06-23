@@ -7,11 +7,90 @@
 const { BaseAgent } = require('./base-agent');
 const { normalizeFields, makeGetter } = require('../../field-standardizer');
 
+// 【v2.1.4-fix10-P25-fix3】外部专家建议：填满 schema 解决 LLM 字段缺失问题
+// 25 个标准字段的 schema 模板：键名 + 类型提示
+// 这是给 LLM 看的"结构契约"，绝不能再传 fields: {}
+// ⚠️ value 使用空字符串占位，避免 LLM 把描述当输出值（风险5）
+const STANDARD_FIELDS_SCHEMA = {
+  director_instruction: '',
+  constraint: '',
+  baseline: '',
+  scene: '',
+  lighting: '',
+  composition: '',
+  color_palette: '',
+  depth_of_field: '',
+  camera_movement: '',
+  character: '',
+  costume: '',
+  makeup: '',
+  action: '',
+  props: '',
+  portraits: '',
+  dialogue: '',
+  timeline: '',
+  mood: '',
+  pacing: '',
+  transition: '',
+  audio: '',
+  negative: '',
+  bright_constraint: '',
+  character_constraint: '',
+  consistency: ''
+};
+
+// 字段描述表（仅用于补齐 prompt，不放入 schema）
+const FIELD_DESCS = {
+  director_instruction: 'string，≥80字符，导演整体质感指令',
+  constraint: 'string，画幅/分辨率/帧率/格式/禁用项',
+  baseline: 'string，8K/电影级/写实等基础画质词',
+  scene: 'string，≥120字符，场景空间细节',
+  lighting: 'string，≥150字符，主光/辅光/色温/方向',
+  composition: 'string，≥100字符，景别/主体位置/线条/留白',
+  color_palette: 'string，≥80字符，主色/辅色/肤色/饱和度/对比度',
+  depth_of_field: 'string，≥80字符，焦点/景深/前景背景虚化',
+  camera_movement: 'string，≥100字符，分时间段运镜',
+  character: 'string，角色外貌与姿态',
+  costume: 'string，服装材质款式',
+  makeup: 'string，妆造',
+  action: 'string，≥120字符，肢体动作与走位',
+  props: 'string，道具',
+  portraits: 'string，定妆照引用 image://...',
+  dialogue: 'string，台词/旁白原文',
+  timeline: 'string，≥200字符，0-Xs 分镜时间轴',
+  mood: 'string，情绪基调',
+  pacing: 'string，节奏',
+  transition: 'string，转场方式',
+  audio: 'string，≥100字符，环境音/配乐/音效',
+  negative: 'string，负面约束',
+  bright_constraint: 'string，明亮约束',
+  character_constraint: 'string，角色一致性约束',
+  consistency: 'string，跨镜头一致性'
+};
+
+// 25 字段标准名称列表（用于校验）
+const REQUIRED_FIELDS = Object.keys(STANDARD_FIELDS_SCHEMA);
+
+// 字段最低字符数要求
+const MIN_LEN = {
+  scene: 120, lighting: 150, composition: 100, action: 120,
+  camera_movement: 100, timeline: 200, director_instruction: 80,
+  color_palette: 80, depth_of_field: 80, audio: 100
+};
+
+function buildFullSchema(shotId) {
+  // 用真实字段键填充，让 LLM 在 JSON 模式下有明确的 key 列表
+  // value 使用空字符串，避免描述污染（风险5）
+  return { shotId, fields: { ...STANDARD_FIELDS_SCHEMA } };
+}
+
 class PromptFusionAgent extends BaseAgent {
   constructor(options = {}) {
-    super({ name: 'PromptFusionAgent', enabled: true, llmTimeout: 600000, ...options });
+    super({ name: 'PromptFusionAgent', enabled: true, llmTimeout: 180000, ...options });
     this.maxPromptLength = options.maxPromptLength || 2500;
-    this.concurrency = options.concurrency || 3;
+    this.concurrency = options.concurrency || 2;
+    this.llmTimeout = 180000; // 3 分钟单次（避免一次失败吃掉 1/3 预算）
+    this.llmMaxRetries = 2;
   }
 
   _getSystemPrompt() {
@@ -151,7 +230,8 @@ class PromptFusionAgent extends BaseAgent {
 
   async _fuseSingleShot(shot, ratio, characters) {
     const prompt = this._buildBatchPrompt([shot], ratio, characters);
-    const schema = { shots: [{ shotId: shot.shotId, fields: {} }] };
+    // 【v2.1.4-fix10-P25-fix3】把空 schema 换成带 25 字段键名的完整模板
+    const schema = { shots: [buildFullSchema(shot.shotId)] };
 
     const llmResult = await this._callLLM(prompt, schema, () => {
       throw new Error('LLM fallback');
@@ -163,30 +243,10 @@ class PromptFusionAgent extends BaseAgent {
     // 【v2.1.4-fix10】在 LLM 输出入口统一标准化为 snake_case
     fields = normalizeFields(fields);
     
-    // 【v2.1.4-fix10-fix1】字段完整性检查：LLM 可能只输出部分字段
-    // 从 shot 对象提取已有数据填充缺失字段
-    const requiredFields = [
-      'director_instruction', 'constraint', 'baseline', 'scene', 'lighting',
-      'composition', 'color_palette', 'depth_of_field', 'camera_movement',
-      'character', 'costume', 'makeup', 'action', 'props', 'portraits',
-      'dialogue', 'timeline', 'mood', 'pacing', 'transition', 'audio',
-      'negative', 'bright_constraint', 'character_constraint', 'consistency'
-    ];
-    const missingFields = requiredFields.filter(f => !fields[f] || fields[f] === '');
-    if (missingFields.length > 0) {
-      console.log(`[PromptFusionAgent] ⚠️ 镜头 ${shot.shotId} LLM输出字段不完整，缺失 ${missingFields.length} 个: ${missingFields.join(', ')}`);
-      // 从 shot 对象提取数据填充
-      const shotData = this._extractFieldsFromShot(shot);
-      for (const f of missingFields) {
-        if (shotData[f] && shotData[f] !== '') {
-          fields[f] = shotData[f];
-          console.log(`[PromptFusionAgent]   ✅ 从 shot 填充: ${f}`);
-        }
-      }
-    }
+    // 【v2.1.4-fix10-P25-fix3】字段完整性校验 + 定向补齐
+    fields = await this._ensureFieldCompleteness(shot, fields, ratio, characters);
     
     // 【v2.1.4-fix9-P25-fix7】将 fields 中的关键字段展开到 shot 顶层
-    // 确保 FieldGuard 能直接检查到这些字段
     const expandedFields = { ...fields };
     
     // 组装标准格式Prompt
@@ -202,6 +262,92 @@ class PromptFusionAgent extends BaseAgent {
       degraded: false,
       degradeReason: null
     };
+  }
+
+  /**
+   * 【v2.1.4-fix10-P25-fix3】字段完整性校验 + 定向补齐
+   * 先校验，缺哪些就只让 LLM 补哪些，一次轻量调用搞定
+   */
+  async _ensureFieldCompleteness(shot, fields, ratio, characters) {
+    // 1. 找出缺失或过短字段
+    const missing = REQUIRED_FIELDS.filter(f => {
+      const v = fields[f];
+      if (!v || String(v).trim() === '') return true;
+      const min = MIN_LEN[f] || 0;
+      return min > 0 && this._countChars(String(v)) < min;
+    });
+
+    if (missing.length === 0) return fields; // 全齐，无需补
+
+    console.log(`[PromptFusion] ${shot.shotId} 缺失/过短字段 ${missing.length} 个: ${missing.join(',')} → 定向补齐`);
+
+    // 2. 只补缺失字段，给 LLM 一个极简、聚焦的 prompt
+    const fillPrompt = this._buildFillPrompt(shot, missing, fields, ratio, characters);
+    const fillSchema = { shotId: shot.shotId, fields: Object.fromEntries(missing.map(k => [k, STANDARD_FIELDS_SCHEMA[k]])) };
+
+    try {
+      const fillResult = await this._callLLM(fillPrompt, fillSchema, () => null, {
+        maxRetries: 1,
+        maxTokens: 4096 // 只补几个字段，预算充足
+      });
+      const fillFields = fillResult?.result?.fields || fillResult?.result?.[shot.shotId] || {};
+      const normalized = normalizeFields(fillFields);
+      for (const k of missing) {
+        if (normalized[k] && String(normalized[k]).trim() !== '') {
+          fields[k] = normalized[k];
+        }
+      }
+    } catch (e) {
+      console.warn(`[PromptFusion] ${shot.shotId} 补齐失败，保留已有: ${e.message}`);
+    }
+
+    // 3. 仍缺的字段，才用规则兜底（明确标记来源，便于审计）
+    const stillMissing = REQUIRED_FIELDS.filter(f => !fields[f] || String(fields[f]).trim() === '');
+    if (stillMissing.length > 0) {
+      const shotData = this._extractFieldsFromShot(shot);
+      for (const f of stillMissing) {
+        if (shotData[f]) fields[f] = shotData[f];
+        else fields[f] = this._defaultFieldValue(f, shot); // 见下
+      }
+      console.warn(`[PromptFusion] ${shot.shotId} 规则兜底 ${stillMissing.length} 字段`);
+    }
+
+    return fields;
+  }
+
+  // 规则兜底默认值（带字段标记，区别于 LLM 产出）
+  _defaultFieldValue(field, shot) {
+    const ratio = shot.ratio || '16:9';
+    const defaults = {
+      constraint: `Aspect ratio: ${ratio}, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no watermark`,
+      baseline: '8K resolution, cinematic quality, highly detailed, photorealistic, sharp focus, ultra high definition',
+      negative: 'no blur, no distortion, no extra limbs, no text artifacts, no watermark, no logo',
+      bright_constraint: '保持画面明亮清晰，避免过暗或欠曝',
+      character_constraint: '保持角色面部特征、服装、发型跨镜头一致',
+      consistency: '与前后镜头保持场景、光线、角色形象连续'
+    };
+    return defaults[field] || '';
+  }
+
+  // 补齐专用 prompt：只问缺失字段，附上已生成字段作为上下文
+  _buildFillPrompt(shot, missing, existingFields, ratio, characters) {
+    const ctx = Object.entries(existingFields)
+      .filter(([k, v]) => v && String(v).trim())
+      .map(([k, v]) => `${k}: ${String(v).slice(0, 80)}`)
+      .join('\n');
+    return `## 镜头补齐任务
+镜头ID：${shot.shotId}（时长 ${shot.duration || '?'}s）
+场景：${shot.scene || ''}
+情绪：${shot.mood || ''}
+台词：${(shot.dialogue?.lines?.map(l => l.content).join('; ') || shot.dialogue || '')}
+
+## 已生成字段（保持风格一致）
+${ctx}
+
+## 本次只补齐以下字段，每个必须达到最低字符数
+${missing.map(f => `- ${f}：${FIELD_DESCS[f]}`).join('\n')}
+
+只输出 JSON，不要解释。`;
   }
 
   /**
@@ -589,10 +735,21 @@ class PromptFusionAgent extends BaseAgent {
     // 【v2.1.4-fix9-P1】构建导演上下文
     const directorContext = this._buildDirectorContext(shots);
 
+    const sufficiency = [
+      '【字段最低字符数 - 硬性要求，不达标会被打回重写】',
+      ' scene ≥ 120 | lighting ≥ 150 | composition ≥ 100 | action ≥ 120',
+      ' camera_movement ≥ 100 | timeline ≥ 200 | director_instruction ≥ 80',
+      ' color_palette ≥ 80 | depth_of_field ≥ 80 | audio ≥ 100',
+      ' 其余字段 ≥ 40 字符',
+      ' 全部 25 个字段必须全部输出，禁止省略任何一个。'
+    ].join('\n');
+
     return `${directorContext}
 画幅:${ratio}
 角色:${characterInfo || '无'}
 镜头:\n${shotsInfo}
+
+${sufficiency}
 
 任务:为每个镜头生成标准字段格式的导演分镜提示词。
 

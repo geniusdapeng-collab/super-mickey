@@ -9,12 +9,13 @@ async function main() {
       charactersDir: './characters',
       agentConfig: {
         enableLLMAgents: true,
-        llmTimeout: 600000,
+        llmTimeout: 180000, // 【v2.1.4-fix10-P25-fix3】单次3分钟，快速失败重试
         llmMaxRetries: 2,
         llmModel: 'kimi-k2p6',
         fastModel: 'kimi-k2p6',
-        totalDeadlineMs: 1800000, // 增加到30分钟
-        promptFusionConcurrency: 2, // 降低并发度
+        totalDeadlineMs: 540000, // 【v2.1.4-fix10-P25-fix3】9分钟，对齐硬杀线
+        memThresholdMB: 1800, // 【v2.1.4-fix10-P25-fix3】避免GC风暴
+        promptFusionConcurrency: 2, // 并发2
         checkpointDir: './checkpoints',
         enableResume: true
       }
