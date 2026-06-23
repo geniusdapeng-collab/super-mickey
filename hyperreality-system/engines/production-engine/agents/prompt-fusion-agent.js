@@ -9,7 +9,7 @@ const { BaseAgent } = require('./base-agent');
 class PromptFusionAgent extends BaseAgent {
   constructor(options = {}) {
     super({ name: 'PromptFusionAgent', enabled: true, llmTimeout: 600000, ...options });
-    this.maxPromptLength = options.maxPromptLength || 1500;
+    this.maxPromptLength = options.maxPromptLength || 2500;
     this.concurrency = options.concurrency || 3;
   }
 
@@ -44,6 +44,9 @@ class PromptFusionAgent extends BaseAgent {
 20. 【音频】：环境音效+背景音乐描述
 21. 【负面约束】：排除项（no watermark, no logo, no cartoon style, no flat lighting等）
 22. 【角色一致性】：保持角色形象一致
+23. 【明亮约束】：亮度/光照强制要求，确保画面明亮清晰（如：bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination）。这是强制字段，必须输出
+24. 【角色约束】：角色出现限制，防止多角色/分身问题。格式："只出现[角色名]一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆"
+25. 【导演指令】：整体创作意图和风格控制。格式："好莱坞大导演质感，电影级画面，写实风格，无特效，无科幻元素"
 
 输出JSON格式:
 {
@@ -72,6 +75,9 @@ class PromptFusionAgent extends BaseAgent {
         "transition": "切镜（硬切，保持紧张感）",
         "audio": "环境音：医院走廊低频设备嗡鸣，远处隐约脚步声；音乐：冷色调氛围音乐铺底，低沉弦乐",
         "negative": "no watermark, no logo, no cartoon style, no flat lighting, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters",
+        "bright_constraint": "bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination",
+        "character_constraint": "只出现陈卓一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆",
+        "director_instruction": "好莱坞大导演质感，电影级画面，写实风格，无特效，无科幻元素",
         "consistency": "保持陈卓角色形象一致，短发警服造型不变，面部特征与体型每帧统一"
       }
     }
@@ -168,6 +174,9 @@ class PromptFusionAgent extends BaseAgent {
    */
   _assembleStandardPrompt(shot, fields, ratio) {
     const parts = [];
+
+    // 【导演指令】⭐ 新增：整体创作意图
+    if (fields.director_instruction) parts.push(`【导演指令】${fields.director_instruction}`);
 
     // 【约束】
     parts.push(`【约束】${fields.constraint || `${ratio} cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background`}`);
@@ -292,6 +301,23 @@ class PromptFusionAgent extends BaseAgent {
 
     // 【负面约束】
     if (fields.negative) parts.push(`【负面约束】${fields.negative}`);
+
+    // 【明亮约束】⭐ 新增：亮度/光照强制要求，防止暗场
+    if (fields.bright_constraint) {
+      parts.push(`【明亮约束】${fields.bright_constraint}`);
+    } else {
+      // 兜底：强制明亮
+      parts.push(`【明亮约束】bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination`);
+    }
+
+    // 【角色约束】⭐ 新增：防止多角色/分身
+    if (fields.character_constraint) {
+      parts.push(`【角色约束】${fields.character_constraint}`);
+    } else if (shot.character && shot.character !== 'NONE') {
+      // 兜底：根据角色名自动生成
+      const charName = shot.character.name || shot.character;
+      parts.push(`【角色约束】只出现${charName}一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆`);
+    }
 
     // 【角色一致性】
     if (fields.consistency) parts.push(`【角色一致性】${fields.consistency}`);
@@ -457,7 +483,7 @@ class PromptFusionAgent extends BaseAgent {
 - 错误运镜：无人机穿越微观世界、时间操控慢动作、宏大比例展示
 
 要求：
-1. 按标准字段输出：【约束】【基础】【场景】【角色】【动作】【定妆照】【台词】【时间轴】【情绪】【音频】【负面约束】【角色一致性】
+1. 按标准字段输出：【约束】【基础】【场景】【灯光/照明】【构图】【色彩/色调】【景深】【运镜】【角色】【服装】【化妆】【动作】【道具】【定妆照】【台词】【时间轴】【情绪】【节奏】【转场】【音频】【负面约束】【明亮约束】【角色约束】【导演指令】【角色一致性】
 2. 【台词】字段必须独立，角色直接对镜头说话，不要写"画外音""旁白"
 3. 场景要具体专业（门诊室、宣教室、检查室），不要写"社区健身区"。场景中不得出现含文字的物品：如"有文字的报告单"、"标牌上的文字"、"商标"、"有字的海报"等。可以描述"空白报告单"、"无文字标识牌"、"图形海报"等不含文字的物品
 4. 负面约束要完整，包含10+条排除项，必须包含全局禁止文字：no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls objects documents signs labels screens clothing packaging, no handwritten text, no printed text, no signage text, no text overlays, no UI elements with text
