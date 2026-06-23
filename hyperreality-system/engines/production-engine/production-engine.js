@@ -476,13 +476,13 @@ class ProductionEngine {
         }, 'PHASE-1');
 
         currentShots = this._mergeShotsByShotId(currentShots, sdResult.shots, ['scene', 'mood', 'action', 'emotional_target']);
-        if (odResult && odResult.openingData) {
+        if (odResult && odResult.opening) {
           result.stages.opening = { agent: 'openingDesign', ...odResult };
-          result.opening = odResult.openingData;
-          // 【v2.1.4-patch3】将openingData注入到sceneType=opening的shot中
+          result.opening = odResult.opening;
+          // 【v2.1.4-patch3】将opening数据注入到sceneType=opening的shot中
           const openingShot = currentShots.find(s => s.sceneType === 'opening');
           if (openingShot) {
-            const od = odResult.openingData;
+            const od = odResult.opening;
             // v2.1.4-fix8: 兼容下划线命名(main_title/sub_title)和驼峰命名(mainTitle/subtitle)
             const titleOverlay = od.titleOverlay || {};
             openingShot.title = od.title || titleOverlay.mainTitle || titleOverlay.main_title || '';
