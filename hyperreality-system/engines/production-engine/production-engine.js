@@ -13,6 +13,9 @@ const { PromptFusionAgent } = require('./agents/prompt-fusion-agent');
 const { OpeningDesignAgent } = require('./agents/opening-design-agent');
 const { ContinuityReviewAgent } = require('./agents/continuity-review-agent');
 
+// v6.6.10-fix: 全局负面提示词注入器
+const { globalNegativePromptInjector } = require('../../../systems/global-negative-prompts.js');
+
 // v2.0.0-LLM-Agent: Agent配置
 const DEFAULT_AGENT_CONFIG = {
   enableLLMAgents: true,
@@ -701,8 +704,12 @@ class ProductionEngine {
     
     if (shot.mood) parts.push(`atmosphere: ${shot.mood}`);
     
-    // 【v2.1.4-fix9-P14】极简路径也强制全局禁止文字
-    parts.push('no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls objects documents signs labels screens clothing packaging, no handwritten text, no printed text, no signage text, no text overlays, no UI elements with text');
+    // v6.6.10-fix: 极简路径使用全局模块，区分片头/内容镜
+    const isOpeningSimple = shot.type === 'opening' || shot.sceneType === 'opening';
+    const negativeSimple = isOpeningSimple
+      ? globalNegativePromptInjector.generateForOpeningShot({ maxLength: 200 }).replace('【负面约束】', '')
+      : globalNegativePromptInjector.generateForContentShot({ maxLength: 250 }).replace('【负面约束】', '');
+    parts.push(negativeSimple);
     
     return parts.filter(Boolean).join(', ').slice(0, this.config.maxPromptLength);
   }
@@ -2057,8 +2064,12 @@ class ProductionEngine {
     // === L1: 约束层(P0必加)===
     // v1.2.5: 从blueprint.config读取画幅,默认16:9横屏
     const ratio = blueprint.config?.aspectRatio || '16:9';
-    // 【v2.1.4-fix9-P14】全局禁止文字约束：所有画面不得出现任何语言文字（中英文字符、标牌、报告单、商标等），仅片头titleOverlay由后期处理
-    const l1Constraint = `${ratio} cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background`;
+    // v6.6.10-fix: 使用全局负面提示词模块，区分片头/内容镜
+    const isOpening = shot.sceneType === 'opening' || shot.sceneType === 'establish';
+    const negativePrompt = isOpening
+      ? globalNegativePromptInjector.generateForOpeningShot({ maxLength: 250 })
+      : globalNegativePromptInjector.generateForContentShot({ maxLength: 300 });
+    const l1Constraint = `${ratio} cinematic, 24fps cinematic, ${negativePrompt.replace('【负面约束】', '')}`;
     parts.push(`【约束】${l1Constraint}`);
     partMeta.push({ id: 'L1_constraint', priority: 'P0' });
 
