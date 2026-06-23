@@ -418,7 +418,13 @@ class ProductionEngine {
     return { passed: allPassed, checks };
   }
 
-  async produce(adaptedBlueprint, runtimeAgentConfig = null) {
+  // 【v2.1.4-fix10-P25-fix3】暴露单镜头融合方法，供 run-phase3.js 单镜头粒度续跑
+  async fuseSingleShotPublic(shot, ratio, characters) {
+    if (!this.agents.promptFusion) {
+      throw new Error('PromptFusionAgent 未初始化');
+    }
+    return this.agents.promptFusion._fuseSingleShot(shot, ratio, characters);
+  }
     const startTime = Date.now();
 
     // 【修复】应用运行时配置(双保险:create() 已调 updateAgentConfig,这里再兜一次)

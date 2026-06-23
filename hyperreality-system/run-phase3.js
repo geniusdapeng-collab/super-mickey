@@ -1,92 +1,68 @@
-const { ProductionEngine } = require('./engines/production-engine/production-engine');
 const fs = require('fs');
 const path = require('path');
+const { ProductionEngine } = require('./engines/production-engine/production-engine');
 
 async function main() {
-  // 加载 checkpoint
-  const checkpointPath = './checkpoints/checkpoint-phase2.json';
-  if (!fs.existsSync(checkpointPath)) {
-    console.error('Checkpoint not found:', checkpointPath);
-    process.exit(1);
+  const cp2 = JSON.parse(fs.readFileSync('./checkpoints/checkpoint-phase2.json', 'utf8'));
+  const checkpointDir = './checkpoints/phase3-per-shot';
+  if (!fs.existsSync(checkpointDir)) fs.mkdirSync(checkpointDir, { recursive: true });
+
+  // 已完成的镜头从 per-shot checkpoint 恢复
+  const completed = {};
+  for (const f of fs.readdirSync(checkpointDir)) {
+    if (f.startsWith('shot-') && f.endsWith('.json')) {
+      try {
+        const d = JSON.parse(fs.readFileSync(path.join(checkpointDir, f), 'utf8'));
+        if (d.status === 'success' && d.output) completed[d.output.shotId] = d.output;
+      } catch (_) {}
+    }
   }
+  console.log(`📦 恢复 ${Object.keys(completed).length}/${cp2.shots.length} 个已完成镜头`);
 
-  const checkpoint = JSON.parse(fs.readFileSync(checkpointPath, 'utf8'));
-  console.log(`📂 加载 checkpoint: phase2, ${checkpoint.shots.length} 镜头`);
-
-  // 构建适配后的 blueprint（简化版）
-  const adaptedBlueprint = {
-    config: { aspectRatio: '16:9', title: '横纹肌溶解科普第一集' },
-    character_system: {
-      characters: [{
-        character_id: 'chen-zhuo',
-        name: '陈卓',
-        visual_anchor: { core_features: ['穿警服', '短发', '女性'] }
-      }]
-    },
-    scenes: checkpoint.shots.map(s => ({
-      shotId: s.shotId,
-      sceneType: s.sceneType,
-      duration: s.duration,
-      scene: s.scene,
-      mood: s.mood,
-      character: s.character,
-      action: s.action,
-      dialogue: s.dialogue,
-      emotionalTarget: s.emotionalTarget
-    }))
-  };
-
-  // 初始化 ProductionEngine
+  // 只对未完成镜头做 fusion
   const engine = new ProductionEngine({
     charactersDir: './characters',
     agentConfig: {
       enableLLMAgents: true,
-      llmTimeout: 600000,
+      llmTimeout: 180000,
       llmMaxRetries: 2,
       llmModel: 'kimi-k2p6',
       fastModel: 'kimi-k2p6',
-      totalDeadlineMs: 1800000,
+      totalDeadlineMs: 540000,
+      memThresholdMB: 1800,
       promptFusionConcurrency: 2,
       checkpointDir: './checkpoints',
       enableResume: true
     }
   });
 
-  console.log('🎬 从 Phase 3 开始...');
-  const result = await engine.produce(adaptedBlueprint);
+  const results = [];
+  for (const shot of cp2.shots) {
+    if (completed[shot.shotId]) {
+      results.push(completed[shot.shotId]);
+      console.log(`✅ ${shot.shotId} (从checkpoint恢复)`);
+      continue;
+    }
 
-  console.log('\n✅ Phase 3 完成！');
-  console.log(`镜头: ${result.shots.length}`);
-  
-  // 检查 prompt 长度和字段
-  for (const shot of result.shots) {
-    const prompt = shot.prompt || '';
-    const fields = shot.fields || {};
-    console.log(`\n📷 ${shot.shotId || shot.shot_id}`);
-    console.log(`   prompt长度: ${prompt.length} (目标: 2500+)`);
-    console.log(`   字段数: ${Object.keys(fields).length}`);
-    if (fields) {
-      const keyFields = ['constraint', 'baseline', 'scene', 'lighting', 'composition', 'color_palette', 'depth_of_field', 'camera_movement', 'character', 'action', 'dialogue', 'timeline', 'mood', 'negative', 'bright_constraint', 'director_instruction', 'consistency'];
-      const missing = keyFields.filter(f => !fields[f] || fields[f] === '');
-      if (missing.length > 0) {
-        console.log(`   ❌ 缺失字段: ${missing.join(', ')}`);
-      } else {
-        console.log(`   ✅ 所有关键字段完整！`);
-      }
+    const start = Date.now();
+    try {
+      // 【v2.1.4-fix10-P25-fix3】调用暴露的单镜头融合方法
+      const fused = await engine.fuseSingleShotPublic(shot, '16:9', cp2.characters || []);
+      const out = { ...shot, ...fused, status: 'success' };
+      fs.writeFileSync(
+        path.join(checkpointDir, `shot-${shot.shotId}.json`),
+        JSON.stringify({ shotId: shot.shotId, output: out, status: 'success' }, null, 2)
+      );
+      results.push(out);
+      console.log(`✅ ${shot.shotId} (${Date.now() - start}ms) prompt=${fused.promptCharCount}`);
+    } catch (e) {
+      console.error(`❌ ${shot.shotId}: ${e.message}`);
+      results.push({ ...shot, status: 'failed', error: e.message });
     }
   }
 
-  // 保存结果
-  const outputDir = './output';
-  if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
-  fs.writeFileSync(
-    path.join(outputDir, 'phase3-result.json'),
-    JSON.stringify(result, null, 2)
-  );
-  console.log('\n💾 结果已保存到 output/phase3-result.json');
+  fs.writeFileSync('./output/phase3-result.json', JSON.stringify({ shots: results }, null, 2));
+  console.log(`\n💾 完成 ${results.filter(r => r.status === 'success').length}/${results.length}`);
 }
 
-main().catch(e => {
-  console.error('❌ 错误:', e);
-  process.exit(1);
-});
+main().catch(e => { console.error(e); process.exit(1); });

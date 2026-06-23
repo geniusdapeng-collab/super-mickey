@@ -64,15 +64,27 @@ class CheckpointManager {
 
   /**
    * 检查checkpoint是否存在且有效
+   * 【v2.1.4-fix10-P25-fix3】增加字段完整性校验，防止残缺结果被固化
    */
-  hasCheckpoint(stageName, inputHash) {
+  hasCheckpoint(stageName, inputHash, minFieldCount) {
     const cpPath = this._getCheckpointPath(stageName);
     if (!fs.existsSync(cpPath)) return false;
     
     try {
       const cp = JSON.parse(fs.readFileSync(cpPath, 'utf-8'));
       // inputHash匹配且状态为success
-      return cp.inputHash === inputHash && cp.status === 'success';
+      if (cp.inputHash !== inputHash || cp.status !== 'success') return false;
+      
+      // 【v2.1.4-fix10-P25-fix3】校验字段完整性，防止残缺结果被固化
+      if (minFieldCount) {
+        const fields = cp.output?.fields || cp.output?.shots?.[0]?.fields || {};
+        if (Object.keys(fields).length < minFieldCount) {
+          console.warn(`[Checkpoint] ${stageName} 字段数 ${Object.keys(fields).length} < ${minFieldCount}，视为无效，重新执行`);
+          return false;
+        }
+      }
+      
+      return true;
     } catch (e) {
       return false;
     }

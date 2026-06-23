@@ -7,7 +7,7 @@ const { normalizeLLMOutput } = require('./llm-output-normalizer');
 class LLMEngine {
   constructor(options = {}) {
     this.model = options.model || 'kimi-k2p6';
-    this.maxTokens = options.maxTokens || 4096;
+    this.maxTokens = options.maxTokens || 8192; // 【v2.1.4-fix10-P25-fix3】提到8192，防25字段×详细描述被截断
     this.timeoutMs = options.timeoutMs || 600000;
     this.temperature = 1;
     this.topP = 0.95;
@@ -107,6 +107,20 @@ class LLMEngine {
           const candidate = text.slice(start, i + 1).trim();
           try { JSON.parse(candidate); return candidate; } catch (_) { break; }
         }
+      }
+      // 【v2.1.4-fix10-P25-fix3】截断修复：尝试补全不闭合的JSON
+      const lastBrace = text.lastIndexOf('}');
+      const firstBrace = text.indexOf('{');
+      if (firstBrace >= 0) {
+        let candidate = text.slice(firstBrace, lastBrace >= firstBrace ? lastBrace + 1 : undefined);
+        // 统计未闭合的括号数，补全
+        let open = 0, close = 0;
+        for (const ch of candidate) { if (ch === '{') open++; else if (ch === '}') close++; }
+        candidate += '}'.repeat(Math.max(0, open - close));
+        // 截掉最后一个不完整的键值对
+        candidate = candidate.replace(/,\s*"[^"]*"?\s*:\s*"[^"]*$/, '');
+        candidate = candidate.replace(/,\s*"[^"]*"?\s*:\s*$/, '');
+        try { JSON.parse(candidate); return candidate; } catch (_) {}
       }
     }
     return null;
