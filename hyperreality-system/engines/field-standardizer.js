@@ -271,6 +271,10 @@ function normalizeTimeline(value, raw = {}) {
 
 function normalizePortraits(value, raw = {}) {
   const result = [];
+  // v2.1.4-fix9-P25-fix7: 支持字符串格式的定妆照路径（PromptFusionAgent fields.portraits 为字符串）
+  if (typeof value === 'string' && value.trim()) {
+    result.push(value.trim());
+  }
   if (Array.isArray(value)) result.push(...value);
   if (Array.isArray(raw.referenceImages)) result.push(...raw.referenceImages);
   if (Array.isArray(raw.portraits)) result.push(...raw.portraits);

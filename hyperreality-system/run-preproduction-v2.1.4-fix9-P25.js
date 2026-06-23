@@ -8,7 +8,7 @@ const agentConfig = {
   llmMaxRetries: 2,
   llmModel: 'kimi-k2p6',
   fastModel: 'kimi-k2p6',
-  totalDeadlineMs: 1200000,
+  totalDeadlineMs: 1500000,
   memThresholdMB: 1200,
   promptFusionConcurrency: 3
 };

@@ -147,11 +147,22 @@ class PromptFusionAgent extends BaseAgent {
     const fusionEntry = llmResult.result?.shots?.find(s => s.shotId === shot.shotId);
     const fields = fusionEntry?.fields || {};
     
+    // 【v2.1.4-fix9-P25-fix7】将 fields 中的关键字段展开到 shot 顶层
+    // 确保 FieldGuard 能直接检查到这些字段
+    const expandedFields = {};
+    if (fields && typeof fields === 'object') {
+      for (const [fieldName, value] of Object.entries(fields)) {
+        const camelField = fieldName.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+        expandedFields[camelField] = value;
+      }
+    }
+    
     // 组装标准格式Prompt
     const fullPrompt = this._assembleStandardPrompt(shot, fields, ratio);
 
     return {
       ...shot,
+      ...expandedFields,
       fields,
       fusionText: fields.scene || '',
       prompt: fullPrompt,
