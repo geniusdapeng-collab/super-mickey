@@ -60,10 +60,12 @@ Prompt: ${item.prompt?.slice(0, 300) || '空'}
       }
     } catch (e) {
       console.error('[SemanticCheck] LLM调用失败:', e.message);
+      // 【v2.1.4-fix10-P25-fix5】失败时标记为 unknown 而非 true，让下游决定是否阻断
+      return items.reduce((acc, item) => {
+        acc[item.id] = { passed: null, reason: 'LLM语义检查未执行（服务不可用）' };
+        return acc;
+      }, {});
     }
-
-    // 失败时全部返回 true（不阻塞，避免误报）
-    return items.reduce((acc, item) => { acc[item.id] = true; return acc; }, {});
   }
 
   // ========== 主入口：验证完整链路 ==========

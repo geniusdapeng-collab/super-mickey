@@ -27,7 +27,7 @@ class FinalPromptBuilderV2 {
     const llmFields = await this.creativeRouter.decideShotCreative(shot, context);
 
     // 3. 合并（LLM优先补创意，子系统优先补专业模块）
-    const merged = {
+    let merged = { // 【v2.1.4-fix10-P25-fix5】const → let，允许后续重赋值
       ...llmFields,
       ...subsystemFields,
       CHARACTER: subsystemFields.CHARACTER || llmFields.CHARACTER,

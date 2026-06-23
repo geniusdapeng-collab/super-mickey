@@ -57,9 +57,24 @@ class FieldMapper {
 
   _normalizeCharacters(value) {
     if (!value) return [];
-    if (Array.isArray(value)) return value.map(v => String(v).trim()).filter(Boolean);
+    if (Array.isArray(value)) {
+      return value.map(v => {
+        if (v === null || v === undefined) return '';
+        if (typeof v === 'string') return v.trim();
+        if (typeof v === 'object') {
+          // 【v2.1.4-fix10-P25-fix5】对象提取名称/ID，不序列化整个对象
+          return (v.name || v.character_id || v.id || v.characterRef || '').toString().trim();
+        }
+        return String(v).trim();
+      }).filter(Boolean);
+    }
     if (typeof value === 'string') {
       return value.split(/[，,]/).map(v => v.trim()).filter(Boolean);
+    }
+    if (typeof value === 'object') {
+      // 单个角色对象
+      const name = value.name || value.character_id || value.id || '';
+      return name ? [String(name).trim()] : [];
     }
     return [];
   }
