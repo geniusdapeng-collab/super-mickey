@@ -571,7 +571,32 @@ class ProductionEngine {
           await this._saveCheckpoint('phase3', currentShots, { opening: result.opening, llmStats: result.llmStats });
         } catch (e) {
           this.log('PROMPT-FUSION-FAIL', `❌ ${e.message},部分镜头降级到规则 Prompt`);
-          // 单镜头已在 PromptFusion 内兜底,整体继续
+        }
+      }
+
+      // ===== Phase-3.5: 字段质量检查与修复 =====
+      if (this._budgetRemaining() < 180000) {
+        this.log('FIELD-QUALITY', `⚠️ 预算不足(剩${this._budgetRemaining()}ms),跳过字段质量检查`);
+      } else {
+        try {
+          this.log('FIELD-QUALITY', '开始(规则+LLM混合检查与修复)...');
+          const fqStart = Date.now();
+          const { FieldQualityPipeline } = require('../field-quality');
+          const pipeline = new FieldQualityPipeline({
+            llmModel: this.llmModel,
+            maxRounds: 2,
+            checkerTimeout: 120000,
+            repairerTimeout: 180000,
+          });
+          // 从blueprint构建PRD
+          pipeline.setPRDFromBlueprint(adaptedBlueprint);
+          const { finalShots, summary } = await pipeline.runAll(currentShots);
+          currentShots = finalShots;
+          this.log('FIELD-QUALITY', `完成 (${Date.now() - fqStart}ms) | 通过:${summary.passed}/${summary.totalShots} | 修复:${summary.totalRepairs}`);
+          await this._saveCheckpoint('phase3.5', currentShots, { opening: result.opening, llmStats: result.llmStats });
+        } catch (e) {
+          this.log('FIELD-QUALITY-FAIL', `❌ ${e.message},继续执行`);
+          // 字段质量检查失败不阻塞主流程
         }
       }
 
