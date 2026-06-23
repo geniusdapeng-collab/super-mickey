@@ -23,17 +23,27 @@ class PromptFusionAgent extends BaseAgent {
 1. 【约束】：画幅、帧率、禁止项（16:9 cinematic, no text, no subtitle, no watermark, 24fps cinematic）
 2. 【基础】：画质基础词（hyperrealistic, ultra-detailed, high dynamic range, film grain, 35mm texture, cinematic film）
 3. 【场景】：具体场景环境描述（地点、时间、空间深度、材质细节）
-4. 【角色】：角色身份、服装、姿态（如：穿警服的陈卓女士，健康科普主讲人）
-5. 【动作】：角色动作与镜头运动（如：镜头缓慢推近，陈卓伸手触碰墙面）
-6. 【定妆照】：角色定妆照引用路径（如：image://characters/chen-zhuo/portraits/chen-zhuo-front.png）
-7. 【台词】：角色直接说的话，格式：【台词】"纯台词内容"（不要写"画外音""旁白"）
-8. 【时间轴】：镜头内部的微观导演调度时间轴。必须按时间分段描述运镜、构图、情绪、灯光的变化过程。格式示例：
+4. 【灯光/照明】：专业灯光设计（主光方向+色温K值+光比+特效光）。格式："主光：右侧45度顶光 5600K冷白光，柔光箱漫射；补光：左前侧反光板 3200K暖光，填充阴影；背景光：轮廓光分离人物与背景；特效：无"；必须包含主光方向（左/右/顶/底/正前/正后）、色温（K值）、光质（硬光/柔光/漫射）
+5. 【构图】：景别+画面比例+主体位置+线条引导。格式："景别：中景（膝上）；主体位置：画面黄金分割右1/3处；线条引导：走廊纵深感由近及远；画框边缘：左侧留白1/4给背景信息"
+6. 【色彩/色调】：调色方案+色温倾向+饱和度。格式："主色调：冷白偏青（医院感）；辅助色：暖木色讲台点缀；肤色：自然偏暖；饱和度：中等偏低，避免过度鲜艳；对比度：中高，保持清晰层次"
+7. 【景深】：焦点控制+虚化程度+前景/背景层次。格式："焦点：人物面部；景深：中等（f/2.8），背景适度虚化可辨；前景：讲台边缘轻微虚化；背景：走廊纵深渐变模糊；层次：前景-中景（人物）-背景三层分离"
+8. 【运镜】：镜头运动方式（推/拉/摇/移/跟/升降/手持/稳定器）。格式："0-3s：稳定器缓慢推近（0.3m/s）→ 3-6s：固定机位 → 6-10s：手持微晃跟拍（呼吸感）"
+9. 【角色】：角色身份、姿态、表情（如：穿警服的陈卓女士，健康科普主讲人，站姿挺拔，表情关切）
+10. 【服装】：详细服装描述（颜色、款式、质地、配饰）。格式："藏青色警服外套（毛呢质地，肩章完整），内搭浅蓝色衬衫（棉质，领口整洁），黑色西裤，黑色皮鞋"
+11. 【化妆】：妆容、发型细节。格式："短发整齐（黑色，长度及耳），素颜淡妆，眉毛自然，唇色淡粉，无夸张妆容"
+12. 【动作】：角色具体动作（手势、步伐、视线）。格式："右手自然抬起至胸前做强调手势，左手自然下垂，身体微微前倾，目光直视镜头"
+13. 【道具】：关键道具（手持物、桌面物品、背景物件）。格式："手持：空白A4文件夹（白色，无文字）；背景：木质讲台（表面有细微划痕），不锈钢保温杯"
+14. 【定妆照】：角色定妆照引用路径（如：image://characters/chen-zhuo/portraits/chen-zhuo-front.png）
+15. 【台词】：角色直接说的话，格式：【台词】"纯台词内容"（不要写"画外音""旁白"）
+16. 【时间轴】：镜头内部的微观导演调度时间轴。必须按时间分段描述运镜、构图、情绪、灯光的变化过程。格式示例：
    "0-2s: 全景 establishing，环境光，冷静氛围 → 2-5s: 推近中景，人物入画，暖光渐入，情绪升温 → 5-8s: 特写脸部，台词高潮，侧光强化，紧张感峰值 → 8-10s: 缓慢拉出中景，柔光平复，情绪回落"
    要求：至少分3段，每段注明时间区间、运镜动作、构图变化、情绪走向、灯光变化
-9. 【情绪】：3-5个关键词描述情绪氛围
-10. 【音频】：环境音效、背景音乐描述
-11. 【负面约束】：排除项（no watermark, no logo, no cartoon style, no flat lighting等）
-12. 【角色一致性】：保持角色形象一致
+17. 【情绪】：3-5个关键词描述情绪氛围
+18. 【节奏】：镜头速度+紧迫感+舒缓度。格式："整体：沉稳中等节奏；开头：缓慢引入（2s）；中段：稍快推进（紧迫感）；高潮：停顿强调（1s留白）；结尾：平缓收尾"
+19. 【转场】：与下一镜头的衔接方式（切/淡入淡出/叠化/划像）。格式："切镜（硬切，保持紧张感）"或"淡出（1.5s，情绪平复过渡）"
+20. 【音频】：环境音效+背景音乐描述
+21. 【负面约束】：排除项（no watermark, no logo, no cartoon style, no flat lighting等）
+22. 【角色一致性】：保持角色形象一致
 
 输出JSON格式:
 {
@@ -43,16 +53,26 @@ class PromptFusionAgent extends BaseAgent {
       "fields": {
         "constraint": "16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic",
         "baseline": "hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film",
-        "scene": "场景环境描述",
-        "character": "角色描述",
-        "action": "动作与运镜描述",
-        "portraits": "定妆照引用",
-        "dialogue": "【台词】\"纯台词内容\"",
-        "timeline": "0-2s: 全景 establishing，冷白光，冷静专业 → 2-5s: 推近中景，人物入画，暖光渐入，亲切感 → 5-8s: 特写脸部，台词高潮，侧光强化，警示感峰值 → 8-10s: 缓慢拉出，柔光平复，安心收尾",
-        "mood": "情绪关键词",
-        "audio": "音频描述",
-        "negative": "负面约束列表",
-        "consistency": "角色一致性约束"
+        "scene": "三甲医院检验科走廊，冷白色LED顶灯连续照射，墙面白色瓷砖，地面浅灰色防滑地胶，不锈钢检验窗口，走廊纵深约十五米",
+        "lighting": "主光：顶部LED面板灯 5600K冷白光，均匀漫射无阴影；补光：墙面反射光填充阴影；背景光：走廊尽头窗户自然光 6500K；特效：检验窗口玻璃微弱反射光",
+        "composition": "景别：中景（膝上）；主体位置：画面黄金分割右1/3处；线条引导：走廊纵深由近及远；画框边缘：左侧留白1/4展示环境",
+        "color_palette": "主色调：冷白偏青（医院感）；辅助色：不锈钢金属银灰；肤色：自然偏暖；饱和度：中等偏低；对比度：中高",
+        "depth_of_field": "焦点：人物面部；景深：中等（f/2.8），背景适度虚化可辨；前景：无；背景：走廊纵深渐变模糊；层次：中景（人物）-背景两层",
+        "camera_movement": "0-2s：稳定器缓慢推近（0.3m/s）→ 2-6s：固定机位 → 6-10s：手持微晃（呼吸感，幅度±2度）",
+        "character": "穿警服的陈卓女士，健康科普主讲人，短发整齐，站姿挺拔，表情关切",
+        "costume": "藏青色警服外套（毛呢质地，肩章完整），内搭浅蓝色衬衫（棉质，领口整洁），黑色西裤，黑色皮鞋",
+        "makeup": "短发整齐（黑色，长度及耳），素颜淡妆，眉毛自然，唇色淡粉",
+        "action": "右手自然抬起至胸前做强调手势，左手自然下垂，身体微微前倾，目光直视镜头",
+        "props": "手持：空白A4文件夹（白色，无文字）；背景：不锈钢检验窗口台面",
+        "portraits": "image://characters/chen-zhuo/portraits/chen-zhuo-front.png",
+        "dialogue": "【台词】\"典型症状是肌肉疼痛、无力。\"",
+        "timeline": "0-2s: 全景 establishing，环境光，冷静氛围 → 2-5s: 推近中景，人物入画，暖光渐入，亲切感 → 5-8s: 特写脸部，台词高潮，侧光强化，警示感峰值 → 8-10s: 缓慢拉出，柔光平复，安心收尾",
+        "mood": "冷静，专业，关切，警示，安心",
+        "pacing": "整体：沉稳中等节奏；开头：缓慢引入（2s）；中段：稍快推进（紧迫感）；高潮：停顿强调（1s留白）；结尾：平缓收尾",
+        "transition": "切镜（硬切，保持紧张感）",
+        "audio": "环境音：医院走廊低频设备嗡鸣，远处隐约脚步声；音乐：冷色调氛围音乐铺底，低沉弦乐",
+        "negative": "no watermark, no logo, no cartoon style, no flat lighting, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters",
+        "consistency": "保持陈卓角色形象一致，短发警服造型不变，面部特征与体型每帧统一"
       }
     }
   ]
@@ -174,6 +194,21 @@ class PromptFusionAgent extends BaseAgent {
     }
     if (sceneDesc) parts.push(`【场景】${sceneDesc}`);
 
+    // 【灯光/照明】⭐ 新增：专业灯光设计
+    if (fields.lighting) parts.push(`【灯光/照明】${fields.lighting}`);
+
+    // 【构图】⭐ 新增：景别+画面比例+主体位置+线条引导
+    if (fields.composition) parts.push(`【构图】${fields.composition}`);
+
+    // 【色彩/色调】⭐ 新增：调色方案+色温倾向+饱和度
+    if (fields.color_palette) parts.push(`【色彩/色调】${fields.color_palette}`);
+
+    // 【景深】⭐ 新增：焦点控制+虚化程度+前景/背景层次
+    if (fields.depth_of_field) parts.push(`【景深】${fields.depth_of_field}`);
+
+    // 【运镜】⭐ 新增：镜头运动方式（从【动作】拆分）
+    if (fields.camera_movement) parts.push(`【运镜】${fields.camera_movement}`);
+
     // 【角色】
     // 【v2.1.4-fix9-P4】角色服装锁定：强制使用原始角色设定中的服装
     let characterDesc = fields.character || '';
@@ -193,6 +228,12 @@ class PromptFusionAgent extends BaseAgent {
       }
     }
     if (characterDesc) parts.push(`【角色】${characterDesc}`);
+
+    // 【服装】⭐ 新增：详细服装描述（从【角色】拆分）
+    if (fields.costume) parts.push(`【服装】${fields.costume}`);
+
+    // 【化妆】⭐ 新增：妆容、发型细节
+    if (fields.makeup) parts.push(`【化妆】${fields.makeup}`);
 
     // 【动作】
     // 【v2.1.4-fix9-P9】动作强制写实：禁止科幻/抽象词汇
@@ -216,6 +257,9 @@ class PromptFusionAgent extends BaseAgent {
     }
     if (actionDesc) parts.push(`【动作】${actionDesc}`);
 
+    // 【道具】⭐ 新增：关键道具（手持物、桌面物品、背景物件）
+    if (fields.props) parts.push(`【道具】${fields.props}`);
+
     // 【定妆照】
     if (fields.portraits) parts.push(`【定妆照】${fields.portraits}`);
 
@@ -236,6 +280,12 @@ class PromptFusionAgent extends BaseAgent {
 
     // 【情绪】
     if (fields.mood) parts.push(`【情绪】${fields.mood}`);
+
+    // 【节奏】⭐ 新增：镜头速度+紧迫感+舒缓度
+    if (fields.pacing) parts.push(`【节奏】${fields.pacing}`);
+
+    // 【转场】⭐ 新增：与下一镜头的衔接方式
+    if (fields.transition) parts.push(`【转场】${fields.transition}`);
 
     // 【音频】
     if (fields.audio) parts.push(`【音频】${fields.audio}`);
