@@ -636,11 +636,22 @@ class NirathMasterPipeline {
       enforcer.recordStageStart(stageName, JSON.stringify(stageFn.toString()));
       
       // 🔥 v6.5.60: 阶段级重试配置
+      // 【v2.1.4-fix10-P25-fix8-P1B】增加 deadline 感知 + 指数退避 + 不可恢复错误判断
       const MAX_STAGE_RETRIES = 3;
-      const STAGE_RETRY_INTERVAL = 60000; // 1分钟
+      const MAX_RETRY_MS_PER_STAGE = 180000; // 单个 stage 最多重试 3 分钟
+      const isUnrecoverable = (err) => {
+        const msg = err.message || '';
+        return /SyntaxError|TypeError|ReferenceError|Cannot read propert|is not a function|schema|ENOENT|EACCES/.test(msg);
+      };
       let lastError = null;
       
       for (let attempt = 1; attempt <= MAX_STAGE_RETRIES; attempt++) {
+        // ✅ deadline 门控：重试总耗时超预算则停止
+        const elapsedInStage = Date.now() - stageStart;
+        if (elapsedInStage > MAX_RETRY_MS_PER_STAGE) {
+          this.log('PIPELINE', `⏰ ${stageName} 重试总耗时${Math.round(elapsedInStage/1000)}s超预算，停止重试`, 'warn');
+          break;
+        }
         try {
           const output = await stageFn();
           const stageDuration = Date.now() - stageStart; // 真实耗时
@@ -686,9 +697,17 @@ class NirathMasterPipeline {
             }
           }
           
+          // ✅ 不可恢复错误不重试
+          if (isUnrecoverable(e)) {
+            this.log('PIPELINE', `❌ ${stageName} 不可恢复错误，不重试: ${e.message}`, 'error');
+            break;
+          }
+          
           if (attempt < MAX_STAGE_RETRIES) {
-            this.log('PIPELINE', `⚠️ ${stageName} 第${attempt}次失败，${STAGE_RETRY_INTERVAL/1000}秒后重试... | 错误: ${e.message}`);
-            await new Promise(resolve => setTimeout(resolve, STAGE_RETRY_INTERVAL));
+            // ✅ 指数退避：1s, 3s, 9s（而非固定60s）
+            const backoff = Math.min(60000, 1000 * Math.pow(3, attempt - 1));
+            this.log('PIPELINE', `⚠️ ${stageName} 第${attempt}次失败，${backoff/1000}秒后重试... | 错误: ${e.message}`);
+            await new Promise(resolve => setTimeout(resolve, backoff));
           } else {
             this.log('PIPELINE', `❌ ${stageName} 已重试${MAX_STAGE_RETRIES}次，放弃`);
             throw e;
@@ -821,8 +840,8 @@ class NirathMasterPipeline {
       result.stages.render = await runStage('STAGE-11', () => this.stageRender(result.stages));
       this._injectCreativeIntensity('STAGE-11', result.stages.render);
       
-      // v6.5.59-fix: 主进程内存释放（OOM修复）
-      this._releaseMemory(result);
+      // 【v2.1.4-fix10-P25-fix8-P1A】_releaseMemory 推迟到 Stage 16 后，避免后续 stage 读到 null
+      // this._releaseMemory(result); // 已移至 StageRunner 追踪完成后
 
       // Stage 11.5: Prompt质量闸门(v6.0新增:防空转)
       result.stages.promptQualityGate = await runStage('STAGE-11.5', () => this.stagePromptQualityGate(result.stages.render, result.stages.storyboard));
@@ -875,10 +894,15 @@ class NirathMasterPipeline {
           this.log('PromptBridge', `✅ Processed ${__bridgeShots.length} shots | avg=${complianceSummary.averageScore}%`);
 
           if (Array.isArray(result.stages?.storyboard?.shots)) {
-            result.stages.storyboard.shots = __bridgeShots;
+            result.stages.storyboard.shots = __bridgeShots.map(s => ({...s})); // ✅ 深拷贝，不共享引用
           }
           if (Array.isArray(result.stages?.render)) {
-            result.stages.render = __bridgeShots;
+            // ✅ 合并而非替换：保留 render 专属字段
+            const renderMap = new Map(result.stages.render.map(r => [r.shotId || r.id, r]));
+            result.stages.render = __bridgeShots.map(s => {
+              const existing = renderMap.get(s.shotId || s.id);
+              return existing ? { ...existing, ...s } : s;
+            });
           }
         }
       }
@@ -964,19 +988,30 @@ class NirathMasterPipeline {
           worker.stderr.on('data', (d) => { stderr += d.toString(); });
           
           // 等待完成
+          // 【v2.1.4-fix10-P25-fix8-P1C】子进程超时对齐父进程生命周期，防止孤儿进程
+          const CHILD_TIMEOUT_MS = 300000; // 5分钟（原1800s远超11分钟SIGTERM）
           const exitCode = await new Promise((resolve, reject) => {
             const timeout = setTimeout(() => {
               worker.kill('SIGKILL');
-              reject(new Error('PromptForge 子进程超时(1800s)'));
-            }, 1800000);
+              reject(new Error(`PromptForge 子进程超时(${CHILD_TIMEOUT_MS/1000}s)`));
+            }, CHILD_TIMEOUT_MS);
+            
+            // ✅ 父进程被杀时杀掉子进程，防止孤儿
+            const killChild = () => { try { worker.kill('SIGKILL'); } catch {} };
+            process.on('SIGTERM', killChild);
+            process.on('SIGINT', killChild);
             
             worker.on('close', (code) => {
               clearTimeout(timeout);
+              process.removeListener('SIGTERM', killChild);
+              process.removeListener('SIGINT', killChild);
               resolve(code);
             });
             
             worker.on('error', (err) => {
               clearTimeout(timeout);
+              process.removeListener('SIGTERM', killChild);
+              process.removeListener('SIGINT', killChild);
               reject(err);
             });
           });
@@ -1079,6 +1114,7 @@ class NirathMasterPipeline {
           } catch (e) {
             // 任何异常发生时确保 render 数据恢复
             result.stages.render = originalRenderBackup;
+            result.stages._promptForgeSkipped = true; // 【v2.1.4-fix10-P25-fix8-P1C】明确标记优化未生效
             
             this.log('PIPELINE', `⚠️ PromptForge Director 失败: ${e.message},已恢复原始 Prompt`);
             console.error(e);
@@ -1224,7 +1260,21 @@ class NirathMasterPipeline {
         }
       }
 
-      result.success = true;
+      // 【v2.1.4-fix10-P25-fix8-P0A】不再无条件覆盖 success
+      const hasBlockingError = result.errors.some(e =>
+        !e.severity || e.severity === 'error' || e.severity === 'fatal'
+      );
+      if (integrityReport.trusted && !hasBlockingError) {
+        result.success = true;
+      } else {
+        result.success = false;
+        if (!integrityReport.trusted) {
+          this.log('PIPELINE', `❌ 拒绝标记成功：完整性验证未通过`, 'error');
+        }
+      }
+
+      // 【v2.1.4-fix10-P25-fix8-P1A】所有 Stage 完成后才释放内存
+      this._releaseMemory(result);
 
     } catch (error) {
       result.success = false;
@@ -1312,7 +1362,11 @@ class NirathMasterPipeline {
     result.totalShots = shots.length;
     result.totalDuration = shots.reduce((s, x) => s + (x.duration || 0), 0);
     result.fiveElementsScore = fiveElements.overallScore || 0;
-    result.systemErrors = result.errors.length;
+    // 【v2.1.4-fix10-P25-fix8-P1D】只统计阻断性错误，warning 不阻断
+    result.systemErrors = result.errors.filter(e =>
+      !e.severity || e.severity === 'error' || e.severity === 'fatal'
+    ).length;
+    result.systemWarnings = result.errors.filter(e => e.severity === 'warning').length;
     result.linkageIntegrity = integritySummary.passed || 0;
     result.expectedStages = integritySummary.totalChecks || 16;
     result.riskRating = result.systemErrors > 0 ? '高风险' : (result.linkageIntegrity < 16 ? '中风险' : '低风险');
@@ -1344,10 +1398,15 @@ class NirathMasterPipeline {
         });
 
         if (Array.isArray(result.stages?.storyboard?.shots)) {
-          result.stages.storyboard.shots = __finalShots;
+          result.stages.storyboard.shots = __finalShots.map(s => ({...s})); // ✅ 深拷贝，不共享引用
         }
         if (Array.isArray(result.stages?.render)) {
-          result.stages.render = __finalShots;
+          // ✅ 合并而非替换：保留 render 专属字段
+          const renderMap = new Map(result.stages.render.map(r => [r.shotId || r.id, r]));
+          result.stages.render = __finalShots.map(s => {
+            const existing = renderMap.get(s.shotId || s.id);
+            return existing ? { ...existing, ...s } : s;
+          });
         }
 
         const complianceSummary = summarizeCompliance(__finalShots);
@@ -2109,33 +2168,14 @@ class NirathMasterPipeline {
   _releaseMemory(result) {
     if (!result || !result.stages) return;
     
-    // v6.6.5-fix: 不释放渲染结果和故事板，因为后续Stage 11.5/12/13/14等仍需要引用
-    // 内存释放推迟到所有Stage完成后执行
-    // if (result.stages.render) {
-    //   result.stages.render = null;
-    // }
-    // if (result.stages.storyboard) {
-    //   result.stages.storyboard = null;
-    // }
+    // 【v2.1.4-fix10-P25-fix8-P1A】只释放大体积临时数据，保留 stage 元数据供后续使用
+    if (result.stages.script?.raw) result.stages.script.raw = null;
+    if (result.stages.prd?._raw) result.stages.prd._raw = null;
+    if (result.stages.opening?._debugShots) result.stages.opening._debugShots = null;
+    // ✅ 不再置空 prd/opening/alignment/schema/characters 本身——后续 stage 还要用
     
-    // 释放剧本原始LLM输出
-    if (result.stages.script && result.stages.script.raw) {
-      result.stages.script.raw = null;
-    }
-    
-    // 释放其他已完成Stage的大对象
-    if (result.stages.prd) result.stages.prd = null;
-    if (result.stages.opening) result.stages.opening = null;
-    if (result.stages.alignment) result.stages.alignment = null;
-    if (result.stages.schema) result.stages.schema = null;
-    if (result.stages.characters) result.stages.characters = null;
-    
-    // 强制GC确保释放生效
-    if (global.gc) {
-      global.gc();
-    }
-    
-    this.log('PIPELINE', '✅ 主进程内存释放完成（OOM修复）');
+    if (global.gc) global.gc();
+    this.log('PIPELINE', '✅ 主进程内存释放完成（仅清理大对象，保留 stage 引用）');
   }
 
   _buildScriptCorePrompt(batch, core, world, batchIdx, totalBatches, input) {
@@ -4785,9 +4825,15 @@ ${isNirath
       const shot = stages.storyboard.shots[i];
       const errors = [];
 
-      // 检查1: narration是否非空(核心输入)
-      if (!shot.narration || shot.narration.trim().length === 0) {
-        errors.push(`narration为空`);
+      // 检查1: narration/dialogue 是否至少有一个非空（v6.5.34 narration已禁用，支持 dialogue）
+      const hasNarration = shot.narration && shot.narration.trim().length > 0;
+      const hasDialogue = shot.dialogue && (
+        (typeof shot.dialogue === 'string' && shot.dialogue.trim().length > 0) ||
+        (Array.isArray(shot.dialogue) && shot.dialogue.length > 0) ||
+        (shot.dialogue.lines && shot.dialogue.lines.length > 0)
+      );
+      if (!hasNarration && !hasDialogue) {
+        errors.push(`narration和dialogue均为空`);
       }
 
       // 检查2: 角色档案是否已加载(如镜头需要角色)

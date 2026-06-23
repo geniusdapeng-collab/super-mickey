@@ -430,7 +430,13 @@ function generateThreeActOpening(config) {
     ].filter(Boolean),
     cameraPlan: fullPrompt.cameraPlan,
     complianceCheck: fullPrompt.complianceCheck,
-    truncationApplied: fullPrompt.truncationApplied
+    truncationApplied: fullPrompt.truncationApplied,
+    // 【v2.1.4-fix10-P25-fix8-P0B】透传 combineActs 产出的全部字段
+    title: fullPrompt.title || null, // 主标题/副标题对象
+    referenceImages: fullPrompt.referenceImages || [], // 定妆照引用
+    content: fullPrompt.content || [], // 三幕内容数组
+    postProduction: fullPrompt.postProduction || {}, // 后期包装指令
+    isOpening: fullPrompt.isOpening !== false // 片头标记
   };
 }
 

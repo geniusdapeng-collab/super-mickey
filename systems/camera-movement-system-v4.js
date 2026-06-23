@@ -344,7 +344,9 @@ class LLMTimelineGenerator {
     
     // 段数不对，按目标段数重建
     const rebuilt = [];
-    const step = duration / targetSegmentCount;
+    // 【v2.1.4-fix10-P25-fix8-P2C】duration=0 时设置下限守护，避免全 "0-0" 时间轴
+    const safeDuration = Math.max(duration, 0.1);
+    const step = safeDuration / targetSegmentCount;
     
     for (let i = 0; i < targetSegmentCount; i++) {
       const start = +(i * step).toFixed(1);
@@ -559,9 +561,10 @@ class ContinuityEngine {
     
     const rule = this.jumpRules[prevSize];
     if (rule && !rule.allowedNext.includes(currSize)) {
+      // 【v2.1.4-fix10-P25-fix8-P2B】使用 _getShotSizeDesc 获取描述，segment 上只有 shotSize
       warnings.push({
         type: 'shot_size_jump',
-        message: `${prevEnd.shotSizeDesc} → ${currStart.shotSizeDesc}: 视觉跳跃大`,
+        message: `${this._getShotSizeDesc(prevEnd.shotSize)} → ${this._getShotSizeDesc(currStart.shotSize)}: 视觉跳跃大`,
         severity: 'warning'
       });
     }

@@ -958,7 +958,9 @@ function enhanceShotPrompt(shot, options = {}) {
     // v6.5.35: 新增人物鲜活度参数
     characterAge = 'adult',
     emotionPhase = 'neutral',
-    emotionIntensity = 'L2'
+    emotionIntensity = 'L2',
+    // 【v2.1.4-fix10-P25-fix8-P1F】长度预算控制
+    maxPromptLength = 2500
   } = options;
 
   const originalPrompt = shot.prompt || shot.description || '';
@@ -991,35 +993,53 @@ function enhanceShotPrompt(shot, options = {}) {
   // 4. 构建时间轴Prompt
   const timelinePrompt = buildTimelinePrompt(segments, shot);
   
-  // v6.5.35: 注入人物鲜活度（皮肤纹理 + 生理反应 + 动作细节）
-  const vividnessText = injectVividness(shot, {
-    characterAge: characterAge || shot.characterAge || 'adult',
-    emotionPhase: emotionPhase || shot.emotionPhase || shot.emotion || 'neutral',
-    intensity: emotionIntensity || shot.emotionIntensity || 'L2'
-  });
+  // 【v2.1.4-fix10-P25-fix8-P1F】长度预算：如果原始 prompt 已接近上限，只追加时间轴
+  const originalLen = originalPrompt.length;
+  const remainingBudget = maxPromptLength - originalLen;
   
-  // 5. 合并原始Prompt + 时间轴 + 鲜活度 + 四大指令集（v6.5.36批次3）
-  const fourCommands = buildFourCommands(shot);
-  const enhancedPrompt = mergePrompts(originalPrompt, timelinePrompt + ' | 【人物鲜活度】' + vividnessText + ' | 【顶级指令】' + fourCommands);
+  let appendParts = [timelinePrompt];
   
-  // 6. 注入音频描述（v2.0-B+: 极致视听融合）
-  const audioDescription = buildAudioDescription(shot, segments);
+  // ✅ 只有预算充足时才追加鲜活度/指令/音频，且跳过已含字段
+  if (remainingBudget > 800 && !originalPrompt.includes('【人物鲜活度】')) {
+    const vividnessText = injectVividness(shot, {
+      characterAge: characterAge || shot.characterAge || 'adult',
+      emotionPhase: emotionPhase || shot.emotionPhase || shot.emotion || 'neutral',
+      intensity: emotionIntensity || shot.emotionIntensity || 'L2'
+    });
+    appendParts.push('【人物鲜活度】' + vividnessText);
+  }
   
-  // 6.1 将音频描述合并到 enhancedPrompt
-  const enhancedPromptWithAudio = enhancedPrompt + ' | 【音频】' + audioDescription;
+  if (remainingBudget > 1100 && !originalPrompt.includes('【顶级指令】')) {
+    const fourCommands = buildFourCommands(shot);
+    appendParts.push('【顶级指令】' + fourCommands);
+  }
+  
+  if (remainingBudget > 1300 && !originalPrompt.includes('【音频】')) {
+    const audioDescription = buildAudioDescription(shot, segments);
+    appendParts.push('【音频】' + audioDescription);
+  }
+  
+  const enhancedPrompt = mergePrompts(originalPrompt, appendParts.join(' | '));
+  
+  // ✅ 最终超长保护：如果仍超上限，保留原始Prompt（不截断丢字段）
+  let finalPrompt = enhancedPrompt;
+  if (enhancedPrompt.length > maxPromptLength) {
+    console.warn(`[IntraShotEnhancer] ${shot.id || 'unknown'} 增强后超上限(${enhancedPrompt.length}/${maxPromptLength})，仅保留时间轴`);
+    finalPrompt = mergePrompts(originalPrompt, timelinePrompt);
+  }
 
   // 7. 记录增强信息
   return {
     ...shot,
-    prompt: enhancedPromptWithAudio,
+    prompt: finalPrompt,
     _intraShotEnhanced: true,
     _enhancementVersion: INTRA_SHOT_VERSION,
     segments: segments,  // 标准字段
     _segments: segments,  // 兼容旧字段
     _comboType: detectedCombo,
     _originalPrompt: originalPrompt,
-    // v2.0-B+: 音频层
-    audioDescription: audioDescription,
+    // v2.0-B+: 音频层（仅当实际注入时）
+    _audioInjected: appendParts.some(p => p.includes('【音频】')),
     sceneType: detectedCombo,
     timeOfDay: shot.timeOfDay || shot.lighting?.timeOfDay || 'golden hour'
   };

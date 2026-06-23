@@ -54,6 +54,14 @@ const NO_VOICEOVER = true;
     if (shot.dialogue && shot.dialogue.length > 0) {
       result.dialogue = shot.dialogue.filter(d => d.type !== 'NARRATION');
       result.hasDialogue = result.dialogue.length > 0;
+      // 【v2.1.4-fix10-P25-fix8-P1G】过滤后为空时，回退到 narration 转换
+      if (!result.hasDialogue && shot.narration) {
+        const converted = this._convertAllToDialogue(shot.narration, shot);
+        if (converted && converted.length > 0) {
+          result.dialogue = converted;
+          result.hasDialogue = true;
+        }
+      }
       return result;
     }
     
