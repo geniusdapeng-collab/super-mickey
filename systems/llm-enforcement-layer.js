@@ -416,13 +416,17 @@ ${sceneDesc}
 
   /**
    * STAGE-11: LLM-渲染Prompt优化
+   * 【v2.1.4-fix10-P25-fix5】maxLen从配置取，统一2500
    */
   STAGE_11_RENDER: (shot, storyboard, cameraDesign, world, characters) => {
     const charId = (shot.characters || [])[0];
     const char = characters?.[charId];
+    // 【v2.1.4-fix10-P25-fix5】maxLen从配置取，不再硬编码1500
+    const maxLen = require('./config-center-v2').getConfigCenter ? 
+      require('./config-center-v2').getConfigCenter().getPromptMaxLength() : 2500;
     
     return `你是一位专业的视频渲染Prompt优化Agent。
-请整合上游输出（视觉Prompt、故事板、运镜设计），生成最终的1500字符渲染Prompt。
+请整合上游输出（视觉Prompt、故事板、运镜设计），生成最终的${maxLen}字符渲染Prompt。
 
 ## 输入信息
 - 镜头ID：${shot.id}
@@ -441,7 +445,7 @@ ${sceneDesc}
 - 氛围：${world?.atmosphere || '未指定'}
 
 ## 输出要求
-生成1500字符的完整渲染Prompt，包含：
+生成${maxLen}字符的完整渲染Prompt，包含：
 1. 【视觉】导演风格、负面提示词
 2. SCENE：场景描述
 3. 【空间】空间布局
@@ -462,7 +466,7 @@ ${sceneDesc}
 18. @image引用（如果角色有定妆照）
 
 ## 关键约束
-- 总长度必须接近1500字符（≥1400）
+- 总长度必须接近${maxLen}字符（≥${Math.floor(maxLen * 0.9)}）
 - 角色动作必须动态丰富（不能只是"站立""自然姿态"）
 - 必须包含具体运镜指令
 - 必须保留【镜头时间轴】

@@ -205,12 +205,11 @@ class PostProductionPipeline {
 
   /**
    * 合并镜头 + 横版转换
-   * 竖版素材(720x1280) → 横版(1280x720)
+   * 【v2.1.4-fix10-P25-fix5】修复：音频探测+静音注入，不硬编码竖屏尺寸
    */
   mergeAndConvert(shots, shotsDir, outputPath) {
     console.log('\n📹 合并 + 横版转换...');
 
-    // 检查所有素材
     const validShots = shots.filter(shot => {
       const videoPath = path.join(shotsDir, `${shot.id}.mp4`);
       return fss.existsSync(videoPath);
@@ -220,26 +219,66 @@ class PostProductionPipeline {
       throw new Error('没有可用的视频素材');
     }
 
-    // 方法：concat filter + 横屏化
+    const { execSync } = require('child_process');
+    
+    // 【v2.1.4-fix10-P25-fix5】探测素材尺寸和音轨
+    const probeSize = (filePath) => {
+      try {
+        const out = execSync(`ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0:s=x "${filePath}"`, { timeout: 5000 }).toString().trim();
+        const [w, h] = out.split('x').map(Number);
+        return { w, h, isPortrait: h > w };
+      } catch { return { w: 1280, h: 720, isPortrait: false }; }
+    };
+    
+    const probeAudio = (filePath) => {
+      try {
+        const out = execSync(`ffprobe -v error -select_streams a -show_entries stream=codec_type -of csv=p=0 "${filePath}"`, { timeout: 5000 }).toString().trim();
+        return out === 'audio';
+      } catch { return false; }
+    };
+
+    const targetW = this.config.outputWidth || 1280;
+    const targetH = this.config.outputHeight || 720;
+
     const concatInputs = validShots.map((shot, i) => {
       return `-i "${path.join(shotsDir, `${shot.id}.mp4`)}"`;
     }).join(' ');
 
-    // 每个输入都先转为横版，再合并
     const filters = [];
+    const audioInputs = [];
+    
     for (let i = 0; i < validShots.length; i++) {
-      // scale+pad: 将720x1280竖版转为1280x720横版
-      // 方案：缩放+黑边填充（保持比例）
-      filters.push(`[${i}:v]scale=406:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2:black[v${i}]`);
+      const videoPath = path.join(shotsDir, `${validShots[i].id}.mp4`);
+      const size = probeSize(videoPath);
+      
+      // 根据实际宽高比缩放，不硬编码
+      if (size.isPortrait) {
+        filters.push(`[${i}:v]scale=${Math.floor(targetH * size.w / size.h)}:${targetH}:force_original_aspect_ratio=decrease,pad=${targetW}:${targetH}:(ow-iw)/2:(oh-ih)/2:black[v${i}]`);
+      } else {
+        filters.push(`[${i}:v]scale=${targetW}:${targetH}:force_original_aspect_ratio=decrease,pad=${targetW}:${targetH}:(ow-iw)/2:(oh-ih)/2:black[v${i}]`);
+      }
+      
+      // 【v2.1.4-fix10-P25-fix5】音频探测，无音轨注入静音
+      if (probeAudio(videoPath)) {
+        audioInputs.push(`[${i}:a:0]`);
+      } else {
+        // 获取视频时长，生成等长静音轨
+        try {
+          const dur = execSync(`ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "${videoPath}"`, { timeout: 5000 }).toString().trim();
+          filters.push(`anullsrc=channel_layout=stereo:sample_rate=44100:duration=${dur}[asilence${i}]`);
+          audioInputs.push(`[asilence${i}]`);
+        } catch {
+          audioInputs.push(`[${i}:a:0]`); // fallback
+        }
+      }
     }
 
-    // 合并视频和音频
-    const concatVideo = filters.map((f, i) => `[v${i}]`).join('') + `concat=n=${validShots.length}:v=1:a=0[outv]`;
-    const concatAudio = validShots.map((f, i) => `[${i}:a:0]`).join('') + `concat=n=${validShots.length}:v=0:a=1[outa]`;
+    const concatVideo = filters.filter(f => f.includes('[v')).map((f, i) => `[v${i}]`).join('') + `concat=n=${validShots.length}:v=1:a=0[outv]`;
+    const concatAudio = audioInputs.join('') + `concat=n=${validShots.length}:v=0:a=1[outa]`;
 
     const fullFilter = `${filters.join(';')};${concatVideo};${concatAudio}`;
 
-    const cmd = `ffmpeg -y ${concatInputs} -filter_complex "${fullFilter}" -map [outv] -map [outa] -c:v libx264 -preset fast -crf 23 -c:a aac -b:a 128k -r 30 -s ${this.config.outputWidth}x${this.config.outputHeight} "${outputPath}"`;
+    const cmd = `ffmpeg -y ${concatInputs} -filter_complex "${fullFilter}" -map [outv] -map [outa] -c:v libx264 -preset fast -crf 23 -c:a aac -b:a 128k -r 30 -s ${targetW}x${targetH} "${outputPath}"`;
 
     try {
       execSync(cmd, { stdio: 'inherit', timeout: 300000 });

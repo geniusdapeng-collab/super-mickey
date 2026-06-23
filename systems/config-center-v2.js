@@ -166,21 +166,20 @@ const DEFAULT_CONFIG = {
   },
 
   // 项目级约束（P0级）
+  // 【v2.1.4-fix10-P25-fix5】默认不禁止旁白，由项目配置决定
   constraints: {
-    // 【P0】禁止旁白/独白/innerMonologue — 仅保留Dialogue（对嘴）
-    forbiddenVoiceover: true,
-    // 【P0】全局明亮风格
+    forbiddenVoiceover: false, // ✅ 默认不禁止，神兽系列在项目配置中覆盖
     forbidDarkStyle: true,
-    // 【P0】禁止金属光泽
-    forbidMetalSheen: true,
-    // 【P0】禁止非自然眼睛颜色（仅黑色眼圈+倒影）
-    forbidUnnaturalEyeColor: true,
+    forbidMetalSheen: false, // ✅ 默认不禁止（神兽系列才禁止）
+    forbidUnnaturalEyeColor: false, // ✅ 默认不禁止
     // 全局负面提示词（自动注入）
     globalNegativePrompts: [
-      'no dark style', 'no night scene', 'no metallic sheen', 'no metal texture',
-      'no glowing eyes', 'no unnatural eye color', 'no voiceover', 'no narration text'
+      'no deformed hands', 'no extra limbs', 'no text watermark'
     ]
   },
+  
+  // 神兽系列项目覆盖配置（在 config/nirath.json 中使用）
+  // "constraints": { "forbiddenVoiceover": true, "forbidMetalSheen": true, ... }
 
   // 审片工作流
   review: {
@@ -422,8 +421,9 @@ class ConfigCenter {
     
     // 验证Prompt长度约束
     const maxLen = this.getPromptMaxLength();
-    if (maxLen > 1200 || maxLen < 100) {
-      errors.push(`prompt.maxLength ${maxLen} 超出合理范围 [100, 1200]`);
+    // 【v2.1.4-fix10-P25-fix5】放宽上限到3000
+    if (maxLen > 3000 || maxLen < 100) {
+      errors.push(`prompt.maxLength ${maxLen} 超出合理范围 [100, 3000]`);
     }
     
     // 验证时长约束

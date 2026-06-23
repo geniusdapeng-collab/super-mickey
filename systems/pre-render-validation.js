@@ -163,7 +163,7 @@ function validateDurations(storyboard, options = {}) {
   const errors = [];
   const warnings = [];
   const minDuration = options.minDuration || 3;
-  const maxDuration = options.maxDuration || 12;
+  const maxDuration = options.maxDuration || require('./config-center-v2').getConfigCenter().get('duration.maxShotDuration', 15); // 【v2.1.4-fix10-P25-fix5】从配置取，统一15s
   const speedMap = options.speedMap || {
     'host': 4.0,
     'explanation': 4.5,
@@ -234,7 +234,20 @@ function validateCharacterReferences(storyboard, options = {}) {
   const warnings = [];
   
   // 1. 收集必需角色
-  const requiredChars = options.requiredCharacters || storyboard.requiredCharacters || [];
+  // 【v2.1.4-fix10-P25-fix5】不再默认放行：从 shot 自动推导 requiredCharacters
+  let requiredChars = options.requiredCharacters || storyboard.requiredCharacters || [];
+  if (requiredChars.length === 0) {
+    // 从 shots 推导：有角色声明但无定妆照引用则告警
+    const shotChars = new Set();
+    for (const shot of storyboard.shots || []) {
+      for (const c of (shot.characters || [])) {
+        if (c && (c.characterRef || (c.portraitPaths && c.portraitPaths.length))) {
+          shotChars.add(c.id || c.name || c);
+        }
+      }
+    }
+    requiredChars = Array.from(shotChars);
+  }
   const characters = options.characters || storyboard.characters || {};
   
   if (requiredChars.length === 0) {

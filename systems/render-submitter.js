@@ -189,11 +189,25 @@ class RenderSubmitter {
     const results = [];
 
     for (const shot of shots) {
-      const result = await this.submitShot(shot, options);
-      results.push(result);
+      try {
+        const result = await this.submitShot(shot, options);
+        results.push({ shotId: shot.id || shot.shotId, success: true, result });
+      } catch (err) {
+        // 【v2.1.4-fix10-P25-fix5】单镜头失败不中断整批
+        console.error(`[RenderSubmitter] 镜头 ${shot.id || shot.shotId} 提交失败: ${err.message}`);
+        results.push({ 
+          shotId: shot.id || shot.shotId, 
+          success: false, 
+          error: err.message 
+        });
+      }
     }
 
-    return results;
+    return {
+      submitted: results.filter(r => r.success).length,
+      failed: results.filter(r => !r.success).length,
+      results
+    };
   }
 }
 
