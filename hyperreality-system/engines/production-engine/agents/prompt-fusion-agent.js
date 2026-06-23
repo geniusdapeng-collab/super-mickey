@@ -20,8 +20,8 @@ class PromptFusionAgent extends BaseAgent {
 你必须按以下标准字段格式输出，每个字段独立清晰，不要混合成一段narrative文本：
 
 字段列表（严格按此顺序）：
-1. 【约束】：画幅、帧率、禁止项（16:9 cinematic, no text, no subtitle, no watermark, 24fps cinematic）
-2. 【基础】：画质基础词（hyperrealistic, ultra-detailed, high dynamic range, film grain, 35mm texture, cinematic film）
+1. 【约束】：技术参数约束，必须包含画幅比例(Aspect ratio)、分辨率(Resolution)、格式(Format)、帧率(Frame rate)。标准格式："Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no caption, no watermark"
+2. 【基础】：画质基础词，必须包含三类：①分辨率锚定(8K resolution/ultra high definition)、②风格质量(cinematic quality/photorealistic/hyperrealistic)、③细节增强(highly detailed/intricate textures/sharp focus)。标准格式："8K resolution, cinematic quality, highly detailed, photorealistic"
 3. 【场景】：具体场景环境描述（地点、时间、空间深度、材质细节）
 4. 【灯光/照明】：专业灯光设计（主光方向+色温K值+光比+特效光）。格式："主光：右侧45度顶光 5600K冷白光，柔光箱漫射；补光：左前侧反光板 3200K暖光，填充阴影；背景光：轮廓光分离人物与背景；特效：无"；必须包含主光方向（左/右/顶/底/正前/正后）、色温（K值）、光质（硬光/柔光/漫射）
 5. 【构图】：景别+画面比例+主体位置+线条引导。格式："景别：中景（膝上）；主体位置：画面黄金分割右1/3处；线条引导：走廊纵深感由近及远；画框边缘：左侧留白1/4给背景信息"
@@ -35,14 +35,17 @@ class PromptFusionAgent extends BaseAgent {
 13. 【道具】：关键道具（手持物、桌面物品、背景物件）。格式："手持：空白A4文件夹（白色，无文字）；背景：木质讲台（表面有细微划痕），不锈钢保温杯"
 14. 【定妆照】：角色定妆照引用路径（如：image://characters/chen-zhuo/portraits/chen-zhuo-front.png）
 15. 【台词】：角色直接说的话，格式：【台词】"纯台词内容"（不要写"画外音""旁白"）
-16. 【时间轴】：镜头内部的微观导演调度时间轴。必须按时间分段描述运镜、构图、情绪、灯光的变化过程。格式示例：
-   "0-2s: 全景 establishing，环境光，冷静氛围 → 2-5s: 推近中景，人物入画，暖光渐入，情绪升温 → 5-8s: 特写脸部，台词高潮，侧光强化，紧张感峰值 → 8-10s: 缓慢拉出中景，柔光平复，情绪回落"
-   要求：至少分3段，每段注明时间区间、运镜动作、构图变化、情绪走向、灯光变化
-17. 【情绪】：3-5个关键词描述情绪氛围
-18. 【节奏】：镜头速度+紧迫感+舒缓度。格式："整体：沉稳中等节奏；开头：缓慢引入（2s）；中段：稍快推进（紧迫感）；高潮：停顿强调（1s留白）；结尾：平缓收尾"
-19. 【转场】：与下一镜头的衔接方式（切/淡入淡出/叠化/划像）。格式："切镜（硬切，保持紧张感）"或"淡出（1.5s，情绪平复过渡）"
-20. 【音频】：环境音效+背景音乐描述
-21. 【负面约束】：排除项（no watermark, no logo, no cartoon style, no flat lighting等）
+16. 【时间轴】：镜头内部的微观导演调度时间轴。必须采用分段式描述，时间戳使用相对于镜头起始点的偏移格式 T00:XX（如 T00:00, T00:02, T00:04），每段包含画面内容和角色动作。要求至少分3段，时间戳不得重叠或跳跃中断。
+   标准格式示例：
+   "T00:00 - 中景，主角坐在窗前，阳光从侧面照入；主角缓缓抬起头，目光投向窗外
+   T00:02 - 近景过渡，镜头缓慢推进至面部；主角眼神由迷茫转为坚定，嘴角微微抿紧
+   T00:04 - 特写定格，主角眼部区域；眼睛眨动一次，瞳孔中反射出窗外景象"
+17. 【情绪】：1-2个情绪关键词，必须具有清晰视觉指向性，避免语义对立。推荐词库：joyful/serene/hopeful/melancholic/tense/despairing/mysterious/eerie/epic/fierce/romantic/intimate
+18. 【节奏】：五段式描述，必须包含：整体(Overall)、开头(Opening 0-20%)、中段(Middle 20%-80%)、高潮(Climax)、结尾(Ending 10%-20%)。
+   标准格式："整体：沉稳中等节奏；开头：缓慢引入（2s）；中段：稍快推进（紧迫感）；高潮：停顿强调（1s留白）；结尾：平缓收尾"
+19. 【转场】：与下一镜头的衔接方式。必须采用"类型+持续时间+方向/风格"三段式结构。类型：hard cut(切镜)/fade in(淡入)/fade out(淡出)/dissolve(叠化)/wipe(划像)/zoom transition(缩放转场)
+20. 【音频】：三层描述法——环境音效(Ambient Sound)+音乐风格(Music Style)+音量层级(Volume Level)。格式："gentle ocean waves and seagull calls, ambient cinematic with strings and piano, peaceful, 70 BPM, volume level: balanced"
+21. 【负面约束】：排除项，必须包含两类：①通用负面词(no text/no watermark/no blurry/no extra limbs/deformed/distorted/low quality)；②场景特定负面词（根据content_type动态加载：教育类/医疗类/剧情类/广告类）
 22. 【角色一致性】：保持角色形象一致
 23. 【明亮约束】：亮度/光照强制要求，确保画面明亮清晰（如：bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination）。这是强制字段，必须输出
 24. 【角色约束】：角色出现限制，防止多角色/分身问题。格式："只出现[角色名]一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆"
@@ -54,8 +57,8 @@ class PromptFusionAgent extends BaseAgent {
     {
       "shotId": "SC01",
       "fields": {
-        "constraint": "16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic",
-        "baseline": "hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film",
+        "constraint": "Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no caption, no watermark",
+        "baseline": "8K resolution, cinematic quality, highly detailed, photorealistic, intricate textures, sharp focus",
         "scene": "三甲医院检验科走廊，冷白色LED顶灯连续照射，墙面白色瓷砖，地面浅灰色防滑地胶，不锈钢检验窗口，走廊纵深约十五米",
         "lighting": "主光：顶部LED面板灯 5600K冷白光，均匀漫射无阴影；补光：墙面反射光填充阴影；背景光：走廊尽头窗户自然光 6500K；特效：检验窗口玻璃微弱反射光",
         "composition": "景别：中景（膝上）；主体位置：画面黄金分割右1/3处；线条引导：走廊纵深由近及远；画框边缘：左侧留白1/4展示环境",
@@ -69,8 +72,8 @@ class PromptFusionAgent extends BaseAgent {
         "props": "手持：空白A4文件夹（白色，无文字）；背景：不锈钢检验窗口台面",
         "portraits": "image://characters/chen-zhuo/portraits/chen-zhuo-front.png",
         "dialogue": "【台词】\"典型症状是肌肉疼痛、无力。\"",
-        "timeline": "0-2s: 全景 establishing，环境光，冷静氛围 → 2-5s: 推近中景，人物入画，暖光渐入，亲切感 → 5-8s: 特写脸部，台词高潮，侧光强化，警示感峰值 → 8-10s: 缓慢拉出，柔光平复，安心收尾",
-        "mood": "冷静，专业，关切，警示，安心",
+        "timeline": "T00:00 - 中景，陈卓站立讲台前，阳光从侧面照入；缓缓抬起头，目光注视镜头\nT00:02 - 近景过渡，镜头缓慢推进至面部；眼神由冷静转为关切，嘴角微微抿紧\nT00:04 - 特写定格，陈卓眼部区域；眼睛眨动一次，瞳孔中反射出讲台景象",
+        "mood": "calm, professional",
         "pacing": "整体：沉稳中等节奏；开头：缓慢引入（2s）；中段：稍快推进（紧迫感）；高潮：停顿强调（1s留白）；结尾：平缓收尾",
         "transition": "切镜（硬切，保持紧张感）",
         "audio": "环境音：医院走廊低频设备嗡鸣，远处隐约脚步声；音乐：冷色调氛围音乐铺底，低沉弦乐",
@@ -93,7 +96,10 @@ class PromptFusionAgent extends BaseAgent {
 6. 不要混合成一段narrative，每个字段独立输出
 7. 只描述本集内容，严禁预告后续集数
 8. 保持角色视觉锚点一致
-9. 负面约束要完整，包含10+条排除项，必须包含全局禁止文字：no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls objects documents signs labels screens clothing packaging, no handwritten text, no printed text, no signage text, no text overlays, no UI elements with text`;
+9. 负面约束要完整，包含两类：①通用负面词(no text/no watermark/no blurry等)；②场景特定负面词（教育类/医疗类/剧情类/广告类）
+10. 【时间轴】必须使用T00:XX相对时间戳格式，至少3段
+11. 【节奏】必须使用五段式描述（整体/开头/中段/高潮/结尾）
+12. 【情绪】只使用1-2个关键词，避免堆砌同义词`;
   }
 
   async process(shots, blueprint) {
@@ -178,11 +184,11 @@ class PromptFusionAgent extends BaseAgent {
     // 【导演指令】⭐ 新增：整体创作意图
     if (fields.director_instruction) parts.push(`【导演指令】${fields.director_instruction}`);
 
-    // 【约束】
-    parts.push(`【约束】${fields.constraint || `${ratio} cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background`}`);
+    // 【约束】：必须包含画幅比例、分辨率、格式、帧率
+    parts.push(`【约束】${fields.constraint || `Aspect ratio: ${ratio}, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no caption, no watermark, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background`}`);
 
-    // 【基础】
-    parts.push(`【基础】${fields.baseline || 'hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film'}`);
+    // 【基础】：三类基础词——分辨率锚定+风格质量+细节增强
+    parts.push(`【基础】${fields.baseline || '8K resolution, cinematic quality, highly detailed, photorealistic, intricate textures, sharp focus'}`);
 
     // 【场景】
     // 【v2.1.4-fix9-P5】场景强制写实：禁止科幻/抽象词汇
@@ -275,16 +281,15 @@ class PromptFusionAgent extends BaseAgent {
     // 【台词】
     if (fields.dialogue) parts.push(`【台词】${fields.dialogue}`);
 
-    // 【时间轴】镜头内部微观导演调度（运镜/构图/情绪/灯光随时间变化）
-    // v2.1.4-fix8: 使用LLM生成的分段式时间轴，描述镜头内部变化
+    // 【时间轴】镜头内部微观导演调度（T00:XX相对时间戳格式）
     if (fields.timeline) {
       parts.push(`【时间轴】${fields.timeline}`);
     } else {
-      // 兜底：简单分3段
+      // 兜底：使用T00:XX相对时间戳格式，至少3段
       const duration = shot.duration || 10;
-      const seg1 = Math.floor(duration * 0.25);
+      const seg1 = Math.floor(duration * 0.3);
       const seg2 = Math.floor(duration * 0.6);
-      parts.push(`【时间轴】0-${seg1}s: 全景 establishing，环境展示 → ${seg1}-${seg2}s: 中景推进，人物动作 → ${seg2}-${duration}s: 情绪收尾，光线平复`);
+      parts.push(`【时间轴】T00:00 - 全景establishing，环境展示，冷静氛围；T00:0${seg1} - 中景推进，人物动作，情绪升温；T00:0${seg2} - 情绪收尾，光线平复`);
     }
 
     // 【情绪】
@@ -299,8 +304,15 @@ class PromptFusionAgent extends BaseAgent {
     // 【音频】
     if (fields.audio) parts.push(`【音频】${fields.audio}`);
 
-    // 【负面约束】
-    if (fields.negative) parts.push(`【负面约束】${fields.negative}`);
+    // 【负面约束】：通用负面词 + 场景特定负面词
+    if (fields.negative) {
+      parts.push(`【负面约束】${fields.negative}`);
+    } else {
+      // 兜底：通用负面词 + 教育/医疗场景特定负面词
+      parts.push(`【负面约束】no text, no watermark, no caption, no subtitle, no logo, no blurry, no low resolution, no pixelated, no distorted, no artifacts, no compression noise, no extra limbs, no deformed hands, no malformed fingers, no extra fingers, no fused fingers`);
+      parts.push(`no cartoon style, no flat lighting, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background`);
+      parts.push(`no brand logos with text, no text in medical charts, no text on posters, no text on billboards, no text on packaging, no handwritten text, no printed text, no signage text, no text overlays, no UI elements with text`);
+    }
 
     // 【明亮约束】⭐ 新增：亮度/光照强制要求，防止暗场
     if (fields.bright_constraint) {
@@ -340,11 +352,12 @@ class PromptFusionAgent extends BaseAgent {
     const parts = [];
 
     // L1: 约束层
-    // 【v2.1.4-fix9-P14】全局禁止文字约束
-    parts.push(`${ratio} cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background`);
+    // 【v2.1.4-fix9-P25】约束字段：画幅+分辨率+格式+帧率+禁止项
+    parts.push(`Aspect ratio: ${ratio}, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no caption, no watermark, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background`);
 
     // L2: 基础层
-    parts.push('hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film');
+    // 【v2.1.4-fix9-P25】基础字段：分辨率锚定+风格质量+细节增强
+    parts.push('8K resolution, cinematic quality, highly detailed, photorealistic, intricate textures, sharp focus');
 
     // L3-L7: 融合段
     if (fusionText) {
