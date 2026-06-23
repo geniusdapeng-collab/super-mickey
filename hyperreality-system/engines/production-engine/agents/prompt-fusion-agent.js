@@ -27,7 +27,9 @@ class PromptFusionAgent extends BaseAgent {
 5. 【动作】：角色动作与镜头运动（如：镜头缓慢推近，陈卓伸手触碰墙面）
 6. 【定妆照】：角色定妆照引用路径（如：image://characters/chen-zhuo/portraits/chen-zhuo-front.png）
 7. 【台词】：角色直接说的话，格式：【台词】"纯台词内容"（不要写"画外音""旁白"）
-8. 【时间轴】：镜头时间区间（如：T00:00-T00:10）
+8. 【时间轴】：镜头内部的微观导演调度时间轴。必须按时间分段描述运镜、构图、情绪、灯光的变化过程。格式示例：
+   "0-2s: 全景 establishing，环境光，冷静氛围 → 2-5s: 推近中景，人物入画，暖光渐入，情绪升温 → 5-8s: 特写脸部，台词高潮，侧光强化，紧张感峰值 → 8-10s: 缓慢拉出中景，柔光平复，情绪回落"
+   要求：至少分3段，每段注明时间区间、运镜动作、构图变化、情绪走向、灯光变化
 9. 【情绪】：3-5个关键词描述情绪氛围
 10. 【音频】：环境音效、背景音乐描述
 11. 【负面约束】：排除项（no watermark, no logo, no cartoon style, no flat lighting等）
@@ -46,7 +48,7 @@ class PromptFusionAgent extends BaseAgent {
         "action": "动作与运镜描述",
         "portraits": "定妆照引用",
         "dialogue": "【台词】\"纯台词内容\"",
-        "timeline": "时间轴",
+        "timeline": "0-2s: 全景 establishing，冷白光，冷静专业 → 2-5s: 推近中景，人物入画，暖光渐入，亲切感 → 5-8s: 特写脸部，台词高潮，侧光强化，警示感峰值 → 8-10s: 缓慢拉出，柔光平复，安心收尾",
         "mood": "情绪关键词",
         "audio": "音频描述",
         "negative": "负面约束列表",
@@ -220,8 +222,17 @@ class PromptFusionAgent extends BaseAgent {
     // 【台词】
     if (fields.dialogue) parts.push(`【台词】${fields.dialogue}`);
 
-    // 【时间轴】
-    if (fields.timeline) parts.push(`【时间轴】${fields.timeline}`);
+    // 【时间轴】镜头内部微观导演调度（运镜/构图/情绪/灯光随时间变化）
+    // v2.1.4-fix8: 使用LLM生成的分段式时间轴，描述镜头内部变化
+    if (fields.timeline) {
+      parts.push(`【时间轴】${fields.timeline}`);
+    } else {
+      // 兜底：简单分3段
+      const duration = shot.duration || 10;
+      const seg1 = Math.floor(duration * 0.25);
+      const seg2 = Math.floor(duration * 0.6);
+      parts.push(`【时间轴】0-${seg1}s: 全景 establishing，环境展示 → ${seg1}-${seg2}s: 中景推进，人物动作 → ${seg2}-${duration}s: 情绪收尾，光线平复`);
+    }
 
     // 【情绪】
     if (fields.mood) parts.push(`【情绪】${fields.mood}`);

@@ -7,22 +7,22 @@
     "last_chars": 18022
   },
   "diary": {
-    "count": 68,
-    "last_ts": "2026-06-22T03:52:53.035593",
+    "count": 70,
+    "last_ts": "2026-06-23T03:45:12.024126",
     "last_day": 29,
     "last_sessions": 9,
     "last_messages": 786,
     "last_filename": "day29-2026-06-22-vertical_bar_ghost_returns.md",
     "last_latency_s": 14.9,
-    "last_skip": "conversation_hash_unchanged"
+    "last_skip": "no_sessions_today"
   },
   "compact": {
-    "count": 68,
-    "last_ts": "2026-06-22T03:53:00.975759",
-    "last_invoke": 38,
-    "last_sessions": 110,
-    "last_messages": 2030,
-    "last_latency_s": 42.5,
+    "count": 70,
+    "last_ts": "2026-06-23T03:45:17.874716",
+    "last_invoke": 39,
+    "last_sessions": 96,
+    "last_messages": 1740,
+    "last_latency_s": 76.8,
     "last_model": "k2p6",
     "last_skip": "stm_hash_unchanged",
     "last_error": "The read operation timed out"

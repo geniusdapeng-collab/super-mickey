@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-06-20T04:25:40.563Z",
+  "updatedAt": "2026-06-23T00:18:18.952Z",
   "entries": {
     "memory:memory/2026-05-15.md:31:42": {
       "key": "memory:memory/2026-05-15.md:31:42",
@@ -3987,22 +3987,24 @@
       "endLine": 21,
       "source": "memory",
       "snippet": "# 2026-06-08 记忆日志 ## 横纹肌溶解健康科普视频预生产（双系统并行验证） ### 老系统（Seedance v6.5.13）状态 - 四轮修复迭代完成，v6.5.13 已提交生产 - 核心修复：`_buildScriptPrompt` 动态模板（generic/Nirath 分支）、角色回退逻辑、场景名过滤 undefined、Nirath 视觉元素条件注入、导演风格分支、运镜对象返回格式 - 仍有问题：S02/S03 场景名回退 default、运镜 description 过短（5字符）、Stage 14 generic 模式仍检查 Nirath 锚点 - 已追加修复 batch 回退逻辑和 Stage 14 条件检查，尚未重跑验证 ### 超现实系统（Hyperreality System）发现 - 用户明确要求：超现实系统也需要跑这个 case，通过实战演练找出问题 - 系统路径：`/root/.openclaw/workspace/hyperreality-system/` - 架构确认：剧本引擎 → 适配层 → 制作引擎 → 渲染引擎 → 后期引擎 - 已创建运行脚本：`/root/.openclaw/workspace/scripts/run-health-edu-hyperreality.js` - 用户等待确认执行顺序：先超现实系统还是先验证老系统修复？ ### 待办 - [ ] 决定执行顺序（老系统修复验证 vs 超现实系统首次运行） - [ ] 超现实系统运行健康科普 case（跳过确认环节，dryRun模式） - [ ] 对比两个",
-      "recallCount": 3,
+      "recallCount": 4,
       "dailyCount": 0,
       "groundedCount": 0,
-      "totalScore": 1.237500849366188,
+      "totalScore": 1.6206655561923982,
       "maxScore": 0.431944465637207,
       "firstRecalledAt": "2026-06-08T23:17:31.787Z",
-      "lastRecalledAt": "2026-06-19T12:00:27.431Z",
+      "lastRecalledAt": "2026-06-23T00:17:55.660Z",
       "queryHashes": [
         "63e3856b195b",
         "4d1bedc7a3f3",
-        "2fd5291fe870"
+        "2fd5291fe870",
+        "74b82b65cd6a"
       ],
       "recallDays": [
         "2026-06-09",
         "2026-06-12",
-        "2026-06-19"
+        "2026-06-19",
+        "2026-06-23"
       ],
       "conceptTags": [
         "v6.5.13",
@@ -4566,20 +4568,22 @@
       "endLine": 418,
       "source": "memory",
       "snippet": "**根因3**：`smartTrim` 按优先级保留核心区块，如果前面的核心区块（视觉/叙事/照明）占用空间过大，后面的 `【镜头时间轴】` 被跳过。 **修复3（`nirath-master-pipeline.js`）**： - `motionEnhanced` 后强制保留：`!motionEnhanced.includes('【镜头时间轴】') && prompt.includes('【镜头时间轴】')` - 最终 `prompts.push` 前强制保留：`!prompt.includes('【镜头时间轴】') && shot.prompt && shot.prompt.includes('【镜头时间轴】')` - 二次压缩兜底：优先裁剪 `环境质感/环境音效/技术规格/照明方案` #### 问题2：**** 占位符残留 **根因**：`motionEnhanced` 的正则清理 `\\*\\*\\*\\*[^*]+\\*\\*\\*\\*` 未覆盖连续星号（如 `**** ****` 或残留 `**`）。 **修复（`nirath-master-pipeline.js`）**： - `prompts.push` 前统一正则清理：`\\*\\*\\*\\*[^*]+\\*\\*\\*\\*` - 增加兜底：` #### 问题3：hyper-realistic 风格校验失败 **根因**：`pipeline-integrity-validator.js` 的 `_checkStage14_Style` 只检查 `超写实` 关键词，不认英文 `hyper-realistic`。 **修复**：",
-      "recallCount": 3,
+      "recallCount": 4,
       "dailyCount": 0,
       "groundedCount": 0,
-      "totalScore": 1.2667456567287445,
+      "totalScore": 1.650920295715332,
       "maxScore": 0.4309207439422607,
       "firstRecalledAt": "2026-06-11T23:31:30.025Z",
-      "lastRecalledAt": "2026-06-12T14:21:05.628Z",
+      "lastRecalledAt": "2026-06-23T00:17:55.660Z",
       "queryHashes": [
         "fe705e21e6a4",
         "3dfd91cf9e1a",
-        "4d1bedc7a3f3"
+        "4d1bedc7a3f3",
+        "74b82b65cd6a"
       ],
       "recallDays": [
-        "2026-06-12"
+        "2026-06-12",
+        "2026-06-23"
       ],
       "conceptTags": [
         "视觉/叙事/照明",
@@ -6786,6 +6790,352 @@
         "v6.5.52",
         "pre-promptforge",
         "负面"
+      ]
+    },
+    "memory:memory/2026-06-13.md:260:293": {
+      "key": "memory:memory/2026-06-13.md:260:293",
+      "path": "memory/2026-06-13.md",
+      "startLine": 260,
+      "endLine": 293,
+      "source": "memory",
+      "snippet": "## 2026-06-13 20:42 - 卓越系统完整代码打包 v3.0（288文件/4.35MB） ### 队长要求 队长要求将卓越系统完整代码打包成MD文件，用于一键部署到另一台OpenClaw实例。要求包含所有组件、引擎和全部内容。 ### 打包过程 **第一轮**（3.12MB/197文件）→ 队长质疑太小，要求重新检查。 **第二轮**：发现之前遗漏了大量关键目录： - `systems/` 目录（所有核心引擎、校验器、增强器） - `config/` 目录（配置管理） - `agents/` 目录 - `characters/` 目录（角色系统） - `core/` 目录 - 跨系统依赖（seedance-director/、shanhaijing-render-engine/等） **最终清单**： - 288个文件，4.35MB，83,719行代码 - 包含：所有核心引擎、校验器、LLM强制层、角色系统、运镜系统、渲染引擎、后期制作、合规检查等 - 附带安装部署指南 ### 已发送Feishu附件 - 文件名：`卓越视频生成系统完整代码包v3.md` - 大小：4.35MB - 文件数：288 - 状态：队长已查收 ## 2026-06-13 21:13 - 队长要求整理视频生成相关文档 ### 发送文件 1. **SOUL-视频生成相关约束.md**（2KB） - OpenClaw P0级视频预生产约束 - P0级系统原则（禁止单case定制、禁止绕过系统） - 核心工作原则（每次执行=全新执行）",
+      "recallCount": 2,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.8203220963478088,
+      "maxScore": 0.41528149247169494,
+      "firstRecalledAt": "2026-06-23T00:17:55.660Z",
+      "lastRecalledAt": "2026-06-23T00:18:18.952Z",
+      "queryHashes": [
+        "74b82b65cd6a",
+        "c134debc36ef"
+      ],
+      "recallDays": [
+        "2026-06-23"
+      ],
+      "conceptTags": [
+        "v3.0",
+        "288文件/4.35mb",
+        "3.12mb/197文件",
+        "seedance-director",
+        "shanhaijing-render-engine/等",
+        "4.35mb",
+        "卓越视频生成系统完整代码包v3.md",
+        "soul-视频生成相关约束.md"
+      ]
+    },
+    "memory:memory/2026-06-13.md:382:401": {
+      "key": "memory:memory/2026-06-13.md:382:401",
+      "path": "memory/2026-06-13.md",
+      "startLine": 382,
+      "endLine": 401,
+      "source": "memory",
+      "snippet": "- 建议：稍后重试，或检查Seedance API服务状态 ## 2026-06-13 22:55 - 当日总结 ### 完成事项 1. ✅ 卓越系统完整代码打包（288文件/4.35MB）并发送 2. ✅ SOUL.md和AGENTS.md视频相关约束整理并发送 3. ✅ v6.5.64-P2 LLM Enforcement Layer 8/8 Stage全部成功 4. ✅ 健康科普预生产完整运行（6镜头/56秒/100分PromptForge） 5. ✅ 预生产报告发送队长审阅 ### 待处理 1. ⏳ S01渲染提交失败（API-MS-InternalError）→ 等待队长指示 2. ⏳ 定妆照风格：队长确认陈卓穿警服正确，无需修改 ### 关键版本 - 卓越系统: v6.5.64-P2 - LLM Enforcement Layer: v1.0（8/8 Stage LLM驱动） - RenderSubmitterCore: v1.0（四层防护绑定）",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.38919655382633206,
+      "maxScore": 0.38919655382633206,
+      "firstRecalledAt": "2026-06-23T00:17:55.660Z",
+      "lastRecalledAt": "2026-06-23T00:17:55.660Z",
+      "queryHashes": [
+        "74b82b65cd6a"
+      ],
+      "recallDays": [
+        "2026-06-23"
+      ],
+      "conceptTags": [
+        "288文件/4.35mb",
+        "soul.md和agents.md视频相关约束整理并发送",
+        "v6.5.64-p2",
+        "8/8",
+        "6镜头/56秒/100分promptforge",
+        "api-ms-internalerror",
+        "v1.0",
+        "建议"
+      ]
+    },
+    "memory:memory/2026-06-09.md:65:100": {
+      "key": "memory:memory/2026-06-09.md:65:100",
+      "path": "memory/2026-06-09.md",
+      "startLine": 65,
+      "endLine": 100,
+      "source": "memory",
+      "snippet": "- 修改：将 `enforcePostExecution` 调用移到 `evaluatePipelineResult` 之前 - 当 `integrityReport.trusted === true` 时直接给 100 分 ### 剩余瓶颈 - promptQuality: 55 (通用模式跳过了五要素检查，且不含 Nirath 关键词) - storyQuality: 60 (通用模式跳过了五要素检查) - 下一步：为 generic 模式增加替代关键词加分、优化五要素检查兼容性 ## 2026-06-09 01:20 - 质量门测试验证中 正在测试 quality-gate.js 修复是否生效： - 测试 generic 模式 fiveElement 跳过处理 (score=70) - 测试 generic 模式 prompt 关键词加分 (realistic/超写实/电影级) - 验证总分能否突破 73 → 80+ ## 2026-06-09 01:23 - QualityGate测试验证 正在通过exec验证质量门修复效果... ## 2026-06-09 01:25 - 质量门修复验证进行中 代码修复已就位： 1. quality-gate.js: prompt quality 新增 generic 关键词分支 (realistic/documentary/电影级/超写实) 2. quality-gate.js: story quality 新增 fiveElement.enabled=false 处理 (score=70) 3. nirath-ma",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.38650534152984617,
+      "maxScore": 0.38650534152984617,
+      "firstRecalledAt": "2026-06-23T00:17:55.660Z",
+      "lastRecalledAt": "2026-06-23T00:17:55.660Z",
+      "queryHashes": [
+        "74b82b65cd6a"
+      ],
+      "recallDays": [
+        "2026-06-23"
+      ],
+      "conceptTags": [
+        "integrityreport.trusted",
+        "quality-gate.js",
+        "realistic/超写实/电影级",
+        "realistic/documentary/电影级/超写实",
+        "fiveelement.enabled",
+        "nirath-ma",
+        "修改",
+        "enforcepostexecution"
+      ]
+    },
+    "memory:memory/2026-06-07.md:409:452": {
+      "key": "memory:memory/2026-06-07.md:409:452",
+      "path": "memory/2026-06-07.md",
+      "startLine": 409,
+      "endLine": 452,
+      "source": "memory",
+      "snippet": "**根因**：`pipeline-integrity-validator.js` 的 `_checkStage14_Style` 只检查 `超写实` 关键词，不认英文 `hyper-realistic`。 **修复**：`enforcementMethods` 增加 `hyper-realistic` 作为 `超写实` 的有效等价词。 #### 问题4：预渲染校验器旧代码残留 **修复**：`pre-render-validation.js` 清理废弃的 `v1.1-fix` 代码。 ### 验证结果（v6.5.4 预生产） | 镜头 | 时间轴 | 占位符 | 风格标记 | 长度 | |------|--------|--------|----------|------| | S01 | ✅ | ❌ | ✅ | 960 | | S02 | ✅ | ❌ | ✅ | 900 | | S03 | ✅ | ❌ | ✅ | 930 | | S04 | ✅ | ❌ | ✅ | 899 | **PipelineIntegrityValidator：15/16 通过**（唯一非阻塞警告：STAGE-12 3个镜头空间利用率<<950） --- ## v6.5.5 发布：残留星号清理（2026-06-07 12:35 GMT+8） ### 问题：S01 仍有 `**` 残留 **根因**：`motionEnhanced` 占位符清理后产生连续星号（如 `内容**内容`），正则 `\\*\\*\\*\\*[^*]+\\*\\*\\*\\*` 未覆盖 `**` 模式。 **修复**：`pro",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.3848208487033844,
+      "maxScore": 0.3848208487033844,
+      "firstRecalledAt": "2026-06-23T00:17:55.660Z",
+      "lastRecalledAt": "2026-06-23T00:17:55.660Z",
+      "queryHashes": [
+        "74b82b65cd6a"
+      ],
+      "recallDays": [
+        "2026-06-23"
+      ],
+      "conceptTags": [
+        "pipeline-integrity-validator.js",
+        "checkstage14-style",
+        "hyper-realistic",
+        "pre-render-validation.js",
+        "v1.1-fix",
+        "v6.5.4",
+        "15/16",
+        "stage-12"
+      ]
+    },
+    "memory:memory/2026-06-21.md:95:113": {
+      "key": "memory:memory/2026-06-21.md:95:113",
+      "path": "memory/2026-06-21.md",
+      "startLine": 95,
+      "endLine": 113,
+      "source": "memory",
+      "snippet": "**为什么\"修复了又出现\"**：查了整个 git 历史，超现实系统的 `_assemblePrompt` **从未修复过竖杠问题**。昨晚的修复在超短裙系统或 prompt-fusion-agent 降级路径，但当前走的是 `_assemblePrompt` → 暴露了这个隐藏问题。 **修复**：第 2020 行注入前替换：`const safeDialogue = shot.dialogue.replace(/\\|/g, '; ').replace(/;/g, '; '); parts.push(\\`【台词】${safeDialogue}\\`)` ### 提交链 `79a0c10`(v2.1.4) → `de591af`(patch1 边界守护) → `1840dde`(patch2 FieldGuard+lighting) → `9bc16a0`(patch3 DirectorSkills camera) → `f3611ca`(patch4 台词竖杠) ### 教训 1. 同一问题可能在不同系统/不同代码路径重复出现，修复时要确认**所有路径**都覆盖 2. 台词格式 `SPEAKER|TYPE|EMOTION|TEXT|LIP_SYNC:YES` 是内部结构化数据，**注入 prompt 前必须做字符转义** 3. 对象类型字段（camera, lighting）在 DirectorSkills 中频繁出现 toLowerCase 调用，需要统一做类型兼容 --- ## 超现实系统 v2.1.4-patch5 — 系统性竖杠 `|` 根修（commit 4a",
+      "recallCount": 2,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.9241213887929915,
+      "maxScore": 0.47851412296295165,
+      "firstRecalledAt": "2026-06-23T00:18:02.120Z",
+      "lastRecalledAt": "2026-06-23T00:18:18.952Z",
+      "queryHashes": [
+        "45bf3249ea1a",
+        "c134debc36ef"
+      ],
+      "recallDays": [
+        "2026-06-23"
+      ],
+      "conceptTags": [
+        "prompt-fusion-agent",
+        "shot.dialogue.replace",
+        "parts.push",
+        "v2.1.4",
+        "同一问题可能在不同系统/不同代码路径重复出现",
+        "lip-sync",
+        "v2.1.4-patch5",
+        "为什么"
+      ]
+    },
+    "memory:memory/2026-06-21.md:109:130": {
+      "key": "memory:memory/2026-06-21.md:109:130",
+      "path": "memory/2026-06-21.md",
+      "startLine": 109,
+      "endLine": 130,
+      "source": "memory",
+      "snippet": "## 超现实系统 v2.1.4-patch5 — 系统性竖杠 `|` 根修（commit 4a1d352） **背景**：队长发现 patch4 只修了一处台词，但系统里还有大量 `|` 分隔符在 prompt 注入路径中，要求\"从根上系统性全部修复\"，不接受修一半。 **12 个注入点 + 兜底防线**： 1. `_extractScenes` line 995：`characterAnchors.join(' | ')` → 改为 `join('; ')` 2. `_extractScenes` line 1001：`dialogueLines.join(' || ')` → 改为 `join(' / ')` 3. `_extractScenes` line 1006：`characterDescs.join(' | ')` → 改为 `join('; ')` 4. `_buildCharacterRef` line 1287：`refs.join(' | ')` → 改为 `join('; ')` 5. 标准化层 timeline line 296：`join(' | ')` → 改为 `join(', ')` 6. 标准化层 bgSound line 351：`parts.join(' | ')` → 改为 `join('; ')` 7. `_buildBackgroundSound` line 1786：`AMBIENT|SPATIAL|INTENSITY` → 改为 `; ` 分隔 8. `_buildTitleOverlay` line 1839-1840：`",
+      "recallCount": 2,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.9069667696952819,
+      "maxScore": 0.46339776813983913,
+      "firstRecalledAt": "2026-06-23T00:18:02.120Z",
+      "lastRecalledAt": "2026-06-23T00:18:18.952Z",
+      "queryHashes": [
+        "45bf3249ea1a",
+        "c134debc36ef"
+      ],
+      "recallDays": [
+        "2026-06-23"
+      ],
+      "conceptTags": [
+        "v2.1.4-patch5",
+        "characteranchors.join",
+        "dialoguelines.join",
+        "characterdescs.join",
+        "refs.join",
+        "parts.join",
+        "1839-1840",
+        "现实"
+      ]
+    },
+    "memory:memory/2026-06-21.md:191:218": {
+      "key": "memory:memory/2026-06-21.md:191:218",
+      "path": "memory/2026-06-21.md",
+      "startLine": 191,
+      "endLine": 218,
+      "source": "memory",
+      "snippet": "- [ ] 修复 intra-shot-prompt-enhancer.js - [ ] 检查 screenwriter-optimizer.js 规则文本是否影响输出 - [ ] 添加兜底过滤（最终 prompt 输出前 stripPipes） - [ ] 提交并推送 - [ ] 版本号升级 --- ## 超短裙系统（short-video-system）竖杠根修（2026-06-21 晚） **队长纠正**：卓越系统 = `zhuoyue-system`，超短裙系统 = `short-video-system`。我此前已修复 `zhuoyue-system`，随后队长指出混淆，我立即对 `short-video-system` 进行了同样系统性的排查和修复。 ### 修复文件：engines/production-engine/production-engine.js | 位置 | 修复内容 | 行号 | |------|---------|------| | `_normalizeLLMOutput` | timeline `join(' \\| ')` → `join('; ')` | ~165 | | `_normalizeLLMOutput` | backgroundSound `join(' \\| ')` → `join('; ')` | ~220 | | `_extractScenes` | characterAnchors `join(' \\| ')` → `join('; ')` | ~650 | | `_extractScenes` | char",
+      "recallCount": 2,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.9170673847198485,
+      "maxScore": 0.47466012537479396,
+      "firstRecalledAt": "2026-06-23T00:18:02.120Z",
+      "lastRecalledAt": "2026-06-23T00:18:18.952Z",
+      "queryHashes": [
+        "45bf3249ea1a",
+        "c134debc36ef"
+      ],
+      "recallDays": [
+        "2026-06-23"
+      ],
+      "conceptTags": [
+        "intra-shot-prompt-enhancer.js",
+        "screenwriter-optimizer.js",
+        "short-video-system",
+        "zhuoyue-system",
+        "修复",
+        "intra",
+        "shot",
+        "prompt"
+      ]
+    },
+    "memory:memory/2026-06-21.md:214:232": {
+      "key": "memory:memory/2026-06-21.md:214:232",
+      "path": "memory/2026-06-21.md",
+      "startLine": 214,
+      "endLine": 232,
+      "source": "memory",
+      "snippet": "| `_buildTitleOverlay` | `MAIN_TITLE \\| SUBTITLE \\| PRODUCER \\| TITLE_ANIM` → `; ` 分隔 | ~1488 | | `_buildBackgroundSound` | `AMBIENT:... \\| SPATIAL:... \\| INTENSITY:...` → `; ` 分隔 | ~1440 | | `_engineerPrompts` | timeline 字符串 `join(' \\| ')` → `join('; ')` | ~1300 | | 最终兜底 | 遍历所有 `shot.prompt`，`replace(/\\|/g, '; ')` | ~2000 | ### 修复文件：engines/rendering-engine/rendering-engine.js | 位置 | 修复内容 | 行号 | |------|---------|------| | `_parseCharacterRef` | `split(' \\| ')` → `split('; ')` | ~175 | | `_parseCharacterRefForContinuity` | `split(' \\| ')` → `split('; ')` | ~2170 | ### 版本 - **SHORT-VIDEO-0.8.8-fix1** 已提交并推送到 `short-video` master（`xxx` hash） ### 教训 卓越系统和超短裙系统虽然名字不同，但共享同一套 `|` 分隔符设计模式（`SPE",
+      "recallCount": 2,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.8281818807125091,
+      "maxScore": 0.4234316915273666,
+      "firstRecalledAt": "2026-06-23T00:18:02.120Z",
+      "lastRecalledAt": "2026-06-23T00:18:18.952Z",
+      "queryHashes": [
+        "45bf3249ea1a",
+        "c134debc36ef"
+      ],
+      "recallDays": [
+        "2026-06-23"
+      ],
+      "conceptTags": [
+        "main-title",
+        "title-anim",
+        "shot.prompt",
+        "short-video-0.8.8-fix1",
+        "short-video",
+        "buildtitleoverlay",
+        "subtitle",
+        "producer"
+      ]
+    },
+    "memory:memory/2026-06-21.md:144:162": {
+      "key": "memory:memory/2026-06-21.md:144:162",
+      "path": "memory/2026-06-21.md",
+      "startLine": 144,
+      "endLine": 162,
+      "source": "memory",
+      "snippet": "**队长指令**：切换到卓越系统，排查同样问题，从根上搜集并彻底解决。 **已定位 25+ 注入点，6 个核心文件**： ### 1. nirath-master-pipeline.js（核心，~15+ 处） - `_buildCharacterRef` line 3738：`return refs.join(' | ')` → 角色定妆照拼接 - `_buildCharacterMinimal` line 3770：`return characters.join(' | ')` → 角色极简锚点 - `_buildTimeline` line ~3800：时间轴拼接可能含竖杠 - `_buildDynamicAction` line ~8880：`return parts.join(' | ')` → 动态动作描述 - `enhanceCharacterWithMethodology` line ~8930：`return parts.join(' | ')` → 材质/状态/关系 - `enhanceAudioWithMethodology` line ~9070：`return parts.join(' | ')` → 音频四层 + 避让规则（含 `|` 在值内） - `toStandardPrompt` line ~7920：15个字段 `fields.join(' | ')` → **主 prompt 拼装，最大风险** - line 7935：`result += ' | ' + originalPrompt` → 追加原始描述 - line 7980：`blo",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.39597094953060147,
+      "maxScore": 0.39597094953060147,
+      "firstRecalledAt": "2026-06-23T00:18:02.120Z",
+      "lastRecalledAt": "2026-06-23T00:18:02.120Z",
+      "queryHashes": [
+        "45bf3249ea1a"
+      ],
+      "recallDays": [
+        "2026-06-23"
+      ],
+      "conceptTags": [
+        "nirath-master-pipeline.js",
+        "refs.join",
+        "characters.join",
+        "parts.join",
+        "材质/状态/关系",
+        "fields.join",
+        "队长",
+        "指令"
+      ]
+    },
+    "memory:memory/2026-06-21.md:123:149": {
+      "key": "memory:memory/2026-06-21.md:123:149",
+      "path": "memory/2026-06-21.md",
+      "startLine": 123,
+      "endLine": 149,
+      "source": "memory",
+      "snippet": "10. `_parseCharacterRefForContinuity` line 2528：`split(' | ')` → 改为 `split('; ')`（解析与生成同步） 11. `index.js` line 251：`directorStyle.join(' | ')` → 改为 `join(', ')` 12. `scene-design-agent` / `visual-language-agent`：shot 描述含 `|` → 替换为分号 **兜底过滤**（`_buildShotPrompt` 最终出口）： ```javascript const stripPipes = (str) => str.replace(/\\|/g, '; '); return { fullPrompt: stripPipes(truncated), // 提交给 Seedance rawPrompt: fullPrompt, // 保留原始用于调试 }; ``` **修复思路**：源端全部替换（12处）+ 最终兜底（1道），双重保险。保留 `rawPrompt` 用于调试，仅对 `fullPrompt` 应用过滤。 **教训**：系统内部把 `|` 当成多字段分隔符（`SPEAKER|TYPE|TEXT`、`AMBIENT|SPATIAL|INTENSITY`），直接注入 prompt。Seedance 把它当特殊语法字符解析，导致口型/语音乱码。必须从数据结构层面解决：所有 `|` 分隔符统一替换为 `, ` 或 `; `，并增加",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.3931948721408844,
+      "maxScore": 0.3931948721408844,
+      "firstRecalledAt": "2026-06-23T00:18:02.120Z",
+      "lastRecalledAt": "2026-06-23T00:18:02.120Z",
+      "queryHashes": [
+        "45bf3249ea1a"
+      ],
+      "recallDays": [
+        "2026-06-23"
+      ],
+      "conceptTags": [
+        "index.js",
+        "directorstyle.join",
+        "scene-design-agent",
+        "visual-language-agent",
+        "str.replace",
+        "导致口型/语音乱码",
+        "parsecharacterrefforcontinuity",
+        "split"
+      ]
+    },
+    "memory:memory/2026-06-20.md:1:42": {
+      "key": "memory:memory/2026-06-20.md:1:42",
+      "path": "memory/2026-06-20.md",
+      "startLine": 1,
+      "endLine": 42,
+      "source": "memory",
+      "snippet": "--- ## 23:46 — 卓越系统两件事全部完成 队长要求： 1. 定妆照报告应用与优化 2. 行业报告整合与优化 ### 完成工作 #### 1. 迁移核心模块到卓越系统 - `scripts/prompt-guardian.js` — 9项自动修复 - `scripts/render-pipeline-guard.js` — 13项强制检查 #### 2. 改造4个核心文件 - `systems/render-request-builder.js` — 集成PromptGuardian + MIME文件头检测 + generate_audio自动设置 - `systems/render-submitter.js` — 集成PipelineGuard + 检查失败阻止提交 - `config/render-policy.js` — 新增promptGuardian/pipelineGuard/costOptimization/multimodalLimits配置 - `CHANGELOG.md` — 完整记录变更 #### 3. 12项技术点全部整合 1. 声音描述检测 ✅ 2. 多镜头时间戳检测 ✅ 3. 负向提示词检查 ✅ 4. 种子值锁定检查 ✅ 5. 多模态限制检查 ✅ 6. 分辨率成本优化 ✅ 7. 成本策略配置化 ✅ 8-12. 虚拟人像/指数退避/限流/错误排查/视频延长 ✅ 文档记录 #### 4. 版本发布 - 卓越系统 v6.6.9.5 - Git提交: 969d3c9 + 2b4a778 - GitHub推送: zhuoyue.gi",
+      "recallCount": 1,
+      "dailyCount": 0,
+      "groundedCount": 0,
+      "totalScore": 0.4444920033216476,
+      "maxScore": 0.4444920033216476,
+      "firstRecalledAt": "2026-06-23T00:18:18.952Z",
+      "lastRecalledAt": "2026-06-23T00:18:18.952Z",
+      "queryHashes": [
+        "c134debc36ef"
+      ],
+      "recallDays": [
+        "2026-06-23"
+      ],
+      "conceptTags": [
+        "scripts/prompt-guardian.js",
+        "scripts/render-pipeline-guard.js",
+        "generate-audio自动设置",
+        "systems/render-submitter.js",
+        "config/render-policy.js",
+        "changelog.md",
+        "8-12",
+        "虚拟人像/指数退避/限流/错误排查/视频延长"
       ]
     }
   }

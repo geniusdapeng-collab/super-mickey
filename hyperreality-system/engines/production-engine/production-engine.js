@@ -23,7 +23,7 @@ const DEFAULT_AGENT_CONFIG = {
   llmMaxRetries: 2, // 重试 2 次
   llmModel: 'kimi-k2p6', // 深度模型(推理):SceneDesign / VisualLanguage / PromptFusion
   fastModel: 'kimi-k2p6', // 全部用 k2.6(k2 已下线)
-  totalDeadlineMs: 540000, // 【修复】收紧到 9 分钟,给 Layer1(105s)+收尾留余量,避开外部 SIGTERM
+  totalDeadlineMs: 1200000, // 【修复】提升到20分钟，确保Phase-3 PromptFusion有充足时间
   memThresholdMB: 1200, // 【新增】堆内存降级阈值(MB)
   promptFusionConcurrency: 3 // 【新增】PromptFusion 并发度
 };
