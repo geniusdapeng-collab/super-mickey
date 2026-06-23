@@ -44,7 +44,11 @@ class CharacterPortraitEnforcer {
    * @param {Object} params.sceneContext - 场景上下文（用于判断角色类型）
    * @returns {Object} { pass, missing, outdated, blocked, ready, errors, auditLog }
    */
-  check(params) {
+  /**
+   * ==================== 主入口 ====================
+   * 【v2.1.4-fix10-P25-fix8-P0A】改为 async，支持 await
+   */
+  async check(params) {
     const { characterIds, projectId = 'unknown', episodeId = 'unknown', sceneContext = {} } = params;
     
     const startTime = Date.now();
@@ -72,7 +76,7 @@ class CharacterPortraitEnforcer {
         continue;
       }
       
-      const result = this._checkCharacter(charId, sceneContext);
+      const result = await this._checkCharacter(charId, sceneContext); // ✅ await
       this._cache.set(charId, result);
       
       if (!result.pass) {
@@ -119,8 +123,8 @@ class CharacterPortraitEnforcer {
   /**
    * 强制阻断模式 - 不通过则抛错中断
    */
-  enforce(params) {
-    const result = this.check(params);
+  async enforce(params) { // ✅ async
+    const result = await this.check(params); // ✅ await
     
     if (!result.pass) {
       const errorLines = [
@@ -140,7 +144,7 @@ class CharacterPortraitEnforcer {
           let charName = id;
           if (fss.existsSync(cardPath)) {
             try {
-              const card = JSON.parse(await fs.promises.readFile(cardPath, 'utf8'));
+              const card = JSON.parse(fss.readFileSync(cardPath, 'utf8')); // ✅ 同步读，无需 await
               charName = card.name || id;
             } catch(e) {}
           }
@@ -188,7 +192,7 @@ class CharacterPortraitEnforcer {
     
     if (fss.existsSync(cardPath)) {
       try {
-        card = JSON.parse(await fs.promises.readFile(cardPath, 'utf8'));
+        card = JSON.parse(await fs.readFile(cardPath, 'utf8'));
         // 严格判断：只有同时满足以下条件才视为原生幻想生物
         // 1. 明确标记 species !== human/人类
         // 2. 或有原生生物特征描述（如无头无脸）
@@ -231,7 +235,7 @@ class CharacterPortraitEnforcer {
     // Rule 2: 角色档案必须可解析
     if (!card) {
       try {
-        card = JSON.parse(await fs.promises.readFile(cardPath, 'utf8'));
+        card = JSON.parse(await fs.readFile(cardPath, 'utf8'));
       } catch (e) {
         errors.push(`❌ [${charId}] 角色档案解析失败: ${e.message}`);
         return { pass: false, reason: 'missing', errors };
@@ -342,7 +346,7 @@ class CharacterPortraitEnforcer {
    * - 全景/环境：优先front
    * - 默认：threeQuarter
    */
-  getPortraitPaths(characterIds, shotType = 'medium') {
+  async getPortraitPaths(characterIds, shotType = 'medium') { // ✅ async
     const paths = {};
     
     const anglePriority = {
@@ -362,7 +366,7 @@ class CharacterPortraitEnforcer {
       
       let card;
       try {
-        card = JSON.parse(await fs.promises.readFile(cardPath, 'utf8'));
+        card = JSON.parse(await fs.readFile(cardPath, 'utf8')); // ✅ fs.readFile + async
       } catch(e) { continue; }
       
       const portraits = card.generatedAssets?.portraits || [];
@@ -404,7 +408,7 @@ class CharacterPortraitEnforcer {
    * 批量检查所有角色档案状态
    * 用于运维巡检
    */
-  auditAll() {
+  async auditAll() { // ✅ async
     const results = [];
     
     if (!fss.existsSync(this.charactersDir)) {
@@ -415,7 +419,7 @@ class CharacterPortraitEnforcer {
     const charDirs = entries.filter(e => e.isDirectory()).map(e => e.name);
     
     for (const charId of charDirs) {
-      const result = this._checkCharacter(charId);
+      const result = await this._checkCharacter(charId); // ✅ await
       results.push({
         charId,
         name: result.character || charId,
@@ -458,12 +462,12 @@ class CharacterPortraitEnforcer {
   async readAuditLog(limit = 50) {
     try {
       try {
-        await fs.promises.access(this.auditLogPath);
+        await fs.access(this.auditLogPath);
       } catch {
         return [];
       }
       
-      const data = await fs.promises.readFile(this.auditLogPath, 'utf8');
+      const data = await fs.readFile(this.auditLogPath, 'utf8');
       const lines = data
         .trim()
         .split('\n')

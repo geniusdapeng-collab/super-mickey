@@ -191,11 +191,13 @@ class PromptChannelSeparator {
   /**
    * 构建角色视觉描述
    * 仅保留外貌+动作，过滤心理描述
+   * 【v2.1.4-fix10-P25-fix8-P1C】兼容数组与对象两种角色格式
    */
   _buildCharacterVisual(characters, emotionPhase) {
-    if (!characters || characters.length === 0) return '';
+    const charList = this._resolveCharacters(characters);
+    if (charList.length === 0) return '';
     
-    const descs = characters.map(char => {
+    const descs = charList.map(char => {
       const visualParts = [];
       
       // 外貌（始终保留）
@@ -265,7 +267,21 @@ class PromptChannelSeparator {
   }
 
   /**
+   * 【v2.1.4-fix10-P25-fix8-P1C】兼容数组与对象两种角色格式
+   */
+  _resolveCharacters(characters) {
+    if (!characters) return [];
+    if (Array.isArray(characters)) return characters;
+    if (typeof characters === 'object') {
+      return Object.entries(characters).map(([id, c]) => ({ id, ...c }));
+    }
+    if (typeof characters === 'string') return characters.split(/[,，]/).map(s => ({ name: s.trim() })).filter(c => c.name);
+    return [];
+  }
+
+  /**
    * 过滤心理描述词
+   * 【v2.1.4-fix10-P25-fix8-P1D】按句分割，只删含心理词的短句，不贪婪删整段
    */
   _filterMentalDescription(text) {
     const mentalWords = [
@@ -274,11 +290,13 @@ class PromptChannelSeparator {
       'thinking of', 'remembering', 'missing'
     ];
     
-    let filtered = text;
-    for (const word of mentalWords) {
-      filtered = filtered.replace(new RegExp(`[^,.]*${word}[^,.]*`, 'g'), '');
-    }
-    return filtered.replace(/\s+/g, ' ').trim();
+    // 按句号/分号分句，只删含该词的短句
+    const clauses = text.split(/[。；]/);
+    const filtered = clauses.filter(clause => {
+      return !mentalWords.some(word => clause.includes(word));
+    });
+    
+    return filtered.join('。').replace(/\s+/g, ' ').trim();
   }
 
   /**

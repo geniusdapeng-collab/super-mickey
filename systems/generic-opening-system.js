@@ -353,7 +353,9 @@ class GenericOpeningSystem {
     const parts = [];
     
     // L1: 约束层
-    parts.push(`NEGATIVE: no episode number, no EP text, no "EP01" or "第一集" text, no anime, no cartoon, no deformed hands, no extra fingers, no watermark, 16:9 cinematic, 24fps, hyperrealistic, ultra-detailed, HDR, film grain, 35mm texture, photorealistic with filmic treatment`);
+    // 【v2.1.4-fix10-P25-fix8-P1B】正向渲染属性移出 NEGATIVE，单独放 RENDER 通道
+    parts.push(`NEGATIVE: no episode number, no EP text, no "EP01" or "第一集" text, no anime, no cartoon, no deformed hands, no extra fingers, no watermark, no subtitle, no caption, no logo, no text artifacts`);
+    parts.push(`RENDER: 16:9 cinematic, 24fps, hyperrealistic, ultra-detailed, HDR, film grain, 35mm texture, photorealistic with filmic treatment`);
     
     // L2: 基础层
     const charNames = Object.values(characters || {}).map(c => c.name).filter(Boolean).join(', ');

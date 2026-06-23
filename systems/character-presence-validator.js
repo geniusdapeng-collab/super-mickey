@@ -13,25 +13,32 @@
 
 class CharacterPresenceValidator {
   constructor(options = {}) {
-    // 角色名映射表（ narration 中的名称 -> characters ID）
-    this.characterNameMap = {
-      '小G': 'xiaoG',
-      '小纪': 'xiaoG',
-      '主角': 'xiaoG',
-      '少年': 'xiaoG',
-      '饕餮': 'tao-tie',
-      'taotie': 'tao-tie',
-      '烛龙': 'zhu-long',
-      'zhulong': 'zhu-long',
-      '九尾': 'jiu-wei',
-      '九尾狐': 'jiu-wei',
-      'jiuweihu': 'jiu-wei',
+    // 【v2.1.4-fix10-P25-fix8-P0D】角色映射表可注入，且从 characters 目录动态加载
+    this.characterNameMap = options.characterNameMap || {
+      '小G': 'xiaoG', '小纪': 'xiaoG', '主角': 'xiaoG', '少年': 'xiaoG',
+      '饕餮': 'tao-tie', 'taotie': 'tao-tie',
+      '烛龙': 'zhu-long', 'zhulong': 'zhu-long',
+      '九尾': 'jiu-wei', '九尾狐': 'jiu-wei', 'jiuweihu': 'jiu-wei',
       '暖暖': 'nuan-nuan',
       '帝江': 'di-jiang'
     };
     
     // 角色档案（用于验证 ID 存在性）
     this.characterProfiles = options.characterProfiles || {};
+    
+    // 【v2.1.4-fix10-P25-fix8-P0D】动态加载 characters 目录下的所有角色 ID
+    this._knownIds = new Set([
+      'xiaoG', 'tao-tie', 'zhu-long', 'jiu-wei', 'nuan-nuan', 'di-jiang'
+    ]);
+    if (options.charactersDir) {
+      try {
+        const fss = require('fs');
+        const entries = fss.readdirSync(options.charactersDir, { withFileTypes: true });
+        for (const e of entries) {
+          if (e.isDirectory()) this._knownIds.add(e.name);
+        }
+      } catch {}
+    }
     
     // 严格模式：如果 narration 中提及角色但 characters 数组缺失，报错
     this.strictMode = options.strictMode !== false;
@@ -116,6 +123,7 @@ class CharacterPresenceValidator {
   _scanCharacters(narration) {
     const found = new Set();
     
+    // 静态映射表
     for (const [name, id] of Object.entries(this.characterNameMap)) {
       // 使用正则匹配全词（避免部分匹配）
       const regex = new RegExp(name, 'g');
@@ -124,19 +132,22 @@ class CharacterPresenceValidator {
       }
     }
     
+    // 【v2.1.4-fix10-P25-fix8-P0D】动态：从 characterProfiles 的 name 字段匹配
+    for (const [id, profile] of Object.entries(this.characterProfiles)) {
+      const name = profile.name || profile.baseIdentity?.name;
+      if (name && narration.includes(name)) found.add(id);
+    }
+    
     return Array.from(found);
   }
 
   /**
    * 校验角色 ID 是否有效（有档案定义）
+   * 【v2.1.4-fix10-P25-fix8-P0D】优先检查注入的 profiles，再检查动态加载的 knownIds
    */
   _isValidCharacterId(charId) {
-    // 检查是否有预定义档案
     if (this.characterProfiles[charId]) return true;
-    
-    // 检查常用角色 ID
-    const knownIds = ['xiaoG', 'tao-tie', 'zhu-long', 'jiu-wei', 'nuan-nuan', 'di-jiang'];
-    return knownIds.includes(charId);
+    return this._knownIds.has(charId);
   }
 
   /**

@@ -28,15 +28,23 @@ async function runPreproduction(input, options = {}) {
   });
   reporter.init();
 
-  process.on('SIGTERM', () => {
+  // 【v2.1.4-fix10-P25-fix8-P2B】用 process.once 防止监听器累积，且提供卸载方法
+  const sigtermHandler = () => {
     reporter.killed('SIGTERM', reporter.currentStage);
     process.exit(143);
-  });
-
-  process.on('SIGINT', () => {
+  };
+  const sigintHandler = () => {
     reporter.killed('SIGINT', reporter.currentStage);
     process.exit(130);
-  });
+  };
+  process.once('SIGTERM', sigtermHandler);
+  process.once('SIGINT', sigintHandler);
+  
+  // 提供卸载方法供库化复用
+  const cleanupListeners = () => {
+    process.removeListener('SIGTERM', sigtermHandler);
+    process.removeListener('SIGINT', sigintHandler);
+  };
 
   const removed = cleanOutputFiles(outputDir, { keyword: outputKeyword });
   reporter.message(`🧹 清理旧输出 ${removed.length} 个文件`, true);

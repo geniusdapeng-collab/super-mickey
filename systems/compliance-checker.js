@@ -153,12 +153,33 @@ class ComplianceChecker {
   }
 
   /**
-   * 检查禁用词
+   * 获取禁用词表（按 mode 区分）
+   * 【v2.1.4-fix10-P25-fix8-P1A】不同模式有不同的禁用词
    */
-  _checkBannedKeywords(prompt) {
+  _getBannedKeywords(mode) {
+    const universal = ['anime', 'cartoon', 'cartoony', 'stylized', 'toon', 'lo-fi', '低质量', 'low quality', '粗糙', 'rough'];
+    const shanhaijing = ['中国风', '古风', '传统', '水墨', '国风', '仙侠', '武侠', 'chinese style', 'traditional chinese', 'ink wash', 'oriental'];
+    const nirathModern = ['地球', 'earth', 'terrestrial', '现代科技', 'modern technology', '科幻', 'sci-fi', '现实', 'real world'];
+
+    if (mode === 'nirath' || mode === 'shanhaijing') {
+      return { L1: [...universal, ...shanhaijing], L2: nirathModern, L3: ['简单', 'simple'] };
+    }
+    if (mode === 'generic') {
+      return { L1: universal, L2: [], L3: ['简单', 'simple'] }; // ✅ generic 只禁通用项
+    }
+    return { L1: universal, L2: [], L3: ['简单', 'simple'] };
+  }
+
+  /**
+   * 检查禁用词
+   * 【v2.1.4-fix10-P25-fix8-P1A】按 mode 区分禁用词
+   */
+  _checkBannedKeywords(prompt, mode) {
     const issues = [];
+    const { L1, L2, L3 } = this._getBannedKeywords(mode || this.mode || 'generic');
+    const allKeywords = { L1, L2, L3 };
     
-    for (const [level, keywords] of Object.entries(this.bannedKeywords)) {
+    for (const [level, keywords] of Object.entries(allKeywords)) {
       for (const keyword of keywords) {
         const regex = /[\u4e00-\u9fa5]/.test(keyword)
           ? new RegExp(keyword, 'gi')

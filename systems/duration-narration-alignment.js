@@ -115,8 +115,8 @@ class DurationNarrationAlignment {
         const mismatchIndex = adjustedShots.findIndex(s => s.id === mismatch.shotId);
 
         if (donorIndex >= 0 && mismatchIndex >= 0) {
-          // v6.5.36-fix: 借调后不超过 maxDuration 上限（硬规则要求15秒）
-          const maxAllowed = 15; // 与硬规则对齐
+          // v6.5.36-fix: 借调后不超过 maxDuration 上限
+          const maxAllowed = this.config.maxDuration; // ✅ 从配置读取，不再硬编码15秒
           const afterBorrow = adjustedShots[mismatchIndex].duration + borrow;
           const cappedBorrow = afterBorrow > maxAllowed ? (maxAllowed - adjustedShots[mismatchIndex].duration) : borrow;
           if (cappedBorrow <= 0) continue;

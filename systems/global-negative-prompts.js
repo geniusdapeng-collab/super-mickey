@@ -245,9 +245,33 @@ class GlobalNegativePromptInjector {
     }
 
     if (negativePrompt.length > maxLength) {
-      // 只保留L1中的核心约束（角色一致性前3条）
-      const coreConstraints = this.l1Constraints.characterConsistency.constraints.slice(0, 3);
-      negativePrompt = '【负面约束】' + coreConstraints.join('；');
+      // 【v2.1.4-fix10-P25-fix8-P0C】只保留L1中的铁律约束（文字禁令等），不简单的slice(0,3)
+      const ironRules = [
+        ...this.l1Constraints.textAndUI.constraints, // 文字铁律永远保留
+        ...this.l1Constraints.characterConsistency.constraints // 角色一致性也保留
+      ];
+      const materialRules = this.l1Constraints.materialAndStyle.constraints;
+      const lightingRules = this.l1Constraints.lightingAndAtmosphere.constraints;
+      
+      // 先加铁律
+      let finalConstraints = [...ironRules];
+      let currentLen = finalConstraints.join('；').length + 6; // 6 for "【负面约束】"
+      
+      // 再加材质约束（有空间时）
+      for (const c of materialRules) {
+        if (currentLen + c.length + 1 > maxLength) break;
+        finalConstraints.push(c);
+        currentLen += c.length + 1;
+      }
+      
+      // 再加光照约束（有空间时）
+      for (const c of lightingRules) {
+        if (currentLen + c.length + 1 > maxLength) break;
+        finalConstraints.push(c);
+        currentLen += c.length + 1;
+      }
+      
+      negativePrompt = '【负面约束】' + finalConstraints.join('；');
     }
 
     return negativePrompt;
