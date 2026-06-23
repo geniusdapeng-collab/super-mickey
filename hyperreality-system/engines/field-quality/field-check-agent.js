@@ -13,6 +13,7 @@
  *     · check() 6类跨字段语义问题
  */
 const { BaseAgent } = require('../production-engine/agents/base-agent');
+const { asString, asStringLower, safeSlice, safeIncludes } = require('../field-standardizer');
 
 // ============================================================
 // 数据模型 - Issue, CheckReport
@@ -303,7 +304,7 @@ class RuleChecker {
     // 角色约束：须含单角色限制+禁止分身
     const cc = shot.characterConstraint || '';
     if (cc) {
-      const ccLower = (cc && typeof cc === "string") ? cc.toLowerCase() : "";
+      const ccLower = asStringLower(cc);
       const hasSingle = /只出现|仅出现|single character|only.*one/.test(ccLower);
       const hasNoClone = /分身|克隆|duplicate|clone|repeat/.test(ccLower);
       const missing = [];
@@ -315,7 +316,7 @@ class RuleChecker {
           severity: Severity.MAJOR, issueType: IssueType.INCOMPLETE,
           description: `角色约束缺少要素：${missing.join('、')}`,
           suggestion: `角色约束须含单角色限制+禁止分身。标准格式：'只出现[角色名]一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆'`,
-          currentValue: (typeof cc === "string" ? cc.slice(0, 60) : String(cc).slice(0, 60))
+          currentValue: safeSlice(cc, 0, 60)
         }));
       }
     }
@@ -326,9 +327,9 @@ class RuleChecker {
       issues.push(new Issue({
         fieldEn: 'portraits', fieldCn: '定妆照',
         severity: Severity.FATAL, issueType: IssueType.FORMAT_ERROR,
-        description: `定妆照路径格式不规范：${pt.slice(0, 40)}`,
+        description: `定妆照路径格式不规范：${safeSlice(pt, 0, 40)}`,
         suggestion: '路径格式应为：/characters/{角色英文名}/portrait_v{版本号}.{png|jpg}，示例：/characters/chen_zhuo/portrait_v1.png',
-        currentValue: pt.slice(0, 40)
+        currentValue: safeSlice(pt, 0, 40)
       }));
     }
 
@@ -454,7 +455,7 @@ class RuleChecker {
           severity: sev, issueType: IssueType.OVER_LENGTH,
           description: `字段超长：${length} 字符，超出预算上限 ${spec.charMax}`,
           suggestion: `请压缩【${spec.nameCn}】字段至 ${spec.charMax} 字符以内，保留核心信息，去除修饰性描述`,
-          currentValue: `${value.slice(0, 40)}...(${length}字符)`
+          currentValue: `${safeSlice(value, 0, 40)}...(${length}字符)`
         }));
       }
     }

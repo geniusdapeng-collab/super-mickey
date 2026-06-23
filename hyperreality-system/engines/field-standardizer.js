@@ -34,16 +34,16 @@ const FIELD_ALIAS_MAP = {
   灯光照明: 'lighting',
   
   // 镜头语言层 (P0/P1)
-  cameraMovement: 'cameraMovement',
-  运镜: 'cameraMovement',
-  运镜设计: 'cameraMovement',
+  cameraMovement: 'camera_movement',
+  运镜: 'camera_movement',
+  运镜设计: 'camera_movement',
   composition: 'composition',
   构图: 'composition',
-  color_palette: 'colorPalette',
-  色彩: 'colorPalette',
-  色调: 'colorPalette',
-  depth_of_field: 'depthOfField',
-  景深: 'depthOfField',
+  color_palette: 'color_palette',
+  色彩: 'color_palette',
+  色调: 'color_palette',
+  depth_of_field: 'depth_of_field',
+  景深: 'depth_of_field',
   
   // 人物层 (P0/P2/P3)
   character: 'character',
@@ -88,10 +88,10 @@ const FIELD_ALIAS_MAP = {
   negative: 'negative',
   负面约束: 'negative',
   negativeConstraints: 'negative',
-  bright_constraint: 'brightConstraint',
-  明亮约束: 'brightConstraint',
-  character_constraint: 'characterConstraint',
-  角色约束: 'characterConstraint',
+  bright_constraint: 'bright_constraint',
+  明亮约束: 'bright_constraint',
+  character_constraint: 'character_constraint',
+  角色约束: 'character_constraint',
   consistency: 'consistency',
   角色一致性: 'consistency',
   
@@ -190,7 +190,7 @@ const CRITICAL_FIELDS = {
     'baseline',              // 画面基底
     'scene',                 // 空间层
     'lighting',              // 空间层
-    'cameraMovement',        // 镜头语言层
+    'camera_movement',        // 镜头语言层
     'character',             // 人物层
     'action',                // 人物层
     'portraits',             // 质量层
@@ -201,12 +201,12 @@ const CRITICAL_FIELDS = {
   // P1 核心级（7个字段）- 缺失会导致质量显著降低
   p1: [
     'composition',           // 镜头语言层
-    'colorPalette',          // 镜头语言层
-    'depthOfField',          // 镜头语言层
+    'color_palette',          // 镜头语言层
+    'depth_of_field',          // 镜头语言层
     'timeline',              // 调度层
     'mood',                  // 渲染层
-    'brightConstraint',      // 约束层
-    'characterConstraint'    // 约束层
+    'bright_constraint',      // 约束层
+    'character_constraint'    // 约束层
   ],
   // P2 增强级（4个字段）- 缺失不影响主体表达
   p2: [
@@ -312,10 +312,10 @@ function createEmptyShot() {
     lighting: null,
     
     // 镜头语言层 (P0/P1)
-    cameraMovement: {},
+    camera_movement: {},
     composition: '',
-    colorPalette: '',
-    depthOfField: '',
+    color_palette: '',
+    depth_of_field: '',
     
     // 人物层 (P0/P2/P3)
     character: '',
@@ -337,51 +337,51 @@ function createEmptyShot() {
     
     // 约束层 (P0/P1)
     negative: '',
-    brightConstraint: '',
-    characterConstraint: '',
+    bright_constraint: '',
+    character_constraint: '',
     consistency: '',
     
     // Prompt
     prompt: '',
     
     // 口型
-    mouthAction: '',
+    mouth_action: '',
     
     // 角色/定妆照
     characters: [],
-    characterRef: '',
+    character_ref: '',
     
     // 人物卡片
-    characterCards: [],
+    character_cards: [],
     
     // 情绪/质量
-    emotionPhase: '',
-    qualityScore: null,
+    emotion_phase: '',
+    quality_score: null,
     
     // 降级标记
     degraded: false,
-    degradeReason: '',
+    degrade_reason: '',
     
     // 超现实系统特有
-    sceneFunction: '',
-    emotionalTarget: { valence: 0, arousal: 0.5 },
-    visualDirection: {},
-    worldId: 'default',
+    scene_function: '',
+    emotional_target: { valence: 0, arousal: 0.5 },
+    visual_direction: {},
+    world_id: 'default',
     
     // 后期字段
-    audioLayer: null,
-    titleOverlay: null,
+    audio_layer: null,
+    title_overlay: null,
     
     // 片头字段
     title: '',
     subtitle: '',
     producer: '',
-    beastVoice: '',
-    openingHook: '',
+    beast_voice: '',
+    opening_hook: '',
     
     // 约束（兼容旧版）
-    negativeConstraints: [],
-    styleConstraints: []
+    negative_constraints: [],
+    style_constraints: []
   };
 }
 
@@ -420,31 +420,31 @@ function standardizeShot(rawInput = {}) {
   }
 
   // 强制填充关键字段
-  standard.shotId = standard.shotId || raw.id || raw.shotId || '';
-  standard.sceneType = shotType === 'opening' ? 'opening' : (standard.sceneType || 'establishing');
+  standard.shot_id = standard.shot_id || raw.id || raw.shotId || '';
+  standard.scene_type = shotType === 'opening' ? 'opening' : (standard.scene_type || 'establishing');
   standard.duration = standard.duration || raw.duration || raw.shotDuration || (raw.timing?.duration) || 0;
   standard.timing = standard.timing || raw.timing || { start: 0, duration: standard.duration, end: standard.duration };
   standard.scene = standard.scene || raw.scene || raw.sceneName || '';
-  standard.sceneDescription = standard.sceneDescription || raw.sceneDescription || raw.setting || '';
+  standard.scene_description = standard.scene_description || raw.sceneDescription || raw.setting || '';
   standard.prompt = standard.prompt || raw.visualPrompt || raw.prompt || raw.renderPrompt || '';
   standard.dialogue = normalizeDialogue(standard.dialogue || raw.dialogue || raw.narration || raw.line || raw.lines);
   standard.timeline = normalizeTimeline(standard.timeline, raw);
   standard.portraits = normalizePortraits(standard.portraits, raw);
-  standard.characterCards = toArray(standard.characterCards || raw.characterCards || raw.peopleCards);
+  standard.character_cards = toArray(standard.character_cards || raw.characterCards || raw.peopleCards);
   standard.characters = toArray(standard.characters || raw.characters);
-  standard.mouthAction = standard.mouthAction || raw.mouthAction || raw.mouth_action || '';
-  standard.cameraMovement = standard.cameraMovement || raw.cameraMovement || {};
+  standard.mouth_action = standard.mouth_action || raw.mouthAction || raw.mouth_action || '';
+  standard.camera_movement = standard.camera_movement || raw.cameraMovement || {};
   standard.degraded = Boolean(standard.degraded || raw.degraded);
-  standard.degradeReason = standard.degradeReason || raw.degradeReason || '';
-  standard.emotionPhase = standard.emotionPhase || raw.emotionPhase || '';
+  standard.degrade_reason = standard.degrade_reason || raw.degradeReason || '';
+  standard.emotion_phase = standard.emotion_phase || raw.emotionPhase || '';
   
   // 片头字段
   if (shotType === 'opening') {
     standard.title = standard.title || raw.mainTitle || raw.title || '';
     standard.subtitle = standard.subtitle || raw.subTitle || raw.subtitle || '';
     standard.producer = standard.producer || raw.producer || '';
-    standard.beastVoice = standard.beastVoice || raw.beastVoice || '';
-    standard.openingHook = standard.openingHook || raw.openingHook || '';
+    standard.beast_voice = standard.beast_voice || raw.beastVoice || '';
+    standard.opening_hook = standard.opening_hook || raw.openingHook || '';
   }
 
   return standard;
@@ -557,6 +557,62 @@ function markDegradedArray(shots, reason) {
   return shots.map(shot => markDegraded(shot, reason));
 }
 
+function normalizeFields(fields) {
+  if (!fields || typeof fields !== 'object') return {};
+  const result = {};
+  for (const [key, value] of Object.entries(fields)) {
+    const snakeKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+    const targetKey = FIELD_ALIAS_MAP[snakeKey] || snakeKey;
+    if (value !== undefined && value !== null && value !== '') {
+      result[targetKey] = normalizeValue(value);
+    }
+  }
+  return result;
+}
+
+function normalizeValue(value) {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'string') return value;
+  if (Array.isArray(value)) return value.map(v => normalizeValue(v)).join(', ');
+  if (typeof value === 'object') {
+    return Object.entries(value).map(([k, v]) => `${k}: ${normalizeValue(v)}`).join(', ');
+  }
+  return String(value);
+}
+
+function makeGetter(fields) {
+  return function getField(...names) {
+    for (const name of names) {
+      if (fields[name] !== undefined && fields[name] !== null && fields[name] !== '') {
+        return fields[name];
+      }
+    }
+    return undefined;
+  };
+}
+
+function asString(value) {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'string') return value;
+  if (Array.isArray(value)) return value.map(v => asString(v)).join(', ');
+  if (typeof value === 'object') return JSON.stringify(value);
+  return String(value);
+}
+
+function asStringLower(value) {
+  return asString(value).toLowerCase();
+}
+
+function safeSlice(value, start, end) {
+  const str = asString(value);
+  if (end === undefined) return str.slice(start);
+  return str.slice(start, end);
+}
+
+function safeIncludes(value, searchString) {
+  return asString(value).includes(searchString);
+}
+
 module.exports = {
   FIELD_ALIAS_MAP,
   CRITICAL_FIELDS,
@@ -567,5 +623,12 @@ module.exports = {
   markDegraded,
   markDegradedArray,
   inferShotType,
-  createEmptyShot
+  createEmptyShot,
+  normalizeFields,
+  normalizeValue,
+  makeGetter,
+  asString,
+  asStringLower,
+  safeSlice,
+  safeIncludes
 };

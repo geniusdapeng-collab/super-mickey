@@ -5,6 +5,7 @@
  * v2.1.4-fix8: LLM输出标准字段格式（【约束】【基础】【场景】等）
  */
 const { BaseAgent } = require('./base-agent');
+const { normalizeFields, makeGetter } = require('../field-standardizer');
 
 class PromptFusionAgent extends BaseAgent {
   constructor(options = {}) {
@@ -157,17 +158,14 @@ class PromptFusionAgent extends BaseAgent {
     });
 
     const fusionEntry = llmResult.result?.shots?.find(s => s.shotId === shot.shotId);
-    const fields = fusionEntry?.fields || {};
+    let fields = fusionEntry?.fields || {};
+    
+    // 【v2.1.4-fix10】在 LLM 输出入口统一标准化为 snake_case
+    fields = normalizeFields(fields);
     
     // 【v2.1.4-fix9-P25-fix7】将 fields 中的关键字段展开到 shot 顶层
     // 确保 FieldGuard 能直接检查到这些字段
-    const expandedFields = {};
-    if (fields && typeof fields === 'object') {
-      for (const [fieldName, value] of Object.entries(fields)) {
-        const camelField = fieldName.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-        expandedFields[camelField] = value;
-      }
-    }
+    const expandedFields = { ...fields };
     
     // 组装标准格式Prompt
     const fullPrompt = this._assembleStandardPrompt(shot, fields, ratio);

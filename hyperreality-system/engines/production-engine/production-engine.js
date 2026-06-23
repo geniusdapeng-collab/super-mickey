@@ -178,12 +178,24 @@ class ProductionEngine {
   async _saveCheckpoint(phase, shots, extra = {}) {
     try {
       const fs = require('fs');
-      const dir = this._checkpointDir;
+      const dir = this._checkpointDir || path.join(process.cwd(), 'checkpoints');
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
       const file = path.join(dir, `checkpoint-${phase}.json`);
+      
+      // 过滤不可序列化内容
+      const cleanShots = (shots || []).map(s => {
+        const clean = {};
+        for (const [k, v] of Object.entries(s)) {
+          if (k.startsWith('_')) continue; // 跳过内部字段
+          if (typeof v === 'function') continue;
+          clean[k] = v;
+        }
+        return clean;
+      });
+      
       fs.writeFileSync(file, JSON.stringify({
         phase,
-        shots,
+        shots: cleanShots,
         opening: extra.opening || null,
         llmStats: extra.llmStats || {},
         savedAt: new Date().toISOString()
@@ -574,10 +586,51 @@ class ProductionEngine {
         }
       }
 
-      // ===== Phase-3.5: 字段质量检查与修复 =====
-      if (this._budgetRemaining() < 180000) {
-        this.log('FIELD-QUALITY', `⚠️ 预算不足(剩${this._budgetRemaining()}ms),跳过字段质量检查`);
+      // ===== Phase-3.5: 字段质量检查与修复（自适应预算）=====
+      const remainingBudget = this._budgetRemaining();
+      if (remainingBudget < 15000) {
+        this.log('FIELD-QUALITY', `⚠️ 预算不足(剩${remainingBudget}ms),跳过字段质量检查`);
+      } else if (remainingBudget < 60000) {
+        // 15s-60s: 纯规则检查（不调LLM）
+        try {
+          this.log('FIELD-QUALITY', '开始(纯规则检查模式，预算极低)...');
+          const fqStart = Date.now();
+          const { FieldQualityPipeline } = require('../field-quality');
+          const pipeline = new FieldQualityPipeline({
+            llmModel: this.llmModel,
+            maxRounds: 0, // 纯规则，不调用LLM
+            checkerTimeout: 30000,
+            repairerTimeout: 0,
+          });
+          pipeline.setPRDFromBlueprint(adaptedBlueprint);
+          const { finalShots, summary } = await pipeline.runAll(currentShots);
+          currentShots = finalShots;
+          this.log('FIELD-QUALITY', `完成 (${Date.now() - fqStart}ms) | 通过:${summary.passed}/${summary.totalShots} | 修复:${summary.totalRepairs} (纯规则模式)`);
+        } catch (e) {
+          this.log('FIELD-QUALITY-FAIL', `❌ ${e.message},继续执行`);
+        }
+      } else if (remainingBudget < 300000) {
+        // 60s-300s: LLM检查1轮
+        try {
+          this.log('FIELD-QUALITY', '开始(规则+LLM 1轮检查与修复)...');
+          const fqStart = Date.now();
+          const { FieldQualityPipeline } = require('../field-quality');
+          const pipeline = new FieldQualityPipeline({
+            llmModel: this.llmModel,
+            maxRounds: 1, // 1轮
+            checkerTimeout: 60000,
+            repairerTimeout: 120000,
+          });
+          pipeline.setPRDFromBlueprint(adaptedBlueprint);
+          const { finalShots, summary } = await pipeline.runAll(currentShots);
+          currentShots = finalShots;
+          this.log('FIELD-QUALITY', `完成 (${Date.now() - fqStart}ms) | 通过:${summary.passed}/${summary.totalShots} | 修复:${summary.totalRepairs}`);
+          await this._saveCheckpoint('phase3.5', currentShots, { opening: result.opening, llmStats: result.llmStats });
+        } catch (e) {
+          this.log('FIELD-QUALITY-FAIL', `❌ ${e.message},继续执行`);
+        }
       } else {
+        // ≥300s: LLM检查2轮（原逻辑）
         try {
           this.log('FIELD-QUALITY', '开始(规则+LLM混合检查与修复)...');
           const fqStart = Date.now();
@@ -588,7 +641,6 @@ class ProductionEngine {
             checkerTimeout: 120000,
             repairerTimeout: 180000,
           });
-          // 从blueprint构建PRD
           pipeline.setPRDFromBlueprint(adaptedBlueprint);
           const { finalShots, summary } = await pipeline.runAll(currentShots);
           currentShots = finalShots;
@@ -596,7 +648,6 @@ class ProductionEngine {
           await this._saveCheckpoint('phase3.5', currentShots, { opening: result.opening, llmStats: result.llmStats });
         } catch (e) {
           this.log('FIELD-QUALITY-FAIL', `❌ ${e.message},继续执行`);
-          // 字段质量检查失败不阻塞主流程
         }
       }
 

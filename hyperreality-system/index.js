@@ -194,13 +194,15 @@ class HyperrealitySystem {
       const productionResult = await this.productionEngine.produce(adapted, options.productionEngine?.agentConfig);
 
       result.stages.productionEngine = {
-        shots: productionResult.shots.map(s => ({
-          shotId: s.shotId,
-          sceneType: s.sceneType,
-          timing: s.timing,
-          promptLength: s.prompt?.length,
-          status: s.status
-        })),
+        shots: productionResult.shots.map(s => {
+          const clean = {};
+          for (const [k, v] of Object.entries(s)) {
+            if (k.startsWith('_')) continue; // 跳过内部字段
+            if (typeof v === 'function') continue;
+            clean[k] = v;
+          }
+          return clean;
+        }),
         prompts: productionResult.prompts,
         quality: productionResult.stages.qualityGate,
         // 【v2.1.4】跨集边界校验报告
