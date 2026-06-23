@@ -1,14 +1,14 @@
-const { ConfigUnifier } = require('./config-unifier-v1');
-const { FieldMapper } = require('./field-mapper-v1');
-const { ShotSchemaValidator } = require('./shot-schema-validator-v1');
-const { SubsystemOrchestratorV2 } = require('./subsystem-orchestrator-v2');
-const { CreativeLLMRouter } = require('./creative-llm-router-v1');
-const { NegativeFieldBuilder } = require('./negative-field-builder-v1');
+const { ConfigUnifier } = require('./deprecated/config-unifier-v1');
+const { FieldMapper } = require('./deprecated/field-mapper-v1');
+const { ShotSchemaValidator } = require('./deprecated/shot-schema-validator-v1');
+const { SubsystemOrchestratorV2 } = require('./deprecated/subsystem-orchestrator-v2');
+const { CreativeLLMRouter } = require('./deprecated/creative-llm-router-v1');
+const { NegativeFieldBuilder } = require('./deprecated/negative-field-builder-v1');
 const { ClosingShotEmotionalBoosterV2 } = require('./closing-shot-emotional-booster-v2');
-const { PromptNormalizer } = require('./prompt-normalizer-v1');
-const { PromptTrimmer } = require('./prompt-trimmer-v1');
-const { PromptValidator } = require('./prompt-validator-v1');
-const { ShotDebugRecorder } = require('./shot-debug-recorder-v1');
+const { PromptNormalizer } = require('./deprecated/prompt-normalizer-v1');
+const { PromptTrimmer } = require('./deprecated/prompt-trimmer-v1');
+const { PromptValidator } = require('./deprecated/prompt-validator-v1');
+const { ShotDebugRecorder } = require('./deprecated/shot-debug-recorder-v1');
 
 class FinalPromptBuilderV3 {
   constructor(options = {}) {
