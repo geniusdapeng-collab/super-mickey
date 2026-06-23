@@ -180,7 +180,7 @@ class RuleChecker {
           severity: Severity.FATAL, issueType: IssueType.INCOMPLETE,
           description: `导演指令缺少要素：${missing.join('、')}`,
           suggestion: `导演指令须覆盖风格定位+写实要求+情绪基调，当前缺少：${missing.join('、')}。示例：'纪录片真实感，手持摄影风格，自然光效，无特效，冷静专业基调'`,
-          currentValue: di.slice(0, 60)
+          currentValue: (typeof di === "string" ? di.slice(0, 60) : String(di).slice(0, 60))
         }));
       }
     }
@@ -200,7 +200,7 @@ class RuleChecker {
           severity: Severity.FATAL, issueType: IssueType.INCOMPLETE,
           description: `约束字段缺少技术参数：${missing.join('、')}`,
           suggestion: `约束须包含画幅+分辨率+格式+帧率，示例：'Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps'`,
-          currentValue: cs.slice(0, 60)
+          currentValue: (typeof cs === "string" ? cs.slice(0, 60) : String(cs).slice(0, 60))
         }));
       }
     }
@@ -219,7 +219,7 @@ class RuleChecker {
           severity: Severity.FATAL, issueType: IssueType.INCOMPLETE,
           description: `灯光字段缺少要素：${missing.join('、')}`,
           suggestion: `灯光须含主光+色温+光质三要素。示例：'key light: soft diffused window light at 5600K, fill light: LED panel at 4000K, low contrast 2:1'`,
-          currentValue: lt.slice(0, 60)
+          currentValue: (typeof lt === "string" ? lt.slice(0, 60) : String(lt).slice(0, 60))
         }));
       }
     }
@@ -241,7 +241,7 @@ class RuleChecker {
           severity: Severity.FATAL, issueType: IssueType.INCOMPLETE,
           description: `运镜字段缺少要素：${missing.join('、')}`,
           suggestion: `运镜须含运动方式+速度+时间分布。示例：'slow push in toward the protagonist's face, 0.5m/s constant speed, duration 3 seconds'`,
-          currentValue: cm.slice(0, 60)
+          currentValue: (typeof cm === "string" ? cm.slice(0, 60) : String(cm).slice(0, 60))
         }));
       }
     }
@@ -256,7 +256,7 @@ class RuleChecker {
           severity: Severity.FATAL, issueType: IssueType.INCOMPLETE,
           description: "负面约束缺少基础排除项：'no text' 和 'no watermark'",
           suggestion: "负面约束必须包含 'no text, no watermark' 两项基础排除，建议同时包含 no blurry, no extra limbs 等通用负面词",
-          currentValue: ng.slice(0, 60)
+          currentValue: (typeof ng === "string" ? ng.slice(0, 60) : String(ng).slice(0, 60))
         }));
       }
     }
@@ -276,7 +276,7 @@ class RuleChecker {
           severity: Severity.MAJOR, issueType: IssueType.INCOMPLETE,
           description: `构图字段缺少要素：${missing.join('、')}`,
           suggestion: `构图须含景别（远景/全景/中景/近景/特写）+ 主体位置（三分法/中心/对称）。示例：'medium shot, subject positioned at the left third intersection'`,
-          currentValue: comp.slice(0, 60)
+          currentValue: (typeof comp === "string" ? comp.slice(0, 60) : String(comp).slice(0, 60))
         }));
       }
     }
@@ -295,7 +295,7 @@ class RuleChecker {
           severity: Severity.MAJOR, issueType: IssueType.INCOMPLETE,
           description: `明亮约束缺少要素：${missing.join('、')}`,
           suggestion: `明亮约束须含亮度+可见性+面部明亮。标准格式：'bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination, face clearly lit'`,
-          currentValue: bc.slice(0, 60)
+          currentValue: (typeof bc === "string" ? bc.slice(0, 60) : String(bc).slice(0, 60))
         }));
       }
     }
@@ -315,7 +315,7 @@ class RuleChecker {
           severity: Severity.MAJOR, issueType: IssueType.INCOMPLETE,
           description: `角色约束缺少要素：${missing.join('、')}`,
           suggestion: `角色约束须含单角色限制+禁止分身。标准格式：'只出现[角色名]一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆'`,
-          currentValue: cc.slice(0, 60)
+          currentValue: (typeof cc === "string" ? cc.slice(0, 60) : String(cc).slice(0, 60))
         }));
       }
     }
@@ -341,7 +341,7 @@ class RuleChecker {
           severity: Severity.FATAL, issueType: IssueType.FORMAT_ERROR,
           description: '台词缺少句末标点（须以 。！？… 结尾）',
           suggestion: `句末标点是口型闭合的信号标记，不可省略。建议在台词末尾添加 '。'：'${dl}。'`,
-          currentValue: dl.slice(0, 60)
+          currentValue: (typeof dl === "string" ? dl.slice(0, 60) : String(dl).slice(0, 60))
         }));
       }
       const forbidden = dl.match(/[；;：:""''"'\[\]【】]/g);
@@ -351,7 +351,7 @@ class RuleChecker {
           severity: Severity.MAJOR, issueType: IssueType.FORMAT_ERROR,
           description: `台词含禁止标点：${[...new Set(forbidden)].join('')}（仅允许 ，。！？…）`,
           suggestion: '移除分号、冒号、引号等复杂标点，仅保留 ，。！？… 五种，以免干扰口型同步引擎的断句解析',
-          currentValue: dl.slice(0, 60)
+          currentValue: (typeof dl === "string" ? dl.slice(0, 60) : String(dl).slice(0, 60))
         }));
       }
     }
@@ -387,7 +387,7 @@ class RuleChecker {
           severity: Severity.MAJOR, issueType: IssueType.INCOMPLETE,
           description: `时间轴分段数不足：当前 ${segments.length} 段，要求 ≥ 3 段`,
           suggestion: '时间轴须至少分为起始、发展、收尾 3 段，每段格式：T00:XX - [画面内容] + [动作描述]',
-          currentValue: tl.slice(0, 60)
+          currentValue: (typeof tl === "string" ? tl.slice(0, 60) : String(tl).slice(0, 60))
         }));
       }
     }
@@ -404,7 +404,7 @@ class RuleChecker {
           severity: Severity.MINOR, issueType: IssueType.INCOMPLETE,
           description: `节奏字段缺少段落：${missing.join('、')}`,
           suggestion: '节奏须采用五段式：整体+开头+中段+高潮+结尾',
-          currentValue: pa.slice(0, 60)
+          currentValue: (typeof pa === "string" ? pa.slice(0, 60) : String(pa).slice(0, 60))
         }));
       }
     }
@@ -429,7 +429,7 @@ class RuleChecker {
           severity: Severity.MINOR, issueType: IssueType.INCOMPLETE,
           description: `服装字段层次不足：当前覆盖 ${found}/4 项（外套/内搭/下装/鞋履）`,
           suggestion: "服装须采用分层描述，至少覆盖外套/内搭/下装/鞋履中的 3 项，示例：'charcoal gray wool overcoat, white dress shirt, navy trousers, black leather shoes'",
-          currentValue: cos.slice(0, 60)
+          currentValue: (typeof cos === "string" ? cos.slice(0, 60) : String(cos).slice(0, 60))
         }));
       }
     }
