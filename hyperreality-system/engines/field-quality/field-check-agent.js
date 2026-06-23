@@ -166,7 +166,7 @@ class RuleChecker {
     // 导演指令：须含风格定位+写实要求+情绪基调
     const di = shot.directorInstruction || '';
     if (di) {
-      const diLower = di.toLowerCase();
+      const diLower = (di && typeof di === "string") ? di.toLowerCase() : "";
       const hasStyle = /质感|风格|纪录片|电影|广告|cinematic|documentary|realistic|photorealistic|hollywood/.test(diLower);
       const hasRealism = /写实|无特效|无科幻|realistic|no effect|no sci/.test(diLower);
       const hasMood = /基调|氛围|情绪|冷静|紧张|温馨|tone|mood|atmosphere|professional|intense|warm/.test(diLower);
@@ -188,7 +188,7 @@ class RuleChecker {
     // 约束：须含画幅+分辨率+格式+帧率
     const cs = shot.constraint || '';
     if (cs) {
-      const csLower = cs.toLowerCase();
+      const csLower = (cs && typeof cs === "string") ? cs.toLowerCase() : "";
       const missing = [];
       if (!/aspect ratio|画幅|16:9|9:16/.test(csLower)) missing.push('画幅比例');
       if (!/resolution|分辨率|1920|1080|4k|8k/.test(csLower)) missing.push('分辨率');
@@ -208,7 +208,7 @@ class RuleChecker {
     // 灯光：须含主光+色温+光质
     const lt = shot.lighting || '';
     if (lt) {
-      const ltLower = lt.toLowerCase();
+      const ltLower = (lt && typeof lt === "string") ? lt.toLowerCase() : "";
       const missing = [];
       if (!/key light|主光|主光源/.test(ltLower)) missing.push('主光描述');
       if (!/\d{3,4}k|色温|color temperature|warm|cool|daylight|tungsten/.test(ltLower)) missing.push('色温参数');
@@ -227,7 +227,7 @@ class RuleChecker {
     // 运镜：须含运动方式+速度+时间分布
     const cm = shot.cameraMovement || '';
     if (cm) {
-      const cmLower = cm.toLowerCase();
+      const cmLower = (cm && typeof cm === "string") ? cm.toLowerCase() : "";
       const hasMove = /push|pull|pan|track|follow|crane|orbit|推|拉|摇|移|跟|升|降|环绕/.test(cmLower);
       const hasSpeed = /\d+\.?\d*\s*m\/s|\d+\.?\d*\s*°\/s|slow|fast|medium|慢速|快速/.test(cmLower);
       const hasTime = /duration|秒|second|\d+s|starting|ending/.test(cmLower);
@@ -249,7 +249,7 @@ class RuleChecker {
     // 负面约束：须含 no text + no watermark
     const ng = shot.negative || '';
     if (ng) {
-      const ngLower = ng.toLowerCase();
+      const ngLower = (ng && typeof ng === "string") ? ng.toLowerCase() : "";
       if (!ngLower.includes('no text') || !ngLower.includes('no watermark')) {
         issues.push(new Issue({
           fieldEn: 'negative', fieldCn: '负面约束',
@@ -264,7 +264,7 @@ class RuleChecker {
     // 构图：须含景别+主体位置
     const comp = shot.composition || '';
     if (comp) {
-      const compLower = comp.toLowerCase();
+      const compLower = (comp && typeof comp === "string") ? comp.toLowerCase() : "";
       const hasSize = this.shotSizePatterns.some(p => p.test(compLower));
       const hasPos = this.positionPatterns.some(p => p.test(compLower));
       const missing = [];
@@ -284,7 +284,7 @@ class RuleChecker {
     // 明亮约束：须含亮度+可见性+面部明亮
     const bc = shot.brightConstraint || '';
     if (bc) {
-      const bcLower = bc.toLowerCase();
+      const bcLower = (bc && typeof bc === "string") ? bc.toLowerCase() : "";
       const missing = [];
       if (!/bright|well-lit|明亮|光线充足/.test(bcLower)) missing.push('亮度要求');
       if (!/visibility|visible|clear|可见|清晰/.test(bcLower)) missing.push('可见性');
@@ -303,7 +303,7 @@ class RuleChecker {
     // 角色约束：须含单角色限制+禁止分身
     const cc = shot.characterConstraint || '';
     if (cc) {
-      const ccLower = cc.toLowerCase();
+      const ccLower = (cc && typeof cc === "string") ? cc.toLowerCase() : "";
       const hasSingle = /只出现|仅出现|single character|only.*one/.test(ccLower);
       const hasNoClone = /分身|克隆|duplicate|clone|repeat/.test(ccLower);
       const missing = [];
@@ -395,7 +395,7 @@ class RuleChecker {
     // 节奏：五段式
     const pa = shot.pacing || '';
     if (pa) {
-      const paLower = pa.toLowerCase();
+      const paLower = (pa && typeof pa === "string") ? pa.toLowerCase() : "";
       const requiredSegs = ['整体', '开头', '中段', '高潮', '结尾'];
       const missing = requiredSegs.filter(s => !paLower.includes(s) && !paLower.includes(s.toLowerCase()));
       if (missing.length) {
@@ -412,7 +412,7 @@ class RuleChecker {
     // 服装：至少含外套/内搭/下装/鞋履中3项
     const cos = shot.costume || '';
     if (cos) {
-      const cosLower = cos.toLowerCase();
+      const cosLower = (cos && typeof cos === "string") ? cos.toLowerCase() : "";
       const categories = {
         '外套/上装': ['coat', 'jacket', 'suit', 'shirt', 'overcoat', '外套', '西装', '上衣'],
         '内搭': ['shirt', 'blouse', '内搭', '衬衫'],

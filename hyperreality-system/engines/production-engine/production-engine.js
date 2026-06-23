@@ -565,7 +565,7 @@ class ProductionEngine {
           this.log('PROMPT-FUSION-AGENT', '开始(并发模式,每镜头独立 LLM 调用)...');
           const phase3Start = Date.now();
           const pfResult = await this.agents.promptFusion.process(this._cloneShots(currentShots), adaptedBlueprint);
-          currentShots = this._mergeShotsByShotId(currentShots, pfResult.shots, ['prompt', 'enhanced_prompt', 'negative_prompt', 'fields', 'fusionText', 'promptCharCount']);
+          currentShots = this._mergeShotsByShotId(currentShots, pfResult.shots, ['prompt', 'enhanced_prompt', 'negative_prompt', 'fields', 'fusionText', 'promptCharCount', 'negative', 'portraits', 'director_instruction', 'brightConstraint', 'characterConstraint', 'consistency', 'costume', 'makeup', 'props', 'pacing', 'transition', 'audio']);
           result.llmStats.promptFusion = pfResult.timing;
           this.log('PROMPT-FUSION-AGENT', `完成 (${Date.now() - phase3Start}ms)`);
           await this._saveCheckpoint('phase3', currentShots, { opening: result.opening, llmStats: result.llmStats });
