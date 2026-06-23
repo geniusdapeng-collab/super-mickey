@@ -12,6 +12,89 @@
  */
 
 const FIELD_ALIAS_MAP = {
+  // v2.1.4-fix9-P25: 25字段体系
+  // 创作意图层 (P0)
+  director_instruction: 'director_instruction',
+  导演指令: 'director_instruction',
+  
+  // 画面基底 (P0)
+  constraint: 'constraint',
+  约束: 'constraint',
+  baseline: 'baseline',
+  基础: 'baseline',
+  
+  // 空间层 (P0)
+  scene: 'scene',
+  sceneName: 'scene',
+  场景名称: 'scene',
+  sceneDescription: 'sceneDescription',
+  场景描述: 'sceneDescription',
+  lighting: 'lighting',
+  灯光: 'lighting',
+  灯光照明: 'lighting',
+  
+  // 镜头语言层 (P0/P1)
+  cameraMovement: 'cameraMovement',
+  运镜: 'cameraMovement',
+  运镜设计: 'cameraMovement',
+  composition: 'composition',
+  构图: 'composition',
+  color_palette: 'colorPalette',
+  色彩: 'colorPalette',
+  色调: 'colorPalette',
+  depth_of_field: 'depthOfField',
+  景深: 'depthOfField',
+  
+  // 人物层 (P0/P2/P3)
+  character: 'character',
+  角色: 'character',
+  costume: 'costume',
+  服装: 'costume',
+  makeup: 'makeup',
+  化妆: 'makeup',
+  action: 'action',
+  动作: 'action',
+  
+  // 物件层 (P2)
+  props: 'props',
+  道具: 'props',
+  
+  // 质量/调度/渲染/过渡/音频/叙事层
+  portraits: 'portraits',
+  referenceImages: 'portraits',
+  绑定定妆照: 'portraits',
+  定妆照: 'portraits',
+  dialogue: 'dialogue',
+  narration: 'dialogue',
+  line: 'dialogue',
+  lines: 'dialogue',
+  台词: 'dialogue',
+  timeline: 'timeline',
+  _timeline: 'timeline',
+  镜头时间轴: 'timeline',
+  时间轴: 'timeline',
+  mood: 'mood',
+  情绪: 'mood',
+  pacing: 'pacing',
+  节奏: 'pacing',
+  transition: 'transition',
+  转场: 'transition',
+  audio: 'audio',
+  音频: 'audio',
+  backgroundSound: 'audio',
+  背景音效: 'audio',
+  
+  // 约束层 (P0/P1)
+  negative: 'negative',
+  负面约束: 'negative',
+  negativeConstraints: 'negative',
+  bright_constraint: 'brightConstraint',
+  明亮约束: 'brightConstraint',
+  character_constraint: 'characterConstraint',
+  角色约束: 'characterConstraint',
+  consistency: 'consistency',
+  角色一致性: 'consistency',
+  
   // 基础标识
   id: 'shotId',
   shotId: 'shotId',
@@ -25,45 +108,22 @@ const FIELD_ALIAS_MAP = {
   timing: 'timing',
   时序: 'timing',
   
-  // 场景
-  scene: 'scene',
-  sceneName: 'scene',
-  场景名称: 'scene',
-  sceneDescription: 'sceneDescription',
-  场景描述: 'sceneDescription',
-  
   // Prompt
   prompt: 'prompt',
   visualPrompt: 'prompt',
   renderPrompt: 'prompt',
   视觉提示词: 'prompt',
   
-  // 台词
-  narration: 'dialogue',
-  dialogue: 'dialogue',
-  line: 'dialogue',
-  lines: 'dialogue',
-  beastLines: 'dialogue',
-  台词: 'dialogue',
-  
   // 口型
   mouthAction: 'mouthAction',
   mouth_action: 'mouthAction',
   口型动作: 'mouthAction',
   
-  // 运镜/时间轴
-  cameraMovement: 'cameraMovement',
-  运镜设计: 'cameraMovement',
-  timeline: 'timeline',
-  _timeline: 'timeline',
-  镜头时间轴: 'timeline',
-  
   // 角色/定妆照
   characters: 'characters',
   角色列表: 'characters',
-  portraits: 'portraits',
-  referenceImages: 'portraits',
-  绑定定妆照: 'portraits',
+  characterRef: 'characterRef',
+  角色引用: 'characterRef',
   
   // 人物卡片
   characterCards: 'characterCards',
@@ -97,16 +157,6 @@ const FIELD_ALIAS_MAP = {
   降级原因: 'degradeReason',
   
   // 其他
-  mood: 'mood',
-  情绪: 'mood',
-  action: 'action',
-  动作: 'action',
-  character: 'character',
-  角色: 'character',
-  characterRef: 'characterRef',
-  角色引用: 'characterRef',
-  lighting: 'lighting',
-  灯光: 'lighting',
   camera: 'camera',
   镜头: 'camera',
   
@@ -121,25 +171,60 @@ const FIELD_ALIAS_MAP = {
   世界ID: 'worldId',
   
   // 后期字段
-  backgroundSound: 'backgroundSound',
-  背景音效: 'backgroundSound',
   audioLayer: 'audioLayer',
   音频层: 'audioLayer',
   titleOverlay: 'titleOverlay',
   标题叠加: 'titleOverlay',
   
   // 约束
-  negativeConstraints: 'negativeConstraints',
-  负面约束: 'negativeConstraints',
   styleConstraints: 'styleConstraints',
   风格约束: 'styleConstraints'
 };
 
 const CRITICAL_FIELDS = {
-  // v1.2.6: 适配 v6.37 标准输出字段
-  // 移除已废弃的 portraits / characterCards / timeline（v6.37 用 characterRef + character）
-  common: ['shotId', 'sceneType', 'prompt', 'character', 'characterRef'],
+  // v2.1.4-fix9-P25: 25字段体系
+  // P0 致命级（12个字段）- 缺失会导致视频不可用
+  p0: [
+    'director_instruction',  // 创作意图层
+    'constraint',            // 画面基底
+    'baseline',              // 画面基底
+    'scene',                 // 空间层
+    'lighting',              // 空间层
+    'cameraMovement',        // 镜头语言层
+    'character',             // 人物层
+    'action',                // 人物层
+    'portraits',             // 质量层
+    'dialogue',              // 叙事层
+    'negative',              // 约束层
+    'consistency'            // 质量层
+  ],
+  // P1 核心级（7个字段）- 缺失会导致质量显著降低
+  p1: [
+    'composition',           // 镜头语言层
+    'colorPalette',          // 镜头语言层
+    'depthOfField',          // 镜头语言层
+    'timeline',              // 调度层
+    'mood',                  // 渲染层
+    'brightConstraint',      // 约束层
+    'characterConstraint'    // 约束层
+  ],
+  // P2 增强级（4个字段）- 缺失不影响主体表达
+  p2: [
+    'costume',               // 人物层
+    'props',                 // 物件层
+    'pacing',                // 渲染层
+    'audio'                  // 音频层
+  ],
+  // P3 可选级（2个字段）
+  p3: [
+    'makeup',                // 人物层
+    'transition'             // 过渡层
+  ],
+  // 基础标识（所有镜头必须）
+  common: ['shotId', 'sceneType', 'prompt'],
+  // 片头专用
   opening: ['title', 'subtitle'],
+  // 内容镜头专用
   content: ['scene']
 };
 
@@ -204,46 +289,95 @@ function normalizePortraits(value, raw = {}) {
 
 function createEmptyShot() {
   return {
+    // 基础标识
     shotId: '',
     sceneType: 'establishing',
     duration: 0,
     timing: { start: 0, duration: 0, end: 0 },
+    
+    // 创作意图层 (P0)
+    director_instruction: '',
+    
+    // 画面基底 (P0)
+    constraint: '',
+    baseline: '',
+    
+    // 空间层 (P0)
     scene: '',
     sceneDescription: '',
-    prompt: '',
-    dialogue: [],
-    mouthAction: '',
-    cameraMovement: {},
-    timeline: [],
-    characters: [],
-    portraits: [],  // v6.37-deprecated: 保留兼容但不再使用
-    characterCards: [],  // v6.37-deprecated: 保留兼容但不再使用
-    mood: '',
-    action: '',
-    character: '',
-    characterRef: '',
     lighting: null,
-    camera: null,
+    
+    // 镜头语言层 (P0/P1)
+    cameraMovement: {},
+    composition: '',
+    colorPalette: '',
+    depthOfField: '',
+    
+    // 人物层 (P0/P2/P3)
+    character: '',
+    costume: '',
+    makeup: '',
+    action: '',
+    
+    // 物件层 (P2)
+    props: '',
+    
+    // 质量/调度/渲染/过渡/音频/叙事层
+    portraits: [],
+    dialogue: [],
+    timeline: [],
+    mood: '',
+    pacing: '',
+    transition: '',
+    audio: null,
+    
+    // 约束层 (P0/P1)
+    negative: '',
+    brightConstraint: '',
+    characterConstraint: '',
+    consistency: '',
+    
+    // Prompt
+    prompt: '',
+    
+    // 口型
+    mouthAction: '',
+    
+    // 角色/定妆照
+    characters: [],
+    characterRef: '',
+    
+    // 人物卡片
+    characterCards: [],
+    
+    // 情绪/质量
     emotionPhase: '',
     qualityScore: null,
+    
+    // 降级标记
     degraded: false,
     degradeReason: '',
-    worldId: 'default',
-    negativeConstraints: [],
-    styleConstraints: [],
+    
     // 超现实系统特有
     sceneFunction: '',
     emotionalTarget: { valence: 0, arousal: 0.5 },
     visualDirection: {},
-    backgroundSound: null,
+    worldId: 'default',
+    
+    // 后期字段
     audioLayer: null,
     titleOverlay: null,
+    
     // 片头字段
     title: '',
     subtitle: '',
     producer: '',
     beastVoice: '',
-    openingHook: ''
+    openingHook: '',
+    
+    // 约束（兼容旧版）
+    negativeConstraints: [],
+    styleConstraints: []
   };
 }
 
@@ -259,6 +393,19 @@ function standardizeShot(rawInput = {}) {
   const raw = deepClone(rawInput);
   const shotType = inferShotType(raw);
   const standard = createEmptyShot();
+
+  // v2.1.4-fix9-P25: 处理 PromptFusionAgent 输出的 fields 对象
+  // 将 fields 内的25字段展开到 shot 级别
+  if (raw.fields && typeof raw.fields === 'object') {
+    for (const [fieldName, value] of Object.entries(raw.fields)) {
+      // 将 snake_case 转为 camelCase（如 bright_constraint -> brightConstraint）
+      const camelField = fieldName.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+      const targetField = FIELD_ALIAS_MAP[camelField] || FIELD_ALIAS_MAP[fieldName] || camelField;
+      if (targetField in standard) {
+        standard[targetField] = value;
+      }
+    }
+  }
 
   // 映射所有字段
   for (const [originalField, value] of Object.entries(raw)) {
@@ -308,6 +455,25 @@ function validateShot(shot) {
   const warnings = [];
   const isOpening = shot.sceneType === 'opening';
 
+  // v2.1.4-fix9-P25: 检查P0致命级字段（12个）
+  for (const key of CRITICAL_FIELDS.p0) {
+    const value = shot[key];
+    if (value === undefined || value === null || value === '') {
+      errors.push(`P0 Missing: ${key}`);
+    } else if (Array.isArray(value) && value.length === 0) {
+      warnings.push(`P0 Empty array: ${key}`);
+    }
+  }
+
+  // v2.1.4-fix9-P25: 检查P1核心级字段（7个）
+  for (const key of CRITICAL_FIELDS.p1) {
+    const value = shot[key];
+    if (value === undefined || value === null || value === '') {
+      warnings.push(`P1 Missing: ${key}`);
+    }
+  }
+
+  // 基础标识检查
   for (const key of CRITICAL_FIELDS.common) {
     if (!(key in shot)) {
       errors.push(`Missing critical field: ${key}`);
@@ -321,6 +487,7 @@ function validateShot(shot) {
     }
   }
 
+  // 片头/内容镜头检查
   if (isOpening) {
     for (const key of CRITICAL_FIELDS.opening) {
       if (!shot[key] || String(shot[key]).trim() === '') {
@@ -335,20 +502,43 @@ function validateShot(shot) {
     }
   }
 
+  // v2.1.4-fix9-P25: 字符数检查
+  const promptLength = shot.promptCharCount || (typeof shot.prompt === 'string' ? shot.prompt.length : 0);
+  if (promptLength > 2500) {
+    warnings.push(`Prompt length ${promptLength} exceeds 2500 char limit`);
+  }
+
+  // v2.1.4-fix9-P25: 负面约束检查
+  if (!shot.negative || !shot.negative.includes('no text')) {
+    errors.push(`Missing critical negative constraint: no text`);
+  }
+
   return {
     passed: errors.length === 0,
     errors,
-    warnings
+    warnings,
+    p0Missing: CRITICAL_FIELDS.p0.filter(k => !shot[k] || shot[k] === '').length,
+    p1Missing: CRITICAL_FIELDS.p1.filter(k => !shot[k] || shot[k] === '').length,
+    promptLength
   };
 }
 
 function validateShots(shots = []) {
   const details = shots.map(validateShot);
+  const totalP0Missing = details.reduce((sum, d) => sum + (d.p0Missing || 0), 0);
+  const totalP1Missing = details.reduce((sum, d) => sum + (d.p1Missing || 0), 0);
+  
   return {
     passed: details.every(d => d.passed),
     errors: details.flatMap(d => d.errors),
     warnings: details.flatMap(d => d.warnings),
-    details
+    details,
+    summary: {
+      totalShots: shots.length,
+      totalP0Missing,
+      totalP1Missing,
+      avgPromptLength: Math.round(details.reduce((sum, d) => sum + (d.promptLength || 0), 0) / shots.length)
+    }
   };
 }
 

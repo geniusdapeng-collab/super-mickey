@@ -96,27 +96,25 @@ class FieldGuard {
 
   /**
    * 打印镜头字段摘要（用于调试和日志）
-   */
-  /**
-   * 打印镜头字段摘要（用于调试和日志）
-   * v1.2.6: 适配 v6.37 标准输出字段
+   * v2.1.4-fix9-P25: 适配25字段标准输出
    */
   printShotSummary(shots = [], context = 'unknown') {
     console.log(`\n${this.logPrefix} ${context} shot summary:`);
     for (const shot of shots) {
-      // v6.37: dialogue 是统一格式字符串，用 | 分隔统计条数
+      // v2.1.4-fix9-P25: 统计25字段完整性
+      const p0Fields = CRITICAL_FIELDS.p0;
+      const p1Fields = CRITICAL_FIELDS.p1;
+      const p0Present = p0Fields.filter(f => !!shot[f]).length;
+      const p1Present = p1Fields.filter(f => !!shot[f]).length;
+      
+      // 台词统计
       const dialogueStr = typeof shot.dialogue === 'string' ? shot.dialogue : String(shot.dialogue || '');
-      const dialogueCount = dialogueStr === 'NONE' || !dialogueStr
-        ? 0
-        : (dialogueStr.split('||').length || (dialogueStr.includes('|') ? 1 : 0));
-
-      // v6.37: characterRef 是字符串（含 image:// 路径）
+      const dialogueCount = dialogueStr === 'NONE' || !dialogueStr ? 0 : dialogueStr.split('||').length;
+      
+      // 定妆照统计
       const refCount = (typeof shot.characterRef === 'string' && shot.characterRef !== 'NONE')
         ? (shot.characterRef.split('image://').length - 1)
         : 0;
-
-      // v6.37: timeline 是对象/字符串，检查 timelineString
-      const hasTimeline = !!(shot.timelineString || (typeof shot.timeline === 'string' ? shot.timeline : ''));
 
       const summary = {
         shotId: shot.shotId,
@@ -124,11 +122,10 @@ class FieldGuard {
         duration: shot.duration || shot.timing?.duration || 0,
         scene: (shot.scene || '').substring(0, 40),
         character: (shot.character || 'NONE').substring(0, 30),
+        p0Fields: `${p0Present}/${p0Fields.length}`,
+        p1Fields: `${p1Present}/${p1Fields.length}`,
         characterRefCount: refCount,
         dialogueCount,
-        hasTimeline,
-        hasLighting: !!shot.lightingString,
-        hasBackgroundSound: !!shot.backgroundSoundString,
         promptLength: shot.promptCharCount || (typeof shot.prompt === 'string' ? shot.prompt.length : 0),
         degraded: !!shot.degraded,
         degradeReason: shot.degradeReason || ''
