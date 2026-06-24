@@ -367,7 +367,7 @@ ${missing.map(f => `- ${f}：${FIELD_DESCS[f]}`).join('\n')}
     if (shot.backgroundSoundString) result.audio = shot.backgroundSoundString;
     if (shot.dialogue) {
       const pureDialogue = shot.dialogueText || this._extractPureDialogue(shot.dialogue);
-      if (pureDialogue) result.dialogue = `【台词】"${pureDialogue}"`;
+      if (pureDialogue) result.dialogue = `"${pureDialogue}"`;
     }
     if (shot.emotionalTarget) {
       const et = shot.emotionalTarget;
@@ -656,7 +656,7 @@ ${missing.map(f => `- ${f}：${FIELD_DESCS[f]}`).join('\n')}
       if (actionDesc) parts.push(actionDesc);
       
       const pureDialogue = shot.dialogueText || this._extractPureDialogue(shot.dialogue);
-      if (pureDialogue && pureDialogue !== '') parts.push(`【台词】"${pureDialogue}"`);
+      if (pureDialogue && pureDialogue !== '') parts.push(`"${pureDialogue}"`);
       if (shot.cameraString) parts.push(shot.cameraString);
       if (shot.lightingString) parts.push(shot.lightingString);
       if (shot.mood) parts.push(`mood: ${shot.mood}`);
