@@ -409,12 +409,12 @@ class HyperrealitySystem {
               const optimized = await optimizer.optimize(openingShot, blueprint);
               
               if (!optimized.degraded) {
-                openingShot.fields = openingShot.fields || {};
-                openingShot.fields.title_content = optimized.title_content;
-                openingShot.fields.subtitle_content = optimized.subtitle_content;
-                openingShot.fields.title_animation = optimized.title_animation;
-                openingShot.fields.title_font_design = optimized.title_font_design;
-                openingShot.fields.opening_audio_design = optimized.opening_audio_design;
+                // 【v2.1.4-fix12】直接修改 openingShot 的顶层属性（standardOutput 是扁平结构）
+                openingShot.title_content = optimized.title_content;
+                openingShot.subtitle_content = optimized.subtitle_content;
+                openingShot.title_animation = optimized.title_animation;
+                openingShot.title_font_design = optimized.title_font_design;
+                openingShot.opening_audio_design = optimized.opening_audio_design;
                 
                 openingShot.title = optimized.title_content || openingShot.title;
                 openingShot.subtitle = optimized.subtitle_content || openingShot.subtitle;
@@ -424,9 +424,8 @@ class HyperrealitySystem {
                 console.log('   副标题:', optimized.subtitle_content);
               } else {
                 console.warn('   ⚠️ 片头优化降级，使用默认值');
-                openingShot.fields = openingShot.fields || {};
-                openingShot.fields.title_content = openingShot.fields.title_content || result.title || '未命名';
-                openingShot.fields.subtitle_content = openingShot.fields.subtitle_content || '第1集';
+                openingShot.title_content = openingShot.title_content || result.title || '未命名';
+                openingShot.subtitle_content = openingShot.subtitle_content || '第1集';
               }
             } catch (e) {
               console.warn('   ⚠️ 片头优化失败:', e.message);

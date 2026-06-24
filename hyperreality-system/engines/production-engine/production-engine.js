@@ -1872,6 +1872,7 @@ class ProductionEngine {
         character: filteredShot.character || this._getMainCharacterName(blueprint) || 'NONE',
         action: filteredShot.action || '',
         dialogue: filteredShot.dialogue || 'NONE',
+        dialogueText: filteredShot.dialogueText || '',
         timeline: filteredShot.timeline?.object || filteredShot.timeline || {},
         timelineString: timelineStr,
         backgroundSound: bgSoundResult.object,
@@ -1879,7 +1880,13 @@ class ProductionEngine {
         prompt: prompt.fullPrompt,
         promptCharCount: promptLength,
         // v2.0.4-fix: 人物介绍卡片
-        characterCards: characterCards
+        characterCards: characterCards,
+        // v2.1.4-fix12: 片头专属字段占位（OpeningTitleOptimizer后处理填充）
+        title_content: '',
+        subtitle_content: '',
+        title_animation: '',
+        title_font_design: '',
+        opening_audio_design: ''
       };
 
       // 片头专属字段(仅 S00)

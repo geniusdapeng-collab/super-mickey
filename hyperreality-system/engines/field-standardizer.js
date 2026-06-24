@@ -426,6 +426,13 @@ function createEmptyShot() {
     beast_voice: '',
     opening_hook: '',
     
+    // v2.1.4-fix12: 片头专属字段（OpeningTitleOptimizer生成）
+    title_content: '',
+    subtitle_content: '',
+    title_animation: '',
+    title_font_design: '',
+    opening_audio_design: '',
+    
     // 约束（兼容旧版）
     negative_constraints: [],
     style_constraints: []
