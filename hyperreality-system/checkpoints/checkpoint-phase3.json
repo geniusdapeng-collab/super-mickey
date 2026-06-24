@@ -1,0 +1,531 @@
+{
+  "phase": "phase3",
+  "shots": [
+    {
+      "shotId": "SC00",
+      "sceneType": "opening",
+      "sceneFunction": "establish",
+      "timing": {
+        "start": 0,
+        "duration": 13,
+        "end": 13
+      },
+      "duration": 13,
+      "scene": "场景A：医院健康宣教室，白色荧光灯均匀照明，白墙面贴有无文字骨骼肌解剖图形海报，木质讲台带有细微使用划痕，地面浅灰色防滑PVC地板，陈卓站立于讲台前",
+      "mood": "严肃凝重，震惊警觉，充满健康科普的警示氛围",
+      "character": "陈卓: human, 写实人物",
+      "characterRef": "陈卓: /root/.openclaw/workspace/hyperreality-system/characters/chen-zhuo/portraits/chen-zhuo-front.png",
+      "action": "陈卓双手撑住木质讲台边缘，身体微微前倾，正视镜头，眉头紧锁，语气沉重有力",
+      "dialogue": "陈卓|独白|严肃|你听过横纹肌溶解吗？|LIP_SYNC:YES || 陈卓|独白|震惊|剧烈运动后，肌肉会'溶解'！|LIP_SYNC:YES || 陈卓|独白|紧迫|尿液变成酱油色，肾直接衰竭！|LIP_SYNC:YES",
+      "characters": [
+        "chen-zhuo"
+      ],
+      "characterDescs": "陈卓: human, 写实人物",
+      "dialogueText": "你听过横纹肌溶解吗？;剧烈运动后，肌肉会'溶解'！;尿液变成酱油色，肾直接衰竭！",
+      "emotionalTarget": {
+        "valence": -0.4,
+        "arousal": 0.8,
+        "dominance": 0.3
+      },
+      "visualDirection": {
+        "shot_type": "wide",
+        "camera_movement": "缓慢推进",
+        "lighting": "自然光+环境光",
+        "color_temperature": "cool"
+      },
+      "promptBase": "电影级镜头，超写实，现代医疗科普演播室，冷色调背景，医学可视化屏幕环绕，陈卓（写实人物），wide，缓慢推进，台词：「你听过横纹肌溶解吗？」",
+      "worldId": "default",
+      "status": "pending",
+      "timeline": {
+        "object": {
+          "start": "T00:00",
+          "end": "T00:13",
+          "duration": 13,
+          "type": "opening",
+          "mood": "tense, serious, intense, dramatic"
+        },
+        "string": "T00:00-T00:13 / duration: 13s / type: opening / mood: tense, serious, intense, dramatic"
+      },
+      "allocation": {
+        "baseDuration": 13,
+        "dialogueFactor": 1.5,
+        "typeWeight": 1.2,
+        "preserved": true
+      },
+      "emotional_target": "警示",
+      "title": "未命名",
+      "subtitle": "",
+      "titleOverlay": {
+        "main_title": "未命名",
+        "sub_title": "",
+        "style": "粗体无衬线金属做旧，字间距紧缩"
+      },
+      "audioLayer": {
+        "bgm": "低频电子合成器嗡鸣",
+        "sound_effects": "电流滋滋声、金属摩擦声、沉重呼吸声"
+      },
+      "lightingString": "单一顶光硬光直射，高对比度明暗分割，背景完全死黑，主体过曝边缘，配合体积光烟雾营造神秘仪式感",
+      "cameraString": "从绝对黑暗中缓慢前推，无影灯亮起瞬间镜头微仰，聚焦台面中央空白铭牌，最后0.5秒急速推至大特写并定格",
+      "lighting": {
+        "key_light": "白色荧光灯管从天花板均匀洒下，在讲台与陈卓头顶形成冷冽光池",
+        "fill_light": "白墙漫反射柔和填充面部阴影，保持高亮但克制",
+        "time_of_day": "midday",
+        "atmosphere": "木质讲台在冷光下泛着青灰，无文字骨骼肌海报阴影清晰"
+      },
+      "prompt": "【导演指令】好莱坞大导演质感，电影级画面，写实风格，无特效，无科幻元素，通过高对比度单光源与急速推镜营造医疗警示仪式感，强调角色警服身份与专业权威，禁止任何抽象超现实视觉处理，保持画面严肃纪实性，【约束】Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no caption, no watermark，【基础】8K resolution, cinematic quality, highly detailed, photorealistic, intricate textures, sharp focus，【场景】医院健康宣教室内部空间，白色荧光灯管均匀照明整个房间，四面白墙悬挂多幅无文字骨骼肌解剖图形海报，中央放置深色木质讲台表面带有细微使用划痕和岁月痕迹，地面铺设浅灰色防滑PVC地板反射柔和光线，房间纵深约八米，顶部为标准石膏板吊顶，讲台后方留有宽阔走道，整体环境呈现专业医疗教育场所的整洁与秩序感，【灯光/照明】主光：顶部单一无影灯硬光直射 6500K冷白光，光质强烈硬朗产生高对比度明暗分割；补光：无，刻意保留浓重阴影以强化神秘感与警觉氛围；背景光：无，背景完全死黑吸收全部光线；特效：顶部硬光穿透轻微烟雾介质形成清晰体积光光柱，主体肩部与头部边缘产生轻微过曝光晕，营造庄重仪式氛围与医学警示感，【构图】景别：中景至大特写过渡（起始中景，结束眼部大特写）；主体位置：画面几何中心偏右，黄金分割右1/3处；线条引导：讲台水平线稳定画面基底，镜头前推形成纵向深度冲击直抵观众；画框边缘：顶部保留灯具体积光轮廓，左右两侧死黑压缩空间，底部截取讲台边缘，【色彩/色调】主色调：冷白偏青（医疗环境无影灯感）；辅助色：深黑阴影与木质讲台暖棕形成强烈反差；肤色：自然偏暖但被冷光压制呈现苍白感；饱和度：整体偏低，仅讲台暖色局部点缀；对比度：极高，明暗硬分割创造视觉张力与严肃感，【景深】焦点：由讲台空白铭牌过渡至人物面部；景深：起始f/5.6中等景深，结尾f/1.8极浅景深；前景：绝对黑暗虚空无任何细节；背景：完全死黑无层次；层次：仅前景虚化暗区与中景清晰主体两层，消除环境干扰强化主体压迫感与神秘氛围，【运镜】0-3秒：稳定器从绝对黑暗中缓慢直线前推（0.2m/s），镜头微仰角度10度向讲台逼近；3-11秒：继续稳定推近至中景，速度降至0.1m/s保持凝视感与压迫感；11-13秒：最后2秒急速推近至眼部大特写（0.8m/s）并瞬间定格，整个运动过程无偏移无抖动保持专业质感，【角色】穿警服的陈女士，健康科普主讲人，短发整齐，站姿挺拔如松，面部朝向镜头，表情严肃凝重带有警觉感，眼神锐利直视前方，展现专业权威与警示态度，【服装】藏青色警服外套（毛呢质地，肩章完整），内搭浅蓝色衬衫（棉质，领口整洁），黑色西裤（垂坠感良好），黑色皮鞋（光亮整洁），全身着装保持警务人员标准规范，【化妆】短发整齐（黑色，长度及耳），素颜淡妆，眉毛自然舒展，唇色淡粉，肤色均匀，无夸张妆容，整体呈现干练警务人员形象与专业气质，【动作】双手自然垂放于身体两侧，手指微曲放松，身体保持静止站立姿态无任何步伐移动，头部微微抬起，目光从台面缓慢抬升直视镜头，面部肌肉紧绷，嘴角微微下沉，眉心微蹙，随着镜头逼近眼神逐渐凝聚锐利，展现警觉与警示的情绪递进变化，【道具】手持：无；桌面：空白金属铭牌（无文字，放置于木质讲台台面中央，反射顶光产生高光点）；背景：无文字骨骼肌解剖图形海报（白墙悬挂），木质讲台（表面有细微划痕与使用痕迹），【定妆照】image://characters/chen-zhuo/portraits/chen-zhuo-front.png，【台词】【台词】\"你听过横纹肌溶解吗？\"，【时间轴】T00:00 - 画面处于绝对黑暗，镜头静止于虚空，无可视物仅有微弱环境底噪，营造未知压抑感\nT00:03 - 顶部无影灯骤然亮起，稳定器微仰向前推近，空白铭牌与木质讲台在强光中显现；陈卓站立讲台后方，身形轮廓被硬光切割\nT00:07 - 镜头持续推近过渡至中景；陈卓缓缓抬头，目光从台面抬升直视镜头，表情凝重警觉",
+      "fields": {
+        "constraint": "Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no caption, no watermark",
+        "baseline": "8K resolution, cinematic quality, highly detailed, photorealistic, intricate textures, sharp focus",
+        "scene": "医院健康宣教室内部空间，白色荧光灯管均匀照明整个房间，四面白墙悬挂多幅无文字骨骼肌解剖图形海报，中央放置深色木质讲台表面带有细微使用划痕和岁月痕迹，地面铺设浅灰色防滑PVC地板反射柔和光线，房间纵深约八米，顶部为标准石膏板吊顶，讲台后方留有宽阔走道，整体环境呈现专业医疗教育场所的整洁与秩序感",
+        "lighting": "主光：顶部单一无影灯硬光直射 6500K冷白光，光质强烈硬朗产生高对比度明暗分割；补光：无，刻意保留浓重阴影以强化神秘感与警觉氛围；背景光：无，背景完全死黑吸收全部光线；特效：顶部硬光穿透轻微烟雾介质形成清晰体积光光柱，主体肩部与头部边缘产生轻微过曝光晕，营造庄重仪式氛围与医学警示感",
+        "composition": "景别：中景至大特写过渡（起始中景，结束眼部大特写）；主体位置：画面几何中心偏右，黄金分割右1/3处；线条引导：讲台水平线稳定画面基底，镜头前推形成纵向深度冲击直抵观众；画框边缘：顶部保留灯具体积光轮廓，左右两侧死黑压缩空间，底部截取讲台边缘",
+        "color_palette": "主色调：冷白偏青（医疗环境无影灯感）；辅助色：深黑阴影与木质讲台暖棕形成强烈反差；肤色：自然偏暖但被冷光压制呈现苍白感；饱和度：整体偏低，仅讲台暖色局部点缀；对比度：极高，明暗硬分割创造视觉张力与严肃感",
+        "depth_of_field": "焦点：由讲台空白铭牌过渡至人物面部；景深：起始f/5.6中等景深，结尾f/1.8极浅景深；前景：绝对黑暗虚空无任何细节；背景：完全死黑无层次；层次：仅前景虚化暗区与中景清晰主体两层，消除环境干扰强化主体压迫感与神秘氛围",
+        "camera_movement": "0-3秒：稳定器从绝对黑暗中缓慢直线前推（0.2m/s），镜头微仰角度10度向讲台逼近；3-11秒：继续稳定推近至中景，速度降至0.1m/s保持凝视感与压迫感；11-13秒：最后2秒急速推近至眼部大特写（0.8m/s）并瞬间定格，整个运动过程无偏移无抖动保持专业质感",
+        "character": "穿警服的陈女士，健康科普主讲人，短发整齐，站姿挺拔如松，面部朝向镜头，表情严肃凝重带有警觉感，眼神锐利直视前方，展现专业权威与警示态度",
+        "costume": "藏青色警服外套（毛呢质地，肩章完整），内搭浅蓝色衬衫（棉质，领口整洁），黑色西裤（垂坠感良好），黑色皮鞋（光亮整洁），全身着装保持警务人员标准规范",
+        "makeup": "短发整齐（黑色，长度及耳），素颜淡妆，眉毛自然舒展，唇色淡粉，肤色均匀，无夸张妆容，整体呈现干练警务人员形象与专业气质",
+        "action": "双手自然垂放于身体两侧，手指微曲放松，身体保持静止站立姿态无任何步伐移动，头部微微抬起，目光从台面缓慢抬升直视镜头，面部肌肉紧绷，嘴角微微下沉，眉心微蹙，随着镜头逼近眼神逐渐凝聚锐利，展现警觉与警示的情绪递进变化",
+        "props": "手持：无；桌面：空白金属铭牌（无文字，放置于木质讲台台面中央，反射顶光产生高光点）；背景：无文字骨骼肌解剖图形海报（白墙悬挂），木质讲台（表面有细微划痕与使用痕迹）",
+        "portraits": "image://characters/chen-zhuo/portraits/chen-zhuo-front.png",
+        "dialogue": "【台词】\"你听过横纹肌溶解吗？\"",
+        "timeline": "T00:00 - 画面处于绝对黑暗，镜头静止于虚空，无可视物仅有微弱环境底噪，营造未知压抑感\nT00:03 - 顶部无影灯骤然亮起，稳定器微仰向前推近，空白铭牌与木质讲台在强光中显现；陈卓站立讲台后方，身形轮廓被硬光切割\nT00:07 - 镜头持续推近过渡至中景；陈卓缓缓抬头，目光从台面抬升直视镜头，表情凝重警觉，面部开始进入主光区域\nT00:11 - 近景构图，陈卓面部处于冷白光照射中心，高对比度明暗分割；眼神锐利凝聚，眉心微蹙，呼吸感静止\nT00:12 - 最后1秒急速推至眼部大特写并瞬间定格；瞳孔与睫毛细节极度清晰，面部肌肉紧绷，光影在眼窝形成深重阴影",
+        "mood": "tense, serious",
+        "pacing": "整体：凝重紧迫节奏；开头：绝对黑暗缓慢引入（3s）营造压抑未知感；中段：灯亮后沉稳推近（7s）逐步建立压迫与警觉；高潮：面部近景凝视（2s）情绪凝聚至临界点；结尾：最后1秒急速推至大特写定格，爆发式收尾",
+        "transition": "hard cut, 0秒, 直接切镜保持紧张感与冲击力延续至下一镜头",
+        "audio": "环境音效：绝对黑暗中的低频底噪与无影灯启动瞬间的电流嗡鸣；音乐风格：深沉大提琴长音与极简合成器暗黑氛围电影配乐，压抑凝重；音量层级：起始极低渐强，灯亮后达到平衡，推近特写时略微增强；BPM: 60",
+        "negative": "no text, no watermark, no blurry, no extra limbs, no deformed, no distorted, no low quality, no cartoon style, no flat lighting, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls objects documents signs labels screens clothing packaging, no handwritten text, no printed text, no signage text, no text overlays, no UI elements with text, no medical instrument distortion, no unprofessional casual lighting, no abstract elements, no sci-fi elements",
+        "bright_constraint": "bright top light illumination on character face and upper body, well-lit focal area ensuring clear facial visibility, clear visibility of eyes and expression details, no dark shadows covering facial features, adequate high-key illumination on skin despite dramatic contrast",
+        "character_constraint": "只出现陈卓一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆",
+        "director_instruction": "好莱坞大导演质感，电影级画面，写实风格，无特效，无科幻元素，通过高对比度单光源与急速推镜营造医疗警示仪式感，强调角色警服身份与专业权威，禁止任何抽象超现实视觉处理，保持画面严肃纪实性",
+        "consistency": "保持陈卓角色形象一致，短发警服造型不变，面部特征与体型每帧统一，藏青色警服与浅蓝衬衫配色固定，妆容发型全程统一"
+      },
+      "fusionText": "医院健康宣教室内部空间，白色荧光灯管均匀照明整个房间，四面白墙悬挂多幅无文字骨骼肌解剖图形海报，中央放置深色木质讲台表面带有细微使用划痕和岁月痕迹，地面铺设浅灰色防滑PVC地板反射柔和光线，房间纵深约八米，顶部为标准石膏板吊顶，讲台后方留有宽阔走道，整体环境呈现专业医疗教育场所的整洁与秩序感",
+      "promptCharCount": 2477,
+      "negative": "no text, no watermark, no blurry, no extra limbs, no deformed, no distorted, no low quality, no cartoon style, no flat lighting, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls objects documents signs labels screens clothing packaging, no handwritten text, no printed text, no signage text, no text overlays, no UI elements with text, no medical instrument distortion, no unprofessional casual lighting, no abstract elements, no sci-fi elements",
+      "portraits": "image://characters/chen-zhuo/portraits/chen-zhuo-front.png",
+      "director_instruction": "好莱坞大导演质感，电影级画面，写实风格，无特效，无科幻元素，通过高对比度单光源与急速推镜营造医疗警示仪式感，强调角色警服身份与专业权威，禁止任何抽象超现实视觉处理，保持画面严肃纪实性",
+      "consistency": "保持陈卓角色形象一致，短发警服造型不变，面部特征与体型每帧统一，藏青色警服与浅蓝衬衫配色固定，妆容发型全程统一",
+      "costume": "藏青色警服外套（毛呢质地，肩章完整），内搭浅蓝色衬衫（棉质，领口整洁），黑色西裤（垂坠感良好），黑色皮鞋（光亮整洁），全身着装保持警务人员标准规范",
+      "makeup": "短发整齐（黑色，长度及耳），素颜淡妆，眉毛自然舒展，唇色淡粉，肤色均匀，无夸张妆容，整体呈现干练警务人员形象与专业气质",
+      "props": "手持：无；桌面：空白金属铭牌（无文字，放置于木质讲台台面中央，反射顶光产生高光点）；背景：无文字骨骼肌解剖图形海报（白墙悬挂），木质讲台（表面有细微划痕与使用痕迹）",
+      "pacing": "整体：凝重紧迫节奏；开头：绝对黑暗缓慢引入（3s）营造压抑未知感；中段：灯亮后沉稳推近（7s）逐步建立压迫与警觉；高潮：面部近景凝视（2s）情绪凝聚至临界点；结尾：最后1秒急速推至大特写定格，爆发式收尾",
+      "transition": "hard cut, 0秒, 直接切镜保持紧张感与冲击力延续至下一镜头",
+      "audio": "环境音效：绝对黑暗中的低频底噪与无影灯启动瞬间的电流嗡鸣；音乐风格：深沉大提琴长音与极简合成器暗黑氛围电影配乐，压抑凝重；音量层级：起始极低渐强，灯亮后达到平衡，推近特写时略微增强；BPM: 60"
+    },
+    {
+      "shotId": "SC01",
+      "sceneType": "establishing",
+      "sceneFunction": "establish",
+      "timing": {
+        "start": 13,
+        "duration": 12,
+        "end": 25
+      },
+      "duration": 12,
+      "scene": "场景B：三甲医院检验科走廊，冷白色LED顶灯连续排列向下照射，墙面白色乳胶漆，无文字图形标识牌悬挂于检验窗口旁，地面浅色抛光瓷砖反射冷光，不锈钢座椅沿墙摆放",
+      "mood": "冷静理性，专业克制，充满医学解释的客观氛围",
+      "character": "陈卓: human, 写实人物",
+      "characterRef": "陈卓: /root/.openclaw/workspace/hyperreality-system/characters/chen-zhuo/portraits/chen-zhuo-front.png",
+      "action": "陈卓沿走廊缓步前行，双手自然张开做解释手势，目光平稳注视镜头",
+      "dialogue": "陈卓|独白|解释|它不是肌肉真的化了，|LIP_SYNC:YES || 陈卓|独白|解释|是肌细胞破裂，肌红蛋白漏出。|LIP_SYNC:YES || 陈卓|独白|忧虑|这玩意儿堵在肾里，肾脏就罢工。|LIP_SYNC:YES",
+      "characters": [
+        "chen-zhuo"
+      ],
+      "characterDescs": "陈卓: human, 写实人物",
+      "dialogueText": "它不是肌肉真的化了，;是肌细胞破裂，肌红蛋白漏出。;这玩意儿堵在肾里，肾脏就罢工。",
+      "emotionalTarget": {
+        "valence": -0.2,
+        "arousal": 0.6,
+        "dominance": 0.4
+      },
+      "visualDirection": {
+        "shot_type": "medium",
+        "camera_movement": "稳定机位",
+        "lighting": "均匀明亮",
+        "color_temperature": "neutral"
+      },
+      "promptBase": "电影级镜头，超写实，微观医疗可视化空间，细胞层面动态投影背景，陈卓（写实人物），medium，稳定机位，台词：「它不是肌肉真的化了，」",
+      "worldId": "default",
+      "status": "pending",
+      "timeline": {
+        "object": {
+          "start": "T00:13",
+          "end": "T00:25",
+          "duration": 12,
+          "type": "establishing",
+          "mood": "mysterious, anticipation, wonder"
+        },
+        "string": "T00:13-T00:25 / duration: 12s / type: establishing / mood: mysterious, anticipation, wonder"
+      },
+      "allocation": {
+        "baseDuration": 12,
+        "dialogueFactor": 1.5,
+        "typeWeight": 1,
+        "preserved": true
+      },
+      "emotional_target": "解释",
+      "lighting": {
+        "key_light": "走廊连续冷白LED顶灯向下照射，在陈卓肩头形成冷峻光斑",
+        "fill_light": "白色乳胶漆墙面均匀漫反射，柔和提亮暗部",
+        "time_of_day": "midday",
+        "atmosphere": "检验窗口不锈钢台面反射细碎光点，玻璃标识牌若隐若现"
+      },
+      "prompt": "【导演指令】好莱坞大导演质感，电影级画面，写实纪录片风格，无特效，无科幻元素，保持医疗环境的真实感与客观性，通过稳定器与手持结合营造专业且真实的健康科普影像，强调冷静理性的视觉传达，【约束】Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no caption, no watermark，【基础】8K resolution, cinematic quality, highly detailed, photorealistic, intricate textures, sharp focus，【场景】三甲医院检验科走廊，冷白色LED顶灯连续排列向下照射，墙面白色乳胶漆，无文字图形标识牌悬挂于检验窗口旁，地面浅色抛光瓷砖反射冷光，不锈钢座椅沿墙摆放，走廊纵深约十二米，空间整洁明亮，具有典型现代医学建筑的理性秩序感与客观洁净氛围，【灯光/照明】主光：顶部连续LED面板灯正下方照射 5600K冷白光，硬质漫射降低阴影；补光：墙面白色乳胶漆反射光从左侧填充面部阴影，光比约3:1；背景光：走廊尽头窗口自然漫射光 6500K偏冷，形成纵深层次；轮廓光：检验窗口不锈钢台面边缘反射冷光勾勒人物轮廓；特效：地面浅色瓷砖微弱反射顶光，增强空间通透感；整体照明均匀明亮，符合医疗环境客观纪实需求，【构图】景别：中景（膝上）；主体位置：画面黄金分割右1/3处，人物面向镜头稍偏左；线条引导：走廊纵深透视线条由近及远向画面左后方汇聚；画框边缘：右侧保留检验窗口局部结构，左侧留白1/4展示走廊延伸空间；视觉重心：人物面部与手势区域构成第一焦点，【色彩/色调】主色调：冷白偏蓝灰（医院走廊理性氛围）；辅助色：不锈钢金属银灰与浅米色地面；肤色：自然偏暖，与冷环境形成适度对比；饱和度：整体中等偏低，克制不鲜艳；对比度：中高等，保持空间层次清晰与医疗环境的洁净感，【景深】焦点：人物面部与眼睛；景深：中等（f/2.8），背景走廊适度虚化但保留纵深透视可辨；前景：无实体遮挡，画面干净；背景：走廊纵深由近及远渐变模糊，检验窗口细节柔化；层次：中景人物主体清晰，后景空间环境分离，形成前后两层空间关系，【运镜】0-3s：稳定器缓慢推近（0.25m/s），从初始中景向人物上半身过渡；3-8s：固定机位静止，保持画面稳定供角色完成台词讲述；8-12s：手持微晃跟拍（呼吸感幅度±1.5度），模拟真实纪录片视角，增强临场感与可信度的真实物理运动，【角色】穿警服的陈卓女士，健康科普主讲人，短发整齐，站姿挺拔，表情冷静理性，目光专注直视镜头，传递专业克制的医学科普态度，【服装】藏青色警服外套（毛呢质地，肩章完整），内搭浅蓝色衬衫（棉质，领口整洁），黑色西裤，黑色皮鞋，【化妆】短发整齐（黑色，长度及耳），素颜淡妆，眉毛自然，唇色淡粉，无夸张妆容，保持人民警察的端庄形象与健康科普者的亲和感，【动作】右手自然抬起至胸前做解释手势，掌心微张朝向镜头，左手持空白文件夹自然下垂于身侧，身体微微前倾约10度，双脚与肩同宽站立稳固，目光直视镜头，头部随手势轻微点动以强调讲解内容，全程保持克制理性的姿态变化，【道具】手持：空白A4文件夹（白色，无文字）；背景：不锈钢检验窗口台面，无文字图形标识牌，空白报告单放置于台面上，不锈钢座椅沿墙摆放，【定妆照】image://characters/chen-zhuo/portraits/chen-zhuo-front.png，【台词】【台词】\"它不是肌肉真的化了。\"，【时间轴】T00:00 - 中景，陈卓站立于检验科走廊纵深空间中，背景检验窗口与不锈钢座椅清晰可见；双手自然下垂，身体挺拔，目光平静直视镜头，准备开始讲解\nT00:03 - 近景过渡，稳定器缓慢推近至人物胸像；右手自然抬起至胸前做解释手势，左手持空白文件夹贴于身侧，身体微微前倾约10度，目光专注\nT00:08 - 中近景，镜头转为手持微晃保持呼吸感；右手掌心微张朝向镜头强调内容，头部轻点配合语速，眼神保持冷静理性的医学科普状态直至镜头结束，【情绪】calm, professional，【节奏】整体：沉稳中等节奏，保持医学科普的客观冷静；开头：缓慢引入（3s）",
+      "fields": {
+        "constraint": "Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no caption, no watermark",
+        "baseline": "8K resolution, cinematic quality, highly detailed, photorealistic, intricate textures, sharp focus",
+        "scene": "三甲医院检验科走廊，冷白色LED顶灯连续排列向下照射，墙面白色乳胶漆，无文字图形标识牌悬挂于检验窗口旁，地面浅色抛光瓷砖反射冷光，不锈钢座椅沿墙摆放，走廊纵深约十二米，空间整洁明亮，具有典型现代医学建筑的理性秩序感与客观洁净氛围",
+        "lighting": "主光：顶部连续LED面板灯正下方照射 5600K冷白光，硬质漫射降低阴影；补光：墙面白色乳胶漆反射光从左侧填充面部阴影，光比约3:1；背景光：走廊尽头窗口自然漫射光 6500K偏冷，形成纵深层次；轮廓光：检验窗口不锈钢台面边缘反射冷光勾勒人物轮廓；特效：地面浅色瓷砖微弱反射顶光，增强空间通透感；整体照明均匀明亮，符合医疗环境客观纪实需求",
+        "composition": "景别：中景（膝上）；主体位置：画面黄金分割右1/3处，人物面向镜头稍偏左；线条引导：走廊纵深透视线条由近及远向画面左后方汇聚；画框边缘：右侧保留检验窗口局部结构，左侧留白1/4展示走廊延伸空间；视觉重心：人物面部与手势区域构成第一焦点",
+        "color_palette": "主色调：冷白偏蓝灰（医院走廊理性氛围）；辅助色：不锈钢金属银灰与浅米色地面；肤色：自然偏暖，与冷环境形成适度对比；饱和度：整体中等偏低，克制不鲜艳；对比度：中高等，保持空间层次清晰与医疗环境的洁净感",
+        "depth_of_field": "焦点：人物面部与眼睛；景深：中等（f/2.8），背景走廊适度虚化但保留纵深透视可辨；前景：无实体遮挡，画面干净；背景：走廊纵深由近及远渐变模糊，检验窗口细节柔化；层次：中景人物主体清晰，后景空间环境分离，形成前后两层空间关系",
+        "camera_movement": "0-3s：稳定器缓慢推近（0.25m/s），从初始中景向人物上半身过渡；3-8s：固定机位静止，保持画面稳定供角色完成台词讲述；8-12s：手持微晃跟拍（呼吸感幅度±1.5度），模拟真实纪录片视角，增强临场感与可信度的真实物理运动",
+        "character": "穿警服的陈卓女士，健康科普主讲人，短发整齐，站姿挺拔，表情冷静理性，目光专注直视镜头，传递专业克制的医学科普态度",
+        "costume": "藏青色警服外套（毛呢质地，肩章完整），内搭浅蓝色衬衫（棉质，领口整洁），黑色西裤，黑色皮鞋",
+        "makeup": "短发整齐（黑色，长度及耳），素颜淡妆，眉毛自然，唇色淡粉，无夸张妆容，保持人民警察的端庄形象与健康科普者的亲和感",
+        "action": "右手自然抬起至胸前做解释手势，掌心微张朝向镜头，左手持空白文件夹自然下垂于身侧，身体微微前倾约10度，双脚与肩同宽站立稳固，目光直视镜头，头部随手势轻微点动以强调讲解内容，全程保持克制理性的姿态变化",
+        "props": "手持：空白A4文件夹（白色，无文字）；背景：不锈钢检验窗口台面，无文字图形标识牌，空白报告单放置于台面上，不锈钢座椅沿墙摆放",
+        "portraits": "image://characters/chen-zhuo/portraits/chen-zhuo-front.png",
+        "dialogue": "【台词】\"它不是肌肉真的化了。\"",
+        "timeline": "T00:00 - 中景，陈卓站立于检验科走廊纵深空间中，背景检验窗口与不锈钢座椅清晰可见；双手自然下垂，身体挺拔，目光平静直视镜头，准备开始讲解\nT00:03 - 近景过渡，稳定器缓慢推近至人物胸像；右手自然抬起至胸前做解释手势，左手持空白文件夹贴于身侧，身体微微前倾约10度，目光专注\nT00:08 - 中近景，镜头转为手持微晃保持呼吸感；右手掌心微张朝向镜头强调内容，头部轻点配合语速，眼神保持冷静理性的医学科普状态直至镜头结束",
+        "mood": "calm, professional",
+        "pacing": "整体：沉稳中等节奏，保持医学科普的客观冷静；开头：缓慢引入（3s），镜头推近建立人物与空间关系；中段：稳定推进（5s），固定机位让信息传递清晰；高潮：手势强调停顿（1s留白），配合台词关键信息；结尾：平缓收尾（3s），手持微晃增强真实感与临场可信度",
+        "transition": "hard cut, 0.5s, 直接冷静的科普叙事风格",
+        "audio": "环境音效：医院走廊低频设备嗡鸣与远处隐约脚步声，偶尔有不锈钢器械轻微碰撞声；音乐风格：冷色调氛围音乐铺底，低沉弦乐与单音钢琴，70 BPM；音量层级：环境音适中，音乐音量-18dB铺底，人声清晰突出，整体平衡克制",
+        "negative": "no text, no watermark, no blurry, no extra limbs, deformed, distorted, low quality, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls objects documents signs labels screens clothing packaging, no handwritten text, no printed text, no signage text, no text overlays, no UI elements with text, no cartoon style, no flat lighting, no neon colors, no holographic, no virtual projection, no abstract elements, no science fiction, no fantasy, no dark shadows on face, no overexposure, no underexposure, no double exposure, no cloned person, no multiple same character, no split screen, no mirror reflection of same person",
+        "consistency": "保持陈卓角色形象一致，短发警服造型不变，面部特征与体型每帧统一，藏青色警服与浅蓝色衬衫搭配固定，妆发造型全程维持，不得出现服装颜色或款式的任何变化",
+        "bright_constraint": "bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination, uniform top lighting, medical environment brightness, clear facial details, properly exposed subject",
+        "character_constraint": "只出现陈卓一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆，禁止出现其他患者或医护人员背影",
+        "director_instruction": "好莱坞大导演质感，电影级画面，写实纪录片风格，无特效，无科幻元素，保持医疗环境的真实感与客观性，通过稳定器与手持结合营造专业且真实的健康科普影像，强调冷静理性的视觉传达"
+      },
+      "fusionText": "三甲医院检验科走廊，冷白色LED顶灯连续排列向下照射，墙面白色乳胶漆，无文字图形标识牌悬挂于检验窗口旁，地面浅色抛光瓷砖反射冷光，不锈钢座椅沿墙摆放，走廊纵深约十二米，空间整洁明亮，具有典型现代医学建筑的理性秩序感与客观洁净氛围",
+      "promptCharCount": 2493,
+      "negative": "no text, no watermark, no blurry, no extra limbs, deformed, distorted, low quality, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls objects documents signs labels screens clothing packaging, no handwritten text, no printed text, no signage text, no text overlays, no UI elements with text, no cartoon style, no flat lighting, no neon colors, no holographic, no virtual projection, no abstract elements, no science fiction, no fantasy, no dark shadows on face, no overexposure, no underexposure, no double exposure, no cloned person, no multiple same character, no split screen, no mirror reflection of same person",
+      "portraits": "image://characters/chen-zhuo/portraits/chen-zhuo-front.png",
+      "director_instruction": "好莱坞大导演质感，电影级画面，写实纪录片风格，无特效，无科幻元素，保持医疗环境的真实感与客观性，通过稳定器与手持结合营造专业且真实的健康科普影像，强调冷静理性的视觉传达",
+      "consistency": "保持陈卓角色形象一致，短发警服造型不变，面部特征与体型每帧统一，藏青色警服与浅蓝色衬衫搭配固定，妆发造型全程维持，不得出现服装颜色或款式的任何变化",
+      "costume": "藏青色警服外套（毛呢质地，肩章完整），内搭浅蓝色衬衫（棉质，领口整洁），黑色西裤，黑色皮鞋",
+      "makeup": "短发整齐（黑色，长度及耳），素颜淡妆，眉毛自然，唇色淡粉，无夸张妆容，保持人民警察的端庄形象与健康科普者的亲和感",
+      "props": "手持：空白A4文件夹（白色，无文字）；背景：不锈钢检验窗口台面，无文字图形标识牌，空白报告单放置于台面上，不锈钢座椅沿墙摆放",
+      "pacing": "整体：沉稳中等节奏，保持医学科普的客观冷静；开头：缓慢引入（3s），镜头推近建立人物与空间关系；中段：稳定推进（5s），固定机位让信息传递清晰；高潮：手势强调停顿（1s留白），配合台词关键信息；结尾：平缓收尾（3s），手持微晃增强真实感与临场可信度",
+      "transition": "hard cut, 0.5s, 直接冷静的科普叙事风格",
+      "audio": "环境音效：医院走廊低频设备嗡鸣与远处隐约脚步声，偶尔有不锈钢器械轻微碰撞声；音乐风格：冷色调氛围音乐铺底，低沉弦乐与单音钢琴，70 BPM；音量层级：环境音适中，音乐音量-18dB铺底，人声清晰突出，整体平衡克制"
+    },
+    {
+      "shotId": "SC02",
+      "sceneType": "conflict",
+      "sceneFunction": "advance",
+      "timing": {
+        "start": 25,
+        "duration": 13,
+        "end": 38
+      },
+      "duration": 13,
+      "scene": "场景C：医生诊室，白色墙面悬挂无文字医学挂图，办公桌摆放听诊器与血压计，检查床铺有蓝色一次性床单，无影灯悬于上方，窗光透入形成自然侧光，地面米白色瓷砖",
+      "mood": "紧张担忧，危机迫近，运动风险带来的压迫感",
+      "character": "陈卓: human, 写实人物",
+      "characterRef": "陈卓: /root/.openclaw/workspace/hyperreality-system/characters/chen-zhuo/portraits/chen-zhuo-front.png",
+      "action": "陈卓右手握拳轻敲检查床边缘，左腿上前半步，身体微侧模拟深蹲姿势后猛然抬头",
+      "dialogue": "陈卓|独白|担忧|新手健身狂练深蹲，|LIP_SYNC:YES || 陈卓|独白|警告|或者大热天跑马拉松，|LIP_SYNC:YES || 陈卓|独白|紧迫|肌细胞扛不住直接崩了。|LIP_SYNC:YES || 陈卓|独白|命令|这时候千万别硬撑！|LIP_SYNC:YES",
+      "characters": [
+        "chen-zhuo"
+      ],
+      "characterDescs": "陈卓: human, 写实人物",
+      "dialogueText": "新手健身狂练深蹲，;或者大热天跑马拉松，;肌细胞扛不住直接崩了。;这时候千万别硬撑！",
+      "emotionalTarget": {
+        "valence": -0.5,
+        "arousal": 0.85,
+        "dominance": 0.2
+      },
+      "visualDirection": {
+        "shot_type": "close_up",
+        "camera_movement": "手持晃动",
+        "lighting": "戏剧性明暗对比",
+        "color_temperature": "cool"
+      },
+      "promptBase": "电影级镜头，超写实，健身房与户外跑道双重意象的沉浸式环境，色彩编码空间，陈卓（写实人物），close_up，手持晃动，台词：「新手健身狂练深蹲，」",
+      "worldId": "default",
+      "status": "pending",
+      "timeline": {
+        "object": {
+          "start": "T00:25",
+          "end": "T00:38",
+          "duration": 13,
+          "type": "conflict",
+          "mood": "tense, serious, intense, dramatic"
+        },
+        "string": "T00:25-T00:38 / duration: 13s / type: conflict / mood: tense, serious, intense, dramatic"
+      },
+      "allocation": {
+        "baseDuration": 13,
+        "dialogueFactor": 1.5,
+        "typeWeight": 1.3,
+        "preserved": true
+      },
+      "emotional_target": "警告",
+      "lighting": {
+        "key_light": "无影灯从上方斜射，在面部形成冷白高光与锐利阴影",
+        "fill_light": "窗外自然光微弱透入，侧面略微勾勒轮廓",
+        "time_of_day": "midday",
+        "atmosphere": "蓝色一次性床单在冷光下泛着寒色，听诊器金属反光刺眼"
+      },
+      "prompt": "【导演指令】好莱坞大导演质感，电影级画面，写实纪录片风格，无特效，无科幻元素，医疗场景真实还原，情绪压迫感通过光影与表演自然传递，严禁超现实表现，保持物理真实，【约束】Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no caption, no watermark，【基础】8K resolution, cinematic quality, highly detailed, photorealistic, intricate textures, sharp focus, hyperrealistic，【场景】三甲医院医生诊室，白色墙面悬挂无文字医学挂图，实木办公桌摆放听诊器与血压计，检查床铺有蓝色一次性床单，无影灯悬于上方，窗光透入形成自然侧光，地面米白色瓷砖，空间纵深约四米，墙面材质为哑光乳胶漆，整体环境整洁严肃，【灯光/照明】主光：右侧窗户自然光 5500K日光色，透过白色纱帘形成柔光漫射效果；补光：左前侧白色反光板 3200K暖光，填充面部阴影减少光比；背景光：顶部无影灯 5600K冷白光，均匀照射检查床区域；轮廓光：右后方硬光勾勒人物肩部轮廓分离背景；特效：窗光在地面形成柔和光影渐变，【构图】景别：中景（腰部以上）；主体位置：画面黄金分割左1/3处；线条引导：办公桌水平线与墙面垂直线构成稳定框架；画框边缘：右侧留白1/4展示诊室环境细节；视觉重心：人物面部与桌面听诊器形成对角线呼应，【色彩/色调】主色调：冷白偏蓝（医疗专业感）；辅助色：检查床蓝色床单与木质办公桌暖棕点缀；肤色：自然偏暖；饱和度：中等偏低，克制医疗氛围；对比度：中高，保持材质层次清晰分明，【景深】焦点：人物面部清晰锐利；景深：中等（f/2.8），背景适度虚化可辨；前景：听诊器边缘轻微虚化增加层次；背景：无文字挂图与检查床渐变模糊；层次：前景（桌角）-中景（人物）-背景（墙面）三层空间分离，【运镜】0-3s：稳定器缓慢推近（0.3m/s）从诊室门口向人物腰部以上推进；3-8s：固定机位静止拍摄，捕捉人物讲解；8-11s：手持微晃跟拍（呼吸感，幅度±2度）维持临场感；11-13s：稳定器缓慢后拉（0.2m/s）展示诊室全景环境，【角色】穿警服的陈卓女士，健康科普主讲人，短发整齐，站姿挺拔，表情关切且严肃，目光直视镜头，呈现专业权威感，【服装】藏青色警服外套（毛呢质地，肩章完整，纽扣整齐），内搭浅蓝色衬衫（棉质，领口整洁），黑色西裤（直筒版型），黑色皮鞋（光亮整洁），【化妆】短发整齐（黑色，长度及耳，发尾内扣），素颜淡妆，眉毛自然平直，唇色淡粉自然，无夸张眼妆，肤色均匀，【动作】右手自然抬起至胸前做强调手势，食指与中指并拢指向自己大腿外侧示意肌肉位置，左手自然下垂轻贴裤缝，身体微微前倾十五度，目光直视镜头，头部随讲解内容微微点动，面部肌肉紧绷呈现担忧与严肃神情，肩部保持平稳，【道具】手持：空白A4文件夹（白色，无文字）；桌面：银色听诊器（金属质感，橡胶管自然弯曲），水银血压计（灰色布袋）；检查床：蓝色一次性床单（平整无褶皱）；背景：无文字医学挂图，【定妆照】image://characters/chen-zhuo/portraits/chen-zhuo-front.png，【台词】【台词】\"新手健身狂练深蹲，很容易导致横纹肌溶解。\"，【时间轴】T00:00 - 中景，陈卓站立诊室办公桌旁，窗光从侧面照入；右手抬起指向自己大腿示意深蹲动作，目光注视镜头，表情严肃凝重\nT00:03 - 近景过渡，镜头缓慢推近至面部；左手拿起空白文件夹轻点，眉头微蹙，眼神由冷静转为担忧，嘴唇轻抿\nT00:08 - 特写定格，陈卓眼部区域；眼睛眨动一次，瞳孔中反射出诊室窗光，嘴角微微下压，面部肌肉紧绷\nT00:11 - 中景拉回，陈卓身体微微后仰；右手放下，左手自然下垂，目光仍直视镜头，表情凝重且关切，【情绪】tense, concerned，【节奏】整体：沉稳中等节奏带压迫感；开头：缓慢引入（3s），镜头推近建立氛围；中段：稍快推进（5s），讲解加剧紧迫感；高潮：停顿强调（2s），关键词留白；结尾：平缓收尾（3s），凝重情绪延续，【转场】hard cut（硬切，0.1秒",
+      "fields": {
+        "constraint": "Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no caption, no watermark",
+        "baseline": "8K resolution, cinematic quality, highly detailed, photorealistic, intricate textures, sharp focus, hyperrealistic",
+        "scene": "三甲医院医生诊室，白色墙面悬挂无文字医学挂图，实木办公桌摆放听诊器与血压计，检查床铺有蓝色一次性床单，无影灯悬于上方，窗光透入形成自然侧光，地面米白色瓷砖，空间纵深约四米，墙面材质为哑光乳胶漆，整体环境整洁严肃",
+        "lighting": "主光：右侧窗户自然光 5500K日光色，透过白色纱帘形成柔光漫射效果；补光：左前侧白色反光板 3200K暖光，填充面部阴影减少光比；背景光：顶部无影灯 5600K冷白光，均匀照射检查床区域；轮廓光：右后方硬光勾勒人物肩部轮廓分离背景；特效：窗光在地面形成柔和光影渐变",
+        "composition": "景别：中景（腰部以上）；主体位置：画面黄金分割左1/3处；线条引导：办公桌水平线与墙面垂直线构成稳定框架；画框边缘：右侧留白1/4展示诊室环境细节；视觉重心：人物面部与桌面听诊器形成对角线呼应",
+        "color_palette": "主色调：冷白偏蓝（医疗专业感）；辅助色：检查床蓝色床单与木质办公桌暖棕点缀；肤色：自然偏暖；饱和度：中等偏低，克制医疗氛围；对比度：中高，保持材质层次清晰分明",
+        "depth_of_field": "焦点：人物面部清晰锐利；景深：中等（f/2.8），背景适度虚化可辨；前景：听诊器边缘轻微虚化增加层次；背景：无文字挂图与检查床渐变模糊；层次：前景（桌角）-中景（人物）-背景（墙面）三层空间分离",
+        "camera_movement": "0-3s：稳定器缓慢推近（0.3m/s）从诊室门口向人物腰部以上推进；3-8s：固定机位静止拍摄，捕捉人物讲解；8-11s：手持微晃跟拍（呼吸感，幅度±2度）维持临场感；11-13s：稳定器缓慢后拉（0.2m/s）展示诊室全景环境",
+        "character": "穿警服的陈卓女士，健康科普主讲人，短发整齐，站姿挺拔，表情关切且严肃，目光直视镜头，呈现专业权威感",
+        "costume": "藏青色警服外套（毛呢质地，肩章完整，纽扣整齐），内搭浅蓝色衬衫（棉质，领口整洁），黑色西裤（直筒版型），黑色皮鞋（光亮整洁）",
+        "makeup": "短发整齐（黑色，长度及耳，发尾内扣），素颜淡妆，眉毛自然平直，唇色淡粉自然，无夸张眼妆，肤色均匀",
+        "action": "右手自然抬起至胸前做强调手势，食指与中指并拢指向自己大腿外侧示意肌肉位置，左手自然下垂轻贴裤缝，身体微微前倾十五度，目光直视镜头，头部随讲解内容微微点动，面部肌肉紧绷呈现担忧与严肃神情，肩部保持平稳",
+        "props": "手持：空白A4文件夹（白色，无文字）；桌面：银色听诊器（金属质感，橡胶管自然弯曲），水银血压计（灰色布袋）；检查床：蓝色一次性床单（平整无褶皱）；背景：无文字医学挂图",
+        "portraits": "image://characters/chen-zhuo/portraits/chen-zhuo-front.png",
+        "dialogue": "【台词】\"新手健身狂练深蹲，很容易导致横纹肌溶解。\"",
+        "timeline": "T00:00 - 中景，陈卓站立诊室办公桌旁，窗光从侧面照入；右手抬起指向自己大腿示意深蹲动作，目光注视镜头，表情严肃凝重\nT00:03 - 近景过渡，镜头缓慢推近至面部；左手拿起空白文件夹轻点，眉头微蹙，眼神由冷静转为担忧，嘴唇轻抿\nT00:08 - 特写定格，陈卓眼部区域；眼睛眨动一次，瞳孔中反射出诊室窗光，嘴角微微下压，面部肌肉紧绷\nT00:11 - 中景拉回，陈卓身体微微后仰；右手放下，左手自然下垂，目光仍直视镜头，表情凝重且关切",
+        "mood": "tense, concerned",
+        "pacing": "整体：沉稳中等节奏带压迫感；开头：缓慢引入（3s），镜头推近建立氛围；中段：稍快推进（5s），讲解加剧紧迫感；高潮：停顿强调（2s），关键词留白；结尾：平缓收尾（3s），凝重情绪延续",
+        "transition": "hard cut（硬切，0.1秒，直接切换，保持紧张压迫感延续）",
+        "audio": "环境音效：诊室低频空调运转声，远处隐约医院走廊脚步声与设备嗡鸣；音乐风格：冷色调悬疑氛围铺底，低沉大提琴与钢琴单音，不安感渐强；音量层级：环境音-20dB，音乐-15dB，人声对白清晰突出，整体BPM 80，平衡混音",
+        "negative": "no text, no watermark, no blurry, no extra limbs, deformed, distorted, low quality, no cartoon style, no flat lighting, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls objects documents signs labels screens clothing packaging, no handwritten text, no printed text, no signage text, no text overlays, no UI elements with text, no holographic, no virtual projection, no abstract elements, no science fiction",
+        "bright_constraint": "bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination, natural window light filling the room",
+        "character_constraint": "只出现陈卓一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆，禁止其他医生或患者入镜",
+        "director_instruction": "好莱坞大导演质感，电影级画面，写实纪录片风格，无特效，无科幻元素，医疗场景真实还原，情绪压迫感通过光影与表演自然传递，严禁超现实表现，保持物理真实",
+        "consistency": "保持陈卓角色形象一致，短发警服造型不变，面部特征与体型每帧统一，肩章与警号位置固定"
+      },
+      "fusionText": "三甲医院医生诊室，白色墙面悬挂无文字医学挂图，实木办公桌摆放听诊器与血压计，检查床铺有蓝色一次性床单，无影灯悬于上方，窗光透入形成自然侧光，地面米白色瓷砖，空间纵深约四米，墙面材质为哑光乳胶漆，整体环境整洁严肃",
+      "promptCharCount": 2499,
+      "negative": "no text, no watermark, no blurry, no extra limbs, deformed, distorted, low quality, no cartoon style, no flat lighting, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls objects documents signs labels screens clothing packaging, no handwritten text, no printed text, no signage text, no text overlays, no UI elements with text, no holographic, no virtual projection, no abstract elements, no science fiction",
+      "portraits": "image://characters/chen-zhuo/portraits/chen-zhuo-front.png",
+      "director_instruction": "好莱坞大导演质感，电影级画面，写实纪录片风格，无特效，无科幻元素，医疗场景真实还原，情绪压迫感通过光影与表演自然传递，严禁超现实表现，保持物理真实",
+      "consistency": "保持陈卓角色形象一致，短发警服造型不变，面部特征与体型每帧统一，肩章与警号位置固定",
+      "costume": "藏青色警服外套（毛呢质地，肩章完整，纽扣整齐），内搭浅蓝色衬衫（棉质，领口整洁），黑色西裤（直筒版型），黑色皮鞋（光亮整洁）",
+      "makeup": "短发整齐（黑色，长度及耳，发尾内扣），素颜淡妆，眉毛自然平直，唇色淡粉自然，无夸张眼妆，肤色均匀",
+      "props": "手持：空白A4文件夹（白色，无文字）；桌面：银色听诊器（金属质感，橡胶管自然弯曲），水银血压计（灰色布袋）；检查床：蓝色一次性床单（平整无褶皱）；背景：无文字医学挂图",
+      "pacing": "整体：沉稳中等节奏带压迫感；开头：缓慢引入（3s），镜头推近建立氛围；中段：稍快推进（5s），讲解加剧紧迫感；高潮：停顿强调（2s），关键词留白；结尾：平缓收尾（3s），凝重情绪延续",
+      "transition": "hard cut（硬切，0.1秒，直接切换，保持紧张压迫感延续）",
+      "audio": "环境音效：诊室低频空调运转声，远处隐约医院走廊脚步声与设备嗡鸣；音乐风格：冷色调悬疑氛围铺底，低沉大提琴与钢琴单音，不安感渐强；音量层级：环境音-20dB，音乐-15dB，人声对白清晰突出，整体BPM 80，平衡混音"
+    },
+    {
+      "shotId": "SC03",
+      "sceneType": "emotional_climax",
+      "sceneFunction": "climax",
+      "timing": {
+        "start": 38,
+        "duration": 13,
+        "end": 51
+      },
+      "duration": 13,
+      "scene": "场景D：医院健康管理中心，嵌入式LED灯带洒下柔和暖白光，接待台后方排列无文字健康主题图形展板，前方皮质沙发与实木茶几，地面灰色哑光瓷砖，墙面浅米色乳胶漆",
+      "mood": "恐惧沉重，压抑窒息，疾病信号带来的强烈不安",
+      "character": "陈卓: human, 写实人物",
+      "characterRef": "陈卓: /root/.openclaw/workspace/hyperreality-system/characters/chen-zhuo/portraits/chen-zhuo-front.png",
+      "action": "陈卓双手捂住腹部缓缓弯腰，随后直起身颤抖着指向下腹部，面色凝重",
+      "dialogue": "陈卓|独白|恐惧|最危险的信号就是茶色尿！|LIP_SYNC:YES || 陈卓|独白|痛苦|伴随肌肉剧痛，|LIP_SYNC:YES || 陈卓|独白|沉重|和全身水肿。|LIP_SYNC:YES || 陈卓|独白|紧迫|一旦出现，立刻去医院！|LIP_SYNC:YES",
+      "characters": [
+        "chen-zhuo"
+      ],
+      "characterDescs": "陈卓: human, 写实人物",
+      "dialogueText": "最危险的信号就是茶色尿！;伴随肌肉剧痛，;和全身水肿。;一旦出现，立刻去医院！",
+      "emotionalTarget": {
+        "valence": -0.7,
+        "arousal": 0.9,
+        "dominance": 0.4
+      },
+      "visualDirection": {
+        "shot_type": "extreme_close_up",
+        "camera_movement": "快速推近",
+        "lighting": "伦勃朗光",
+        "color_temperature": "cool"
+      },
+      "promptBase": "电影级高潮镜头，超写实，急诊室红光氛围，沉浸式医疗危机空间，陈卓（写实人物），extreme_close_up，快速推近，台词：「最危险的信号就是茶色尿！」",
+      "worldId": "default",
+      "status": "pending",
+      "timeline": {
+        "object": {
+          "start": "T00:38",
+          "end": "T00:51",
+          "duration": 13,
+          "type": "emotional_climax",
+          "mood": "tense, serious, intense, dramatic"
+        },
+        "string": "T00:38-T00:51 / duration: 13s / type: emotional_climax / mood: tense, serious, intense, dramatic"
+      },
+      "allocation": {
+        "baseDuration": 13,
+        "dialogueFactor": 1.5,
+        "typeWeight": 1.5,
+        "preserved": true
+      },
+      "emotional_target": "恐惧",
+      "lighting": {
+        "key_light": "嵌入式LED灯带柔和洒下暖白光，在头顶形成温暖光晕",
+        "fill_light": "无文字展板反射的漫射光，微弱填充面部阴影",
+        "time_of_day": "midday",
+        "atmosphere": "皮质沙发在暖光下泛着暗沉光泽，实木茶几阴影浓重压抑"
+      },
+      "prompt": "【导演指令】好莱坞大导演质感，电影级画面，写实风格，无特效，无科幻元素，【约束】Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no watermark，【基础】8K resolution, cinematic quality, highly detailed, photorealistic, sharp focus, ultra high definition，【场景】场景D：医院健康管理中心，嵌入式LED灯带洒下柔和暖白光，接待台后方排列无文字健康主题图形展板，前方皮质沙发与实木茶几，地面灰色哑光瓷砖，墙面浅米色乳胶漆，【角色】陈卓: human, 写实人物，【动作】陈卓双手捂住腹部缓缓弯腰，随后直起身颤抖着指向下腹部，面色凝重，【定妆照】陈卓: /root/.openclaw/workspace/hyperreality-system/characters/chen-zhuo/portraits/chen-zhuo-front.png，【台词】【台词】\"最危险的信号就是茶色尿！;伴随肌肉剧痛，;和全身水肿。;一旦出现，立刻去医院！\"，【时间轴】T00:00 - 全景establishing，环境展示；T00:03 - 中景推进，人物动作；T00:07 - 情绪收尾，光线平复，【情绪】neutral, high energy，【负面约束】no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background，【明亮约束】bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination，【角色约束】只出现角色一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆，【角色一致性】保持角色形象一致，造型不变，面部特征与体型每帧统一",
+      "fields": {
+        "director_instruction": "好莱坞大导演质感，电影级画面，写实风格，无特效，无科幻元素",
+        "constraint": "Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no watermark",
+        "baseline": "8K resolution, cinematic quality, highly detailed, photorealistic, sharp focus, ultra high definition",
+        "scene": "场景D：医院健康管理中心，嵌入式LED灯带洒下柔和暖白光，接待台后方排列无文字健康主题图形展板，前方皮质沙发与实木茶几，地面灰色哑光瓷砖，墙面浅米色乳胶漆",
+        "lighting": "",
+        "composition": "",
+        "color_palette": "",
+        "depth_of_field": "",
+        "camera_movement": "",
+        "character": "陈卓: human, 写实人物",
+        "costume": "",
+        "makeup": "",
+        "action": "陈卓双手捂住腹部缓缓弯腰，随后直起身颤抖着指向下腹部，面色凝重",
+        "props": "",
+        "portraits": "陈卓: /root/.openclaw/workspace/hyperreality-system/characters/chen-zhuo/portraits/chen-zhuo-front.png",
+        "dialogue": "【台词】\"最危险的信号就是茶色尿！;伴随肌肉剧痛，;和全身水肿。;一旦出现，立刻去医院！\"",
+        "timeline": "T00:00 - 全景establishing，环境展示；T00:03 - 中景推进，人物动作；T00:07 - 情绪收尾，光线平复",
+        "mood": "neutral, high energy",
+        "pacing": "",
+        "transition": "",
+        "audio": "",
+        "negative": "no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background",
+        "bright_constraint": "bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination",
+        "character_constraint": "只出现角色一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆",
+        "consistency": "保持角色形象一致，造型不变，面部特征与体型每帧统一"
+      },
+      "fusionText": "场景D：医院健康管理中心，嵌入式LED灯带洒下柔和暖白光，接待台后方排列无文字健康主题图形展板，前方皮质沙发与实木茶几，地面灰色哑光瓷砖，墙面浅米色乳胶漆",
+      "promptCharCount": 1257,
+      "negative": "no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background",
+      "portraits": "陈卓: /root/.openclaw/workspace/hyperreality-system/characters/chen-zhuo/portraits/chen-zhuo-front.png",
+      "director_instruction": "好莱坞大导演质感，电影级画面，写实风格，无特效，无科幻元素",
+      "consistency": "保持角色形象一致，造型不变，面部特征与体型每帧统一"
+    },
+    {
+      "shotId": "SC04",
+      "sceneType": "resolution",
+      "sceneFunction": "resolve",
+      "timing": {
+        "start": 51,
+        "duration": 14,
+        "end": 65
+      },
+      "duration": 14,
+      "scene": "场景B：三甲医院检验科走廊，冷白色荧光灯维持恒定色温，检验窗口玻璃带有微弱反射，不锈钢台面反光，墙面悬挂无文字图形标识牌，地面浅灰色防滑地砖，陈卓站立于窗口前",
+      "mood": "平和坚定，温暖关切，预防知识带来的安心力量",
+      "character": "陈卓: human, 写实人物",
+      "characterRef": "陈卓: /root/.openclaw/workspace/hyperreality-system/characters/chen-zhuo/portraits/chen-zhuo-front.png",
+      "action": "陈卓伸出三根手指逐一放下，双手掌心向下做安抚按压动作，微微点头",
+      "dialogue": "陈卓|独白|鼓励|记住三个预防口诀：|LIP_SYNC:YES || 陈卓|独白|平和|运动要循序渐进，|LIP_SYNC:YES || 陈卓|独白|关切|及时补水补电解质，|LIP_SYNC:YES || 陈卓|独白|坚定|感觉不对马上停。|LIP_SYNC:YES || 陈卓|独白|热情|关注陈卓，教你保命！|LIP_SYNC:YES",
+      "characters": [
+        "chen-zhuo"
+      ],
+      "characterDescs": "陈卓: human, 写实人物",
+      "dialogueText": "记住三个预防口诀：;运动要循序渐进，;及时补水补电解质，;感觉不对马上停。;关注陈卓，教你保命！",
+      "emotionalTarget": {
+        "valence": 0.6,
+        "arousal": 0.7,
+        "dominance": 0.8
+      },
+      "visualDirection": {
+        "shot_type": "medium",
+        "camera_movement": "缓慢后拉",
+        "lighting": "温暖柔光",
+        "color_temperature": "warm"
+      },
+      "promptBase": "电影级镜头，超写实，明亮清新的健康空间，绿色调恢复性环境，陈卓（写实人物），medium，缓慢后拉，台词：「记住三个预防口诀：」",
+      "worldId": "default",
+      "status": "pending",
+      "timeline": {
+        "object": {
+          "start": "T00:51",
+          "end": "T01:05",
+          "duration": 14,
+          "type": "resolution",
+          "mood": "peaceful, warm, nostalgic, hopeful"
+        },
+        "string": "T00:51-T01:05 / duration: 14s / type: resolution / mood: peaceful, warm, nostalgic, hopeful"
+      },
+      "allocation": {
+        "baseDuration": 14,
+        "dialogueFactor": 1.5,
+        "typeWeight": 1,
+        "preserved": true
+      },
+      "emotional_target": "安抚",
+      "lighting": {
+        "key_light": "冷白荧光灯从走廊顶部恒定铺洒，均匀笼罩肩头",
+        "fill_light": "浅色墙面与地面漫反射，阴影柔和透明",
+        "time_of_day": "midday",
+        "atmosphere": "检验窗口玻璃反射稳定微光，不锈钢台面温润不再刺眼"
+      },
+      "prompt": "【导演指令】好莱坞大导演质感，电影级画面，写实风格，无特效，无科幻元素，【约束】Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no watermark，【基础】8K resolution, cinematic quality, highly detailed, photorealistic, sharp focus, ultra high definition，【场景】场景B：三甲医院检验科走廊，冷白色荧光灯维持恒定色温，检验窗口玻璃带有微弱反射，不锈钢台面反光，墙面悬挂无文字图形标识牌，地面浅灰色防滑地砖，陈卓站立于窗口前，【角色】陈卓: human, 写实人物，【动作】陈卓伸出三根手指逐一放下，双手掌心向下做安抚按压动作，微微点头，【定妆照】陈卓: /root/.openclaw/workspace/hyperreality-system/characters/chen-zhuo/portraits/chen-zhuo-front.png，【台词】【台词】\"记住三个预防口诀：;运动要循序渐进，;及时补水补电解质，;感觉不对马上停。;关注陈卓，教你保命！\"，【时间轴】T00:00 - 全景establishing，环境展示；T00:04 - 中景推进，人物动作；T00:08 - 情绪收尾，光线平复，【情绪】positive, high energy，【负面约束】no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background，【明亮约束】bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination，【角色约束】只出现角色一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆，【角色一致性】保持角色形象一致，造型不变，面部特征与体型每帧统一",
+      "fields": {
+        "director_instruction": "好莱坞大导演质感，电影级画面，写实风格，无特效，无科幻元素",
+        "constraint": "Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no watermark",
+        "baseline": "8K resolution, cinematic quality, highly detailed, photorealistic, sharp focus, ultra high definition",
+        "scene": "场景B：三甲医院检验科走廊，冷白色荧光灯维持恒定色温，检验窗口玻璃带有微弱反射，不锈钢台面反光，墙面悬挂无文字图形标识牌，地面浅灰色防滑地砖，陈卓站立于窗口前",
+        "lighting": "",
+        "composition": "",
+        "color_palette": "",
+        "depth_of_field": "",
+        "camera_movement": "",
+        "character": "陈卓: human, 写实人物",
+        "costume": "",
+        "makeup": "",
+        "action": "陈卓伸出三根手指逐一放下，双手掌心向下做安抚按压动作，微微点头",
+        "props": "",
+        "portraits": "陈卓: /root/.openclaw/workspace/hyperreality-system/characters/chen-zhuo/portraits/chen-zhuo-front.png",
+        "dialogue": "【台词】\"记住三个预防口诀：;运动要循序渐进，;及时补水补电解质，;感觉不对马上停。;关注陈卓，教你保命！\"",
+        "timeline": "T00:00 - 全景establishing，环境展示；T00:04 - 中景推进，人物动作；T00:08 - 情绪收尾，光线平复",
+        "mood": "positive, high energy",
+        "pacing": "",
+        "transition": "",
+        "audio": "",
+        "negative": "no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background",
+        "bright_constraint": "bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination",
+        "character_constraint": "只出现角色一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆",
+        "consistency": "保持角色形象一致，造型不变，面部特征与体型每帧统一"
+      },
+      "fusionText": "场景B：三甲医院检验科走廊，冷白色荧光灯维持恒定色温，检验窗口玻璃带有微弱反射，不锈钢台面反光，墙面悬挂无文字图形标识牌，地面浅灰色防滑地砖，陈卓站立于窗口前",
+      "promptCharCount": 1276,
+      "negative": "no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background",
+      "portraits": "陈卓: /root/.openclaw/workspace/hyperreality-system/characters/chen-zhuo/portraits/chen-zhuo-front.png",
+      "director_instruction": "好莱坞大导演质感，电影级画面，写实风格，无特效，无科幻元素",
+      "consistency": "保持角色形象一致，造型不变，面部特征与体型每帧统一"
+    }
+  ],
+  "opening": {
+    "shotId": "S00",
+    "scene": "漆黑中手术无影灯骤然亮起，刺目光斑下浮尘翻滚，不锈钢台面缓缓升起，台面中央躺着一枚空白铭牌，四周黑暗如活物呼吸。",
+    "mood": "神秘、压迫、仪式感",
+    "camera": {
+      "shot_size": "特写",
+      "movement": "前推",
+      "angle": "微仰"
+    },
+    "cameraString": "从绝对黑暗中缓慢前推，无影灯亮起瞬间镜头微仰，聚焦台面中央空白铭牌，最后0.5秒急速推至大特写并定格",
+    "lighting": {
+      "key_light": "顶光手术无影灯",
+      "atmosphere": "烟雾粒子"
+    },
+    "lightingString": "单一顶光硬光直射，高对比度明暗分割，背景完全死黑，主体过曝边缘，配合体积光烟雾营造神秘仪式感",
+    "audioLayer": {
+      "bgm": "低频电子合成器嗡鸣",
+      "sound_effects": "电流滋滋声、金属摩擦声、沉重呼吸声"
+    },
+    "audioLayerString": "极低频电子嗡鸣铺垫，伴随尖锐电流滋滋声与沉重金属台面摩擦声，最后混入沉重呼吸声，形成工业感强烈的听觉标识",
+    "titleOverlay": {
+      "main_title": "未命名",
+      "sub_title": "",
+      "style": "粗体无衬线金属做旧，字间距紧缩"
+    },
+    "titleOverlayString": "主标题'未命名'以粗体无衬线金属做旧字体呈现，字间距紧缩，副标题留白，标题切入时带0.1秒频闪效果",
+    "duration": 8
+  },
+  "llmStats": {},
+  "savedAt": "2026-06-24T05:32:00.936Z"
+}

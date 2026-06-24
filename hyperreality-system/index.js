@@ -376,6 +376,20 @@ class HyperrealitySystem {
 
       // ========== 🆕 最终导出前字段标准化（专家诊断建议）==========
       if (productionResult && productionResult.shots) {
+        // v2.0.6: 先在FieldGuard之前处理片头字段（避免校验失败阻断）
+        const adapter = result.stages?.adapter || {};
+        const openingShot = productionResult.shots.find(s => s.sceneType === 'opening' || s.shotId?.startsWith('SC00'));
+        if (openingShot) {
+          // 如果片头缺少title/subtitle，先用adapter标题兜底
+          if (!openingShot.title || openingShot.title === '未命名') {
+            openingShot.title = adapter.title || '未命名';
+          }
+          if (!openingShot.subtitle) {
+            const epNum = adapter._metadata?.episodeNumber || adapter._metadata?.series?.currentEpisode || 1;
+            openingShot.subtitle = `第${epNum}集`;
+          }
+        }
+        
         console.log('\n🛡️ [FieldGuard] 最终导出前标准化...');
         try {
           // v1.2.6-fix5: 只对 shots 做标准化，不要用 normalized.shots 覆盖 prompts
@@ -386,12 +400,15 @@ class HyperrealitySystem {
           // productionResult.prompts = normalized.shots; // ❌ 删除此行
 
           // v1.2.6-fix5: shots 摘要改用标准输出字段（duration 而非 timing）
+          // v2.0.6: 包含片头专属字段
           result.stages.productionEngine.shots = normalized.shots.map(s => ({
             shotId: s.shotId,
             sceneType: s.sceneType || '',
             duration: s.duration || s.timing?.duration || 0,
             promptLength: typeof s.prompt === 'string' ? s.prompt.length : (s.promptCharCount || 0),
-            status: s.status || 'completed'
+            status: s.status || 'completed',
+            // v2.0.6: 片头专属字段
+            ...(s.fields || {})
           }));
           console.log('   ✅ 最终导出字段标准化通过');
           this.fieldGuard.printShotSummary(normalized.shots, 'Final-Export');
