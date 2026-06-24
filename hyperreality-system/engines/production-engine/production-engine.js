@@ -425,6 +425,7 @@ class ProductionEngine {
     }
     return this.agents.promptFusion._fuseSingleShot(shot, ratio, characters);
   }
+  async produce(adaptedBlueprint, runtimeAgentConfig = null) {
     const startTime = Date.now();
 
     // 【修复】应用运行时配置(双保险:create() 已调 updateAgentConfig,这里再兜一次)
