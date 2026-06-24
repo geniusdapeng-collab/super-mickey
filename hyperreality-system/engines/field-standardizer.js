@@ -95,8 +95,17 @@ const FIELD_ALIAS_MAP = {
   consistency: 'consistency',
   角色一致性: 'consistency',
   
-  // 基础标识
-  id: 'shotId',
+  // 片头专属字段（后处理环节生成）
+  title_content: 'title_content',
+  主标题: 'title_content',
+  subtitle_content: 'subtitle_content',
+  副标题: 'subtitle_content',
+  title_animation: 'title_animation',
+  标题动画: 'title_animation',
+  title_font_design: 'title_font_design',
+  字体设计: 'title_font_design',
+  opening_audio_design: 'opening_audio_design',
+  开场音效: 'opening_audio_design',
   shotId: 'shotId',
   镜头编号: 'shotId',
   type: 'sceneType',
@@ -512,7 +521,14 @@ function validateShot(shot) {
     warnings.push(`Prompt length ${promptLength} exceeds 2500 char limit`);
   }
 
-  // v2.1.4-fix9-P25: 负面约束检查
+  // 片头专属字段检查（作为提示，不强制）
+  if (isOpening) {
+    const openingExclusiveFields = ['title_content', 'subtitle_content', 'title_animation', 'title_font_design', 'opening_audio_design'];
+    const missingOpeningFields = openingExclusiveFields.filter(k => !shot[k] || String(shot[k]).trim() === '');
+    if (missingOpeningFields.length > 0) {
+      warnings.push(`Opening exclusive fields missing: ${missingOpeningFields.join(', ')} (use OpeningTitleOptimizer to generate)`);
+    }
+  }
   if (!shot.negative || !shot.negative.includes('no text')) {
     errors.push(`Missing critical negative constraint: no text`);
   }

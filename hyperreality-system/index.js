@@ -9,8 +9,9 @@ const { RenderingEngine } = require('./engines/rendering-engine/rendering-engine
 const { PostProductionEngine } = require('./engines/post-production-engine/post-production-engine');
 const { RequirementListBuilder } = require('./engines/script-engine/core/requirement-list-builder');
 const { CreativeIntensityEngine } = require('./engines/script-engine/core/creative-intensity-engine');
-const { FieldGuard } = require('./engines/field-guard');
+const { OpeningTitleOptimizer } = require('./engines/production-engine/agents/opening-title-optimizer');
 const { routeAndEnhance } = require('../skills/hollywood-cinematography/cinematography-skill-router');
+const { FieldGuard } = require('./engines/field-guard');
 const fs = require('fs');
 const path = require('path');
 
@@ -394,6 +395,45 @@ class HyperrealitySystem {
           }));
           console.log('   ✅ 最终导出字段标准化通过');
           this.fieldGuard.printShotSummary(normalized.shots, 'Final-Export');
+          
+          // ========== 🆕 片头优化环节（后处理）==========
+          // v2.0.6: 单独处理片头SC00的标题、动画、音效设计
+          const openingShot = normalized.shots.find(s => s.sceneType === 'opening' || s.shotId?.startsWith('SC00'));
+          if (openingShot) {
+            console.log('\n🎬 [OpeningTitleOptimizer] 片头专属字段优化...');
+            try {
+              const optimizer = new OpeningTitleOptimizer({
+                llmTimeout: 120000,
+                llmMaxRetries: 2,
+                llmModel: 'kimi-k2p6'
+              });
+              const blueprint = result.stages?.adapter || { title: result.title || '未命名' };
+              const optimized = await optimizer.optimize(openingShot, blueprint);
+              
+              if (!optimized.degraded) {
+                // 将优化后的字段插入到片头shot中
+                openingShot.fields = openingShot.fields || {};
+                openingShot.fields.title_content = optimized.title_content;
+                openingShot.fields.subtitle_content = optimized.subtitle_content;
+                openingShot.fields.title_animation = optimized.title_animation;
+                openingShot.fields.title_font_design = optimized.title_font_design;
+                openingShot.fields.opening_audio_design = optimized.opening_audio_design;
+                
+                // 同时更新shot级别的title/subtitle（兼容旧字段）
+                openingShot.title = optimized.title_content || openingShot.title;
+                openingShot.subtitle = optimized.subtitle_content || openingShot.subtitle;
+                
+                console.log('   ✅ 片头优化完成');
+                console.log('   主标题:', optimized.title_content);
+                console.log('   副标题:', optimized.subtitle_content);
+              } else {
+                console.log('   ⚠️ 片头优化降级:', optimized.degradeReason);
+              }
+            } catch (optErr) {
+              console.log('   ⚠️ 片头优化失败:', optErr.message);
+              // 不影响主流程，继续执行
+            }
+          }
         } catch (err) {
           console.error(`   ❌ 最终字段校验失败: ${err.message}`);
           result.errors.push({ stage: 'FieldGuard-Final', message: err.message });
