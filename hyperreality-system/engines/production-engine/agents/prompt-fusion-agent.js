@@ -380,18 +380,46 @@ class PromptFusionAgent extends BaseAgent {
     throw new Error(`补全失败，${maxRetries} 次重试后仍有字段缺失`);
   }
 
-  // 规则兜底默认值（带字段标记，区别于 LLM 产出）
+  // 【v2.1.4-fix11】规则兜底默认值 - 25字段完整默认值，确保绝不返回空字符串
   _defaultFieldValue(field, shot) {
     const ratio = shot.ratio || '16:9';
+    const sceneType = shot.sceneType || 'standard';
+    const character = shot.character || '主角';
+    
     const defaults = {
-      constraint: `Aspect ratio: ${ratio}, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no watermark`,
-      baseline: '8K resolution, cinematic quality, highly detailed, photorealistic, sharp focus, ultra high definition',
-      negative: 'no blur, no distortion, no extra limbs, no text artifacts, no watermark, no logo',
-      bright_constraint: '保持画面明亮清晰，避免过暗或欠曝',
-      character_constraint: '保持角色面部特征、服装、发型跨镜头一致',
-      consistency: '与前后镜头保持场景、光线、角色形象连续'
+      director_instruction: '好莱坞电影级质感，写实风格，专业摄影布光，8K超高清',
+      constraint: `Aspect ratio: ${ratio}, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text anywhere in frame, no subtitle, no caption, no watermark, no logo, no readable characters`,
+      baseline: '8K resolution, cinematic quality, highly detailed, photorealistic, hyperrealistic, sharp focus, ultra high definition, lifelike textures, professional color grading',
+      scene: `${sceneType}场景，室内写实环境，自然光线照射，真实材质质感，空间层次分明，环境细节丰富`,
+      lighting: '主光：右侧45度自然光 5600K柔光漫射；补光：左前侧反光板填充阴影；背景光：轮廓光分离层次；光比3:1，整体明亮清晰',
+      composition: '景别：中景（膝上）；主体位置：画面黄金分割点；线条引导：纵深层次感；画框边缘：适度留白',
+      color_palette: '主色调：自然偏暖；辅助色：环境本色；肤色：自然健康；饱和度：中等自然；对比度：中高清晰',
+      depth_of_field: '焦点：主体面部或动作中心；景深：中等（f/4），背景适度虚化；前景：轻微虚化增加层次；层次：前景-中景-背景三层分离',
+      camera_movement: '0-3s：固定机位稳定构图；3-6s：缓慢推近或平移；6-10s：回到固定机位',
+      character: `${character}，写实人物形象，自然姿态，真实表情，符合场景身份`,
+      costume: '符合角色身份的写实服装，面料质感真实，颜色自然，款式简洁大方',
+      makeup: '素颜或淡妆，妆容自然真实，发型整洁，符合日常生活场景',
+      action: `${character}自然站立或行走，手部自然动作，眼神交流，真实肢体语言`,
+      props: '场景中必要的写实道具，材质真实，无文字标识，符合场景功能',
+      portraits: 'image://characters/default/portrait.png',
+      dialogue: '',
+      timeline: 'T00:00 - 开场构图，环境展示；T00:03 - 主体进入画面；T00:06 - 核心动作或对白；T00:09 - 收尾定格',
+      mood: 'calm, professional, natural',
+      pacing: '整体：沉稳中等节奏；开头：平缓引入；中段：自然推进；结尾：平稳收尾',
+      transition: '自然切换，无特效转场，直接硬切或微淡入淡出',
+      audio: '环境底噪真实自然，无明显配乐干扰，人声音量适中清晰，空间感真实',
+      negative: 'no text anywhere in frame, no watermark, no logo, no subtitle, no caption, no blur, no distortion, no extra limbs, no deformed features, no cartoon style, no anime, no illustration, no painting, no 3D render, no CGI, no special effects, no abstract, no surreal',
+      bright_constraint: 'bright lighting, well-lit scene, clear visibility, natural illumination, avoid dark shadows',
+      character_constraint: '只出现指定角色一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆，保持角色形象一致',
+      consistency: '保持角色面部特征、服装造型、发型妆容跨镜头一致，场景光线连续，色调统一'
     };
-    return defaults[field] || '';
+    
+    const value = defaults[field];
+    if (!value) {
+      console.warn(`[PromptFusionAgent] 未知字段的默认值: ${field}`);
+      return `[规则兜底] ${field} 默认值`;
+    }
+    return value;
   }
 
   // 补齐专用 prompt：只问缺失字段，附上已生成字段作为上下文

@@ -395,6 +395,44 @@ class HyperrealitySystem {
           // 【v2.1.4-fix11-F】最终导出前严格检查：标记上下文
           productionResult.shots.forEach(s => s._context = 'Final-Export');
           
+          // 【v2.1.4-fix11-G】片头优化必须在FieldGuard之前执行，确保片头字段被正确添加
+          const openingShot = productionResult.shots.find(s => s.sceneType === 'opening' || s.shotId?.startsWith('SC00'));
+          if (openingShot) {
+            console.log('\n🎬 [OpeningTitleOptimizer] 片头专属字段优化...');
+            try {
+              const optimizer = new OpeningTitleOptimizer({
+                llmTimeout: 120000,
+                llmMaxRetries: 2,
+                llmModel: 'kimi-k2p6'
+              });
+              const blueprint = result.stages?.adapter || { title: result.title || '未命名' };
+              const optimized = await optimizer.optimize(openingShot, blueprint);
+              
+              if (!optimized.degraded) {
+                openingShot.fields = openingShot.fields || {};
+                openingShot.fields.title_content = optimized.title_content;
+                openingShot.fields.subtitle_content = optimized.subtitle_content;
+                openingShot.fields.title_animation = optimized.title_animation;
+                openingShot.fields.title_font_design = optimized.title_font_design;
+                openingShot.fields.opening_audio_design = optimized.opening_audio_design;
+                
+                openingShot.title = optimized.title_content || openingShot.title;
+                openingShot.subtitle = optimized.subtitle_content || openingShot.subtitle;
+                
+                console.log('   ✅ 片头优化完成');
+                console.log('   主标题:', optimized.title_content);
+                console.log('   副标题:', optimized.subtitle_content);
+              } else {
+                console.warn('   ⚠️ 片头优化降级，使用默认值');
+                openingShot.fields = openingShot.fields || {};
+                openingShot.fields.title_content = openingShot.fields.title_content || result.title || '未命名';
+                openingShot.fields.subtitle_content = openingShot.fields.subtitle_content || '第1集';
+              }
+            } catch (e) {
+              console.warn('   ⚠️ 片头优化失败:', e.message);
+            }
+          }
+          
           // v1.2.6-fix5: 只对 shots 做标准化，不要用 normalized.shots 覆盖 prompts
           const normalized = this.fieldGuard.normalizeAndValidate(productionResult.shots, 'Final-Export');
           productionResult.shots = normalized.shots;
@@ -416,44 +454,6 @@ class HyperrealitySystem {
           console.log('   ✅ 最终导出字段标准化通过');
           this.fieldGuard.printShotSummary(normalized.shots, 'Final-Export');
           
-          // ========== 🆕 片头优化环节（后处理）==========
-          // v2.0.6: 单独处理片头SC00的标题、动画、音效设计
-          const openingShot = normalized.shots.find(s => s.sceneType === 'opening' || s.shotId?.startsWith('SC00'));
-          if (openingShot) {
-            console.log('\n🎬 [OpeningTitleOptimizer] 片头专属字段优化...');
-            try {
-              const optimizer = new OpeningTitleOptimizer({
-                llmTimeout: 120000,
-                llmMaxRetries: 2,
-                llmModel: 'kimi-k2p6'
-              });
-              const blueprint = result.stages?.adapter || { title: result.title || '未命名' };
-              const optimized = await optimizer.optimize(openingShot, blueprint);
-              
-              if (!optimized.degraded) {
-                // 将优化后的字段插入到片头shot中
-                openingShot.fields = openingShot.fields || {};
-                openingShot.fields.title_content = optimized.title_content;
-                openingShot.fields.subtitle_content = optimized.subtitle_content;
-                openingShot.fields.title_animation = optimized.title_animation;
-                openingShot.fields.title_font_design = optimized.title_font_design;
-                openingShot.fields.opening_audio_design = optimized.opening_audio_design;
-                
-                // 同时更新shot级别的title/subtitle（兼容旧字段）
-                openingShot.title = optimized.title_content || openingShot.title;
-                openingShot.subtitle = optimized.subtitle_content || openingShot.subtitle;
-                
-                console.log('   ✅ 片头优化完成');
-                console.log('   主标题:', optimized.title_content);
-                console.log('   副标题:', optimized.subtitle_content);
-              } else {
-                console.log('   ⚠️ 片头优化降级:', optimized.degradeReason);
-              }
-            } catch (optErr) {
-              console.log('   ⚠️ 片头优化失败:', optErr.message);
-              // 不影响主流程，继续执行
-            }
-          }
         } catch (err) {
           console.error(`   ❌ 最终字段校验失败: ${err.message}`);
           result.errors.push({ stage: 'FieldGuard-Final', message: err.message });
