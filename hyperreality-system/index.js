@@ -392,6 +392,9 @@ class HyperrealitySystem {
         
         console.log('\n🛡️ [FieldGuard] 最终导出前标准化...');
         try {
+          // 【v2.1.4-fix11-F】最终导出前严格检查：标记上下文
+          productionResult.shots.forEach(s => s._context = 'Final-Export');
+          
           // v1.2.6-fix5: 只对 shots 做标准化，不要用 normalized.shots 覆盖 prompts
           const normalized = this.fieldGuard.normalizeAndValidate(productionResult.shots, 'Final-Export');
           productionResult.shots = normalized.shots;

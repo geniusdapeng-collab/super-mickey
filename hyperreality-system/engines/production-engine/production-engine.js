@@ -576,15 +576,24 @@ class ProductionEngine {
         }
       }
 
-      // ----- Phase 3:PromptFusion(并发化,每镜头独立 LLM 调用)-----
+      // ----- Phase 3:PromptFusion(串行模式,每镜头独立 LLM 调用)-----
       if (!phase1Failed && startPhase <= 3) {
-        if (!this._canAfford(120000)) {
-          this.log('PHASE-3', `⚠️ 预算不足(剩${this._budgetRemaining()}ms),保存退出,下次从 Phase3 续跑`);
+        // 【v2.1.4-fix11-D】动态预算分配：根据镜头数计算Phase 3所需时间
+        // 公式：镜头数 × 90秒(LLM生成) + 30秒(缓冲)
+        const shotCount = currentShots.length;
+        const PHASE3_PER_SHOT_MS = 90000; // 每镜头90秒
+        const PHASE3_BUFFER_MS = 30000;   // 30秒缓冲
+        const phase3NeedMs = shotCount * PHASE3_PER_SHOT_MS + PHASE3_BUFFER_MS;
+        
+        this.log('PHASE-3', `📊 动态预算计算: ${shotCount}镜头 × ${PHASE3_PER_SHOT_MS/1000}s + ${PHASE3_BUFFER_MS/1000}s缓冲 = 需${Math.round(phase3NeedMs/1000)}s`);
+        
+        if (!this._canAfford(phase3NeedMs)) {
+          this.log('PHASE-3', `⚠️ 预算不足(剩${Math.round(this._budgetRemaining()/1000)}s,需${Math.round(phase3NeedMs/1000)}s),保存退出,下次从 Phase3 续跑`);
           await this._saveCheckpoint('phase2', currentShots, { opening: result.opening, llmStats: result.llmStats });
           throw new Error('预算不足,请重跑以断点续跑(Phase1+2 LLM 产出已保存)');
         }
         try {
-          this.log('PROMPT-FUSION-AGENT', '开始(并发模式,每镜头独立 LLM 调用)...');
+          this.log('PROMPT-FUSION-AGENT', `开始(串行模式,${shotCount}镜头,预计${Math.round(phase3NeedMs/1000)}s)...`);
           const phase3Start = Date.now();
           const pfResult = await this.agents.promptFusion.process(this._cloneShots(currentShots), adaptedBlueprint);
           currentShots = this._mergeShotsByShotId(currentShots, pfResult.shots, ['prompt', 'enhanced_prompt', 'negative_prompt', 'fields', 'fusionText', 'promptCharCount', 'negative', 'portraits', 'director_instruction', 'brightConstraint', 'characterConstraint', 'consistency', 'costume', 'makeup', 'props', 'pacing', 'transition', 'audio']);

@@ -571,6 +571,15 @@ function validateShot(shot) {
     errors.push(`Missing critical negative constraint: no text`);
   }
 
+  // 【v2.1.4-fix11-F】最终导出前严格检查：所有25字段必须有非空内容
+  if (shot._context === 'Final-Export') {
+    const allFields = [...CRITICAL_FIELDS.p0, ...CRITICAL_FIELDS.p1, ...CRITICAL_FIELDS.common];
+    const emptyFields = allFields.filter(k => !shot[k] || String(shot[k]).trim() === '');
+    if (emptyFields.length > 0) {
+      errors.push(`Final-Export strict: ${emptyFields.length} fields empty: ${emptyFields.join(', ')}`);
+    }
+  }
+
   return {
     passed: errors.length === 0,
     errors,

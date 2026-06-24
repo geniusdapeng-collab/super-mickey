@@ -9,13 +9,13 @@ async function main() {
       charactersDir: './characters',
       agentConfig: {
         enableLLMAgents: true,
-        llmTimeout: 180000, // 【v2.1.4-fix10-P25-fix3】单次3分钟，快速失败重试
+        llmTimeout: 180000,
         llmMaxRetries: 2,
         llmModel: 'kimi-k2p6',
         fastModel: 'kimi-k2p6',
-        totalDeadlineMs: 630000, // 【v2.1.4-fix10-P25-fix3】10.5分钟，给Phase3留足时间
-        memThresholdMB: 1800, // 【v2.1.4-fix10-P25-fix3】避免GC风暴
-        promptFusionConcurrency: 2, // 并发2
+        totalDeadlineMs: 900000, // 【v2.1.4-fix11】15分钟总预算
+        memThresholdMB: 1800,
+        promptFusionConcurrency: 1, // 【v2.1.4-fix11】串行处理
         checkpointDir: './checkpoints',
         enableResume: true
       }
@@ -52,25 +52,49 @@ async function main() {
     }]
   };
 
-  console.log('🔥 启动预生产（支持断点续跑）...');
-  const result = await system.create(intent, metadata, {
-    skipRender: true,
-    skipPostProduction: true
-  });
-
-  console.log('\n✅ 预生产完成！');
-  console.log('成功:', result.success);
-  console.log('镜头数:', result.stages.productionEngine?.prompts?.length || 0);
+  // 【v2.1.4-fix11-E】自动续跑：最多重试3次
+  const MAX_RETRIES = 3;
+  let lastError = null;
   
-  if (result.stages.productionEngine?.prompts) {
-    for (const shot of result.stages.productionEngine.prompts) {
-      console.log(`\n📷 ${shot.shotId || shot.shot_id}`);
-      console.log(`   prompt长度: ${shot.prompt?.length || 0}`);
-      console.log(`   字段数: ${Object.keys(shot.fields || {}).length}`);
-    }
-  }
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    console.log(`\n🔥 启动预生产（尝试 ${attempt}/${MAX_RETRIES}）...`);
+    
+    const result = await system.create(intent, metadata, {
+      skipRender: true,
+      skipPostProduction: true
+    });
 
-  // 保存结果
+    // 检查是否需要续跑（预算不足）
+    const hasBudgetError = result.errors?.some(e => 
+      e.message?.includes('预算不足') || e.message?.includes('insufficient')
+    );
+    
+    if (result.success && !hasBudgetError) {
+      console.log('\n✅ 预生产完成！');
+      console.log('成功:', result.success);
+      console.log('镜头数:', result.stages.productionEngine?.prompts?.length || 0);
+      
+      saveResult(result);
+      return;
+    }
+    
+    if (hasBudgetError && attempt < MAX_RETRIES) {
+      console.log(`\n⏳ 预算不足，等待10秒后自动续跑（${attempt}/${MAX_RETRIES}）...`);
+      await new Promise(r => setTimeout(r, 10000));
+      lastError = '预算不足，自动续跑';
+      continue;
+    }
+    
+    console.log('\n❌ 预生产失败:', result.errors?.map(e => e.message).join('; '));
+    lastError = result.errors?.[0]?.message || 'Unknown error';
+    break;
+  }
+  
+  console.log(`\n💥 最终失败（${MAX_RETRIES}次尝试）: ${lastError}`);
+  process.exit(1);
+}
+
+function saveResult(result) {
   const fs = require('fs');
   const path = require('path');
   const outputDir = './output';
