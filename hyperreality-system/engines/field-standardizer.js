@@ -190,6 +190,44 @@ const FIELD_ALIAS_MAP = {
   风格约束: 'styleConstraints'
 };
 
+// v2.0.7: 字段中文显示名映射（用于最终输出）
+const FIELD_NAME_CN = {
+  director_instruction: '导演指令',
+  constraint: '约束',
+  baseline: '基础',
+  scene: '场景',
+  lighting: '灯光',
+  composition: '构图',
+  color_palette: '色彩',
+  depth_of_field: '景深',
+  camera_movement: '运镜',
+  character: '角色',
+  costume: '服装',
+  makeup: '化妆',
+  action: '动作',
+  props: '道具',
+  portraits: '定妆照',
+  dialogue: '台词',
+  timeline: '时间轴',
+  mood: '情绪',
+  pacing: '节奏',
+  transition: '转场',
+  audio: '音频',
+  negative: '负面约束',
+  bright_constraint: '明亮约束',
+  character_constraint: '角色约束',
+  consistency: '角色一致性',
+  title_content: '主标题',
+  subtitle_content: '副标题',
+  title_animation: '标题动画',
+  title_font_design: '字体设计',
+  opening_audio_design: '开场音效',
+  shotId: '镜头编号',
+  sceneType: '镜头类型',
+  duration: '时长',
+  prompt: '提示词'
+};
+
 const CRITICAL_FIELDS = {
   // v2.1.4-fix9-P25: 25字段体系
   // P0 致命级（12个字段）- 缺失会导致视频不可用
@@ -631,6 +669,7 @@ function safeIncludes(value, searchString) {
 
 module.exports = {
   FIELD_ALIAS_MAP,
+  FIELD_NAME_CN,
   CRITICAL_FIELDS,
   standardizeShot,
   standardizeShots,

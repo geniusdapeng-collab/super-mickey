@@ -7,70 +7,70 @@
       "sceneFunction": "establish",
       "timing": {
         "start": 0,
-        "duration": 13,
-        "end": 13
+        "duration": 10,
+        "end": 10
       },
-      "duration": 13,
-      "scene": "场景A：医院健康宣教室，白色荧光灯均匀照明，白墙面贴有无文字骨骼肌解剖图形海报，木质讲台带有细微使用划痕，地面浅灰色防滑PVC地板，陈卓站立于讲台前",
-      "mood": "严肃凝重，震惊警觉，充满健康科普的警示氛围",
+      "duration": 10,
+      "scene": "场景A: 医院健康宣教室，双管荧光灯均匀照明，白墙面贴有无文字人体肌肉解剖图形海报，木质讲台表面带有细微使用划痕，地面浅灰色防滑PVC地胶，陈卓站在讲台后方面向镜头",
+      "mood": "悬疑凝重，未知的压迫感逐渐增强",
       "character": "陈卓: human, 写实人物",
       "characterRef": "陈卓: /root/.openclaw/workspace/hyperreality-system/characters/chen-zhuo/portraits/chen-zhuo-front.png",
-      "action": "陈卓双手撑住木质讲台边缘，身体微微前倾，正视镜头，眉头紧锁，语气沉重有力",
-      "dialogue": "陈卓|独白|严肃|你听过横纹肌溶解吗？|LIP_SYNC:YES || 陈卓|独白|震惊|剧烈运动后，肌肉会'溶解'！|LIP_SYNC:YES || 陈卓|独白|紧迫|尿液变成酱油色，肾直接衰竭！|LIP_SYNC:YES",
+      "action": "陈卓双手撑住讲台边缘，身体前倾，目光紧锁镜头，语速缓慢沉重",
+      "dialogue": "陈卓|独白|悬疑|你知道运动过量也会死人吗？|LIP_SYNC:YES || 陈卓|独白|凝重|这就是横纹肌溶解。|LIP_SYNC:YES",
       "characters": [
         "chen-zhuo"
       ],
       "characterDescs": "陈卓: human, 写实人物",
-      "dialogueText": "你听过横纹肌溶解吗？;剧烈运动后，肌肉会'溶解'！;尿液变成酱油色，肾直接衰竭！",
+      "dialogueText": "你知道运动过量也会死人吗？;这就是横纹肌溶解。",
       "emotionalTarget": {
-        "valence": -0.4,
+        "valence": 0.3,
         "arousal": 0.8,
-        "dominance": 0.3
+        "dominance": 0.6
       },
       "visualDirection": {
         "shot_type": "wide",
         "camera_movement": "缓慢推进",
         "lighting": "自然光+环境光",
-        "color_temperature": "cool"
+        "color_temperature": "neutral"
       },
-      "promptBase": "电影级镜头，超写实，现代医疗科普演播室，冷色调背景，医学可视化屏幕环绕，陈卓（写实人物），wide，缓慢推进，台词：「你听过横纹肌溶解吗？」",
+      "promptBase": "电影级镜头，超写实，室内科普影棚，冷调医疗背景，前景虚焦玻璃器皿，陈卓（写实人物），wide，缓慢推进，台词：「你知道运动过量也会死人吗？」",
       "worldId": "default",
       "status": "pending",
       "timeline": {
         "object": {
           "start": "T00:00",
-          "end": "T00:13",
-          "duration": 13,
+          "end": "T00:10",
+          "duration": 10,
           "type": "opening",
-          "mood": "tense, serious, intense, dramatic"
+          "mood": "neutral, calm, intense, dramatic"
         },
-        "string": "T00:00-T00:13 / duration: 13s / type: opening / mood: tense, serious, intense, dramatic"
+        "string": "T00:00-T00:10 / duration: 10s / type: opening / mood: neutral, calm, intense, dramatic"
       },
       "allocation": {
-        "baseDuration": 13,
+        "baseDuration": 10,
         "dialogueFactor": 1.5,
         "typeWeight": 1.2,
         "preserved": true
       },
       "emotional_target": "警示",
       "title": "未命名",
-      "subtitle": "",
+      "subtitle": "单集作品",
       "titleOverlay": {
         "main_title": "未命名",
-        "sub_title": "",
-        "style": "粗体无衬线金属做旧，字间距紧缩"
+        "sub_title": "单集作品",
+        "style": "粗体无衬线，金属质感，发光描边"
       },
       "audioLayer": {
-        "bgm": "低频电子合成器嗡鸣",
-        "sound_effects": "电流滋滋声、金属摩擦声、沉重呼吸声"
+        "bgm": "低频合成器铺底渐入庄重主题",
+        "sound_effects": "虚空撕裂声、粒子飞散呼啸声"
       },
-      "lightingString": "单一顶光硬光直射，高对比度明暗分割，背景完全死黑，主体过曝边缘，配合体积光烟雾营造神秘仪式感",
-      "cameraString": "从绝对黑暗中缓慢前推，无影灯亮起瞬间镜头微仰，聚焦台面中央空白铭牌，最后0.5秒急速推至大特写并定格",
+      "lightingString": "逆光顶光从裂缝后方爆射，高对比度照明，烟雾粒子在光束中显形",
+      "cameraString": "从裂隙微距特写急速后拉至全景，微仰角稳定跟拍标题破界而出",
       "lighting": {
-        "key_light": "白色荧光灯管从天花板均匀洒下，在讲台与陈卓头顶形成冷冽光池",
-        "fill_light": "白墙漫反射柔和填充面部阴影，保持高亮但克制",
+        "key_light": "双管荧光灯从天花板均匀洒下惨白光线",
+        "fill_light": "白墙与无文字解剖海报反射出冰冷的环境光",
         "time_of_day": "midday",
-        "atmosphere": "木质讲台在冷光下泛着青灰，无文字骨骼肌海报阴影清晰"
+        "atmosphere": "冷白均匀的教室照明，无影的压抑感"
       }
     },
     {
@@ -78,26 +78,26 @@
       "sceneType": "establishing",
       "sceneFunction": "establish",
       "timing": {
-        "start": 13,
+        "start": 10,
         "duration": 12,
-        "end": 25
+        "end": 22
       },
       "duration": 12,
-      "scene": "场景B：三甲医院检验科走廊，冷白色LED顶灯连续排列向下照射，墙面白色乳胶漆，无文字图形标识牌悬挂于检验窗口旁，地面浅色抛光瓷砖反射冷光，不锈钢座椅沿墙摆放",
-      "mood": "冷静理性，专业克制，充满医学解释的客观氛围",
+      "scene": "场景B: 三甲医院检验科走廊，冷白色LED顶灯从顶部连续排列照射，墙面悬挂无文字图形标识牌，浅色抛光瓷砖地面反射冷光，金属排队座椅沿墙摆放，陈卓立于走廊中央",
+      "mood": "冰冷压抑，生命威胁的紧迫笼罩",
       "character": "陈卓: human, 写实人物",
       "characterRef": "陈卓: /root/.openclaw/workspace/hyperreality-system/characters/chen-zhuo/portraits/chen-zhuo-front.png",
-      "action": "陈卓沿走廊缓步前行，双手自然张开做解释手势，目光平稳注视镜头",
-      "dialogue": "陈卓|独白|解释|它不是肌肉真的化了，|LIP_SYNC:YES || 陈卓|独白|解释|是肌细胞破裂，肌红蛋白漏出。|LIP_SYNC:YES || 陈卓|独白|忧虑|这玩意儿堵在肾里，肾脏就罢工。|LIP_SYNC:YES",
+      "action": "陈卓右手按向左侧胸口，左手自然下垂，缓慢摇头后抬眼直视前方",
+      "dialogue": "陈卓|独白|严肃|你的肌肉细胞会破裂坏死。|LIP_SYNC:YES || 陈卓|独白|沉重|肌红蛋白涌入血液，堵死肾脏。|LIP_SYNC:YES || 陈卓|独白|警示|简单说，肌肉自己'化'了。|LIP_SYNC:YES",
       "characters": [
         "chen-zhuo"
       ],
       "characterDescs": "陈卓: human, 写实人物",
-      "dialogueText": "它不是肌肉真的化了，;是肌细胞破裂，肌红蛋白漏出。;这玩意儿堵在肾里，肾脏就罢工。",
+      "dialogueText": "你的肌肉细胞会破裂坏死。;肌红蛋白涌入血液，堵死肾脏。;简单说，肌肉自己'化'了。",
       "emotionalTarget": {
-        "valence": -0.2,
-        "arousal": 0.6,
-        "dominance": 0.4
+        "valence": 0.2,
+        "arousal": 0.7,
+        "dominance": 0.5
       },
       "visualDirection": {
         "shot_type": "medium",
@@ -105,18 +105,18 @@
         "lighting": "均匀明亮",
         "color_temperature": "neutral"
       },
-      "promptBase": "电影级镜头，超写实，微观医疗可视化空间，细胞层面动态投影背景，陈卓（写实人物），medium，稳定机位，台词：「它不是肌肉真的化了，」",
+      "promptBase": "电影级镜头，超写实，同影棚，侧光位，桌面出现人体肌肉模型，陈卓（写实人物），medium，稳定机位，台词：「你的肌肉细胞会破裂坏死。」",
       "worldId": "default",
       "status": "pending",
       "timeline": {
         "object": {
-          "start": "T00:13",
-          "end": "T00:25",
+          "start": "T00:10",
+          "end": "T00:22",
           "duration": 12,
           "type": "establishing",
           "mood": "mysterious, anticipation, wonder"
         },
-        "string": "T00:13-T00:25 / duration: 12s / type: establishing / mood: mysterious, anticipation, wonder"
+        "string": "T00:10-T00:22 / duration: 12s / type: establishing / mood: mysterious, anticipation, wonder"
       },
       "allocation": {
         "baseDuration": 12,
@@ -124,12 +124,12 @@
         "typeWeight": 1,
         "preserved": true
       },
-      "emotional_target": "解释",
+      "emotional_target": "警示",
       "lighting": {
-        "key_light": "走廊连续冷白LED顶灯向下照射，在陈卓肩头形成冷峻光斑",
-        "fill_light": "白色乳胶漆墙面均匀漫反射，柔和提亮暗部",
+        "key_light": "冷白色LED顶灯从天花板连续排列直射而下",
+        "fill_light": "抛光浅色瓷砖地面将冷光反射至墙面与腿部",
         "time_of_day": "midday",
-        "atmosphere": "检验窗口不锈钢台面反射细碎光点，玻璃标识牌若隐若现"
+        "atmosphere": "医院走廊冰冷窒息的照明氛围"
       }
     },
     {
@@ -137,58 +137,58 @@
       "sceneType": "conflict",
       "sceneFunction": "advance",
       "timing": {
-        "start": 25,
-        "duration": 13,
-        "end": 38
+        "start": 22,
+        "duration": 12,
+        "end": 34
       },
-      "duration": 13,
-      "scene": "场景C：医生诊室，白色墙面悬挂无文字医学挂图，办公桌摆放听诊器与血压计，检查床铺有蓝色一次性床单，无影灯悬于上方，窗光透入形成自然侧光，地面米白色瓷砖",
-      "mood": "紧张担忧，危机迫近，运动风险带来的压迫感",
+      "duration": 12,
+      "scene": "场景C: 医生诊室，白色墙面悬挂无文字医学解剖挂图，实木办公桌摆放听诊器与血压计，检查床铺蓝色一次性无纺布床单，医用无影灯悬于上方，右侧窗光透入，陈卓立于桌旁",
+      "mood": "紧迫焦虑，生理痛苦的直接共情",
       "character": "陈卓: human, 写实人物",
       "characterRef": "陈卓: /root/.openclaw/workspace/hyperreality-system/characters/chen-zhuo/portraits/chen-zhuo-front.png",
-      "action": "陈卓右手握拳轻敲检查床边缘，左腿上前半步，身体微侧模拟深蹲姿势后猛然抬头",
-      "dialogue": "陈卓|独白|担忧|新手健身狂练深蹲，|LIP_SYNC:YES || 陈卓|独白|警告|或者大热天跑马拉松，|LIP_SYNC:YES || 陈卓|独白|紧迫|肌细胞扛不住直接崩了。|LIP_SYNC:YES || 陈卓|独白|命令|这时候千万别硬撑！|LIP_SYNC:YES",
+      "action": "陈卓右手握拳轻捶腰部，眉头紧锁，双手比划腹部范围，身体微微前弓",
+      "dialogue": "陈卓|独白|紧迫|小便变成酱油色，是最明显的信号。|LIP_SYNC:YES || 陈卓|独白|痛苦|全身肌肉剧痛，像被碾过一样。|LIP_SYNC:YES || 陈卓|独白|危急|有人发烧，有人直接肾衰竭。|LIP_SYNC:YES",
       "characters": [
         "chen-zhuo"
       ],
       "characterDescs": "陈卓: human, 写实人物",
-      "dialogueText": "新手健身狂练深蹲，;或者大热天跑马拉松，;肌细胞扛不住直接崩了。;这时候千万别硬撑！",
+      "dialogueText": "小便变成酱油色，是最明显的信号。;全身肌肉剧痛，像被碾过一样。;有人发烧，有人直接肾衰竭。",
       "emotionalTarget": {
-        "valence": -0.5,
-        "arousal": 0.85,
-        "dominance": 0.2
+        "valence": 0.2,
+        "arousal": 0.8,
+        "dominance": 0.4
       },
       "visualDirection": {
         "shot_type": "close_up",
         "camera_movement": "手持晃动",
         "lighting": "戏剧性明暗对比",
-        "color_temperature": "cool"
+        "color_temperature": "neutral"
       },
-      "promptBase": "电影级镜头，超写实，健身房与户外跑道双重意象的沉浸式环境，色彩编码空间，陈卓（写实人物），close_up，手持晃动，台词：「新手健身狂练深蹲，」",
+      "promptBase": "电影级镜头，超写实，影棚，背景切换暗红警示光，桌面放尿液检测杯道具，陈卓（写实人物），close_up，手持晃动，台词：「小便变成酱油色，是最明显的信号。」",
       "worldId": "default",
       "status": "pending",
       "timeline": {
         "object": {
-          "start": "T00:25",
-          "end": "T00:38",
-          "duration": 13,
+          "start": "T00:22",
+          "end": "T00:34",
+          "duration": 12,
           "type": "conflict",
-          "mood": "tense, serious, intense, dramatic"
+          "mood": "neutral, calm, intense, dramatic"
         },
-        "string": "T00:25-T00:38 / duration: 13s / type: conflict / mood: tense, serious, intense, dramatic"
+        "string": "T00:22-T00:34 / duration: 12s / type: conflict / mood: neutral, calm, intense, dramatic"
       },
       "allocation": {
-        "baseDuration": 13,
+        "baseDuration": 12,
         "dialogueFactor": 1.5,
         "typeWeight": 1.3,
         "preserved": true
       },
-      "emotional_target": "警告",
+      "emotional_target": "警示",
       "lighting": {
-        "key_light": "无影灯从上方斜射，在面部形成冷白高光与锐利阴影",
-        "fill_light": "窗外自然光微弱透入，侧面略微勾勒轮廓",
+        "key_light": "医用无影灯从斜上方投下惨白直射光",
+        "fill_light": "白墙面与蓝色床单反射出阴森的冷光",
         "time_of_day": "midday",
-        "atmosphere": "蓝色一次性床单在冷光下泛着寒色，听诊器金属反光刺眼"
+        "atmosphere": "诊室冷酷直接的医疗照明"
       }
     },
     {
@@ -196,58 +196,58 @@
       "sceneType": "emotional_climax",
       "sceneFunction": "climax",
       "timing": {
-        "start": 38,
-        "duration": 13,
-        "end": 51
+        "start": 34,
+        "duration": 14,
+        "end": 48
       },
-      "duration": 13,
-      "scene": "场景D：医院健康管理中心，嵌入式LED灯带洒下柔和暖白光，接待台后方排列无文字健康主题图形展板，前方皮质沙发与实木茶几，地面灰色哑光瓷砖，墙面浅米色乳胶漆",
-      "mood": "恐惧沉重，压抑窒息，疾病信号带来的强烈不安",
+      "duration": 14,
+      "scene": "场景D: 医院健康管理中心，嵌入式LED顶灯洒下柔和暖白光，接待台后方排列无文字图形展板，前方摆放棕色皮质沙发与实木茶几，地面灰色哑光瓷砖，陈卓站在接待台旁",
+      "mood": "严肃告诫，风险防范的警觉升起",
       "character": "陈卓: human, 写实人物",
       "characterRef": "陈卓: /root/.openclaw/workspace/hyperreality-system/characters/chen-zhuo/portraits/chen-zhuo-front.png",
-      "action": "陈卓双手捂住腹部缓缓弯腰，随后直起身颤抖着指向下腹部，面色凝重",
-      "dialogue": "陈卓|独白|恐惧|最危险的信号就是茶色尿！|LIP_SYNC:YES || 陈卓|独白|痛苦|伴随肌肉剧痛，|LIP_SYNC:YES || 陈卓|独白|沉重|和全身水肿。|LIP_SYNC:YES || 陈卓|独白|紧迫|一旦出现，立刻去医院！|LIP_SYNC:YES",
+      "action": "陈卓右手食指竖起点向前方，左手叉腰，向前迈半步停顿，目光扫视镜头",
+      "dialogue": "陈卓|独白|警告|健身小白突然猛练，最容易中招。|LIP_SYNC:YES || 陈卓|独白|严肃|高温天、脱水、吃他汀类药物，都是诱因。|LIP_SYNC:YES || 陈卓|独白|劝诫|记住，肌肉不是一天练成的。|LIP_SYNC:YES || 陈卓|独白|愤怒|别拿命换成就感。|LIP_SYNC:YES",
       "characters": [
         "chen-zhuo"
       ],
       "characterDescs": "陈卓: human, 写实人物",
-      "dialogueText": "最危险的信号就是茶色尿！;伴随肌肉剧痛，;和全身水肿。;一旦出现，立刻去医院！",
+      "dialogueText": "健身小白突然猛练，最容易中招。;高温天、脱水、吃他汀类药物，都是诱因。;记住，肌肉不是一天练成的。;别拿命换成就感。",
       "emotionalTarget": {
-        "valence": -0.7,
+        "valence": 0.3,
         "arousal": 0.9,
-        "dominance": 0.4
+        "dominance": 0.5
       },
       "visualDirection": {
         "shot_type": "extreme_close_up",
         "camera_movement": "快速推近",
         "lighting": "伦勃朗光",
-        "color_temperature": "cool"
+        "color_temperature": "neutral"
       },
-      "promptBase": "电影级高潮镜头，超写实，急诊室红光氛围，沉浸式医疗危机空间，陈卓（写实人物），extreme_close_up，快速推近，台词：「最危险的信号就是茶色尿！」",
+      "promptBase": "电影级高潮镜头，超写实，影棚，顶光压暗，手持哑铃道具出现，陈卓（写实人物），extreme_close_up，快速推近，台词：「健身小白突然猛练，最容易中招。」",
       "worldId": "default",
       "status": "pending",
       "timeline": {
         "object": {
-          "start": "T00:38",
-          "end": "T00:51",
-          "duration": 13,
+          "start": "T00:34",
+          "end": "T00:48",
+          "duration": 14,
           "type": "emotional_climax",
-          "mood": "tense, serious, intense, dramatic"
+          "mood": "neutral, calm, intense, dramatic"
         },
-        "string": "T00:38-T00:51 / duration: 13s / type: emotional_climax / mood: tense, serious, intense, dramatic"
+        "string": "T00:34-T00:48 / duration: 14s / type: emotional_climax / mood: neutral, calm, intense, dramatic"
       },
       "allocation": {
-        "baseDuration": 13,
+        "baseDuration": 14,
         "dialogueFactor": 1.5,
         "typeWeight": 1.5,
         "preserved": true
       },
-      "emotional_target": "恐惧",
+      "emotional_target": "引导",
       "lighting": {
-        "key_light": "嵌入式LED灯带柔和洒下暖白光，在头顶形成温暖光晕",
-        "fill_light": "无文字展板反射的漫射光，微弱填充面部阴影",
+        "key_light": "嵌入式LED顶灯洒下柔和暖白光",
+        "fill_light": "棕色皮质沙发与实木茶几吸收多余光线形成温和反差",
         "time_of_day": "midday",
-        "atmosphere": "皮质沙发在暖光下泛着暗沉光泽，实木茶几阴影浓重压抑"
+        "atmosphere": "温暖却暗藏警觉的柔和照明"
       }
     },
     {
@@ -255,26 +255,26 @@
       "sceneType": "resolution",
       "sceneFunction": "resolve",
       "timing": {
-        "start": 51,
-        "duration": 14,
-        "end": 65
+        "start": 48,
+        "duration": 10,
+        "end": 58
       },
-      "duration": 14,
-      "scene": "场景B：三甲医院检验科走廊，冷白色荧光灯维持恒定色温，检验窗口玻璃带有微弱反射，不锈钢台面反光，墙面悬挂无文字图形标识牌，地面浅灰色防滑地砖，陈卓站立于窗口前",
-      "mood": "平和坚定，温暖关切，预防知识带来的安心力量",
+      "duration": 10,
+      "scene": "场景B: 三甲医院检验科窗口前，冷白色荧光灯恒定照明，窗口玻璃带有微弱反射，不锈钢台面映出冷光，墙面悬挂无文字图形标识牌，地面浅色防滑地砖，陈卓立于窗口前",
+      "mood": "镇定平和，给予明确的安全依靠",
       "character": "陈卓: human, 写实人物",
       "characterRef": "陈卓: /root/.openclaw/workspace/hyperreality-system/characters/chen-zhuo/portraits/chen-zhuo-front.png",
-      "action": "陈卓伸出三根手指逐一放下，双手掌心向下做安抚按压动作，微微点头",
-      "dialogue": "陈卓|独白|鼓励|记住三个预防口诀：|LIP_SYNC:YES || 陈卓|独白|平和|运动要循序渐进，|LIP_SYNC:YES || 陈卓|独白|关切|及时补水补电解质，|LIP_SYNC:YES || 陈卓|独白|坚定|感觉不对马上停。|LIP_SYNC:YES || 陈卓|独白|热情|关注陈卓，教你保命！|LIP_SYNC:YES",
+      "action": "陈卓双手掌心向下做按压手势，随后右手抬起做喝水状，左手自然摊开",
+      "dialogue": "陈卓|独白|镇定|预防就三招。|LIP_SYNC:YES || 陈卓|独白|平和|循序渐进，别上头。|LIP_SYNC:YES || 陈卓|独白|关切|多喝水，及时排尿。|LIP_SYNC:YES || 陈卓|独白|坚定|不舒服立刻停，别硬撑。|LIP_SYNC:YES",
       "characters": [
         "chen-zhuo"
       ],
       "characterDescs": "陈卓: human, 写实人物",
-      "dialogueText": "记住三个预防口诀：;运动要循序渐进，;及时补水补电解质，;感觉不对马上停。;关注陈卓，教你保命！",
+      "dialogueText": "预防就三招。;循序渐进，别上头。;多喝水，及时排尿。;不舒服立刻停，别硬撑。",
       "emotionalTarget": {
         "valence": 0.6,
-        "arousal": 0.7,
-        "dominance": 0.8
+        "arousal": 0.5,
+        "dominance": 0.7
       },
       "visualDirection": {
         "shot_type": "medium",
@@ -282,62 +282,121 @@
         "lighting": "温暖柔光",
         "color_temperature": "warm"
       },
-      "promptBase": "电影级镜头，超写实，明亮清新的健康空间，绿色调恢复性环境，陈卓（写实人物），medium，缓慢后拉，台词：「记住三个预防口诀：」",
+      "promptBase": "电影级镜头，超写实，影棚，光线转柔，背景回到中性蓝，陈卓走向桌前，陈卓（写实人物），medium，缓慢后拉，台词：「预防就三招。」",
       "worldId": "default",
       "status": "pending",
       "timeline": {
         "object": {
-          "start": "T00:51",
-          "end": "T01:05",
-          "duration": 14,
+          "start": "T00:48",
+          "end": "T00:58",
+          "duration": 10,
           "type": "resolution",
           "mood": "peaceful, warm, nostalgic, hopeful"
         },
-        "string": "T00:51-T01:05 / duration: 14s / type: resolution / mood: peaceful, warm, nostalgic, hopeful"
+        "string": "T00:48-T00:58 / duration: 10s / type: resolution / mood: peaceful, warm, nostalgic, hopeful"
       },
       "allocation": {
-        "baseDuration": 14,
+        "baseDuration": 10,
         "dialogueFactor": 1.5,
         "typeWeight": 1,
         "preserved": true
       },
       "emotional_target": "安抚",
       "lighting": {
-        "key_light": "冷白荧光灯从走廊顶部恒定铺洒，均匀笼罩肩头",
-        "fill_light": "浅色墙面与地面漫反射，阴影柔和透明",
+        "key_light": "冷白色荧光灯从窗口上方恒定照射",
+        "fill_light": "不锈钢台面映出冷冽而稳定的反射光",
         "time_of_day": "midday",
-        "atmosphere": "检验窗口玻璃反射稳定微光，不锈钢台面温润不再刺眼"
+        "atmosphere": "冷静理性的安全照明"
+      }
+    },
+    {
+      "shotId": "SC05",
+      "sceneType": "resolution",
+      "sceneFunction": "resolve",
+      "timing": {
+        "start": 58,
+        "duration": 7,
+        "end": 65
+      },
+      "duration": 7,
+      "scene": "场景B: 三甲医院检验科走廊，双管荧光灯从天花板均匀投下冷白光，白墙面贴有无文字图形海报，地面浅灰色防滑地胶，远处可见金属推车与排队座椅，陈卓站在走廊侧方",
+      "mood": "温暖真诚，建立信任与长久期待",
+      "character": "陈卓: human, 写实人物",
+      "characterRef": "陈卓: /root/.openclaw/workspace/hyperreality-system/characters/chen-zhuo/portraits/chen-zhuo-front.png",
+      "action": "陈卓双手合十轻触胸前，微微鞠躬，随后右手掌心向上做邀请状，面带微笑",
+      "dialogue": "陈卓|独白|温暖|关注下一集，教你识别早期信号。|LIP_SYNC:YES || 陈卓|独白|真诚|保命知识，转给健身的朋友。|LIP_SYNC:YES",
+      "characters": [
+        "chen-zhuo"
+      ],
+      "characterDescs": "陈卓: human, 写实人物",
+      "dialogueText": "关注下一集，教你识别早期信号。;保命知识，转给健身的朋友。",
+      "emotionalTarget": {
+        "valence": 0.7,
+        "arousal": 0.4,
+        "dominance": 0.6
+      },
+      "visualDirection": {
+        "shot_type": "medium",
+        "camera_movement": "缓慢后拉",
+        "lighting": "温暖柔光",
+        "color_temperature": "warm"
+      },
+      "promptBase": "电影级镜头，超写实，影棚，镜头推至面部特写，背景虚化散景，陈卓（写实人物），medium，缓慢后拉，台词：「关注下一集，教你识别早期信号。」",
+      "worldId": "default",
+      "status": "pending",
+      "timeline": {
+        "object": {
+          "start": "T00:58",
+          "end": "T01:05",
+          "duration": 7,
+          "type": "resolution",
+          "mood": "peaceful, warm, nostalgic, hopeful"
+        },
+        "string": "T00:58-T01:05 / duration: 7s / type: resolution / mood: peaceful, warm, nostalgic, hopeful"
+      },
+      "allocation": {
+        "baseDuration": 7,
+        "dialogueFactor": 1.5,
+        "typeWeight": 1,
+        "preserved": true
+      },
+      "emotional_target": "安抚",
+      "lighting": {
+        "key_light": "双管荧光灯从走廊天花板均匀投下明亮冷白光",
+        "fill_light": "浅灰色地胶与白墙反射出柔和的环境光",
+        "time_of_day": "midday",
+        "atmosphere": "明亮坦诚的走廊照明"
       }
     }
   ],
   "opening": {
     "shotId": "S00",
-    "scene": "漆黑中手术无影灯骤然亮起，刺目光斑下浮尘翻滚，不锈钢台面缓缓升起，台面中央躺着一枚空白铭牌，四周黑暗如活物呼吸。",
-    "mood": "神秘、压迫、仪式感",
+    "scene": "极致黑暗中，一道炽烈光痕撕裂虚空，无数粒子如星云螺旋飞散，主标题从裂缝深处破界而出，瞬间占据整个银幕。",
+    "mood": "神秘、压迫、史诗感",
     "camera": {
-      "shot_size": "特写",
-      "movement": "前推",
-      "angle": "微仰"
+      "shot_size": "特写至全景",
+      "movement": "急速后拉",
+      "angle": "微仰角"
     },
-    "cameraString": "从绝对黑暗中缓慢前推，无影灯亮起瞬间镜头微仰，聚焦台面中央空白铭牌，最后0.5秒急速推至大特写并定格",
+    "cameraString": "从裂隙微距特写急速后拉至全景，微仰角稳定跟拍标题破界而出",
     "lighting": {
-      "key_light": "顶光手术无影灯",
-      "atmosphere": "烟雾粒子"
+      "key_light": "逆光顶光",
+      "atmosphere": "高对比度，烟雾粒子"
     },
-    "lightingString": "单一顶光硬光直射，高对比度明暗分割，背景完全死黑，主体过曝边缘，配合体积光烟雾营造神秘仪式感",
+    "lightingString": "逆光顶光从裂缝后方爆射，高对比度照明，烟雾粒子在光束中显形",
     "audioLayer": {
-      "bgm": "低频电子合成器嗡鸣",
-      "sound_effects": "电流滋滋声、金属摩擦声、沉重呼吸声"
+      "bgm": "低频合成器铺底渐入庄重主题",
+      "sound_effects": "虚空撕裂声、粒子飞散呼啸声"
     },
-    "audioLayerString": "极低频电子嗡鸣铺垫，伴随尖锐电流滋滋声与沉重金属台面摩擦声，最后混入沉重呼吸声，形成工业感强烈的听觉标识",
+    "audioLayerString": "低频合成器铺底渐入庄重主题，伴随虚空撕裂与粒子飞散呼啸",
     "titleOverlay": {
       "main_title": "未命名",
-      "sub_title": "",
-      "style": "粗体无衬线金属做旧，字间距紧缩"
+      "sub_title": "单集作品",
+      "style": "粗体无衬线，金属质感，发光描边"
     },
-    "titleOverlayString": "主标题'未命名'以粗体无衬线金属做旧字体呈现，字间距紧缩，副标题留白，标题切入时带0.1秒频闪效果",
+    "titleOverlayString": "主标题「未命名」以粗体无衬线金属质感破界而出，副标题「单集作品」伴发光描边缓缓浮现",
     "duration": 8
   },
   "llmStats": {},
-  "savedAt": "2026-06-24T05:28:40.123Z"
+  "savedAt": "2026-06-24T07:46:07.007Z"
 }
