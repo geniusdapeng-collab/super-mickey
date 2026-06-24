@@ -195,37 +195,62 @@ class PromptFusionAgent extends BaseAgent {
   }
 
   async process(shots, blueprint) {
-    console.log(`[PromptFusionAgent] 开始处理 ${shots.length} 个镜头（并发=${this.concurrency}）`);
+    console.log(`[PromptFusionAgent] 开始处理 ${shots.length} 个镜头（串行模式，避免并发超时）`);
 
     const ratio = blueprint.config?.aspectRatio || '16:9';
     const characters = blueprint.character_system?.characters || [];
 
     const results = new Array(shots.length);
-    let index = 0;
     let failed = 0;
 
-    const worker = async () => {
-      while (index < shots.length) {
-        const i = index++;
-        const shot = shots[i];
+    // 【v2.1.4-fix11】串行处理，避免并发导致API超时
+    for (let i = 0; i < shots.length; i++) {
+      const shot = shots[i];
+      console.log(`\n🎬 处理镜头 ${i + 1}/${shots.length}: ${shot.shotId}`);
+      try {
+        const fused = await this._fuseSingleShot(shot, ratio, characters);
+        results[i] = fused;
+        console.log(`  ✅ ${shot.shotId} 完成`);
+      } catch (e) {
+        failed++;
+        console.warn(`  ❌ ${shot.shotId} 融合失败: ${e.message}`);
+        // 尝试用fillMissingFields补全，而不是直接降级
         try {
-          const fused = await this._fuseSingleShot(shot, ratio, characters);
-          results[i] = fused;
-        } catch (e) {
-          failed++;
-          console.warn(`[PromptFusionAgent] 镜头 ${shot.shot_id || i} 融合失败: ${e.message}，规则兜底`);
+          console.log(`  🔄 尝试补全缺失字段...`);
+          const filled = await this._fillMissingFieldsWithRetry(shot, ratio, characters);
+          results[i] = filled;
+          console.log(`  ✅ ${shot.shotId} 补全完成`);
+        } catch (fillError) {
+          console.warn(`  ❌ ${shot.shotId} 补全也失败: ${fillError.message}，规则兜底`);
           results[i] = this._fallbackSingleShot(shot, ratio);
         }
       }
-    };
-
-    await Promise.all(Array.from({ length: Math.min(this.concurrency, shots.length) }, () => worker()));
+    }
 
     if (failed > 0) {
-      console.warn(`[PromptFusionAgent] ⚠️ ${failed}/${shots.length} 镜头降级为规则 Prompt`);
+      console.warn(`[PromptFusionAgent] ⚠️ ${failed}/${shots.length} 镜头需要补全/兜底`);
     }
     console.log(`[PromptFusionAgent] 完成 ✓ | 降级: ${failed}/${shots.length}`);
     return { shots: results, degraded: failed > 0, degradeReason: null };
+  }
+
+  /**
+   * 【v2.1.4-fix11】构建shot结果（用于补全后的组装）
+   */
+  _buildShotResult(shot, fields) {
+    const expandedFields = { ...fields };
+    const fullPrompt = this._assembleStandardPrompt(shot, fields, shot.ratio || '16:9');
+    
+    return {
+      ...shot,
+      ...expandedFields,
+      fields,
+      fusionText: fields.scene || '',
+      prompt: fullPrompt,
+      promptCharCount: this._countChars(fullPrompt),
+      degraded: true,
+      degradeReason: '主LLM超时，通过重试补全生成'
+    };
   }
 
   async _fuseSingleShot(shot, ratio, characters) {
@@ -313,6 +338,46 @@ class PromptFusionAgent extends BaseAgent {
     }
 
     return fields;
+  }
+
+  /**
+   * 【v2.1.4-fix11】主LLM失败后，用重试机制补全字段
+   * 指数退避重试：5s → 10s → 20s
+   */
+  async _fillMissingFieldsWithRetry(shot, ratio, characters) {
+    const maxRetries = 3;
+    const baseDelay = 5000; // 5秒
+    
+    // 先从shot中提取已有数据
+    const fields = {};
+    const shotData = this._extractFieldsFromShot(shot);
+    for (const f of REQUIRED_FIELDS) {
+      fields[f] = shotData[f] || '';
+    }
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`  🔄 补全尝试 ${attempt}/${maxRetries}...`);
+        const filled = await this._ensureFieldCompleteness(shot, fields, ratio, characters);
+        
+        // 检查是否还有空字段
+        const stillEmpty = REQUIRED_FIELDS.filter(f => !filled[f] || String(filled[f]).trim() === '');
+        if (stillEmpty.length === 0) {
+          console.log(`  ✅ 补全成功，所有字段已填充`);
+          return this._buildShotResult(shot, filled);
+        }
+        console.log(`  ⚠️ 仍有 ${stillEmpty.length} 字段为空，继续重试...`);
+      } catch (e) {
+        console.warn(`  ❌ 补全尝试 ${attempt} 失败: ${e.message}`);
+        if (attempt < maxRetries) {
+          const delay = baseDelay * Math.pow(2, attempt - 1);
+          console.log(`  ⏳ 等待 ${delay}ms 后重试...`);
+          await new Promise(r => setTimeout(r, delay));
+        }
+      }
+    }
+    
+    throw new Error(`补全失败，${maxRetries} 次重试后仍有字段缺失`);
   }
 
   // 规则兜底默认值（带字段标记，区别于 LLM 产出）

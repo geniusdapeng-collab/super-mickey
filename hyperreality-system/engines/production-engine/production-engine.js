@@ -434,8 +434,11 @@ class ProductionEngine {
     }
 
     // === 全局时间预算 ===
-    const HARD_BUDGET_MS = this.agentConfig.totalDeadlineMs || 540000;
-    const SAFETY_MARGIN_MS = 90000;
+    // 【v2.1.4-fix11】增加总预算，确保Phase 3串行处理有足够时间
+    // 原预算：540s (9min) → 新预算：900s (15min)
+    // Phase 1: ~2min | Phase 2: ~5min | Phase 3: ~6min (串行6镜头 × 60s)
+    const HARD_BUDGET_MS = this.agentConfig.totalDeadlineMs || 900000;
+    const SAFETY_MARGIN_MS = 60000; // 余量从90s减到60s，释放更多预算给Phase 3
     const globalDeadline = startTime + HARD_BUDGET_MS - SAFETY_MARGIN_MS;
     this._globalDeadline = globalDeadline;
     this._setAgentDeadline(globalDeadline);
