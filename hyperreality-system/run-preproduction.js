@@ -13,7 +13,7 @@ async function main() {
         llmMaxRetries: 2,
         llmModel: 'kimi-k2p6',
         fastModel: 'kimi-k2p6',
-        totalDeadlineMs: 900000, // 【v2.1.4-fix11】15分钟总预算
+        totalDeadlineMs: 1200000, // 【v2.1.4-fix11】20分钟总预算，确保全部Phase有足够时间
         memThresholdMB: 1800,
         promptFusionConcurrency: 1, // 【v2.1.4-fix11】串行处理
         checkpointDir: './checkpoints',
