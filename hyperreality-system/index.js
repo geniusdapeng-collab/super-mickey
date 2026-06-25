@@ -660,14 +660,23 @@ class HyperrealitySystem {
       // 情绪字段增强
       if (field.name === '情绪') {
         let enhanced = field.content;
-        for (const [keyword, detail] of Object.entries(emotionMap)) {
-          if (enhanced.toLowerCase().includes(keyword.toLowerCase()) && !enhanced.includes('面部') && !enhanced.includes('眼神')) {
-            enhanced = enhanced.replace(new RegExp(keyword, 'gi'), detail);
+        // 如果已经有面部/眼神详细描述，不再增强
+        if (!enhanced.includes('面部') && !enhanced.includes('眼神') && !enhanced.includes('神态')) {
+          const keywords = enhanced.split(/[,，]/).map(k => k.trim().toLowerCase()).filter(k => k);
+          const details = [];
+          for (const kw of keywords) {
+            for (const [key, detail] of Object.entries(emotionMap)) {
+              if (kw.includes(key.toLowerCase()) && !details.includes(detail)) {
+                details.push(detail);
+              }
+            }
           }
-        }
-        // 如果增强后还是太短，补充默认描述
-        if (enhanced.length < 30) {
-          enhanced = `情绪基调为${enhanced}，面部微表情自然真实，眼神聚焦有神采，符合场景氛围与角色身份`;
+          if (details.length > 0) {
+            enhanced = details.join('，');
+          } else if (enhanced.length < 30) {
+            // 无匹配关键词且太短，补充默认描述
+            enhanced = `情绪基调为${enhanced}，面部微表情自然真实，眼神聚焦有神采，符合场景氛围与角色身份`;
+          }
         }
         lines.push(`${seqStr}.【${field.name}】${enhanced}`);
       } else {
