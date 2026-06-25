@@ -3,6 +3,10 @@
 // 深度融合：剧本引擎 → 适配层 → 制作引擎 → 完整镜头
 // 版本：v1.2.5 | 日期：2026-06-19
 
+require('./engines/process-guard'); // 【审计修复】全局崩溃防护，必须最先加载
+
+const { isOpeningShot } = require('./engines/field-standardizer');
+
 const { ScriptEngine } = require('./engines/script-engine');
 const { ProductionEngine } = require('./engines/production-engine/production-engine');
 const { RenderingEngine } = require('./engines/rendering-engine/rendering-engine');
@@ -378,7 +382,8 @@ class HyperrealitySystem {
       if (productionResult && productionResult.shots) {
         // v2.0.6: 先在FieldGuard之前处理片头字段（避免校验失败阻断）
         const adapter = result.stages?.adapter || {};
-        const openingShot = productionResult.shots.find(s => s.sceneType === 'opening' || s.shotId?.startsWith('SC00'));
+        // 【审计修复】统一片头判定，兼容 SC00/S00
+        const openingShot = productionResult.shots.find(s => isOpeningShot(s));
         if (openingShot) {
           // 如果片头缺少title/subtitle，先用adapter标题兜底
           if (!openingShot.title || openingShot.title === '未命名') {
@@ -396,7 +401,8 @@ class HyperrealitySystem {
           productionResult.shots.forEach(s => s._context = 'Final-Export');
           
           // 【v2.1.4-fix11-G】片头优化必须在FieldGuard之前执行，确保片头字段被正确添加
-          const openingShot = productionResult.shots.find(s => s.sceneType === 'opening' || s.shotId?.startsWith('SC00'));
+          // 【审计修复】统一片头判定，兼容 SC00/S00
+          const openingShot = productionResult.shots.find(s => isOpeningShot(s));
           if (openingShot) {
             console.log('\n🎬 [OpeningTitleOptimizer] 片头专属字段优化...');
             try {
@@ -445,6 +451,22 @@ class HyperrealitySystem {
               openingShot.title_font_design = openingShot.title_font_design || '粗体无衬线字体，白色，带微阴影';
               openingShot.opening_audio_design = openingShot.opening_audio_design || '环境音渐起，配合标题入场';
             }
+          }
+          
+          // 【审计修复】无论优化成功/降级/异常，进入 FieldGuard 前强制确保5字段非空，防止严格校验 throw 丢字段
+          if (openingShot) {
+            const openingDefaults = {
+              title_content: openingShot.title_content || openingShot.title || result.title || '未命名',
+              subtitle_content: openingShot.subtitle_content || openingShot.subtitle || '第1集',
+              title_animation: openingShot.title_animation || '主标题淡入入场，副标题延迟0.5秒跟随淡入，整体2秒',
+              title_font_design: openingShot.title_font_design || '粗体无衬线字体，白色，带微阴影',
+              opening_audio_design: openingShot.opening_audio_design || '环境音渐起，配合标题入场'
+            };
+            Object.assign(openingShot, openingDefaults);
+            // 同步 title/subtitle 顶层字段
+            openingShot.title = openingShot.title || openingShot.title_content;
+            openingShot.subtitle = openingShot.subtitle || openingShot.subtitle_content;
+            openingShot.sceneType = openingShot.sceneType || 'opening'; // 兜底 sceneType
           }
           
           // v1.2.6-fix5: 只对 shots 做标准化，不要用 normalized.shots 覆盖 prompts

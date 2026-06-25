@@ -530,7 +530,11 @@ class ProductionEngine {
       }
 
       // ----- Phase 2:VisualLanguage → AudioDesign → ContinuityReview (串行，避免并发超限SIGKILL) -----
-      if (!phase1Failed && startPhase <= 2) {
+      // 【审计修复】Phase 1 失败不应跳过 Phase 2/3，应像 Phase 2 那样用已有 shots 继续
+      if (startPhase <= 2) {
+        if (phase1Failed) {
+          this.log('PHASE-2', '⚠️ Phase 1 已失败，Phase 2 用现有 shots 尝试继续（降级模式）');
+        }
         try {
           if (!this._canAfford(80000)) {
             this.log('PHASE-2', `⚠️ 预算不足(剩${this._budgetRemaining()}ms),保存退出,下次从 Phase2 续跑`);
@@ -579,7 +583,11 @@ class ProductionEngine {
       }
 
       // ----- Phase 3:PromptFusion(串行模式,每镜头独立 LLM 调用)-----
-      if (!phase1Failed && startPhase <= 3) {
+      // 【审计修复】Phase 1 失败不应跳过 Phase 2/3
+      if (startPhase <= 3) {
+        if (phase1Failed) {
+          this.log('PHASE-3', '⚠️ Phase 1 已失败，Phase 3 用现有 shots 尝试继续（降级模式）');
+        }
         // 【v2.1.4-fix11-D】动态预算分配：根据镜头数计算Phase 3所需时间
         // 公式：镜头数 × 180秒(LLM生成) + 30秒(缓冲)
         // 【v2.1.5-fix】从90s增加到180s，实际LLM调用需120-180s/镜头
@@ -599,7 +607,15 @@ class ProductionEngine {
           this.log('PROMPT-FUSION-AGENT', `开始(串行模式,${shotCount}镜头,预计${Math.round(phase3NeedMs/1000)}s)...`);
           const phase3Start = Date.now();
           const pfResult = await this.agents.promptFusion.process(this._cloneShots(currentShots), adaptedBlueprint);
-          currentShots = this._mergeShotsByShotId(currentShots, pfResult.shots, ['prompt', 'enhanced_prompt', 'negative_prompt', 'fields', 'fusionText', 'promptCharCount', 'negative', 'portraits', 'director_instruction', 'bright_constraint', 'character_constraint', 'consistency', 'costume', 'makeup', 'props', 'pacing', 'transition', 'audio', 'color_palette', 'depth_of_field', 'camera_movement']);
+          // 【审计修复】补全 25 字段，原列表缺 lighting/scene/character/action/dialogue/mood/timeline/composition/constraint/baseline
+          currentShots = this._mergeShotsByShotId(currentShots, pfResult.shots, [
+            'prompt', 'enhanced_prompt', 'negative_prompt', 'fields', 'fusionText', 'promptCharCount',
+            // 25字段全部纳入
+            'director_instruction', 'constraint', 'baseline', 'scene', 'lighting', 'composition',
+            'color_palette', 'depth_of_field', 'camera_movement', 'character', 'costume', 'makeup',
+            'action', 'props', 'portraits', 'dialogue', 'timeline', 'mood', 'pacing', 'transition',
+            'audio', 'negative', 'bright_constraint', 'character_constraint', 'consistency'
+          ]);
           result.llmStats.promptFusion = pfResult.timing;
           this.log('PROMPT-FUSION-AGENT', `完成 (${Date.now() - phase3Start}ms)`);
           await this._saveCheckpoint('phase3', currentShots, { opening: result.opening, llmStats: result.llmStats });
@@ -609,16 +625,15 @@ class ProductionEngine {
       }
 
       // ===== Phase-3.5 前置：展平 shot.fields + 统一字段命名 =====
-      // 【v2.1.4-fix13-审计修复】将 PromptFusion 的嵌套 fields 展平到顶层，并统一命名
+      // 【审计修复】PromptFusion 的 fields 是最终权威来源，允许覆盖顶层旧值
       currentShots = currentShots.map(shot => {
         const flat = { ...shot };
         if (shot.fields && typeof shot.fields === 'object') {
           for (const [key, value] of Object.entries(shot.fields)) {
-            // snake_case → camelCase
+            if (value === undefined || value === null || value === '') continue;
             const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-            // 同时保留 snake_case 和 camelCase，确保下游都能取到
-            if (!(key in flat)) flat[key] = value;
-            if (!(camelKey in flat)) flat[camelKey] = value;
+            flat[key] = value; // 始终覆盖（fields 是最终权威）
+            flat[camelKey] = value; // 驼峰也覆盖
           }
         }
         return flat;

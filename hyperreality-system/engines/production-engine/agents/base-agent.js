@@ -65,21 +65,32 @@ class BaseAgent {
    * 【v2.1.4-fix13】通用超时包装器 — 核心修复
    * 任何 Promise 都可以用这个包装，确保不会无限等待
    */
+  /**
+   * 【审计修复·核心】通用超时包装器
+   * 关键修复：超时后底层 promise 仍在跑，其迟到的 rejection 会变成 unhandledRejection
+   * 导致 Node 进程崩溃。这里给原 promise 挂一个 no-op catch 标记其已被处理，
+   * 同时不影响 race 的正常 reject 传播。
+   */
   _callWithTimeout(promise, timeoutMs, label = 'LLM调用') {
     let timer;
+    const p = Promise.resolve(promise);
+    // 立即挂 catch：标记 rejection 已被处理，防止超时后悬空 rejection 崩溃进程
+    // 这条链独立于 race，不影响 race 的 reject 传播
+    p.catch(() => {});
     const timeoutPromise = new Promise((_, reject) => {
       timer = setTimeout(
         () => reject(new Error(`${label}超时(${timeoutMs}ms)`)),
         timeoutMs
       );
     });
-    return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timer));
+    return Promise.race([p, timeoutPromise]).finally(() => clearTimeout(timer));
   }
 
   /**
    * 核心LLM调用方法（带重试+降级+截止时间感知+外层超时+Schema校验）
+   * 【审计修复】支持第4参数 options: { maxRetries, maxTokens } 覆盖单次调用配置
    */
-  async _callLLM(prompt, schema, fallbackFn) {
+  async _callLLM(prompt, schema, fallbackFn, options = {}) {
     if (!this.enabled) {
       console.log(`[${this.name}] Agent已禁用，使用降级`);
       return this._executeFallback(fallbackFn, 'Agent disabled');
@@ -90,6 +101,10 @@ class BaseAgent {
       console.warn(`[${this.name}] LLM引擎不可用，使用降级`);
       return this._executeFallback(fallbackFn, 'LLM engine not available');
     }
+
+    // 单次调用可覆盖 maxTokens（补齐等轻量场景用小预算）
+    const callMaxTokens = options.maxTokens || this.llmMaxTokens;
+    const callMaxRetries = options.maxRetries ?? this.llmMaxRetries;
 
     // 截止时间感知：单次超时取「自身超时」与「剩余预算」的较小值
     const perCallTimeout = Math.min(this.llmTimeout, this._remainingMs());
@@ -104,9 +119,9 @@ class BaseAgent {
       // 【v2.1.4-fix13】用 _callWithTimeout 包装，确保即使底层引擎不实现超时也能被中断
       const result = await this._callWithTimeout(
         llm.reasonStructured(fullPrompt, schema, {
-          maxTokens: this.llmMaxTokens,
+          maxTokens: callMaxTokens,
           timeoutMs: perCallTimeout,
-          maxRetries: this.llmMaxRetries,
+          maxRetries: callMaxRetries,
           deadlineMs: this._globalDeadline
         }),
         perCallTimeout,

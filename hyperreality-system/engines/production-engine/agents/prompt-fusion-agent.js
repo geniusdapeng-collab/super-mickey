@@ -87,7 +87,8 @@ function buildFullSchema(shotId) {
 class PromptFusionAgent extends BaseAgent {
   constructor(options = {}) {
     super({ name: 'PromptFusionAgent', enabled: true, llmTimeout: 300000, ...options });
-    this.maxPromptLength = options.maxPromptLength || 3000;
+    // 【审计修复】3000 会无差别砍掉尾部字段，提升到 12000（25字段详细描述的实际量级）
+    this.maxPromptLength = options.maxPromptLength || 12000;
     this.concurrency = options.concurrency || 2;
     this.llmTimeout = 300000; // 5 分钟单次（结构化输出需要更长时间）
     this.llmMaxRetries = 2;
@@ -782,30 +783,38 @@ ${missing.map(f => `- ${f}：${FIELD_DESCS[f]}`).join('\n')}
     return fullPrompt;
   }
 
+  /**
+   * 【审计修复】按字段压缩而非整段砍除：保留全部25个【字段】标签，只压缩字段内文案
+   */
   _truncateStandardPrompt(fullPrompt) {
-    let prompt = fullPrompt;
-    while (this._countChars(prompt) > this.maxPromptLength) {
-      const lastComma = prompt.lastIndexOf('，');
-      if (lastComma > 0) {
-        prompt = prompt.substring(0, lastComma).trim();
-      } else {
-        break;
+    if (this._countChars(fullPrompt) <= this.maxPromptLength) return fullPrompt;
+    // 按字段标签切分
+    const segments = fullPrompt.split(/(?=【)/);
+    if (segments.length <= 1) return fullPrompt.substring(0, this.maxPromptLength);
+    // 计算每个字段当前字符数，等比压缩到目标长度
+    const target = this.maxPromptLength;
+    const totalNow = this._countChars(fullPrompt);
+    const ratio = target / totalNow;
+    const compressed = segments.map(seg => {
+      const segLen = this._countChars(seg);
+      const want = Math.max(40, Math.floor(segLen * ratio)); // 每字段至少保留40字符
+      if (segLen <= want) return seg;
+      // 保留字段标签头，截断内容
+      const headMatch = seg.match(/^(【[^】]+】)/);
+      const head = headMatch ? headMatch[1] : '';
+      const body = seg.slice(head.length);
+      let kept = body;
+      while (this._countChars(head + kept) > want && kept.length > 20) {
+        kept = kept.substring(0, kept.length - 10);
       }
-    }
-    return prompt;
+      return head + kept;
+    });
+    return compressed.join('').trim();
   }
 
   _truncateWithPriority(fullPrompt, parts) {
-    let prompt = fullPrompt;
-    while (this._countChars(prompt) > this.maxPromptLength) {
-      const lastComma = prompt.lastIndexOf(',');
-      if (lastComma > 0) {
-        prompt = prompt.substring(0, lastComma).trim();
-      } else {
-        break;
-      }
-    }
-    return prompt;
+    // 复用相同的按字段压缩逻辑
+    return this._truncateStandardPrompt(fullPrompt);
   }
 
   _countChars(str) {

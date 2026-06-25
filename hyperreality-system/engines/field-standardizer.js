@@ -11,6 +11,17 @@
  * 4. 关键字段强制保留
  */
 
+// 【审计修复】统一片头判定：兼容 SC00 / S00 / S00-xx，避免正则 ^S00 漏掉 SC00
+function isOpeningShot(raw = {}) {
+  if (!raw) return false;
+  const type = raw.type || raw.sceneType || raw.shotType;
+  if (type === 'opening' || type === '片头') return true;
+  const id = String(raw.id || raw.shotId || '');
+  if (/^S?C?00($|-|_)/i.test(id)) return true; // 匹配 S00 / SC00 / S00-01
+  if (raw.mainTitle || (raw.title && raw.title !== '未命名')) return true;
+  return false;
+}
+
 const FIELD_ALIAS_MAP = {
   // v2.1.4-fix9-P25: 25字段体系
   // 创作意图层 (P0)
@@ -440,11 +451,8 @@ function createEmptyShot() {
 }
 
 function inferShotType(raw = {}) {
-  const id = raw.id || raw.shotId || '';
-  const type = raw.type || raw.sceneType || raw.shotType || '';
-  if (type === 'opening' || type === '片头') return 'opening';
-  if (/^S00($|-|_)/.test(id) || raw.mainTitle || raw.title) return 'opening';
-  return 'content';
+  // 【审计修复】统一片头判定，兼容 SC00/S00
+  return isOpeningShot(raw) ? 'opening' : 'content';
 }
 
 function standardizeShot(rawInput = {}) {
@@ -703,6 +711,7 @@ module.exports = {
   FIELD_ALIAS_MAP,
   FIELD_NAME_CN,
   CRITICAL_FIELDS,
+  isOpeningShot,
   standardizeShot,
   standardizeShots,
   validateShot,
