@@ -11,7 +11,8 @@ const path = require('path');
 // 环境变量配置
 process.env.STORMAXE_LLM_MODEL = process.env.STORMAXE_LLM_MODEL || 'kimi-k2p6';
 process.env.STORMAXE_LLM_FAST_MODEL = process.env.STORMAXE_LLM_FAST_MODEL || 'kimi-k2p6';
-process.env.STORMAXE_TOTAL_DEADLINE_MS = process.env.STORMAXE_TOTAL_DEADLINE_MS || '1200000';
+// 【v2.1.5-fix】总预算20分钟→30分钟（Phase1+2约400s + Phase3需1110s = 1500s）
+process.env.STORMAXE_TOTAL_DEADLINE_MS = process.env.STORMAXE_TOTAL_DEADLINE_MS || '1800000';
 
 const agentConfig = {
   enableLLMAgents: true,

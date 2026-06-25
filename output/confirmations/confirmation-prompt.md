@@ -1,86 +1,232 @@
 # 📝 提示词审核报告
 
 **镜头数**: 6
-**平均长度**: 2249 字符
+**平均长度**: 2301 字符
 
 ## 镜头总览
 
-| 镜头 | 时长 | 字符数 | 有定妆照 | 有时间轴 | 有约束 |
-|------|------|--------|----------|----------|--------|
-| SC00 | 10s | 2429 | ✓ | ✗ | ✗ |
-| SC01 | 10s | 2490 | ✓ | ✗ | ✗ |
-| SC02 | 12s | 2461 | ✓ | ✗ | ✗ |
-| SC03 | 12s | 2041 | ✓ | ✗ | ✓ |
-| SC04 | 11s | 2043 | ✓ | ✗ | ✓ |
-| SC05 | 10s | 2032 | ✓ | ✗ | ✓ |
+| 镜头 | 时长 | 字符数 | 字段数 | 有定妆照 | 有时间轴 | 有约束 |
+|------|------|--------|--------|----------|----------|--------|
+| SC00 | 10s | 2228 | ❌ 22/30 | ✓ | ✓ | ✓ |
+| SC01 | 12s | 2340 | ⚠️ 22/25 | ✓ | ✓ | ✓ |
+| SC02 | 10s | 2294 | ⚠️ 22/25 | ✓ | ✓ | ✓ |
+| SC03 | 13s | 2349 | ⚠️ 22/25 | ✓ | ✓ | ✓ |
+| SC04 | 12s | 2327 | ⚠️ 22/25 | ✓ | ✓ | ✓ |
+| SC05 | 8s | 2266 | ⚠️ 22/25 | ✓ | ✓ | ✓ |
 
 ## 完整提示词
 
-### SC00
-**长度**: 2429 字符 | **定妆照**: 有 | **时间轴**: 无
+### SC00（片头·30字段）
+**长度**: 2228 字符 | **定妆照**: 有 | **时间轴**: T00:00-T00:10 / duration: 10s / type: opening / mood: neutral, calm, intense, dramatic
 
-```
-【导演指令】好莱坞大导演质感，电影级画面，写实风格纪录片式拍摄，无特效，无科幻元素，保持医疗教育场景的真实性与权威感，画面构图严谨，光影自然，强调警讯传达的紧迫感与专业度，拒绝任何抽象或超现实视觉处理，【约束】Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no caption, no watermark，【基础】8K resolution, cinematic quality, highly detailed, photorealistic, intricate textures, sharp focus，【场景】医院健康宣教室实景，清晨时段室内环境，白色荧光灯管均匀照亮整个空间，四面白墙面张贴骨骼肌解剖示意图与运动损伤预防图形海报（无文字内容），房间中央放置实木讲台（表面可见细微使用划痕与木质纹理），地面铺设浅灰色防滑PVC地胶，讲台右侧立有金属支架白板（板面洁净无字迹），空间纵深约八米，整体布局规整专业，充满医疗教育场所的真实质感。，【灯光/照明】主光：顶部三基色荧光灯盘正下方照明 4200K中性白光，大面积漫射覆盖讲台区域，光质柔和无明显硬边阴影；补光：左侧墙壁漫反射光填充人物阴影侧，降低面部反差；背景光：白板表面微弱反光勾勒讲台轮廓；特效：无特殊特效光，保持医疗教育场景真实照明质感，整体照度充足均匀，色温稳定无频闪。，【构图】景别：中景（膝上构图）；主体位置：人物站立于画面黄金分割左1/3处，面向镜头方向；线条引导：讲台水平线与墙面垂直线构成稳定框架，白板边缘线条指向人物主体；画框边缘：右侧留白1/4展示宣教室背景环境，顶部保留天花板灯光阵列延伸感，形成专业严谨的视觉秩序。，【色彩/色调】主色调：冷白偏灰（医疗宣教室冷静感）；辅助色：浅木色讲台暖黄点缀、金属支架银灰反光；肤色：自然偏暖与冷环境形成对比；饱和度：整体中等偏低，压抑过强色彩刺激；对比度：中等，保持清晰层次但避免极端明暗，呈现纪录片式真实色调。，【景深】焦点：人物面部与上半身；景深：中等（f/4.0），背景海报与白板适度虚化仍可辨识轮廓；前景：讲台边缘轻微虚化增加层次；背景：墙面海报与远处墙角渐变模糊；层次：前景讲台-中景人物-背景墙面三层清晰分离，确保主体突出环境交代完整。，【运镜】0-2s：稳定器微仰角固定机位（仰角15度）建立环境氛围；2-6s：稳定器缓慢前推推近（速度0.2m/s）向人物靠近制造侵入感；6-8s：手持稳定器小幅顺时针旋转（角度约10度）调整视角；8-10s：固定机位中景定格，保持画面稳定呼吸感，全程无急速运动，运镜平滑专业。，【角色】穿警服的陈卓女士，健康科普主讲人，短发整齐利落，站姿挺拔端正，面部表情警觉而关切，眼神直视镜头方向，整体形象干练专业，充满警示性叙事的权威感与紧迫感，体型匀称健康。，【服装】藏青色警服外套（毛呢质地挺括，肩章完整，臂章清晰），内搭浅蓝色衬衫（棉质面料，领口整洁扣至第一粒），黑色直筒西裤（中缝烫线笔直），黑色系带皮鞋（鞋面光亮无磨损），腰间标准制式皮带，整体着装符合警容规范，不可更换为白大褂或便服。，【化妆】短发整齐（自然黑色，长度及耳，发尾微收贴顺），素颜淡妆底妆清透，眉毛自然平直无夸张描画，唇色淡粉接近原生唇色，面部无亮片或浓妆，整体妆容干净利落符合公职人员形象，与定妆照完全一致。，【动作】起始站立讲台后方，双脚与肩同宽重心平稳；右手自然抬起至胸前高度做强调手势，手掌半开手指微曲；左手轻扶讲台边缘保持身体平衡；身体微微前倾十五度向镜头方向；头部端正目光直视镜头；说到关键词时右手食指轻微下点加强语气，全程无多余晃动，姿态沉稳有力。，【道具】手持：空白A4文件夹（白色纸面无文字无图案）；讲台表面：不锈钢保温杯（金属拉丝质感，无品牌标识），白色激光笔（标准演示用具）；背景：金属支架白板（板面洁净无字迹），墙面骨骼肌解剖图形海报（纯图示无文字），运动损伤预防示意图（无文字标识），无文字书籍或标牌。
-```
+**人物卡片**:
+- 陈卓 (police): 陈卓
 
----
-
-### SC01
-**长度**: 2490 字符 | **定妆照**: 有 | **时间轴**: 无
-
-```
-【导演指令】好莱坞大导演质感，电影级画面，写实纪录片风格，自然光效，无特效合成，无科幻元素，无抽象视觉，保持医疗环境真实感与权威感，【约束】Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no caption, no watermark，【基础】8K resolution, cinematic quality, highly detailed, photorealistic, intricate textures, sharp focus, ultra high definition, hyperrealistic，【场景】三甲医院检验科走廊，清晨时分，冷白色LED顶灯连续排列向下照射，墙面涂刷浅蓝抗菌涂料，悬挂多块无文字标识牌指向检验窗口，靠墙设置不锈钢长椅，地面铺设浅色抛光瓷砖反射冷光，走廊纵深约二十米，两侧分布不锈钢检验窗口，空间布局规整，材质包含金属、瓷砖、抗菌涂料，整体环境干净整洁，【灯光/照明】主光：顶部连续排列LED面板灯 5600K冷白光，垂直向下均匀漫射，光质柔和无硬边阴影；补光：墙面浅蓝涂料反射光，左前侧补充 4000K自然反射光填充面部阴影；背景光：走廊尽头窗户透入 6500K自然冷光，形成纵深层次；轮廓光：检验窗口不锈钢台面边缘产生微弱高光反射；光比：主光与补光比例 3:1，保持专业医疗环境明亮感；特效光：无，【构图】景别：中景（膝上）；主体位置：画面黄金分割右1/3处，人物面向镜头；线条引导：走廊纵深线条由近及远汇聚，地面瓷砖缝隙形成水平引导线；画框边缘：左侧留白1/4展示检验科走廊环境，顶部保留顶灯排列线条，底部地面反光增加空间延伸感，【色彩/色调】主色调：冷白偏青蓝（医院专业感）；辅助色：不锈钢金属银灰与浅木色长椅点缀；肤色：自然偏暖平衡冷环境；饱和度：中等偏低，克制冷静；对比度：中高，保持瓷砖反光与阴影层次清晰，【景深】焦点：人物面部清晰锐利；景深：中等（f/2.8），背景走廊适度虚化但可辨空间结构；前景：无遮挡；背景：纵深走廊渐变模糊，检验窗口呈片状虚化；层次：中景人物主体突出，背景环境交代位置，两层分离明确，【运镜】0-3s：稳定器缓慢推近（0.3m/s）从走廊纵深向人物推进；3-7s：固定机位静止拍摄，锁定人物中景；7-10s：手持微晃跟拍（呼吸感，幅度±2度），模拟纪录片真实临场感，全程无急速运动，【角色】穿警服的陈卓女士，健康科普主讲人，短发整齐，站姿挺拔，表情关切专注，【服装】藏青色警服外套（毛呢质地，肩章完整），内搭浅蓝色衬衫（棉质，领口整洁），黑色西裤，黑色皮鞋，【化妆】短发整齐（黑色，长度及耳），素颜淡妆，眉毛自然，唇色淡粉，无夸张妆容，【动作】右手自然抬起至胸前做强调手势，左手自然下垂贴于裤缝，身体微微前倾十五度，目光直视镜头，头部保持端正，肩背挺直，说话时下巴微收，面部表情由平静转为关切，嘴角微微抿紧传递专业感，【道具】手持：空白A4文件夹（白色，无文字）；背景：不锈钢长椅，无文字标识牌，不锈钢检验窗口台面，【定妆照】image://characters/chen-zhuo/portraits/chen-zhuo-front.png，典型症状是肌肉疼痛、无力，尿液颜色变深像浓茶一样，这时就要警惕横纹肌溶解的可能。，【时间轴】T00:00 - 中景，陈卓站立于检验科走廊中央区域，冷白光从头顶均匀照射；身体挺拔端正，目光注视镜头方向，右手自然下垂握住文件夹，左手贴于裤缝，表情平静
-T00:03 - 镜头缓慢推近过渡至近景，人物上半身与面部清晰呈现；右手抬起至胸前做强调手势，眉头微微蹙起，嘴角抿紧，目光透出关切神色
-T00:07 - 手持微晃中近景稳定构图，人物保持站姿；左手持文件夹自然下垂，身体微微前倾，下巴微收，直视镜头完成台词陈述，表情专注而沉稳，【情绪】serene yet highly professional composure，【节奏】整体：沉稳中等节奏；开头：缓慢引入（2s），固定机位建立环境；中段：稍快推进（4s），推近至人物面部；高潮：停顿强调（2s），手持微晃营造真实感；结尾：平缓收尾（2s），保持关切表情定格，【转场】切镜（硬切，持续时间0.5秒
-```
-
----
-
-### SC02
-**长度**: 2461 字符 | **定妆照**: 有 | **时间轴**: 无
-
-```
-【导演指令】好莱坞大导演质感，电影级画面，写实风格，无特效，无科幻元素，自然光效，真实医疗环境，纪实摄影美学，强调角色生理与心理的真实状态呈现，避免任何超现实表现手法，【约束】Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no caption, no watermark，【基础】8K resolution, cinematic quality, highly detailed, photorealistic, intricate textures, sharp focus，【场景】医生诊室内部空间，白色墙面悬挂无文字医学解剖挂图，实木办公桌表面光滑并摆放听诊器与血压计，检查床铺有蓝色一次性床单平整无褶皱，无影灯悬于诊床正上方，双层玻璃窗透入自然侧光，地面铺设米白色耐磨地砖反射柔光，墙角放置绿植盆栽，不锈钢器械柜表面有金属反光，房间空间约二十平米，整体环境整洁专业，【灯光/照明】主光：左侧窗户自然光 5500K柔和日光，经白色纱帘漫射形成均匀面光，光质柔和；补光：右前侧白色泡沫反光板 3200K暖光，填充面部阴影减少光比；背景光：顶部无影灯 5000K中性白光，提供整体环境基础照明；轮廓光：右后方侧逆光 5600K冷白光，分离人物与白色墙面；光比：主补光比4:1；特效：无，【构图】景别：中景（腰上）；主体位置：画面黄金分割左1/3处，人物坐姿；线条引导：桌面水平线稳定画面，窗光垂直线分割明暗区域；画框边缘：右侧留白1/3展示诊室环境细节；视线方向：人物面朝右方，与画面运动趋势一致，【色彩/色调】主色调：冷白偏蓝（医疗环境专业感）；辅助色：实木办公桌棕与检查床蓝形成冷暖对比；肤色：自然偏黄暖调，呈现病态苍白；饱和度：整体中等偏低，避免鲜艳色彩干扰医疗严肃感；对比度：中低，保留阴影细节但避免过重暗部，【景深】焦点：人物面部眼睛；景深：中等（f/2.8），背景挂图与器械柜适度虚化可辨轮廓；前景：实木办公桌边缘轻微虚化；背景：白色墙面与无影灯形成渐变模糊；层次：前景（桌面）-中景（人物）-背景（墙面）三层清晰分离，【运镜】0-3s：固定机位中景，镜头稳定构图，观察人物整体状态；3-8s：稳定器缓慢推近（0.2m/s）至近景，焦点始终锁定面部；8-10s：手持微晃（呼吸感，幅度±1.5度），模拟纪实跟拍真实感；10-12s：固定机位特写，稳定收束画面，【角色】陈卓: human, 穿警服的陈卓女士, 健康科普主讲人，中年男性患者，健康科普讲述者，坐姿疲惫，身体微弓，表情痛苦中带有恐惧，眼神低垂无力，面部病态苍白，呈现横纹肌溶解症状恶化状态，【服装】浅灰色棉质长袖T恤（圆领，领口微松，面料柔软），藏青色休闲长裤（棉麻混纺，膝盖处自然褶皱），黑色帆布鞋（帆布质地，鞋底白色），无配饰，整体着装朴素日常，【化妆】短发稍乱（花白与黑色夹杂，长度及耳），面色苍白无血色，额头微汗，眉心紧锁，嘴唇干裂无唇色，素颜无妆容，呈现真实病态疲惫感，【动作】右手扶于桌面边缘支撑身体，左手自然按压大腿肌肉，头部缓慢低垂后猛然抬起，视线从下方移至镜头方向，眉头紧锁，嘴角下拉，身体伴随轻微颤抖，表现出虚弱无力与内心恐惧交织的生理状态，【道具】手持：无；桌面：银色听诊器（盘绕放置），黑色水银血压计，空白病历夹；背景：无文字医学解剖挂图，不锈钢器械柜，蓝色一次性床单，实木办公桌，【定妆照】image://characters/patient-middle-aged-male/portraits/patient-male-front.png，接着全身无力，连路都走不动，双腿完全使不上任何力气。，【时间轴】T00:00 - 中景，患者坐在诊室检查床边缘，身体前倾，双手撑膝；头部低垂，目光看向地面，呼吸沉重
-T00:03 - 近景过渡，镜头缓慢推近至面部；患者眉头紧锁，嘴角下拉，右手抬起按住大腿，表情痛苦
-T00:07 - 特写定格，患者眼部区域；眼睛缓慢眨动，瞳孔扩散，视线无力地移向镜头方向，恐惧情绪渐显
-T00:10 - 中景拉远，患者身体微微摇晃；左手扶住桌面边缘，身体重心不稳，展现无力支撑状态
-```
-
----
-
-### SC03
-**长度**: 2041 字符 | **定妆照**: 有 | **时间轴**: 无
-
-```
-【导演指令】好莱坞大导演质感，电影级画面，写实风格，无特效，无科幻元素，【约束】Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text anywhere in frame, no subtitle, no caption, no watermark, no logo, no readable characters，【基础】8K resolution, cinematic quality, highly detailed, photorealistic, hyperrealistic, sharp focus, ultra high definition, lifelike textures, professional color grading，【场景】医院健康管理中心，嵌入式LED灯带洒下柔和暖白光，接待台后方排列无文字健康宣传展板，前方皮质沙发与实木茶几，地面灰色哑光瓷砖，墙面覆浅木饰面板。，【灯光/照明】主光：右侧45度自然光 5600K柔光漫射；补光：左前侧反光板填充阴影；背景光：轮廓光分离层次；光比3:1，整体明亮清晰，【构图】景别：中景（膝上）；主体位置：画面黄金分割点；线条引导：纵深层次感；画框边缘：适度留白，【色彩/色调】主色调：自然偏暖；辅助色：环境本色；肤色：自然健康；饱和度：中等自然；对比度：中高清晰，【景深】焦点：主体面部或动作中心；景深：中等（f/4），背景适度虚化；前景：轻微虚化增加层次；层次：前景-中景-背景三层分离，【运镜】0-3s：固定机位稳定构图；3-6s：缓慢推近或平移；6-10s：回到固定机位，【角色】陈卓: human, 穿警服的陈卓女士, 健康科普主讲人，【服装】符合角色身份的写实服装，面料质感真实，颜色自然，款式简洁大方，【化妆】素颜或淡妆，妆容自然真实，发型整洁，符合日常生活场景，【动作】陈卓立于接待台前，双手展开空白报告单，食指指向具体栏目，身体侧转面向镜头，左手扶台边。，【道具】场景中必要的写实道具，材质真实，无文字标识，符合场景功能，【定妆照】陈卓: image://characters/chen-zhuo/portraits/chen-zhuo-front.png，"到了医院，医生开一堆检查。;最先看的是肌酸激酶。;正常值几百，它能飙到几万！"，【时间轴】T00:00 - 全景establishing，环境展示；T00:03 - 中景推进，人物动作；T00:07 - 情绪收尾，光线平复，【情绪】neutral, high energy，【节奏】整体：沉稳中等节奏；开头：平缓引入；中段：自然推进；结尾：平稳收尾，【转场】自然切换，无特效转场，直接硬切或微淡入淡出，【音频】接待区轻声交谈与键盘敲击，柔和空调气流环绕，【负面约束】no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background，【明亮约束】bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination，【角色约束】只出现角色一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆，【角色一致性】保持角色形象一致，造型不变，面部特征与体型每帧统一
+```markdown
+01.【约束】16:9 cinematic, 24fps cinematic, 画面中仅允许主标题和副标题，其他位置禁止任何文字；禁止墙面/桌面/手持物/物品/屏幕/服饰上出现中英文、字母、数字、商标、标签、招牌等一切可读内容；no text except main title and subtitle, no letters words numbers labels logos signs trademarks anywhere else,
+02.【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film,
+03.【场景】医院健康宣教室，白色荧光灯均匀照明，白墙面贴有骨骼肌解剖图与运动损伤海报，木质讲台表面带有细微使用划痕，地面浅灰色防滑PVC地胶，金属边框海报挂架反射冷光,
+04.【角色】陈卓: human, 穿警服的陈卓女士, 健康科普主讲人,
+05.【动作】镜头缓慢推近，陈卓站立讲台前，自然手势讲解，眼神注视镜头，警服在荧光灯下轮廓清晰,
+06.【定妆照】陈卓: image://characters/chen-zhuo/portraits/chen-zhuo-front.png,"肌酸激酶五万，肌肉在溶解。；身体早就在报警了。",
+07.【时间轴】T00:00-T00:10 / duration: 10s / type: opening / mood: neutral, calm, intense, dramatic,
+08.【情绪】情绪克制内敛，面无多余表情，眼神沉稳专注，面部肌肉放松自然，传递专业冷静的气场，神态安详从容，呼吸平稳，眉头舒展，嘴角自然闭合，整体氛围宁静平和，无焦虑紧张感，眉头紧锁，眼神锐利聚焦，下颌微收，面部肌肉紧绷，身体姿态僵硬，传递紧张压迫感
+09.【音频】AMBIENT: deep earth rumble 20-60Hz, epic atmosphere; SPATIAL: 3D audio pan synchronized with camera movement; INTENSITY: crescendo 0-3s, peak 3-7s, decay 7-10s,medical_cyberpunk world,
+10.【负面约束】no watermark, no logo, no text overlay, no subtitle, no caption, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters,
+11.【负面约束】no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background,
+12.【负面约束】no brand logos with text, no text in medical charts, no text on posters, no text on billboards, no text on packaging, no handwritten text, no printed text, no signage text,
+13.【负面约束】no text overlays, no UI elements with text, no text on book covers, no text on medicine bottles, no text on report forms, no text on devices, no text on badges, no text on nameplates,
+14.【负面约束】no text on doors, no text on windows, no text on floors, no text on ceilings,
+15.【负面约束】blurry, low resolution, pixelated, compression artifacts,
+16.【负面约束】cartoon, anime, illustration, 3D render look, CGI appearance, plastic look,
+17.【负面约束】distorted perspective, impossible geometry, floating objects,
+18.【负面约束】flat lighting, overexposed, crushed blacks, double shadows,
+19.【负面约束】unnatural physics, fake water, static water, cardboard texture, plastic foliage,
+20.【负面约束】distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose,
+21.【负面约束】natural eye colors only, no metallic shine,
+22.【角色一致性】保持chen-zhuo形象一致,杜绝分身重影
+23.【主标题内容】（片头专属字段，需单独配置）
+24.【副标题内容】（片头专属字段，需单独配置）
+25.【标题动画设计】（片头专属字段，需单独配置）
+26.【标题字体设计】（片头专属字段，需单独配置）
+27.【开场音频设计】（片头专属字段，需单独配置）
 ```
 
 ---
 
-### SC04
-**长度**: 2043 字符 | **定妆照**: 有 | **时间轴**: 无
+### SC01（内容·25字段）
+**长度**: 2340 字符 | **定妆照**: 有 | **时间轴**: T00:10-T00:22 / duration: 12s / type: establishing / mood: mysterious, anticipation, wonder
 
-```
-【导演指令】好莱坞大导演质感，电影级画面，写实风格，无特效，无科幻元素，【约束】Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text anywhere in frame, no subtitle, no caption, no watermark, no logo, no readable characters，【基础】8K resolution, cinematic quality, highly detailed, photorealistic, hyperrealistic, sharp focus, ultra high definition, lifelike textures, professional color grading，【场景】医院检验科窗口前，冷白色荧光灯维持恒定色温，检验窗口玻璃带有微弱反射，不锈钢台面反光，墙面悬挂无文字科室标识牌，地面浅灰色防滑地砖，窗口下设塑料取单篮。，【灯光/照明】主光：右侧45度自然光 5600K柔光漫射；补光：左前侧反光板填充阴影；背景光：轮廓光分离层次；光比3:1，整体明亮清晰，【构图】景别：中景（膝上）；主体位置：画面黄金分割点；线条引导：纵深层次感；画框边缘：适度留白，【色彩/色调】主色调：自然偏暖；辅助色：环境本色；肤色：自然健康；饱和度：中等自然；对比度：中高清晰，【景深】焦点：主体面部或动作中心；景深：中等（f/4），背景适度虚化；前景：轻微虚化增加层次；层次：前景-中景-背景三层分离，【运镜】0-3s：固定机位稳定构图；3-6s：缓慢推近或平移；6-10s：回到固定机位，【角色】陈卓: human, 穿警服的陈卓女士, 健康科普主讲人，【服装】符合角色身份的写实服装，面料质感真实，颜色自然，款式简洁大方，【化妆】素颜或淡妆，妆容自然真实，发型整洁，符合日常生活场景，【动作】陈卓俯身于窗口台面，双手撑不锈钢台沿，身体前倾，右手握拳轻敲台面，左手接过试管架举至眼前。，【道具】场景中必要的写实道具，材质真实，无文字标识，符合场景功能，【定妆照】陈卓: image://characters/chen-zhuo/portraits/chen-zhuo-front.png，"肌红蛋白也爆表！;血钾、肝酶跟着乱。;这些指标就是求救信号。"，【时间轴】T00:00 - 全景establishing，环境展示；T00:03 - 中景推进，人物动作；T00:06 - 情绪收尾，光线平复，【情绪】positive, high energy，【节奏】整体：沉稳中等节奏；开头：平缓引入；中段：自然推进；结尾：平稳收尾，【转场】自然切换，无特效转场，直接硬切或微淡入淡出，【音频】采血管密集碰撞，打印机高速出纸，叫号电子音刺耳，【负面约束】no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background，【明亮约束】bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination，【角色约束】只出现角色一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆，【角色一致性】保持角色形象一致，造型不变，面部特征与体型每帧统一
+**人物卡片**:
+- 陈卓 (police): 陈卓
+
+```markdown
+01.【约束】16:9 cinematic, 24fps cinematic, 禁止画面内出现任何文字，含墙面/物品/文件/屏幕/服饰上的中英文、字母、数字、标点、商标、标签、招牌、路牌等一切可读内容；禁止一切印刷体、手写体、电子屏文字、发光字、字幕、水印；no text anywhere, no letters words numbers labels logos signs trademarks, no readable content on walls objects documents screens clothing packaging；禁止红眼蓝瞳金瞳绿眼紫眼荧光眼；禁止水晶/强烈金属光泽/卡通动漫风格；禁止纯黑死黑/暗黑压抑/哥特阴郁/灰暗沉闷,
+02.【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film,
+03.【场景】三甲医院检验科走廊，冷白色LED光源从走廊顶部连续排列向下照射，指示牌清晰指向尿液检验窗口，地面浅色抛光瓷砖反射冷光，墙面白色医用抗菌涂层，空间纵深长达20米,
+04.【角色】陈卓: human, 穿警服的陈卓女士, 健康科普主讲人,
+05.【动作】旋转镜头转场，光绘轨迹勾勒人体肌肉轮廓，体积光，去饱和背景加警服蓝色单色强调，流体模拟暗示尿液颜色，梦境感,
+06.【定妆照】陈卓: image://characters/chen-zhuo/portraits/chen-zhuo-front.png,"几小时前，三大信号就出现了。；肌肉酸痛，浑身无力。；尿色深得像酱油。",
+07.【时间轴】T00:10-T00:22 / duration: 12s / type: establishing / mood: mysterious, anticipation, wonder,
+08.【情绪】mysterious, anticipation, wonder,
+09.【音频】AMBIENT: natural environment, wind and distant sounds; SPATIAL: ambient stereo field; INTENSITY: steady 0-100%, variations subtle,medical_cyberpunk world,
+10.【负面约束】no watermark, no logo, no text overlay, no subtitle, no caption, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters,
+11.【负面约束】no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background,
+12.【负面约束】no brand logos with text, no text in medical charts, no text on posters, no text on billboards, no text on packaging, no handwritten text, no printed text, no signage text,
+13.【负面约束】no text overlays, no UI elements with text, no text on book covers, no text on medicine bottles, no text on report forms, no text on devices, no text on badges, no text on nameplates,
+14.【负面约束】no text on doors, no text on windows, no text on floors, no text on ceilings,
+15.【负面约束】blurry, low resolution, pixelated, compression artifacts,
+16.【负面约束】cartoon, anime, illustration, 3D render look, CGI appearance, plastic look,
+17.【负面约束】distorted perspective, impossible geometry, floating objects,
+18.【负面约束】flat lighting, overexposed, crushed blacks, double shadows,
+19.【负面约束】unnatural physics, fake water, static water, cardboard texture, plastic foliage,
+20.【负面约束】distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose,
+21.【负面约束】natural eye colors only, no metallic shine,
+22.【角色一致性】保持chen-zhuo形象一致,杜绝分身重影
 ```
 
 ---
 
-### SC05
-**长度**: 2032 字符 | **定妆照**: 有 | **时间轴**: 无
+### SC02（内容·25字段）
+**长度**: 2294 字符 | **定妆照**: 有 | **时间轴**: T00:22-T00:32 / duration: 10s / type: conflict / mood: neutral, calm, intense, dramatic
 
+**人物卡片**:
+- 陈卓 (police): 陈卓
+
+```markdown
+01.【约束】16:9 cinematic, 24fps cinematic, 禁止画面内出现任何文字，含墙面/物品/文件/屏幕/服饰上的中英文、字母、数字、标点、商标、标签、招牌、路牌等一切可读内容；禁止一切印刷体、手写体、电子屏文字、发光字、字幕、水印；no text anywhere, no letters words numbers labels logos signs trademarks, no readable content on walls objects documents screens clothing packaging；禁止红眼蓝瞳金瞳绿眼紫眼荧光眼；禁止水晶/强烈金属光泽/卡通动漫风格；禁止纯黑死黑/暗黑压抑/哥特阴郁/灰暗沉闷,
+02.【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film,
+03.【场景】医生诊室，白色墙面悬挂医学挂图，办公桌摆放听诊器与血压计，检查床铺有蓝色一次性床单，无影灯悬于上方，窗光透入形成自然侧光,
+04.【角色】陈卓: human, 穿警服的陈卓女士, 健康科普主讲人,
+05.【动作】手持微晃跟拍，陈卓靠近检查床，手指轻触医学挂图，无影灯在头顶形成柔和光晕,
+06.【定妆照】陈卓: image://characters/chen-zhuo/portraits/chen-zhuo-front.png,"有些人还会恶心呕吐。；皮肤肿胀摸起来发硬。；千万别硬扛！",
+07.【时间轴】T00:22-T00:32 / duration: 10s / type: conflict / mood: neutral, calm, intense, dramatic,
+08.【情绪】情绪克制内敛，面无多余表情，眼神沉稳专注，面部肌肉放松自然，传递专业冷静的气场，神态安详从容，呼吸平稳，眉头舒展，嘴角自然闭合，整体氛围宁静平和，无焦虑紧张感，眉头紧锁，眼神锐利聚焦，下颌微收，面部肌肉紧绷，身体姿态僵硬，传递紧张压迫感
+09.【音频】AMBIENT: tension building, low frequency rumble; SPATIAL: directional audio pan; INTENSITY: building 0-5s, peak 5-8s, decay 8-10s,medical_cyberpunk world,
+10.【负面约束】no watermark, no logo, no text overlay, no subtitle, no caption, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters,
+11.【负面约束】no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background,
+12.【负面约束】no brand logos with text, no text in medical charts, no text on posters, no text on billboards, no text on packaging, no handwritten text, no printed text, no signage text,
+13.【负面约束】no text overlays, no UI elements with text, no text on book covers, no text on medicine bottles, no text on report forms, no text on devices, no text on badges, no text on nameplates,
+14.【负面约束】no text on doors, no text on windows, no text on floors, no text on ceilings,
+15.【负面约束】blurry, low resolution, pixelated, compression artifacts,
+16.【负面约束】cartoon, anime, illustration, 3D render look, CGI appearance, plastic look,
+17.【负面约束】distorted perspective, impossible geometry, floating objects,
+18.【负面约束】flat lighting, overexposed, crushed blacks, double shadows,
+19.【负面约束】unnatural physics, fake water, static water, cardboard texture, plastic foliage,
+20.【负面约束】distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose,
+21.【负面约束】natural eye colors only, no metallic shine,
+22.【角色一致性】保持chen-zhuo形象一致,杜绝分身重影
 ```
-【导演指令】好莱坞大导演质感，电影级画面，写实风格，无特效，无科幻元素，【约束】Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text anywhere in frame, no subtitle, no caption, no watermark, no logo, no readable characters，【基础】8K resolution, cinematic quality, highly detailed, photorealistic, hyperrealistic, sharp focus, ultra high definition, lifelike textures, professional color grading，【场景】医院走廊，双管荧光灯从天花板均匀投下冷白光，白墙面贴有健康知识图形海报，地面浅灰色防滑地胶，远处可见护士站与金属推车，墙角置绿色垃圾桶。，【灯光/照明】主光：右侧45度自然光 5600K柔光漫射；补光：左前侧反光板填充阴影；背景光：轮廓光分离层次；光比3:1，整体明亮清晰，【构图】景别：中景（膝上）；主体位置：画面黄金分割点；线条引导：纵深层次感；画框边缘：适度留白，【色彩/色调】主色调：自然偏暖；辅助色：环境本色；肤色：自然健康；饱和度：中等自然；对比度：中高清晰，【景深】焦点：主体面部或动作中心；景深：中等（f/4），背景适度虚化；前景：轻微虚化增加层次；层次：前景-中景-背景三层分离，【运镜】0-3s：固定机位稳定构图；3-6s：缓慢推近或平移；6-10s：回到固定机位，【角色】陈卓: human, 穿警服的陈卓女士, 健康科普主讲人，【服装】符合角色身份的写实服装，面料质感真实，颜色自然，款式简洁大方，【化妆】素颜或淡妆，妆容自然真实，发型整洁，符合日常生活场景，【动作】陈卓行走于走廊中央，三步后驻足转身，双手合十于胸前，继而右手伸出三指，左手自然摆动，微笑颔首。，【道具】场景中必要的写实道具，材质真实，无文字标识，符合场景功能，【定妆照】陈卓: image://characters/chen-zhuo/portraits/chen-zhuo-front.png，"记住：肌痛、无力、深色尿。;配合这三个关键指标。;发现问题，千万别拖。"，【时间轴】T00:00 - 全景establishing，环境展示；T00:03 - 中景推进，人物动作；T00:06 - 情绪收尾，光线平复，【情绪】positive, calm，【节奏】整体：沉稳中等节奏；开头：平缓引入；中段：自然推进；结尾：平稳收尾，【转场】自然切换，无特效转场，直接硬切或微淡入淡出，【音频】宁静走廊柔和混响，远处轻缓推车声与温暖低语，【负面约束】no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background，【明亮约束】bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination，【角色约束】只出现角色一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆，【角色一致性】保持角色形象一致，造型不变，面部特征与体型每帧统一
+
+---
+
+### SC03（内容·25字段）
+**长度**: 2349 字符 | **定妆照**: 有 | **时间轴**: T00:32-T00:45 / duration: 13s / type: emotional_climax / mood: neutral, calm, intense, dramatic
+
+**人物卡片**:
+- 陈卓 (police): 陈卓
+
+```markdown
+01.【约束】16:9 cinematic, 24fps cinematic, 禁止画面内出现任何文字，含墙面/物品/文件/屏幕/服饰上的中英文、字母、数字、标点、商标、标签、招牌、路牌等一切可读内容；禁止一切印刷体、手写体、电子屏文字、发光字、字幕、水印；no text anywhere, no letters words numbers labels logos signs trademarks, no readable content on walls objects documents screens clothing packaging；禁止红眼蓝瞳金瞳绿眼紫眼荧光眼；禁止水晶/强烈金属光泽/卡通动漫风格；禁止纯黑死黑/暗黑压抑/哥特阴郁/灰暗沉闷,
+02.【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film,
+03.【场景】医院健康管理中心，嵌入式LED灯带洒下柔和暖白光，接待台后方排列健康宣传展板，前方皮质沙发与实木茶几，地面灰色哑光瓷砖，墙面浅米色乳胶漆,
+04.【角色】陈卓: human, 穿警服的陈卓女士, 健康科普主讲人,
+05.【动作】低角度仰拍巨大试管，复杂粒子系统模拟数据飙升至五万呼应开场，光绘轨迹，体积光，陈卓情绪化表演打破第四面墙直视镜头，变形宽银幕，光学瑕疵,
+06.【定妆照】陈卓: image://characters/chen-zhuo/portraits/chen-zhuo-front.png,"查血最关键是肌酸激酶。；正常值几百，它能飙到几万！；还有肌红蛋白，尿里也能测。；这数字不会说谎。",
+07.【时间轴】T00:32-T00:45 / duration: 13s / type: emotional_climax / mood: neutral, calm, intense, dramatic,
+08.【情绪】情绪克制内敛，面无多余表情，眼神沉稳专注，面部肌肉放松自然，传递专业冷静的气场，神态安详从容，呼吸平稳，眉头舒展，嘴角自然闭合，整体氛围宁静平和，无焦虑紧张感，眉头紧锁，眼神锐利聚焦，下颌微收，面部肌肉紧绷，身体姿态僵硬，传递紧张压迫感
+09.【音频】AMBIENT: full frequency spectrum, rich harmonics; SPATIAL: immersive surround; INTENSITY: maximum 0-3s, sustain 3-10s,medical_cyberpunk world,
+10.【负面约束】no watermark, no logo, no text overlay, no subtitle, no caption, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters,
+11.【负面约束】no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background,
+12.【负面约束】no brand logos with text, no text in medical charts, no text on posters, no text on billboards, no text on packaging, no handwritten text, no printed text, no signage text,
+13.【负面约束】no text overlays, no UI elements with text, no text on book covers, no text on medicine bottles, no text on report forms, no text on devices, no text on badges, no text on nameplates,
+14.【负面约束】no text on doors, no text on windows, no text on floors, no text on ceilings,
+15.【负面约束】blurry, low resolution, pixelated, compression artifacts,
+16.【负面约束】cartoon, anime, illustration, 3D render look, CGI appearance, plastic look,
+17.【负面约束】distorted perspective, impossible geometry, floating objects,
+18.【负面约束】flat lighting, overexposed, crushed blacks, double shadows,
+19.【负面约束】unnatural physics, fake water, static water, cardboard texture, plastic foliage,
+20.【负面约束】distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose,
+21.【负面约束】natural eye colors only, no metallic shine,
+22.【角色一致性】保持chen-zhuo形象一致,杜绝分身重影
+```
+
+---
+
+### SC04（内容·25字段）
+**长度**: 2327 字符 | **定妆照**: 有 | **时间轴**: T00:45-T00:57 / duration: 12s / type: conflict / mood: tense, determined, brave, confrontational
+
+**人物卡片**:
+- 陈卓 (police): 陈卓
+
+```markdown
+01.【约束】16:9 cinematic, 24fps cinematic, 禁止画面内出现任何文字，含墙面/物品/文件/屏幕/服饰上的中英文、字母、数字、标点、商标、标签、招牌、路牌等一切可读内容；禁止一切印刷体、手写体、电子屏文字、发光字、字幕、水印；no text anywhere, no letters words numbers labels logos signs trademarks, no readable content on walls objects documents screens clothing packaging；禁止红眼蓝瞳金瞳绿眼紫眼荧光眼；禁止水晶/强烈金属光泽/卡通动漫风格；禁止纯黑死黑/暗黑压抑/哥特阴郁/灰暗沉闷,
+02.【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film,
+03.【场景】医院检验科窗口前，冷白色荧光灯维持恒定色温，检验窗口玻璃带有微弱反射，不锈钢台面反光，墙面悬挂清晰的科室标识指示牌，地面浅灰色防滑PVC地板,
+04.【角色】陈卓: human, 穿警服的陈卓女士, 健康科普主讲人,
+05.【动作】缓慢后拉全景，陈卓站立检验窗口前，转身面向镜头，不锈钢台面反射冷白色光源,
+06.【定妆照】陈卓: image://characters/chen-zhuo/portraits/chen-zhuo-front.png,"肝肾功能也要同步看。；钾和磷一乱，心脏会出事。；电解质紊乱能致命。",
+07.【时间轴】T00:45-T00:57 / duration: 12s / type: conflict / mood: tense, determined, brave, confrontational,
+08.【情绪】眉头紧锁，眼神锐利聚焦，下颌微收，面部肌肉紧绷，身体姿态僵硬，传递紧张压迫感
+09.【音频】AMBIENT: tension building, low frequency rumble; SPATIAL: directional audio pan; INTENSITY: building 0-5s, peak 5-8s, decay 8-10s,medical_cyberpunk world,
+10.【负面约束】no watermark, no logo, no text overlay, no subtitle, no caption, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters,
+11.【负面约束】no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background,
+12.【负面约束】no brand logos with text, no text in medical charts, no text on posters, no text on billboards, no text on packaging, no handwritten text, no printed text, no signage text,
+13.【负面约束】no text overlays, no UI elements with text, no text on book covers, no text on medicine bottles, no text on report forms, no text on devices, no text on badges, no text on nameplates,
+14.【负面约束】no text on doors, no text on windows, no text on floors, no text on ceilings,
+15.【负面约束】blurry, low resolution, pixelated, compression artifacts,
+16.【负面约束】cartoon, anime, illustration, 3D render look, CGI appearance, plastic look,
+17.【负面约束】distorted perspective, impossible geometry, floating objects,
+18.【负面约束】flat lighting, overexposed, crushed blacks, double shadows,
+19.【负面约束】unnatural physics, fake water, static water, cardboard texture, plastic foliage,
+20.【负面约束】distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose,
+21.【负面约束】natural eye colors only, no metallic shine,
+22.【角色一致性】保持chen-zhuo形象一致,杜绝分身重影
+```
+
+---
+
+### SC05（内容·25字段）
+**长度**: 2266 字符 | **定妆照**: 有 | **时间轴**: T00:57-T01:05 / duration: 8s / type: resolution / mood: peaceful, warm, nostalgic, hopeful
+
+**人物卡片**:
+- 陈卓 (police): 陈卓
+
+```markdown
+01.【约束】16:9 cinematic, 24fps cinematic, 禁止画面内出现任何文字，含墙面/物品/文件/屏幕/服饰上的中英文、字母、数字、标点、商标、标签、招牌、路牌等一切可读内容；禁止一切印刷体、手写体、电子屏文字、发光字、字幕、水印；no text anywhere, no letters words numbers labels logos signs trademarks, no readable content on walls objects documents screens clothing packaging；禁止红眼蓝瞳金瞳绿眼紫眼荧光眼；禁止水晶/强烈金属光泽/卡通动漫风格；禁止纯黑死黑/暗黑压抑/哥特阴郁/灰暗沉闷,
+02.【基础】hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film,
+03.【场景】医院走廊，双管荧光灯从天花板均匀投下冷白光，白墙面贴有健康知识海报，地面浅灰色防滑地胶，远处可见护士站与推车,
+04.【角色】陈卓: human, 穿警服的陈卓女士, 健康科普主讲人,
+05.【动作】陈卓走近镜头打破第四面墙，光学瑕疵，青橙对比，时间错位感，概念化场景收束,
+06.【定妆照】陈卓: image://characters/chen-zhuo/portraits/chen-zhuo-front.png,"记住这些症状，早发现是关键。；别等化验单变红才后悔。",
+07.【时间轴】T00:57-T01:05 / duration: 8s / type: resolution / mood: peaceful, warm, nostalgic, hopeful,
+08.【情绪】面部柔和放松，眼神温和亲切，嘴角自然上扬，传递温暖关怀与信任感，眼神向上微抬，瞳孔有光，嘴角轻微上扬，面部肌肉放松，传递对未来的期许
+09.【音频】AMBIENT: gentle atmosphere, soft reverb; SPATIAL: wide stereo field; INTENSITY: fading 0-5s, quiet 5-10s,medical_cyberpunk world,
+10.【负面约束】no watermark, no logo, no text overlay, no subtitle, no caption, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters,
+11.【负面约束】no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background,
+12.【负面约束】no brand logos with text, no text in medical charts, no text on posters, no text on billboards, no text on packaging, no handwritten text, no printed text, no signage text,
+13.【负面约束】no text overlays, no UI elements with text, no text on book covers, no text on medicine bottles, no text on report forms, no text on devices, no text on badges, no text on nameplates,
+14.【负面约束】no text on doors, no text on windows, no text on floors, no text on ceilings,
+15.【负面约束】blurry, low resolution, pixelated, compression artifacts,
+16.【负面约束】cartoon, anime, illustration, 3D render look, CGI appearance, plastic look,
+17.【负面约束】distorted perspective, impossible geometry, floating objects,
+18.【负面约束】flat lighting, overexposed, crushed blacks, double shadows,
+19.【负面约束】unnatural physics, fake water, static water, cardboard texture, plastic foliage,
+20.【负面约束】distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose,
+21.【负面约束】natural eye colors only, no metallic shine,
+22.【角色一致性】保持chen-zhuo形象一致,杜绝分身重影
 ```
 
 ---
 
 ## ⚠️ 审核须知
 
-1. 确认每个镜头有【镜头时间轴】
-2. 确认角色定妆照引用正确
-3. 确认负面约束（暗黑风/金属光泽）已包含
-4. 确认角色一致性约束已包含
-5. 确认 Prompt 长度在限制以内
+1. 【内容镜头】确认有 25 个字段（序号01-25）
+2. 【片头镜头】确认有 30 个字段（序号01-30，含5个片头专属字段）
+3. 确认【情绪】字段有具体面部/眼神描述，不是简单关键词
+4. 确认角色定妆照引用正确
+5. 确认负面约束（暗黑风/金属光泽）已包含
+6. 确认角色一致性约束已包含
+7. 确认 Prompt 长度在限制以内
 
 **请回复 "确认" 继续渲染，或 "修改" 并指出问题**

@@ -1920,7 +1920,29 @@ class ProductionEngine {
         subtitle_content: '',
         title_animation: '',
         title_font_design: '',
-        opening_audio_design: ''
+        opening_audio_design: '',
+        // 【v2.1.5-fix】兜底路径也生成P0字段，避免FieldGuard报错
+        director_instruction: '好莱坞大导演质感，电影级画面，写实风格，无特效，无科幻元素，自然光效与人工照明融合',
+        constraint: 'Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no caption, no watermark',
+        baseline: '8K resolution, cinematic quality, highly detailed, photorealistic, intricate textures, sharp focus',
+        negative: 'no text, no watermark, no logo, no cartoon style, no flat lighting, no blurry, no distorted, no deformed, no extra limbs',
+        consistency: '保持角色形象一致，服装发型每帧统一，禁止角色变形或分身',
+        // fields对象供FieldGuard校验
+        fields: {
+          director_instruction: '好莱坞大导演质感，电影级画面，写实风格，无特效，无科幻元素',
+          constraint: 'Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no caption, no watermark',
+          baseline: '8K resolution, cinematic quality, highly detailed, photorealistic, intricate textures, sharp focus',
+          scene: filteredShot.scene || '',
+          lighting: lightingStr,
+          camera_movement: cameraStr,
+          character: filteredShot.character || this._getMainCharacterName(blueprint) || 'NONE',
+          action: filteredShot.action || '',
+          dialogue: filteredShot.dialogue || 'NONE',
+          negative: 'no text, no watermark, no logo, no cartoon style, no flat lighting, no blurry, no distorted, no deformed, no extra limbs',
+          bright_constraint: 'bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination',
+          character_constraint: `只出现${filteredShot.character || this._getMainCharacterName(blueprint) || '主角'}一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆`,
+          consistency: '保持角色形象一致，服装发型每帧统一，禁止角色变形或分身'
+        }
       };
 
       // 片头专属字段(仅 S00)
