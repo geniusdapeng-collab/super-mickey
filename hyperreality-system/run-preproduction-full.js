@@ -36,7 +36,7 @@ async function runPreproduction() {
   console.log('=====================================');
   console.log('主题: 横纹肌溶解的症状以及实验室检查');
   console.log('角色: 陈卓（穿警服）');
-  console.log('创意指数: 0.56');
+  console.log('创意指数: 0.78');
   console.log('时长: 59-65秒');
   console.log('风格: REAL（全写实）');
   console.log('系列: 第1集/共3集');
@@ -59,7 +59,7 @@ async function runPreproduction() {
     },
     noNextEpisodePreview: true,
     has_opening: true,
-    creative_intensity: 0.56,
+    creative_intensity: 0.78,
     style: 'REAL',
     characters: [{
       id: 'chen-zhuo',

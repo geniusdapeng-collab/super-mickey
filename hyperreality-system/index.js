@@ -462,7 +462,15 @@ class HyperrealitySystem {
             duration: s.duration || s.timing?.duration || 0,
             promptLength: typeof s.prompt === 'string' ? s.prompt.length : (s.promptCharCount || 0),
             status: s.status || 'completed',
-            // v2.0.6: 片头专属字段
+            // v2.0.6: 片头专属字段（从顶层属性提取，OpeningTitleOptimizer写入）
+            ...(s.title_content ? {
+              title_content: s.title_content,
+              subtitle_content: s.subtitle_content,
+              title_animation: s.title_animation,
+              title_font_design: s.title_font_design,
+              opening_audio_design: s.opening_audio_design
+            } : {}),
+            // v2.0.6: 包含fields中的标准字段
             ...(s.fields || {})
           }));
           console.log('   ✅ 最终导出字段标准化通过');

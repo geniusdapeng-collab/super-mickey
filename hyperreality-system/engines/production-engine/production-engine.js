@@ -581,9 +581,10 @@ class ProductionEngine {
       // ----- Phase 3:PromptFusion(串行模式,每镜头独立 LLM 调用)-----
       if (!phase1Failed && startPhase <= 3) {
         // 【v2.1.4-fix11-D】动态预算分配：根据镜头数计算Phase 3所需时间
-        // 公式：镜头数 × 90秒(LLM生成) + 30秒(缓冲)
+        // 公式：镜头数 × 180秒(LLM生成) + 30秒(缓冲)
+        // 【v2.1.5-fix】从90s增加到180s，实际LLM调用需120-180s/镜头
         const shotCount = currentShots.length;
-        const PHASE3_PER_SHOT_MS = 90000; // 每镜头90秒
+        const PHASE3_PER_SHOT_MS = 180000; // 每镜头180秒（实际需120-180s）
         const PHASE3_BUFFER_MS = 30000;   // 30秒缓冲
         const phase3NeedMs = shotCount * PHASE3_PER_SHOT_MS + PHASE3_BUFFER_MS;
         

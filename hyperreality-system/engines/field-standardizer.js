@@ -572,13 +572,20 @@ function validateShot(shot) {
     warnings.push(`Prompt length ${promptLength} exceeds 3000 char limit`);
   }
 
-  // 片头专属字段检查（强制，缺失即报错）
+  // 片头专属字段检查（强制，但分层处理）
+  // 【v2.1.5-fix】Layer 2时片头字段还未生成（OpeningTitleOptimizer后处理），只报warning
+  // Final-Export时才严格检查
   if (isOpening) {
     const openingExclusiveFields = ['title_content', 'subtitle_content', 'title_animation', 'title_font_design', 'opening_audio_design'];
     const missingOpeningFields = openingExclusiveFields.filter(k => !shot[k] || String(shot[k]).trim() === '');
     if (missingOpeningFields.length > 0) {
-      // 【v2.1.4-fix13-审计修复】片头字段缺失从 warning 提升为 error
-      errors.push(`Opening exclusive fields missing: ${missingOpeningFields.join(', ')} (use OpeningTitleOptimizer to generate)`);
+      if (shot._context === 'Final-Export') {
+        // 【v2.1.4-fix13】最终导出时严格检查
+        errors.push(`Opening exclusive fields missing: ${missingOpeningFields.join(', ')} (use OpeningTitleOptimizer to generate)`);
+      } else {
+        // Layer 2时片头字段还未生成，只报warning
+        warnings.push(`Opening fields not yet generated (will be filled by OpeningTitleOptimizer): ${missingOpeningFields.join(', ')}`);
+      }
     }
   }
   if (!shot.negative || !shot.negative.includes('no text')) {
