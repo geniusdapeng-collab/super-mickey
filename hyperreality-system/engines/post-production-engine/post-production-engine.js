@@ -200,11 +200,13 @@ class PostProductionEngine {
    * │ 人类 · 银灰装甲    │
    * └─────────────────┘
    */
-  async generateIdentitySubtitles(scriptResult) {
+  async generateIdentitySubtitles(scriptResult, productionResult = null) {
     const blueprint = scriptResult.blueprint;
     const scenes = blueprint?.structure?.scenes || [];
     // B1-fix: 角色在 character_system.characters，不在 structure.characters
     const characters = blueprint?.character_system?.characters || [];
+    // 【v2.1.4-fix13-审计修复】优先从 productionResult.shots 提取实际画面内容
+    const shots = productionResult?.shots || [];
     const subtitles = [];
 
     for (const scene of scenes) {

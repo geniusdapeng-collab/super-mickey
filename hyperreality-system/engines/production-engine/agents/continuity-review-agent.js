@@ -8,8 +8,11 @@ const { CrossEpisodeValidator } = require('./cross-episode-validator');
 class ContinuityReviewAgent extends BaseAgent {
   constructor(options = {}) {
     super({ name: 'ContinuityReviewAgent', ...options });
+    // 【v2.1.4-fix13-审计修复】把 BaseAgent 的 LLM 引擎传给 CrossEpisodeValidator
     this.crossEpisodeValidator = new CrossEpisodeValidator({
-      llmEngine: options.llmEngine || null,
+      llmEngine: this._getLLMEngine(),
+      model: options.llmModel || 'kimi-k2p6',
+      timeout: options.llmTimeout || 120000,
       ...options.crossEpisode
     });
   }
@@ -126,11 +129,55 @@ ${shotsInfo}
 
   _fallback(shots) {
     console.log(`[ContinuityReviewAgent] 使用降级规则...`);
+    const issues = [];
+
+    // 【v2.1.4-fix13-审计修复】降级时至少做基础规则检查，不直接给固定分
+    // 1. 检测景别重复（连续3个相同 sceneType）
+    let prevType = '';
+    let repeatCount = 0;
+    for (const shot of shots) {
+      const st = shot.sceneType || '';
+      if (st === prevType) {
+        repeatCount++;
+        if (repeatCount >= 2) {
+          issues.push({
+            dimension: '视觉节奏',
+            severity: 'warning',
+            description: `连续 ${repeatCount + 1} 个 ${st} 镜头，节奏单调`,
+            affectedShots: [shot.shotId],
+            suggestion: '建议插入不同景别镜头打破单调'
+          });
+        }
+      } else {
+        repeatCount = 0;
+      }
+      prevType = st;
+    }
+
+    // 2. 检测时长分配异常
+    const durations = shots.map(s => s.duration || 0);
+    const total = durations.reduce((a, b) => a + b, 0);
+    if (total > 0) {
+      const avg = total / shots.length;
+      for (let i = 0; i < shots.length; i++) {
+        if (durations[i] > avg * 3) {
+          issues.push({
+            dimension: '时长分配',
+            severity: 'warning',
+            description: `镜头 ${shots[i].shotId} 时长 ${durations[i]}s 远超平均 ${avg.toFixed(1)}s`,
+            affectedShots: [shots[i].shotId],
+            suggestion: '考虑拆分或缩短该镜头'
+          });
+        }
+      }
+    }
+
+    const score = Math.max(60, 90 - issues.length * 5);
     return {
       review: {
-        overallScore: 80,
-        issues: [],
-        summary: '连续性审查（降级模式）：基础规则检查通过。'
+        overallScore: score,
+        issues,
+        summary: `连续性审查（降级模式）：规则检查发现 ${issues.length} 项问题`
       }
     };
   }

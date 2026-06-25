@@ -403,7 +403,8 @@ class HyperrealitySystem {
               const optimizer = new OpeningTitleOptimizer({
                 llmTimeout: 120000,
                 llmMaxRetries: 2,
-                llmModel: 'kimi-k2p6'
+                // 【v2.1.4-fix13-审计修复】从环境变量读取模型，消除硬编码
+                llmModel: process.env.STORMAXE_LLM_FAST_MODEL || process.env.STORMAXE_LLM_MODEL || 'kimi-k2p6'
               });
               const blueprint = result.stages?.adapter || { title: result.title || '未命名' };
               const optimized = await optimizer.optimize(openingShot, blueprint);
@@ -423,12 +424,26 @@ class HyperrealitySystem {
                 console.log('   主标题:', optimized.title_content);
                 console.log('   副标题:', optimized.subtitle_content);
               } else {
-                console.warn('   ⚠️ 片头优化降级，使用默认值');
-                openingShot.title_content = openingShot.title_content || result.title || '未命名';
-                openingShot.subtitle_content = openingShot.subtitle_content || '第1集';
+                // 【v2.1.4-fix13】降级时也要补全全部 5 个字段（用 optimized 返回的 fallback 值）
+                console.warn('   ⚠️ 片头优化降级，使用 fallback 值补全全部5字段');
+                openingShot.title_content = optimized.title_content || openingShot.title_content || result.title || '未命名';
+                openingShot.subtitle_content = optimized.subtitle_content || openingShot.subtitle_content || '第1集';
+                // 【v2.1.4-fix13】补全剩余 3 个字段（之前被丢弃）
+                openingShot.title_animation = optimized.title_animation || '主标题淡入入场，副标题延迟0.5秒跟随淡入，整体2秒';
+                openingShot.title_font_design = optimized.title_font_design || '粗体无衬线字体，白色，带微阴影';
+                openingShot.opening_audio_design = optimized.opening_audio_design || '环境音渐起，配合标题入场';
+                
+                openingShot.title = openingShot.title_content;
+                openingShot.subtitle = openingShot.subtitle_content;
               }
             } catch (e) {
               console.warn('   ⚠️ 片头优化失败:', e.message);
+              // 【v2.1.4-fix13】异常时也要补全全部 5 个字段，不能留空
+              openingShot.title_content = openingShot.title_content || result.title || '未命名';
+              openingShot.subtitle_content = openingShot.subtitle_content || '第1集';
+              openingShot.title_animation = openingShot.title_animation || '主标题淡入入场，副标题延迟0.5秒跟随淡入，整体2秒';
+              openingShot.title_font_design = openingShot.title_font_design || '粗体无衬线字体，白色，带微阴影';
+              openingShot.opening_audio_design = openingShot.opening_audio_design || '环境音渐起，配合标题入场';
             }
           }
           
@@ -467,6 +482,14 @@ class HyperrealitySystem {
         stack: error.stack
       });
       console.error(`\n❌ [系统错误] ${error.message}`);
+    }
+
+    // 【v2.1.4-fix13-审计修复】将完整 shots/prompts/opening 挂到 result，供调用方获取完整数据
+    if (typeof productionResult !== 'undefined' && productionResult) {
+      result.shots = productionResult.shots || [];
+      result.prompts = productionResult.prompts || [];
+      result.opening = productionResult.opening || null;
+      result.degraded = productionResult.degraded || false;
     }
 
     return result;

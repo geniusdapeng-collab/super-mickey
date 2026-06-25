@@ -13,13 +13,13 @@ const { FieldRepairAgent, PRD } = require('./field-repair-agent');
 
 class FieldQualityPipeline {
   constructor(options = {}) {
-    this.maxRounds = options.maxRounds || 2;
+    this.maxRounds = options.maxRounds ?? 2;
     this.checker = new FieldCheckAgent({
-      llmModel: options.llmModel || 'kimi-k2p6',
+      llmModel: options.llmModel || process.env.STORMAXE_LLM_MODEL || 'kimi-k2p6',
       llmTimeout: options.checkerTimeout || 120000,
     });
     this.repairer = new FieldRepairAgent({
-      llmModel: options.llmModel || 'kimi-k2p6',
+      llmModel: options.llmModel || process.env.STORMAXE_LLM_MODEL || 'kimi-k2p6',
       llmTimeout: options.repairerTimeout || 180000,
     });
 
@@ -27,6 +27,14 @@ class FieldQualityPipeline {
     if (options.prd) {
       this.repairer.setPRD(options.prd);
     }
+  }
+
+  /**
+   * 【v2.1.4-fix13-审计修复】下发全局 deadline 到 checker 和 repairer
+   */
+  setDeadline(deadlineMs) {
+    this.checker.setDeadline?.(deadlineMs);
+    this.repairer.setDeadline?.(deadlineMs);
   }
 
   /**
@@ -61,7 +69,10 @@ class FieldQualityPipeline {
     const reports = [];
     const logs = [];
 
-    for (let roundNum = 1; roundNum <= this.maxRounds; roundNum++) {
+    // 【v2.1.4-fix13】maxRounds=0 时至少执行 1 轮规则检查（不修复）
+    const effectiveRounds = Math.max(1, this.maxRounds);
+
+    for (let roundNum = 1; roundNum <= effectiveRounds; roundNum++) {
       // 检查环节
       const report = await this.checker.check(currentShot, shotId);
       report.shotId = `${shotId}_round${roundNum}`;
@@ -77,8 +88,14 @@ class FieldQualityPipeline {
       }
 
       // 如果是最后一轮，不再修复
-      if (roundNum === this.maxRounds) {
-        console.log(`⚠️ 达到最大轮次 ${this.maxRounds}，仍有问题需人工介入`);
+      if (roundNum === effectiveRounds) {
+        console.log(`⚠️ 达到最大轮次 ${effectiveRounds}，仍有问题需人工介入`);
+        break;
+      }
+
+      // 【v2.1.4-fix13】maxRounds=0 时只检查不修复
+      if (this.maxRounds === 0) {
+        console.log(`⚠️ 纯规则检查模式（maxRounds=0），跳过修复`);
         break;
       }
 

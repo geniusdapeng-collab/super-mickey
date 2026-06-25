@@ -18,15 +18,17 @@ try {
 
 class ScriptGenerator {
   constructor(options = {}) {
+    const model = options.model || process.env.STORMAXE_LLM_MODEL || 'kimi-k2p6';
     this.config = {
       llmEndpoint: options.llmEndpoint || process.env.LLM_ENDPOINT || 'https://ark.cn-beijing.volces.com/api/v3/chat/completions',
       apiKey: options.apiKey || process.env.VOLCENGINE_ARK_API_KEY,
-      model: options.model || 'ep-20260518004622-jp46s',
+      // 【v2.1.4-fix13-审计修复】从环境变量读取，消除硬编码
+      model: model,
       maxTokens: options.maxTokens || 8192,
       temperature: options.temperature || 1,
       promptTemplateDir: options.promptTemplateDir || path.join(__dirname, '../prompts'),
       templateDir: options.templateDir || path.join(__dirname, '../templates'),
-      timeout: options.timeout || 300000, // v1.2.5: 从180s增加到300s，API有时需要更长时间
+      timeout: options.timeout || 300000,
       maxRetries: options.maxRetries || 3,
       ...options
     };
@@ -35,12 +37,13 @@ class ScriptGenerator {
     this.llmEngine = null;
     if (LLMEngine) {
       this.llmEngine = new LLMEngine({
-        model: 'kimi-k2p6',
+        // 【v2.1.4-fix13-审计修复】使用统一变量，不再写死
+        model: model,
         maxTokens: this.config.maxTokens,
         timeoutMs: this.config.timeout,
         maxRetries: this.config.maxRetries
       });
-      console.log('[ScriptGenerator] 使用LLMEngine (kimi-k2p6)');
+      console.log(`[ScriptGenerator] 使用LLMEngine (${model})`);
     }
   }
 
@@ -314,18 +317,27 @@ ${meta._directorStyle}` : ''}
    * v1.1: 优先使用LLMEngine (kimi-k2p6)
    */
   async _callLLM(prompt) {
+    // 【v2.1.4-fix13-审计修复】增加 Promise.race 超时保护，防止 LLM 调用 hang 住
+    const timeoutMs = this.config.timeout || 300000;
+    let timer;
+    const timeoutPromise = new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error(`ScriptGenerator LLM 超时(${timeoutMs}ms)`)), timeoutMs);
+    });
+
     // 优先使用LLMEngine
     if (this.llmEngine) {
       try {
         console.log('[ScriptGenerator] 使用LLMEngine调用...');
-        // v1.2.6-fix8: 强制 forceJson=true，禁止 reasoning_content 顶替 content
-        const result = await this.llmEngine.generate(prompt, {
-          systemPrompt: '你是一位专业的AI视频编剧。只输出严格格式的JSON，不要markdown代码块，不要解释，不要思考过程。使用最紧凑的JSON格式（不要换行和缩进）。',
-          maxTokens: 32000,
-          timeoutMs: this.config.timeout,
-          forceJson: true,
-          allowReasoningFallback: false
-        });
+        const result = await Promise.race([
+          this.llmEngine.generate(prompt, {
+            systemPrompt: '你是一位专业的AI视频编剧。只输出严格格式的JSON，不要markdown代码块，不要解释，不要思考过程。使用最紧凑的JSON格式（不要换行和缩进）。',
+            maxTokens: 32000,
+            timeoutMs: timeoutMs,
+            forceJson: true,
+            allowReasoningFallback: false
+          }),
+          timeoutPromise
+        ]).finally(() => clearTimeout(timer));
         
         // v1.2.6-fix: 正确处理LLM引擎返回结构
         if (!result.success) {
@@ -370,7 +382,6 @@ ${meta._directorStyle}` : ''}
               { role: 'user', content: prompt }
             ],
             max_tokens: this.config.maxTokens,
-            // v1.2.6-fix9: kimi-k2p6 要求 temperature 必须为1，强制固定
             temperature: 1,
             top_p: 0.95
           },
@@ -379,7 +390,7 @@ ${meta._directorStyle}` : ''}
               'Authorization': `Bearer ${this.config.apiKey}`,
               'Content-Type': 'application/json'
             },
-            timeout: this.config.timeout
+            timeout: timeoutMs
           }
         );
 

@@ -372,15 +372,57 @@ class RequirementListBuilder {
   async _llmParse(userInput, ruleResult, intentResult, metadata) {
     const prompt = this._buildLLMPrompt(userInput, ruleResult, intentResult, metadata);
 
-    const response = await this.options.llmEngine.generate({
-      prompt: prompt,
-      maxTokens: 2500,
-      temperature: 1
+    // 【v2.1.4-fix13-审计修复】适配多种 LLM 引擎接口
+    let responseText = '';
+    const llmEngine = this.options.llmEngine;
+    const timeoutMs = 300000; // 5分钟
+
+    if (!llmEngine) {
+      throw new Error('LLM引擎未初始化');
+    }
+
+    // 超时保护
+    let timer;
+    const timeoutPromise = new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error(`RequirementListBuilder LLM 超时(${timeoutMs}ms)`)), timeoutMs);
     });
 
-    const responseText = response.success ? (response.content || '') : '';
+    try {
+      if (typeof llmEngine.generate === 'function') {
+        // 方式1: .generate({prompt, maxTokens, temperature}) - 兼容旧接口
+        const response = await Promise.race([
+          llmEngine.generate({
+            prompt: prompt,
+            maxTokens: 2500,
+            temperature: 1
+          }),
+          timeoutPromise
+        ]).finally(() => clearTimeout(timer));
+        responseText = response.success ? (response.content || '') : '';
+      } else if (typeof llmEngine.chat === 'function') {
+        // 方式2: .chat(systemPrompt, userPrompt, temperature) - BaseAgent 标准接口
+        const result = await Promise.race([
+          llmEngine.chat('你是一位专业的视频需求分析师。只输出严格格式的JSON，不要markdown代码块。', prompt, 1),
+          timeoutPromise
+        ]).finally(() => clearTimeout(timer));
+        responseText = result?.content || result?.data || '';
+      } else if (typeof llmEngine.reasonStructured === 'function') {
+        // 方式3: .reasonStructured(prompt, schema, options)
+        const result = await Promise.race([
+          llmEngine.reasonStructured(prompt, null, { maxTokens: 2500, timeoutMs }),
+          timeoutPromise
+        ]).finally(() => clearTimeout(timer));
+        responseText = result?.data ? JSON.stringify(result.data) : (result?.content || '');
+      } else {
+        throw new Error('LLM引擎无可用的调用方法');
+      }
+    } catch (error) {
+      console.error('[RequirementListBuilder] LLM调用失败:', error.message);
+      throw error;
+    }
+
     if (!responseText) {
-      throw new Error(response.error || 'LLM返回空内容');
+      throw new Error('LLM返回空内容');
     }
 
     // 解析 JSON
@@ -753,7 +795,7 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
 
       // 技术参数
       constraints: {
-        maxPromptLength: result.maxPromptLength || 1500,
+        maxPromptLength: result.maxPromptLength || 2500,
         referenceImageCount: result.referenceImageCount || 2,
         maxShotDuration: 15
       },
@@ -869,8 +911,12 @@ ${r.uncertainties.length ? `## ⚠️ 待确认项\n\n${r.uncertainties.map((u, 
       aspect_ratio: requirementList.aspectRatio,
       series: requirementList.isSeries ? {
         title: requirementList.seriesTitle,
-        episode: requirementList.episode,
-        total_episodes: requirementList.totalEpisodes
+        name: requirementList.seriesTitle,                    // 【v2.1.4-fix13-审计修复】增加 name 别名
+        currentEpisode: requirementList.episode,               // 【修复】episode → currentEpisode
+        episode: requirementList.episode,                      // 【修复】保留 episode 向后兼容
+        totalEpisodes: requirementList.totalEpisodes,          // 【修复】total_episodes → totalEpisodes
+        total_episodes: requirementList.totalEpisodes,         // 【修复】保留 total_episodes 向后兼容
+        episodeTitles: requirementList.episodeTitles || []
       } : null,
       // 【v2.1.4】传递系列内容规划
       seriesContentPlan: requirementList.seriesContentPlan || null,

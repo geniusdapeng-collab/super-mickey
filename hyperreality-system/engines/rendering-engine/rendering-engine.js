@@ -20,7 +20,8 @@ class RenderingEngine {
   constructor(options = {}) {
     this.config = {
       apiKey: options.apiKey || process.env.VOLCENGINE_ARK_API_KEY,
-      endpoint: options.endpoint || 'ep-20260518004622-jp46s',
+      // 【v2.1.4-fix13-审计修复】endpoint 从环境变量读取，消除硬编码
+      endpoint: options.endpoint || process.env.VOLCENGINE_ARK_ENDPOINT || 'ep-20260518004622-jp46s',
       apiUrl: options.apiUrl || 'https://ark.cn-beijing.volces.com/api/v3/contents/generations/tasks',
       maxConcurrent: options.maxConcurrent || 3,
       charactersDir: options.charactersDir || path.join(__dirname, '../../../characters'),

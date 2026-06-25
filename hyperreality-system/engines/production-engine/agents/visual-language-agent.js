@@ -114,15 +114,29 @@ ${shotsInfo}
 
   _fallback(shots) {
     console.log(`[VisualLanguageAgent] 使用降级规则...`);
-    // 返回原规则生成的数据，让外层使用原方法
+    // 【v2.1.4-fix13-审计修复】提供完整的降级默认值，避免空字段
     return {
       shots: shots.map(shot => ({
         shotId: shot.shotId,
-        camera: shot.camera,
-        cameraString: '',
-        lighting: shot.lighting,
-        lightingString: '',
-        timeline: shot.timeline
+        camera: shot.camera || {
+          shot_size: 'medium',
+          movement: 'static',
+          angle: 'eye_level',
+          lens: '35mm',
+          speed: 'normal'
+        },
+        cameraString: shot.cameraString || '中景静态镜头，35mm焦段，平视角度，平稳拍摄',
+        lighting: shot.lighting || {
+          key_light: '柔和顶光',
+          fill_light: '自然补光',
+          time_of_day: '白天',
+          atmosphere: '自然明亮'
+        },
+        lightingString: shot.lightingString || '柔和顶光照明，自然补光填充，白天室内明亮氛围',
+        timeline: shot.timeline || [
+          { time: 'T00:00-00:03', action: '镜头稳定，角色入画', purpose: '建立场景' },
+          { time: 'T00:03-00:06', action: '保持构图，角色开始动作', purpose: '推进叙事' }
+        ]
       }))
     };
   }

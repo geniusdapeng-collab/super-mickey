@@ -52,10 +52,15 @@ class AudioDesignAgent extends BaseAgent {
 
     const designedShots = shots.map((shot) => {
       const designed = llmResult.result?.shots?.find(s => s.shotId === shot.shotId) || {};
+      const bgSound = designed.backgroundSound || shot.backgroundSound;
+      const bgSoundStr = designed.backgroundSoundString || shot.backgroundSoundString || '';
+      // 【v2.1.4-fix13-审计修复】同时输出 audio 字段，兼容25字段标准
+      const audioStr = bgSoundStr || (bgSound ? `${bgSound.environment}: ${bgSound.description} (intensity: ${bgSound.intensity})` : '');
       return {
         ...shot,
-        backgroundSound: designed.backgroundSound || shot.backgroundSound,
-        backgroundSoundString: designed.backgroundSoundString || ''
+        backgroundSound: bgSound,
+        backgroundSoundString: bgSoundStr,
+        audio: audioStr // 新增：兼容25字段标准
       };
     });
 

@@ -168,8 +168,12 @@ const BEAST_ARCHIVE = {
 };
 
 class NirathExtension {
-  constructor() {
-    this.world = NIRATH_WORLD;
+  constructor(options = {}) {
+    // 【v2.1.4-fix13-审计修复】支持从外部传入 protagonist，消除硬编码
+    this.world = { ...NIRATH_WORLD };
+    if (options.protagonist) {
+      this.world.protagonist = options.protagonist;
+    }
     this.beasts = BEAST_ARCHIVE;
   }
 
@@ -184,7 +188,42 @@ class NirathExtension {
    * 获取异兽档案
    */
   getBeastArchive(beastId) {
-    return this.beasts[beastId] || null;
+    // 【v2.1.4-fix13-审计修复】返回通用异兽模板作为降级，避免 null 导致下游缺失
+    return this.beasts[beastId] || this._getGenericBeastTemplate(beastId);
+  }
+
+  /**
+   * 【v2.1.4-fix13-审计修复】通用异兽模板（用于未收录异兽的降级）
+   */
+  _getGenericBeastTemplate(beastId) {
+    return {
+      beast_id: beastId,
+      name: beastId,
+      name_origin: 'Nirath古语',
+      biology: {
+        skeleton: '碳基晶体复合结构，自适应外壳',
+        energy_source: '环境能量摄取，体内晶振转化',
+        lifespan: '未知',
+        reproduction: '能量饱和分裂'
+      },
+      visual_anchor: {
+        core_features: ['自适应晶体外壳', '能量感知器官', '特征性体型'],
+        color_palette: ['晶体黑', '能量蓝', '金属灰'],
+        texture: '晶体磨砂与生物组织混合质感',
+        scale: '2-5倍人类体型'
+      },
+      behavior: {
+        temperament: '领地性强，本能驱动',
+        habitat: '高能量密度区域',
+        diet: '能量与矿物质',
+        social_structure: '独行者或小群体'
+      },
+      narrative_role: {
+        archetype: '神秘异兽',
+        symbolism: '未知与探索',
+        story_function: '推动主角探索Nirath世界'
+      }
+    };
   }
 
   /**
@@ -273,8 +312,9 @@ class NirathExtension {
    * 生成角色视觉锚点文本
    */
   generateCharacterVisualAnchor(characterId) {
-    if (characterId === 'xiaoG') {
-      const protagonist = this.world.protagonist;
+    // 【v2.1.4-fix13-审计修复】从当前 protagonist 获取，消除硬编码 xiaoG
+    const protagonist = this.world.protagonist;
+    if (protagonist && characterId === protagonist.character_id) {
       return protagonist.visual_anchor.core_features.join('，');
     }
     

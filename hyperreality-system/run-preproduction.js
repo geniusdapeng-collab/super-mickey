@@ -1,6 +1,7 @@
 const { HyperrealitySystem } = require('./index');
 
 async function main() {
+  console.log('[DEBUG] 启动 run-preproduction.js');
   const system = new HyperrealitySystem({
     scriptEngine: {
       charactersDir: './characters'
@@ -21,6 +22,8 @@ async function main() {
       }
     }
   });
+  console.log('[DEBUG] HyperrealitySystem 实例化完成');
+  console.log('[DEBUG] system.productionEngine.agentConfig.totalDeadlineMs:', system.productionEngine.agentConfig.totalDeadlineMs);
 
   const intent = `穿警服的陈卓女士，讲解居民健康护理知识，进行全民健康科普，现在是第一集【什么是横纹肌溶解——横纹肌溶解的症状以及实验室检查】。
 
@@ -61,7 +64,14 @@ async function main() {
     
     const result = await system.create(intent, metadata, {
       skipRender: true,
-      skipPostProduction: true
+      skipPostProduction: true,
+      productionEngine: {
+        agentConfig: {
+          totalDeadlineMs: 1200000,
+          llmTimeout: 180000,
+          promptFusionConcurrency: 1
+        }
+      }
     });
 
     // 检查是否需要续跑（预算不足）

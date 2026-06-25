@@ -40,15 +40,15 @@ const IssueType = {
   CONFLICT: 'conflict'
 };
 
-// 25字段规格表（与规范文档对齐）
+// 【v2.1.4-fix13-审计修复】字段名统一为 snake_case，与 field-standardizer 对齐
 const FIELD_SPECS = [
   // P0 致命级（12个，必填）
-  { nameCn: '导演指令', nameEn: 'directorInstruction', priority: Priority.P0, charMin: 50, charMax: 80, required: true },
+  { nameCn: '导演指令', nameEn: 'director_instruction', priority: Priority.P0, charMin: 50, charMax: 80, required: true },
   { nameCn: '约束', nameEn: 'constraint', priority: Priority.P0, charMin: 100, charMax: 150, required: true },
   { nameCn: '基础', nameEn: 'baseline', priority: Priority.P0, charMin: 80, charMax: 100, required: true },
   { nameCn: '场景', nameEn: 'scene', priority: Priority.P0, charMin: 150, charMax: 200, required: true },
   { nameCn: '灯光', nameEn: 'lighting', priority: Priority.P0, charMin: 100, charMax: 150, required: true },
-  { nameCn: '运镜', nameEn: 'cameraMovement', priority: Priority.P0, charMin: 80, charMax: 120, required: true },
+  { nameCn: '运镜', nameEn: 'camera_movement', priority: Priority.P0, charMin: 80, charMax: 120, required: true },
   { nameCn: '角色', nameEn: 'character', priority: Priority.P0, charMin: 50, charMax: 80, required: true },
   { nameCn: '动作', nameEn: 'action', priority: Priority.P0, charMin: 100, charMax: 150, required: true },
   { nameCn: '台词', nameEn: 'dialogue', priority: Priority.P0, charMin: 0, charMax: 9999, required: true },
@@ -57,12 +57,12 @@ const FIELD_SPECS = [
   { nameCn: '角色一致性', nameEn: 'consistency', priority: Priority.P0, charMin: 50, charMax: 80, required: true },
   // P1 核心级（7个，必填）
   { nameCn: '构图', nameEn: 'composition', priority: Priority.P1, charMin: 80, charMax: 120, required: true },
-  { nameCn: '色彩', nameEn: 'colorPalette', priority: Priority.P1, charMin: 80, charMax: 120, required: true },
-  { nameCn: '景深', nameEn: 'depthOfField', priority: Priority.P1, charMin: 60, charMax: 100, required: true },
+  { nameCn: '色彩', nameEn: 'color_palette', priority: Priority.P1, charMin: 80, charMax: 120, required: true },
+  { nameCn: '景深', nameEn: 'depth_of_field', priority: Priority.P1, charMin: 60, charMax: 100, required: true },
   { nameCn: '时间轴', nameEn: 'timeline', priority: Priority.P1, charMin: 150, charMax: 200, required: true },
   { nameCn: '情绪', nameEn: 'mood', priority: Priority.P1, charMin: 30, charMax: 50, required: true },
-  { nameCn: '明亮约束', nameEn: 'brightConstraint', priority: Priority.P1, charMin: 50, charMax: 80, required: true },
-  { nameCn: '角色约束', nameEn: 'characterConstraint', priority: Priority.P1, charMin: 50, charMax: 80, required: true },
+  { nameCn: '明亮约束', nameEn: 'bright_constraint', priority: Priority.P1, charMin: 50, charMax: 80, required: true },
+  { nameCn: '角色约束', nameEn: 'character_constraint', priority: Priority.P1, charMin: 50, charMax: 80, required: true },
   // P2 增强级（4个，可选）
   { nameCn: '服装', nameEn: 'costume', priority: Priority.P2, charMin: 60, charMax: 100, required: false },
   { nameCn: '道具', nameEn: 'props', priority: Priority.P2, charMin: 40, charMax: 80, required: false },
@@ -76,6 +76,54 @@ const FIELD_SPECS = [
 const SPEC_MAP = {};
 for (const spec of FIELD_SPECS) {
   SPEC_MAP[spec.nameEn] = spec;
+}
+
+// 【v2.1.4-fix13】camelCase ↔ snake_case 双向映射，解决命名不一致
+const CAMEL_TO_SNAKE = {};
+const SNAKE_TO_CAMEL = {};
+for (const spec of FIELD_SPECS) {
+  const snake = spec.nameEn.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, '');
+  CAMEL_TO_SNAKE[spec.nameEn] = snake;
+  SNAKE_TO_CAMEL[snake] = spec.nameEn;
+}
+
+/**
+ * 【v2.1.4-fix13】将 shot 展平为统一格式
+ * 处理三种数据来源：
+ * 1. shot.fields.xxx（PromptFusion 嵌套结构，snake_case）
+ * 2. shot.xxx（顶层 snake_case）
+ * 3. shot.xxx（顶层 camelCase，FIELD_SPECS 格式）
+ * 统一输出为 camelCase 顶层字段，同时保留 snake_case 兼容
+ */
+function flattenShot(shot) {
+  if (!shot || typeof shot !== 'object') return {};
+  const flat = { ...shot };
+
+  // 展开 shot.fields 对象
+  if (shot.fields && typeof shot.fields === 'object') {
+    for (const [key, value] of Object.entries(shot.fields)) {
+      // snake_case → camelCase
+      const camelKey = SNAKE_TO_CAMEL[key] || key;
+      if (!(camelKey in flat) || !flat[camelKey]) {
+        flat[camelKey] = value;
+      }
+      // 也保留 snake_case 版本（向后兼容）
+      if (!(key in flat) || !flat[key]) {
+        flat[key] = value;
+      }
+    }
+  }
+
+  // 顶层 snake_case → camelCase 映射
+  for (const [snake, camel] of Object.entries(SNAKE_TO_CAMEL)) {
+    if (snake in flat && !(camel in flat)) {
+      flat[camel] = flat[snake];
+    } else if (camel in flat && !(snake in flat)) {
+      flat[snake] = flat[camel];
+    }
+  }
+
+  return flat;
 }
 
 const MAX_TOTAL_CHARS = 2500;
@@ -165,7 +213,7 @@ class RuleChecker {
     const issues = [];
 
     // 导演指令：须含风格定位+写实要求+情绪基调
-    const di = shot.directorInstruction || '';
+    const di = shot.director_instruction || '';
     if (di) {
       const diLower = (di && typeof di === "string") ? di.toLowerCase() : "";
       const hasStyle = /质感|风格|纪录片|电影|广告|cinematic|documentary|realistic|photorealistic|hollywood/.test(diLower);
@@ -177,7 +225,7 @@ class RuleChecker {
       if (!hasMood) missing.push('情绪基调');
       if (missing.length) {
         issues.push(new Issue({
-          fieldEn: 'directorInstruction', fieldCn: '导演指令',
+          fieldEn: 'director_instruction', fieldCn: '导演指令',
           severity: Severity.FATAL, issueType: IssueType.INCOMPLETE,
           description: `导演指令缺少要素：${missing.join('、')}`,
           suggestion: `导演指令须覆盖风格定位+写实要求+情绪基调，当前缺少：${missing.join('、')}。示例：'纪录片真实感，手持摄影风格，自然光效，无特效，冷静专业基调'`,
@@ -226,7 +274,7 @@ class RuleChecker {
     }
 
     // 运镜：须含运动方式+速度+时间分布
-    const cm = shot.cameraMovement || '';
+    const cm = shot.camera_movement || '';
     if (cm) {
       const cmLower = (cm && typeof cm === "string") ? cm.toLowerCase() : "";
       const hasMove = /push|pull|pan|track|follow|crane|orbit|推|拉|摇|移|跟|升|降|环绕/.test(cmLower);
@@ -238,7 +286,7 @@ class RuleChecker {
       if (!hasTime) missing.push('时间分布');
       if (missing.length) {
         issues.push(new Issue({
-          fieldEn: 'cameraMovement', fieldCn: '运镜',
+          fieldEn: 'camera_movement', fieldCn: '运镜',
           severity: Severity.FATAL, issueType: IssueType.INCOMPLETE,
           description: `运镜字段缺少要素：${missing.join('、')}`,
           suggestion: `运镜须含运动方式+速度+时间分布。示例：'slow push in toward the protagonist's face, 0.5m/s constant speed, duration 3 seconds'`,
@@ -283,7 +331,7 @@ class RuleChecker {
     }
 
     // 明亮约束：须含亮度+可见性+面部明亮
-    const bc = shot.brightConstraint || '';
+    const bc = shot.bright_constraint || '';
     if (bc) {
       const bcLower = (bc && typeof bc === "string") ? bc.toLowerCase() : "";
       const missing = [];
@@ -292,7 +340,7 @@ class RuleChecker {
       if (!/face|面部|facial|no dark shadow/.test(bcLower)) missing.push('面部明亮');
       if (missing.length) {
         issues.push(new Issue({
-          fieldEn: 'brightConstraint', fieldCn: '明亮约束',
+          fieldEn: 'bright_constraint', fieldCn: '明亮约束',
           severity: Severity.MAJOR, issueType: IssueType.INCOMPLETE,
           description: `明亮约束缺少要素：${missing.join('、')}`,
           suggestion: `明亮约束须含亮度+可见性+面部明亮。标准格式：'bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination, face clearly lit'`,
@@ -302,7 +350,7 @@ class RuleChecker {
     }
 
     // 角色约束：须含单角色限制+禁止分身
-    const cc = shot.characterConstraint || '';
+    const cc = shot.character_constraint || '';
     if (cc) {
       const ccLower = asStringLower(cc);
       const hasSingle = /只出现|仅出现|single character|only.*one/.test(ccLower);
@@ -312,7 +360,7 @@ class RuleChecker {
       if (!hasNoClone) missing.push('禁止分身声明');
       if (missing.length) {
         issues.push(new Issue({
-          fieldEn: 'characterConstraint', fieldCn: '角色约束',
+          fieldEn: 'character_constraint', fieldCn: '角色约束',
           severity: Severity.MAJOR, issueType: IssueType.INCOMPLETE,
           description: `角色约束缺少要素：${missing.join('、')}`,
           suggestion: `角色约束须含单角色限制+禁止分身。标准格式：'只出现[角色名]一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆'`,
@@ -476,13 +524,13 @@ class RuleChecker {
 
   _chapterForField(nameEn) {
     const map = {
-      directorInstruction: '3', constraint: '3', baseline: '4',
-      scene: '4', lighting: '4', composition: '5', colorPalette: '5',
-      depthOfField: '5', cameraMovement: '5', character: '6',
+      director_instruction: '3', constraint: '3', baseline: '4',
+      scene: '4', lighting: '4', composition: '5', color_palette: '5',
+      depth_of_field: '5', camera_movement: '5', character: '6',
       costume: '6', makeup: '6', action: '6', props: '7',
       portraits: '7', consistency: '7', dialogue: '8', timeline: '8',
       mood: '8', pacing: '8', transition: '9', audio: '9',
-      negative: '9', brightConstraint: '10', characterConstraint: '10',
+      negative: '9', bright_constraint: '10', character_constraint: '10',
     };
     return map[nameEn] || '2';
   }
@@ -525,8 +573,9 @@ const LLM_CHECKER_SYSTEM_PROMPT = `你是一个 AI 视频生成提示词的质�
 注意：只报告确实存在的语义问题，不要报告规则引擎已覆盖的格式/缺失问题。如果语义检查全部通过，返回 {"issues": []}。`;
 
 class LLMChecker {
-  constructor(llmClient) {
+  constructor(llmClient, timeoutMs = 120000) {
     this.llm = llmClient;
+    this.timeoutMs = timeoutMs; // 【v2.1.4-fix13】增加超时配置
   }
 
   async check(shot) {
@@ -534,8 +583,21 @@ class LLMChecker {
     const shotJson = JSON.stringify(shot, null, 2);
     const userPrompt = `请对以下镜头提示词进行语义一致性检查：\n\n${shotJson}`;
 
+    // 【v2.1.4-fix13】Promise.race 超时保护
+    let timer;
+    const timeoutPromise = new Promise((_, reject) => {
+      timer = setTimeout(
+        () => reject(new Error(`LLMChecker超时(${this.timeoutMs}ms)`)),
+        this.timeoutMs
+      );
+    });
+
     try {
-      const response = await this.llm.chat(LLM_CHECKER_SYSTEM_PROMPT, userPrompt, 0.2);
+      const response = await Promise.race([
+        this.llm.chat(LLM_CHECKER_SYSTEM_PROMPT, userPrompt, 0.2),
+        timeoutPromise
+      ]).finally(() => clearTimeout(timer));
+
       const data = JSON.parse(response);
       return (data.issues || []).map(item => new Issue({
         fieldEn: item.field_en || '',
@@ -546,7 +608,13 @@ class LLMChecker {
         suggestion: item.suggestion || '',
       }));
     } catch (e) {
-      return []; // LLM返回异常时降级为空，不阻塞流程
+      // 【v2.1.4-fix13】区分超时和其他异常
+      if (e.message?.includes('超时')) {
+        console.warn(`[LLMChecker] 语义检查超时(${this.timeoutMs}ms)，降级为空`);
+      } else {
+        console.warn(`[LLMChecker] 语义检查异常: ${e.message}`);
+      }
+      return []; // 降级为空，不阻塞流程
     }
   }
 }
@@ -559,21 +627,25 @@ class FieldCheckAgent extends BaseAgent {
   constructor(options = {}) {
     super({ name: 'FieldCheckAgent', llmTimeout: options.llmTimeout || 120000, ...options });
     this.ruleChecker = new RuleChecker();
-    this.llmChecker = new LLMChecker(this._getLLMEngine());
+    // 【v2.1.4-fix13】把超时配置传给 LLMChecker
+    this.llmChecker = new LLMChecker(this._getLLMEngine(), options.llmTimeout || 120000);
   }
 
   async check(shot, shotId = 'shot_001') {
     console.log(`[FieldCheckAgent] 开始检查 ${shotId}...`);
     const report = new CheckReport(shotId);
 
-    // 第一层：规则检查
-    const ruleIssues = this.ruleChecker.check(shot);
+    // 【v2.1.4-fix13】先展平 shot，统一字段命名和结构
+    const flatShot = flattenShot(shot);
+
+    // 第一层：规则检查（用展平后的 shot）
+    const ruleIssues = this.ruleChecker.check(flatShot);
     report.issues.push(...ruleIssues);
     console.log(`[FieldCheckAgent] RuleChecker 完成：${ruleIssues.length} 项问题`);
 
-    // 第二层：LLM语义检查
+    // 第二层：LLM语义检查（用展平后的 shot）
     if (this.llmChecker.llm) {
-      const llmIssues = await this.llmChecker.check(shot);
+      const llmIssues = await this.llmChecker.check(flatShot);
       report.issues.push(...llmIssues);
       console.log(`[FieldCheckAgent] LLMChecker 完成：${llmIssues.length} 项问题`);
     }
@@ -608,4 +680,8 @@ module.exports = {
   Severity,
   IssueType,
   MAX_TOTAL_CHARS,
+  // 【v2.1.4-fix13】导出展平工具，供 field-repair-agent.js 等下游使用
+  flattenShot,
+  CAMEL_TO_SNAKE,
+  SNAKE_TO_CAMEL,
 };

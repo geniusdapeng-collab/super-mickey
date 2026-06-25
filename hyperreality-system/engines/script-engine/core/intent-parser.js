@@ -238,8 +238,9 @@ class IntentParser {
       },
       metadata: {
         title: metadata.title || '未命名项目',
-        target_duration: analysis.target_duration || metadata.target_duration || 120,
-        target_platform: metadata.target_platform || ['tiktok', 'bilibili'],
+        target_duration: analysis.target_duration || metadata.target_duration || 60,
+        // 【v2.1.4-fix13-审计修复】不硬编码平台，从 metadata 获取或设为通用
+        target_platform: metadata.target_platform || ['general'],
         language: metadata.language || 'zh-CN',
         style_tags: metadata.style_tags || ['hyper-realistic', 'cinematic', 'epic'],
         world_setting: analysis.world_setting || metadata.world_setting || 'default',
@@ -249,8 +250,8 @@ class IntentParser {
         ...metadata
       },
       constraints: {
-        // v1.2.7-fix-A7: 与 v6.37 标准(1500)和 production-engine 对齐
-        max_prompt_length: metadata.max_prompt_length || 1500,
+        // v2.1.4-fix13-审计修复: 超现实系统标准 2500
+        max_prompt_length: metadata.max_prompt_length || 2500,
         reference_image_count: metadata.reference_image_count || 2,
         forbidden_elements: metadata.forbidden_elements || ['voiceover', 'metal_gloss', 'unnatural_eye_color']
       },

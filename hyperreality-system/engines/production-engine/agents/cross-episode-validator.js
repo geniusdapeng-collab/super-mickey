@@ -226,24 +226,66 @@ ${script.substring(0, 3000)}${script.length > 3000 ? '\n...（脚本截断，剩
 - 自然收束结尾（如"希望有帮助"）不算预告
 - 如果判断不准确，confidence可以低于0.5`;
 
-    try {
-      const result = await this.config.llmEngine.generate(prompt, {
-        systemPrompt: '你是一位严格但公正的内容审查员。只输出JSON，不要解释。',
-        maxTokens: 2000,
-        timeoutMs: this.config.timeout,
-        forceJson: true
-      });
+    // 【v2.1.4-fix13-审计修复】增加超时保护 + 适配 BaseAgent 的 LLM 引擎 API
+    let timer;
+    const timeoutPromise = new Promise((_, reject) => {
+      timer = setTimeout(
+        () => reject(new Error('CrossEpisodeValidator LLM 超时')),
+        this.config.timeout
+      );
+    });
 
-      if (!result.success || !result.content) {
+    try {
+      let responseText = '';
+
+      // 优先用 chat 方法（BaseAgent 引擎的标准接口）
+      if (typeof this.config.llmEngine.chat === 'function') {
+        responseText = await Promise.race([
+          this.config.llmEngine.chat(
+            '你是一位严格但公正的内容审查员。只输出JSON，不要解释。',
+            prompt,
+            0.2
+          ),
+          timeoutPromise
+        ]).finally(() => clearTimeout(timer));
+      }
+      // 兼容 reasonStructured 方法
+      else if (typeof this.config.llmEngine.reasonStructured === 'function') {
+        const result = await Promise.race([
+          this.config.llmEngine.reasonStructured(prompt, null, {
+            maxTokens: 2000,
+            timeoutMs: this.config.timeout
+          }),
+          timeoutPromise
+        ]).finally(() => clearTimeout(timer));
+        responseText = result?.data ? JSON.stringify(result.data) : '';
+      }
+      // 兼容 generate 方法（如果引擎实现了的话）
+      else if (typeof this.config.llmEngine.generate === 'function') {
+        const result = await Promise.race([
+          this.config.llmEngine.generate(prompt, {
+            systemPrompt: '你是一位严格但公正的内容审查员。只输出JSON，不要解释。',
+            maxTokens: 2000,
+            timeoutMs: this.config.timeout,
+            forceJson: true
+          }),
+          timeoutPromise
+        ]).finally(() => clearTimeout(timer));
+        responseText = result?.content || '';
+      } else {
+        throw new Error('LLM引擎没有可用的方法(chat/reasonStructured/generate)');
+      }
+
+      if (!responseText) {
         return [];
       }
 
       let parsed;
       try {
-        parsed = JSON.parse(result.content.trim());
+        parsed = JSON.parse(responseText.trim());
       } catch (e) {
         // 尝试从文本中提取JSON
-        const jsonMatch = result.content.match(/\{[\s\S]*\}/);
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
           try {
             parsed = JSON.parse(jsonMatch[0]);
@@ -345,36 +387,46 @@ ${script.substring(0, 3000)}${script.length > 3000 ? '\n...（脚本截断，剩
   }
 
   /**
-   * 从scenes中提取可校验的文本
+   * 从shots中提取可校验的文本
+   * 【v2.1.4-fix13-审计修复】适配 ProductionEngine 实际输出的字段名
    */
-  static extractScriptText(scenes) {
-    if (!Array.isArray(scenes)) return '';
+  static extractScriptText(shots) {
+    if (!Array.isArray(shots)) return '';
 
     const texts = [];
-    for (const scene of scenes) {
-      // 提取场景描述
-      if (scene.description) texts.push(scene.description);
-      if (scene.scene_name) texts.push(scene.scene_name);
-      if (scene.visual_notes) texts.push(scene.visual_notes);
+    for (const shot of shots) {
+      // 【修复】适配 ProductionEngine 实际输出的字段名
+      if (shot.scene) texts.push(String(shot.scene));
+      if (shot.sceneDescription) texts.push(String(shot.sceneDescription));
+      if (shot.action) texts.push(String(shot.action));
+      if (shot.mood) texts.push(String(shot.mood));
 
-      // 提取台词
-      if (scene.dialogue?.lines) {
-        for (const line of scene.dialogue.lines) {
-          if (line.text) texts.push(line.text);
+      // 台词：可能是字符串、数组、或对象
+      if (shot.dialogue) {
+        if (typeof shot.dialogue === 'string') {
+          texts.push(shot.dialogue);
+        } else if (Array.isArray(shot.dialogue)) {
+          for (const line of shot.dialogue) {
+            if (typeof line === 'string') texts.push(line);
+            else if (line?.text) texts.push(line.text);
+            else if (line?.content) texts.push(line.content);
+          }
+        } else if (shot.dialogue?.lines) {
+          for (const line of shot.dialogue.lines) {
+            if (line.text) texts.push(line.text);
+          }
         }
       }
-      if (Array.isArray(scene.dialogue)) {
-        for (const line of scene.dialogue) {
-          if (typeof line === 'string') texts.push(line);
-          if (line.text) texts.push(line.text);
-        }
-      }
 
-      // 提取其他文本字段
-      if (scene.setting) texts.push(scene.setting);
+      // fields 嵌套对象中的文本
+      if (shot.fields) {
+        if (shot.fields.scene) texts.push(String(shot.fields.scene));
+        if (shot.fields.action) texts.push(String(shot.fields.action));
+        if (shot.fields.dialogue) texts.push(String(shot.fields.dialogue));
+      }
     }
 
-    return texts.join('\n');
+    return texts.filter(t => t && t.trim()).join('\n');
   }
 }
 

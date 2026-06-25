@@ -566,12 +566,13 @@ function validateShot(shot) {
     warnings.push(`Prompt length ${promptLength} exceeds 2500 char limit`);
   }
 
-  // 片头专属字段检查（作为提示，不强制）
+  // 片头专属字段检查（强制，缺失即报错）
   if (isOpening) {
     const openingExclusiveFields = ['title_content', 'subtitle_content', 'title_animation', 'title_font_design', 'opening_audio_design'];
     const missingOpeningFields = openingExclusiveFields.filter(k => !shot[k] || String(shot[k]).trim() === '');
     if (missingOpeningFields.length > 0) {
-      warnings.push(`Opening exclusive fields missing: ${missingOpeningFields.join(', ')} (use OpeningTitleOptimizer to generate)`);
+      // 【v2.1.4-fix13-审计修复】片头字段缺失从 warning 提升为 error
+      errors.push(`Opening exclusive fields missing: ${missingOpeningFields.join(', ')} (use OpeningTitleOptimizer to generate)`);
     }
   }
   if (!shot.negative || !shot.negative.includes('no text')) {

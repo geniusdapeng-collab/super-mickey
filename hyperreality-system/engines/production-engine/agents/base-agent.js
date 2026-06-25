@@ -6,6 +6,10 @@
  */
 const path = require('path');
 
+// 从环境变量读取模型配置，消除硬编码
+const DEFAULT_MODEL = process.env.STORMAXE_LLM_MODEL || 'kimi-k2p6';
+const DEFAULT_FAST_MODEL = process.env.STORMAXE_LLM_FAST_MODEL || DEFAULT_MODEL;
+
 function loadLLMEngine(model, maxTokens) {
   try {
     const SYSTEMS_PATH = path.join(__dirname, '../../../../systems');
@@ -14,7 +18,7 @@ function loadLLMEngine(model, maxTokens) {
       console.warn('[BaseAgent] LLMEngine类加载失败');
       return null;
     }
-    return new LLMClass({ model: model || 'kimi-k2p6', maxTokens: maxTokens || 16000 });
+    return new LLMClass({ model: model || DEFAULT_MODEL, maxTokens: maxTokens || 16000 });
   } catch (e) {
     console.warn(`[BaseAgent] LLM引擎加载失败: ${e.message}`);
     return null;
@@ -26,7 +30,7 @@ class BaseAgent {
     this.name = options.name || 'BaseAgent';
     this.llmTimeout = options.llmTimeout || 300000; // 单次调用上限 5 分钟（足以覆盖最慢的 VisualLanguage 258s）
     this.llmMaxRetries = options.llmMaxRetries ?? 2; // 重试收敛到 2 次（原 3 次是隐藏时间炸弹）
-    this.llmModel = options.llmModel || 'kimi-k2p6'; // 现在真的会生效
+    this.llmModel = options.llmModel || DEFAULT_MODEL; // 修复：用环境变量
     this.llmMaxTokens = options.llmMaxTokens || 16000;
     this.enabled = options.enabled !== false;
 
@@ -58,7 +62,22 @@ class BaseAgent {
   }
 
   /**
-   * 核心LLM调用方法（带重试+降级+截止时间感知）
+   * 【v2.1.4-fix13】通用超时包装器 — 核心修复
+   * 任何 Promise 都可以用这个包装，确保不会无限等待
+   */
+  _callWithTimeout(promise, timeoutMs, label = 'LLM调用') {
+    let timer;
+    const timeoutPromise = new Promise((_, reject) => {
+      timer = setTimeout(
+        () => reject(new Error(`${label}超时(${timeoutMs}ms)`)),
+        timeoutMs
+      );
+    });
+    return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timer));
+  }
+
+  /**
+   * 核心LLM调用方法（带重试+降级+截止时间感知+外层超时+Schema校验）
    */
   async _callLLM(prompt, schema, fallbackFn) {
     if (!this.enabled) {
@@ -82,15 +101,27 @@ class BaseAgent {
 
     try {
       const fullPrompt = `${this._getSystemPrompt()}\n\n${prompt}`;
-      const result = await llm.reasonStructured(fullPrompt, schema, {
-        maxTokens: this.llmMaxTokens,
-        timeoutMs: perCallTimeout,
-        maxRetries: this.llmMaxRetries,
-        deadlineMs: this._globalDeadline
-      });
+      // 【v2.1.4-fix13】用 _callWithTimeout 包装，确保即使底层引擎不实现超时也能被中断
+      const result = await this._callWithTimeout(
+        llm.reasonStructured(fullPrompt, schema, {
+          maxTokens: this.llmMaxTokens,
+          timeoutMs: perCallTimeout,
+          maxRetries: this.llmMaxRetries,
+          deadlineMs: this._globalDeadline
+        }),
+        perCallTimeout,
+        `[${this.name}] reasonStructured`
+      );
 
       if (!result.success) {
         throw new Error(`LLM引擎返回失败: ${result.error}`);
+      }
+
+      // 【v2.1.4-fix13】校验返回数据是否满足 schema
+      const validation = this._validateSchema(result.data, schema);
+      if (!validation.valid) {
+        console.warn(`[${this.name}] Schema校验失败: ${validation.reason}，尝试降级`);
+        return this._executeFallback(fallbackFn, `Schema validation failed: ${validation.reason}`);
       }
 
       console.log(`[${this.name}] LLM调用成功 ✓`);
@@ -104,6 +135,10 @@ class BaseAgent {
   _executeFallback(fallbackFn, reason) {
     try {
       const fallbackResult = fallbackFn ? fallbackFn() : null;
+      // 【v2.1.4-fix13】如果降级结果也为 null，明确标记
+      if (fallbackResult === null) {
+        console.warn(`[${this.name}] 降级结果为null: ${reason}`);
+      }
       return { result: fallbackResult, degraded: true, degradeReason: reason, attempts: this.llmMaxRetries };
     } catch (fallbackErr) {
       console.error(`[${this.name}] 降级也失败了: ${fallbackErr.message}`);
@@ -111,11 +146,25 @@ class BaseAgent {
     }
   }
 
+  /**
+   * 【v2.1.4-fix13】Schema 校验 — 增加空字符串/空数组检查
+   */
   _validateSchema(data, schema) {
     if (!schema || !schema.required) return { valid: true };
+    if (!data || typeof data !== 'object') {
+      return { valid: false, reason: '返回数据为空或非对象' };
+    }
     for (const field of schema.required) {
-      if (data[field] === undefined || data[field] === null) {
+      const value = data[field];
+      if (value === undefined || value === null) {
         return { valid: false, reason: `缺少必需字段: ${field}` };
+      }
+      // 【v2.1.4-fix13】增加空字符串和空数组检查
+      if (typeof value === 'string' && !value.trim()) {
+        return { valid: false, reason: `必需字段为空字符串: ${field}` };
+      }
+      if (Array.isArray(value) && value.length === 0 && schema.rejectEmptyArray) {
+        return { valid: false, reason: `必需字段为空数组: ${field}` };
       }
     }
     return { valid: true };

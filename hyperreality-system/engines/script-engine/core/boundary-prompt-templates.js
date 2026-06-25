@@ -177,9 +177,21 @@ function extractSeriesPlan(metadata) {
     };
   }
 
-  // 从 metadata.seriesContentPlan 提取
+  // 从 metadata.seriesContentPlan 提取（【v2.1.4-fix13-审计修复】增加结构适配）
   if (metadata.seriesContentPlan) {
-    return metadata.seriesContentPlan;
+    const plan = metadata.seriesContentPlan;
+    return {
+      seriesTitle: plan.seriesTitle || plan.title || '',
+      totalEpisodes: plan.totalEpisodes,
+      episodes: (plan.episodes || []).map(ep => ({
+        index: ep.episodeIndex || ep.index || 1,
+        title: ep.title || `第${ep.episodeIndex || ep.index || 1}集`,
+        coreTopics: ep.coreTopics || (ep.contentScope ? ep.contentScope.split(/[，,；;]/) : []),
+        mustCover: ep.mustCover || (ep.contentScope ? ep.contentScope.split(/[，,；;]/) : [ep.title]),
+        canMention: ep.canMention || [],
+        mustNotCover: ep.mustNotCover || (ep.excludedContent ? ep.excludedContent.split(/[，,；;]/) : [])
+      }))
+    };
   }
 
   // 兼容旧格式：从 episodeTitles 构造简单规划

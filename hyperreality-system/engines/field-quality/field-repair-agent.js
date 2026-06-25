@@ -231,8 +231,9 @@ const LLM_REPAIRER_SYSTEM_PROMPT = `你是 AI 视频生成提示词的【内容�
 只返回需要修复的字段，不要返回未出问题的字段。`;
 
 class LLMRepairer {
-  constructor(llmClient) {
+  constructor(llmClient, timeoutMs = 180000) {
     this.llm = llmClient;
+    this.timeoutMs = timeoutMs; // 【v2.1.4-fix13】增加超时配置
   }
 
   async repair(shot, report, prd) {
@@ -248,7 +249,7 @@ class LLMRepairer {
     // 构建问题清单
     const issuesText = llmIssues.map(i => {
       const currentVal = i.currentValue || shot[i.fieldEn] || '（缺失）';
-      return `- 字段【${i.fieldCn}】(${i.fieldEn})：${i.description}\n  修改建议：${i.suggestion}\n  当前值：${currentVal.slice(0, 80)}`;
+      return `- 字段【${i.fieldCn}】(${i.fieldEn})：${i.description}\n  修改建议：${i.suggestion}\n  当前值：${String(currentVal).slice(0, 80)}`;
     }).join('\n');
 
     // PRD约束文本（核心：防止修复偏离业务需求）
@@ -273,28 +274,81 @@ class LLMRepairer {
 
     const userPrompt = `请根据以下信息修复提示词字段：\n\n【用户需求文档 PRD 约束】（修复时必须遵守，不得偏离）\n${prdConstraint}\n\n【需要修复的字段当前内容】\n${currentFieldsJson}\n\n【字符数预算限制】（修复后每个字段不得超过上限）\n${budgetText}\n\n【检查发现的问题】\n${issuesText}\n\n请修复上述问题，确保修复后的字段：\n1. 符合 PRD 中的视频类型、风格方向、情绪基调等业务约束\n2. 符合字段规范的格式要求\n3. 与其它字段保持风格一致\n4. 严格控制字符数在预算上限以内\n\n返回JSON格式的修复结果。`;
 
+    // 【v2.1.4-fix13】增加超时保护
+    let timer;
+    const timeoutPromise = new Promise((_, reject) => {
+      timer = setTimeout(
+        () => reject(new Error(`LLMRepairer超时(${this.timeoutMs}ms)`)),
+        this.timeoutMs
+      );
+    });
+
     try {
-      const response = await this.llm.chat(LLM_REPAIRER_SYSTEM_PROMPT, userPrompt, 0.3);
+      const response = await Promise.race([
+        this.llm.chat(LLM_REPAIRER_SYSTEM_PROMPT, userPrompt, 0.3),
+        timeoutPromise
+      ]).finally(() => clearTimeout(timer));
+
       const data = JSON.parse(response);
-      const repairedFields = data.repaired_fields || {};
+      const repairedFields = data.repaired_fields || data || {}; // 【v2.1.4-fix13】兼容两种返回格式
 
       const repairedShot = JSON.parse(JSON.stringify(shot));
       const actions = [];
 
-      for (const [fieldEn, newValue] of Object.entries(repairedFields)) {
-        if (!newValue) continue;
-        const oldValue = shot[fieldEn] || '';
+      // 【v2.1.4-fix13】构建字段名映射表，支持 snake_case ↔ camelCase
+      const { SNAKE_TO_CAMEL, CAMEL_TO_SNAKE } = require('./field-check-agent');
 
-        // 字符数后处理
-        const spec = SPEC_MAP[fieldEn];
-        if (spec && spec.charMax < 9999 && newValue.length > spec.charMax) {
-          newValue = this._smartTruncate(newValue, spec.charMax);
+      for (const [fieldEn, newValue] of Object.entries(repairedFields)) {
+        if (!newValue || !String(newValue).trim()) continue;
+
+        // 【v2.1.4-fix13】将 LLM 返回的 key 统一映射到 shot 中已有的字段名
+        let targetField = fieldEn;
+        // 如果 shot 中有 camelCase 版本，优先用 camelCase
+        if (SNAKE_TO_CAMEL[fieldEn] && SNAKE_TO_CAMEL[fieldEn] in repairedShot) {
+          targetField = SNAKE_TO_CAMEL[fieldEn];
+        }
+        // 如果 shot 中有 snake_case 版本
+        else if (CAMEL_TO_SNAKE[fieldEn] && CAMEL_TO_SNAKE[fieldEn] in repairedShot) {
+          targetField = CAMEL_TO_SNAKE[fieldEn];
+        }
+        // 同时检查 fields 嵌套对象
+        else if (repairedShot.fields) {
+          if (SNAKE_TO_CAMEL[fieldEn] && SNAKE_TO_CAMEL[fieldEn] in repairedShot.fields) {
+            targetField = `fields.${SNAKE_TO_CAMEL[fieldEn]}`;
+          } else if (fieldEn in repairedShot.fields) {
+            targetField = `fields.${fieldEn}`;
+          }
         }
 
-        if (newValue !== oldValue) {
-          repairedShot[fieldEn] = newValue;
+        const oldValue = targetField.includes('.')
+          ? targetField.split('.').reduce((obj, k) => obj?.[k], repairedShot) || ''
+          : repairedShot[targetField] || '';
+
+        // 字符数后处理
+        const spec = SPEC_MAP[fieldEn] || SPEC_MAP[SNAKE_TO_CAMEL[fieldEn]];
+        let finalValue = newValue;
+        if (spec && spec.charMax < 9999 && finalValue.length > spec.charMax) {
+          finalValue = this._smartTruncate(finalValue, spec.charMax);
+        }
+
+        if (finalValue !== oldValue) {
+          // 赋值（支持嵌套 fields 对象）
+          if (targetField.includes('.')) {
+            const [parent, child] = targetField.split('.');
+            repairedShot[parent][child] = finalValue;
+          } else {
+            repairedShot[targetField] = finalValue;
+          }
+          // 【v2.1.4-fix13】同时在 snake_case 和 camelCase 两个位置都赋值，确保下游都能取到
+          if (SNAKE_TO_CAMEL[fieldEn]) {
+            repairedShot[SNAKE_TO_CAMEL[fieldEn]] = finalValue;
+          }
+          if (CAMEL_TO_SNAKE[fieldEn]) {
+            repairedShot[CAMEL_TO_SNAKE[fieldEn]] = finalValue;
+          }
+
           actions.push(new RepairAction({
-            fieldEn, method: 'llm', before: oldValue, after: newValue,
+            fieldEn, method: 'llm', before: oldValue, after: finalValue,
             reason: 'LLM 修复：参考 PRD 约束修复检查问题'
           }));
         }
@@ -302,7 +356,13 @@ class LLMRepairer {
 
       return { repaired: repairedShot, actions };
     } catch (e) {
-      return { repaired: shot, actions: [] }; // LLM异常时返回原始shot，不阻塞
+      // 【v2.1.4-fix13】区分超时和其他异常
+      if (e.message?.includes('超时')) {
+        console.warn(`[LLMRepairer] 修复超时(${this.timeoutMs}ms)，返回原始shot`);
+      } else {
+        console.warn(`[LLMRepairer] 修复异常: ${e.message}`);
+      }
+      return { repaired: shot, actions: [] };
     }
   }
 
@@ -327,7 +387,8 @@ class FieldRepairAgent extends BaseAgent {
   constructor(options = {}) {
     super({ name: 'FieldRepairAgent', llmTimeout: options.llmTimeout || 180000, ...options });
     this.ruleRepairer = new RuleRepairer();
-    this.llmRepairer = new LLMRepairer(this._getLLMEngine());
+    // 【v2.1.4-fix13】把超时配置传给 LLMRepairer
+    this.llmRepairer = new LLMRepairer(this._getLLMEngine(), options.llmTimeout || 180000);
     this.prd = options.prd || null;
   }
 

@@ -8,8 +8,8 @@ class ScriptBlueprintAdapter {
   constructor(options = {}) {
     this.config = {
       charactersDir: options.charactersDir || path.join(__dirname, '../../../characters'),
-      // v1.2.7-fix-A7: 与 v6.37 标准(1500)和 production-engine 对齐
-      maxPromptLength: options.maxPromptLength || 1500,
+      // v2.1.4-fix13-审计修复: 与超现实系统标准(2500)对齐
+      maxPromptLength: options.maxPromptLength || 2500,
       ...options
     };
   }
@@ -73,7 +73,7 @@ class ScriptBlueprintAdapter {
       _metadata: meta._metadata || {},
       
       // 【v2.1.4-fix9-P1】传递导演上下文信息
-      content_theme: meta.content_theme || this._extractContentTheme(meta.title),
+      content_theme: meta.content_theme || this._extractContentTheme(meta.title, meta),
       content_summary: meta.content_summary || '',
       visual_style: meta.visual_style || 'REAL',
       scene_requirement: meta.scene_requirement || '',
@@ -461,11 +461,14 @@ class ScriptBlueprintAdapter {
   /**
    * 【v2.1.4-fix9-P1】从标题提取内容主题
    */
-  _extractContentTheme(title) {
+  _extractContentTheme(title, meta) {
     if (!title) return '';
-    if (title.includes('横纹肌溶解')) return '横纹肌溶解健康科普';
-    if (title.includes('健康')) return '健康科普';
-    return '';
+    // 【v2.1.4-fix13-审计修复】优先从 metadata 提取，消除硬编码
+    if (meta?.content_theme) return meta.content_theme;
+    if (meta?.videoType) return meta.videoType;
+    if (meta?.genre) return meta.genre;
+    // 通用提取：取标题前10字 + "主题"
+    return title.substring(0, 10) + '主题';
   }
 }
 

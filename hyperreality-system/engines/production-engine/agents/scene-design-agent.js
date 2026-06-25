@@ -7,20 +7,37 @@ const { BaseAgent } = require('./base-agent');
 class SceneDesignAgent extends BaseAgent {
   constructor(options = {}) {
     super({ name: 'SceneDesignAgent', ...options });
+    this._currentBlueprint = null; // 【v2.1.4-fix13】存储当前 blueprint 用于动态提示词
   }
 
+  /**
+   * 【v2.1.4-fix13-审计修复】动态生成系统提示词，使用当前 blueprint
+   */
   _getSystemPrompt() {
+    return this._getDynamicSystemPrompt(this._currentBlueprint || {});
+  }
+
+  /**
+   * 【v2.1.4-fix13-审计修复】动态生成系统提示词，根据 blueprint 主题选择场景
+   */
+  _getDynamicSystemPrompt(blueprint = {}) {
+    // 从 blueprint 提取主题信息
+    const meta = blueprint._metadata || blueprint.config?._metadata || {};
+    const title = blueprint.title || meta.title || '视频';
+    const genre = blueprint.genre || meta.genre || '科普';
+    const setting = blueprint.setting || meta.setting || '';
+    
+    // 动态生成场景选项，避免硬编码医院场景
+    const sceneOptions = this._generateSceneOptions(blueprint);
+    
     return `你是一位专业的电影场景设计师。根据剧本场景信息，为每个镜头设计完整的场景描述、情绪基调和角色动作。
 
 【绝对约束 - 违反则输出无效】
-1. 场景必须从以下选项中选择：
-   - 场景A：医院健康宣教室（荧光灯、白墙面、健康知识海报、木质讲台）
-   - 场景B：三甲医院检验科走廊（冷白色光源、指示牌、检验窗口、排队座椅）
-   - 场景C：医生诊室（听诊器、血压计、检查床、医学挂图、办公桌）
-   - 场景D：医院健康管理中心（柔和顶灯、接待台、健康宣传展板、沙发座椅）
-2. 禁止自创场景，禁止科幻/抽象元素
+1. 场景必须从以下选项中选择（或基于这些选项的合理变体）：
+${sceneOptions}
+2. 禁止自创科幻/抽象场景
 3. 禁止词汇：全息、虚拟、投影、抽象、概念、光影场域、数据空间、数字、元宇宙、时间操控、霓虹、微观世界、宏观、抽象几何、流动光影、交织光影、色彩对冲
-4. 光线必须是真实光源：荧光灯、LED顶灯、窗光、无影灯
+4. 光线必须是真实光源：荧光灯、LED顶灯、窗光、无影灯、自然光
 5. 角色必须在真实地面站立，背景必须是真实墙面
 6. 场景描述中不得出现含文字的物品：如"有文字的报告单"、"标牌上的文字"、"商标"、"有字的海报"等。可以描述"空白报告单"、"无文字标识牌"、"图形海报"等不含文字的物品
 7. 场景描述中的"海报"、"展板"、"标识牌"等物品必须是无文字版本（纯图形/色彩/图案）
@@ -30,23 +47,58 @@ class SceneDesignAgent extends BaseAgent {
   "shots": [
     {
       "shotId": "SC01",
-      "scene": "场景A: 医院健康宣教室，荧光灯照明，白墙面贴有健康知识海报，陈卓站在木质讲台前",
+      "scene": "具体场景描述，包含墙面材质、灯光类型、家具设备",
       "mood": "情绪关键词和氛围描述",
       "action": "角色动作描述（含肢体语言、走位）",
-      "emotional_target": "场景情绪目标（如：警示、安抚、引导）"
+      "emotional_target": "场景情绪目标"
     }
   ]
 }
 
 设计原则:
-1. 场景描述要具体真实：包含墙面材质、灯光类型、医疗设备、地面材质
-2. 情绪要与台词匹配：台词警示时情绪紧张，台词安抚时情绪平和
+1. 场景描述要具体真实：包含墙面材质、灯光类型、设备、地面材质
+2. 情绪要与台词匹配
 3. 动作要自然：走动、手势、转身、指向等
 4. 考虑镜头连续性：相邻场景的环境和光线要有逻辑关联;`;
   }
 
+  /**
+   * 【v2.1.4-fix13-审计修复】根据 blueprint 动态生成场景选项
+   */
+  _generateSceneOptions(blueprint = {}) {
+    const meta = blueprint._metadata || blueprint.config?._metadata || {};
+    const genre = blueprint.genre || meta.genre || '';
+    const title = blueprint.title || meta.title || '';
+    const settingHint = blueprint.setting || meta.setting || '';
+    
+    // 健康/医疗主题
+    if (genre.includes('健康') || genre.includes('医疗') || title.includes('健康') || title.includes('医院') || settingHint.includes('医院')) {
+      return `   - 场景A：医院健康宣教室（荧光灯、白墙面、健康知识海报、木质讲台）
+   - 场景B：三甲医院检验科走廊（冷白色光源、指示牌、检验窗口、排队座椅）
+   - 场景C：医生诊室（听诊器、血压计、检查床、医学挂图、办公桌）
+   - 场景D：医院健康管理中心（柔和顶灯、接待台、健康宣传展板、沙发座椅）`;
+    }
+    
+    // 教育/科普主题
+    if (genre.includes('科普') || genre.includes('教育') || title.includes('科普') || title.includes('知识')) {
+      return `   - 场景A：现代化教室/演播室（LED顶灯、白板/投影幕、讲台、座椅）
+   - 场景B：实验室/检验室（冷白色光源、实验台、仪器、储物柜）
+   - 场景C：办公室/会议室（自然窗光、办公桌、文件柜、会议桌椅）
+   - 场景D：公共空间/大厅（柔和顶灯、接待区、展示墙、沙发座椅）`;
+    }
+    
+    // 默认通用场景
+    return `   - 场景A：室内主场景（自然光/顶灯、墙面材质、核心家具、地面）
+   - 场景B：过渡空间（走廊/通道、指示牌、功能性家具）
+   - 场景C：专业场景（设备/仪器、工作台、专业工具）
+   - 场景D：公共空间（接待区、展示墙、座椅、柔和照明）`;
+  }
+
   async process(shots, blueprint) {
     console.log(`[SceneDesignAgent] 开始处理 ${shots.length} 个镜头...`);
+
+    // 【v2.1.4-fix13-审计修复】存储 blueprint 供 _getSystemPrompt 动态使用
+    this._currentBlueprint = blueprint;
 
     const prompt = this._buildPrompt(shots, blueprint);
 
@@ -76,10 +128,10 @@ class SceneDesignAgent extends BaseAgent {
         console.warn(`[SceneDesignAgent] ⚠️ 镜头 ${shot.shotId} 包含禁止词汇: "${scene}"，使用兜底场景`);
         // 根据镜头索引分配兜底场景
         const fallbackScenes = [
-          '场景A: 医院健康宣教室，白色荧光灯均匀照明，白墙面贴有无文字骨骼肌解剖图与运动损伤海报（纯图形版），木质讲台表面带有细微使用划痕',
-          '场景B: 三甲医院检验科走廊，冷白色LED光源从走廊顶部连续排列向下照射，无文字箭头标识牌指向尿液检验窗口，地面为浅色抛光瓷砖',
-          '场景C: 医生诊室，白色墙面悬挂无文字人体解剖示意图（纯图形版），办公桌摆放听诊器与血压计，检查床铺有蓝色一次性床单，无影灯悬于上方',
-          '场景D: 医院健康管理中心，嵌入式LED灯带洒下柔和暖白光，接待台后方排列无文字健康宣传展板（纯图形版），前方摆放皮质沙发与实木茶几'
+          '场景A: 室内主场景，自然光/顶灯照明，墙面材质真实，核心家具摆放有序，地面材质清晰可见',
+          '场景B: 过渡空间走廊/通道，功能性指示牌，辅助照明，地面反光自然',
+          '场景C: 专业场景/工作室，设备/仪器排列，工作台整洁，专业工具可见',
+          '场景D: 公共空间/大厅，接待区布置，展示墙/展板，柔和照明，座椅舒适'
         ];
         scene = fallbackScenes[index % fallbackScenes.length];
       }
@@ -109,7 +161,8 @@ class SceneDesignAgent extends BaseAgent {
       return `镜头 ${s.shotId}: ${s.duration || '?'}s; 现有场景: ${existingScene.substring(0, 60)}; 台词: ${dialogue.substring(0, 80)}`;
     }).join('\n');
     
-    // 【v2.1.4-fix9-P1】构建导演上下文
+    // 【v2.1.4-fix13-审计修复】动态生成场景选项，避免硬编码
+    const sceneOptions = this._generateSceneOptions(blueprint);
     const directorContext = this._buildDirectorContext(blueprint);
 
     return `${directorContext}
@@ -124,51 +177,51 @@ ${shotsInfo}
 为每个镜头设计场景、情绪和动作。
 
 【重要】每个镜头已有写实场景基础，你的任务是：
-1. 如果现有场景已写实（医院宣教室、检验科、诊室等），保留并细化细节
+1. 如果现有场景已写实，保留并细化细节
 2. 如果现有场景不写实，必须从以下选项中强制选择一个替换：
-   - 场景A：医院健康宣教室（荧光灯照明，白墙面，健康知识海报，木质讲台，座椅排列）
-   - 场景B：三甲医院检验科走廊（冷白色光源，指示牌，检验窗口，排队座椅，地面反光）
-   - 场景C：医生诊室（听诊器、血压计、检查床、医学挂图、白色墙面、办公桌）
-   - 场景D：医院健康管理中心（柔和顶灯，接待台，健康宣传展板，沙发座椅）
+${sceneOptions}
 
 【设计要求】
-1. scene: 输出最终场景描述（必须是写实医院环境，50-80字）
+1. scene: 输出最终场景描述（必须是写实环境，50-80字）
 2. mood: 情绪氛围（15-25字）
 3. action: 角色动作（肢体语言、走位、手势，30-50字）
 4. emotional_target: 情绪目标（1个词）
 
 【强制约束 - 违反则输出无效】
-- 场景描述必须包含具体物理细节：墙面材质、灯光类型、医疗设备、地面材质
+- 场景描述必须包含具体物理细节：墙面材质、灯光类型、家具/设备、地面材质
 - 禁止使用以下任何词汇：全息、虚拟、投影、抽象、概念、光影场域、数据空间、数字、元宇宙、时间操控、霓虹、微观世界、宏观、抽象几何、流动光影、交织光影、色彩对冲
-- 光线必须是真实光源：荧光灯、LED顶灯、窗光、无影灯
+- 光线必须是真实光源：荧光灯、LED顶灯、窗光、无影灯、自然光
 - 角色必须在真实地面站立，背景必须是真实墙面
 
-输出JSON: {"shots": [{"shotId":"SC01","scene":"场景A: 医院健康宣教室，荧光灯照明，白墙面贴有健康知识海报，陈卓站在木质讲台前","mood":"...","action":"...","emotional_target":"..."}]}`;
+输出JSON: {"shots": [{"shotId":"SC01","scene":"具体场景描述，50-80字","mood":"...","action":"...","emotional_target":"..."}]}`;
   }
   
   /**
    * 【v2.1.4-fix9-P1】构建导演上下文
    */
   _buildDirectorContext(blueprint) {
-    const meta = blueprint.metadata || {};
+    // 【v2.1.4-fix13-审计修复】兼容 adapted 对象和原始 blueprint 两种结构
     const config = blueprint.config || {};
-    const title = meta.title || config.title || '未命名';
+    const meta = blueprint.metadata || blueprint.meta || {};
+    const _metadata = config._metadata || blueprint._metadata || {};
+    const title = meta.title || config.title || _metadata.title || '未命名';
     
-    // 从 config 读取导演上下文信息
-    const contentTheme = config.content_theme || '';
-    const contentSummary = config.content_summary || '';
-    const visualStyle = config.visual_style || 'REAL';
-    const sceneRequirement = config.scene_requirement || '';
-    const characterDescription = config.character_description || '';
-    const forbiddenScenes = config.forbidden_scenes || [];
-    const keyMessages = config.key_messages || [];
+    // 从多路径读取导演上下文信息
+    const contentTheme = config.content_theme || _metadata.content_theme || '';
+    const contentSummary = config.content_summary || _metadata.content_summary || '';
+    const visualStyle = config.visual_style || _metadata.visual_style || 'REAL';
+    const sceneRequirement = config.scene_requirement || _metadata.scene_requirement || '';
+    const characterDescription = config.character_description || _metadata.character_description || '';
+    const forbiddenScenes = config.forbidden_scenes || _metadata.forbidden_scenes || [];
+    const keyMessages = config.key_messages || _metadata.key_messages || [];
+    const creativeIntensity = config.creativeIntensity || _metadata.creativeIntensity || blueprint.config?.creativeIntensity || 0.5;
     
     return `## 🎬 导演指令上下文
 视频标题：${title}
 内容主题：${contentTheme}
 核心内容：${contentSummary}
 视觉风格：${visualStyle}
-创意指数：${blueprint.config?.creativeIntensity || 0.5}（低创意=强制写实）
+创意指数：${creativeIntensity}（低创意=强制写实）
 场景要求：${sceneRequirement}
 角色设定：${characterDescription}
 关键信息：${keyMessages.join('；') || '无'}

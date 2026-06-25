@@ -341,12 +341,10 @@ class PromptFusionAgent extends BaseAgent {
   }
 
   /**
-   * 【v2.1.4-fix11】主LLM失败后，用重试机制补全字段
-   * 指数退避重试：5s → 10s → 20s
+   * 【v2.1.4-fix13-审计修复】降为1次重试，去掉指数退避等待，失败后直接规则兜底
    */
   async _fillMissingFieldsWithRetry(shot, ratio, characters) {
-    const maxRetries = 3;
-    const baseDelay = 5000; // 5秒
+    const maxRetries = 1;
     
     // 先从shot中提取已有数据
     const fields = {};
@@ -356,6 +354,13 @@ class PromptFusionAgent extends BaseAgent {
     }
     
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      // 每次重试前检查剩余预算，避免重试吃掉全部时间
+      const remaining = this._remainingMs();
+      if (remaining < 30000) {
+        console.warn(`  ⏰ 剩余预算不足(${remaining}ms)，中止重试，直接降级`);
+        break;
+      }
+
       try {
         console.log(`  🔄 补全尝试 ${attempt}/${maxRetries}...`);
         const filled = await this._ensureFieldCompleteness(shot, fields, ratio, characters);
@@ -369,15 +374,12 @@ class PromptFusionAgent extends BaseAgent {
         console.log(`  ⚠️ 仍有 ${stillEmpty.length} 字段为空，继续重试...`);
       } catch (e) {
         console.warn(`  ❌ 补全尝试 ${attempt} 失败: ${e.message}`);
-        if (attempt < maxRetries) {
-          const delay = baseDelay * Math.pow(2, attempt - 1);
-          console.log(`  ⏳ 等待 ${delay}ms 后重试...`);
-          await new Promise(r => setTimeout(r, delay));
-        }
       }
     }
     
-    throw new Error(`补全失败，${maxRetries} 次重试后仍有字段缺失`);
+    // 【修复】重试用完仍有缺失，直接用规则兜底（不再 throw）
+    console.warn(`  ⚠️ 补全重试耗尽，使用规则兜底`);
+    return this._buildShotResult(shot, fields);
   }
 
   // 【v2.1.4-fix11】规则兜底默认值 - 25字段完整默认值，确保绝不返回空字符串
@@ -486,9 +488,13 @@ ${missing.map(f => `- ${f}：${FIELD_DESCS[f]}`).join('\n')}
 
   _fallbackSingleShot(shot, ratio) {
     const fallbackPrompt = this._assembleFullPrompt(shot, '', ratio);
+    // 【v2.1.4-fix13-审计修复】保留原始 fields，避免降级时丢失所有字段
+    const preservedFields = shot.fields && typeof shot.fields === 'object' && Object.keys(shot.fields).length > 0
+      ? shot.fields
+      : this._extractFieldsFromShot(shot);
     return {
       ...shot,
-      fields: {},
+      fields: preservedFields,
       fusionText: '',
       prompt: fallbackPrompt,
       promptCharCount: this._countChars(fallbackPrompt),

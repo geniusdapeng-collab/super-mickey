@@ -6,11 +6,12 @@ const agentConfig = {
   enableLLMAgents: true,
   llmTimeout: 300000,
   llmMaxRetries: 2,
-  llmModel: 'kimi-k2p6',
-  fastModel: 'kimi-k2p6',
-  totalDeadlineMs: 1500000,
-  memThresholdMB: 1200,
-  promptFusionConcurrency: 3
+  // 【v2.1.4-fix13-审计修复】从环境变量读取，消除硬编码
+  llmModel: process.env.STORMAXE_LLM_MODEL || 'kimi-k2p6',
+  fastModel: process.env.STORMAXE_LLM_FAST_MODEL || process.env.STORMAXE_LLM_MODEL || 'kimi-k2p6',
+  totalDeadlineMs: parseInt(process.env.STORMAXE_TOTAL_DEADLINE_MS) || 1200000,
+  memThresholdMB: 1800,
+  promptFusionConcurrency: 2
 };
 
 const system = new HyperrealitySystem({
@@ -23,14 +24,16 @@ const system = new HyperrealitySystem({
 async function runPreproduction() {
   console.log('🔥 [HyperrealitySystem v2.1.4-fix9-P25] 预生产启动');
   console.log('=====================================');
+  // 【说明】以下为示例配置，实际使用时请根据需求修改
   console.log('主题: 横纹肌溶解的症状以及实验室检查');
   console.log('角色: 陈卓（穿警服）');
   console.log('创意指数: 0.69');
   console.log('时长: 59-65秒');
-  console.log('风格: 全写实');
+  console.log('风格: REAL (全写实)');
   console.log('');
 
-  const intent = '穿警服的陈卓女士，讲解居民健康护理知识，进行全民健康科普。第一集主题：横纹肌溶解的症状以及实验室检查。创意指数0.69，视频时长59-65秒，全写实风格，好莱坞大导演质感。陈卓一个人完成讲解，讲解过程生动形象，带有自然肢体语言或边走边介绍。第一集有片头主标题和副标题。';
+  // 【说明】以下 intent 和 metadata 为示例配置，请根据实际视频需求修改
+  const intent = '穿警服的陈卓女士，讲解居民健康护理知识，进行全民健康科普。第一集主题：横纹肌溶解的症状以及实验室检查。创意指数0.69，视频时长59-65秒，REAL风格，好莱坞大导演质感。陈卓一个人完成讲解，讲解过程生动形象，带有自然肢体语言或边走边介绍。第一集有片头主标题和副标题。';
 
   const metadata = {
     title: '第一集：横纹肌溶解的症状以及实验室检查',
@@ -48,7 +51,8 @@ async function runPreproduction() {
     noNextEpisodePreview: true,
     has_opening: true,
     creative_intensity: 0.69,
-    style: '全写实',
+    // 【v2.1.4-fix13-审计修复】使用标准风格编码
+    style: 'REAL', // '全写实' → 'REAL'
     characters: [{
       id: 'chen-zhuo',
       name: '陈卓',

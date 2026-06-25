@@ -21,9 +21,10 @@ const DEFAULT_AGENT_CONFIG = {
   enableLLMAgents: true,
   llmTimeout: 180000, // 【v2.1.4-fix10-P25-fix3】单次3分钟，避免一次失败吃掉1/3预算
   llmMaxRetries: 2,
-  llmModel: 'kimi-k2p6',
-  fastModel: 'kimi-k2p6',
-  totalDeadlineMs: 540000, // 【v2.1.4-fix10-P25-fix3】9分钟，对齐硬杀线（~11分钟），留2分钟收尾
+  // 【v2.1.4-fix13-审计修复】从环境变量读取模型配置，消除硬编码
+  llmModel: process.env.STORMAXE_LLM_MODEL || 'kimi-k2p6',
+  fastModel: process.env.STORMAXE_LLM_FAST_MODEL || process.env.STORMAXE_LLM_MODEL || 'kimi-k2p6',
+  totalDeadlineMs: 1050000, // 【v2.1.4-fix13-审计修复】从540000提升至1050000(~17.5分钟)，匹配实际需求：Phase1(~90s)+Phase2(~300s)+Phase3(~540s)+QualityCheck(~120s)
   memThresholdMB: 1800, // 【v2.1.4-fix10-P25-fix3】提升阈值，避免GC风暴
   promptFusionConcurrency: 2 // 【v2.1.4-fix10-P25-fix3】并发2，平衡速度与稳定性
 };
@@ -546,7 +547,7 @@ class ProductionEngine {
           
           const adResult = await this.agents.audioDesign.process(this._cloneShots(currentShots), adaptedBlueprint);
           this.log('AUDIO-DESIGN-AGENT', `完成`);
-          currentShots = this._mergeShotsByShotId(currentShots, adResult.shots, ['audio', 'music', 'sound_effects']);
+          currentShots = this._mergeShotsByShotId(currentShots, adResult.shots, ['audio', 'music', 'sound_effects', 'backgroundSound', 'backgroundSoundString']);
           
           const crResult = await this.agents.continuityReview.process(
             this._cloneShots(currentShots),
@@ -597,7 +598,7 @@ class ProductionEngine {
           this.log('PROMPT-FUSION-AGENT', `开始(串行模式,${shotCount}镜头,预计${Math.round(phase3NeedMs/1000)}s)...`);
           const phase3Start = Date.now();
           const pfResult = await this.agents.promptFusion.process(this._cloneShots(currentShots), adaptedBlueprint);
-          currentShots = this._mergeShotsByShotId(currentShots, pfResult.shots, ['prompt', 'enhanced_prompt', 'negative_prompt', 'fields', 'fusionText', 'promptCharCount', 'negative', 'portraits', 'director_instruction', 'brightConstraint', 'characterConstraint', 'consistency', 'costume', 'makeup', 'props', 'pacing', 'transition', 'audio']);
+          currentShots = this._mergeShotsByShotId(currentShots, pfResult.shots, ['prompt', 'enhanced_prompt', 'negative_prompt', 'fields', 'fusionText', 'promptCharCount', 'negative', 'portraits', 'director_instruction', 'bright_constraint', 'character_constraint', 'consistency', 'costume', 'makeup', 'props', 'pacing', 'transition', 'audio', 'color_palette', 'depth_of_field', 'camera_movement']);
           result.llmStats.promptFusion = pfResult.timing;
           this.log('PROMPT-FUSION-AGENT', `完成 (${Date.now() - phase3Start}ms)`);
           await this._saveCheckpoint('phase3', currentShots, { opening: result.opening, llmStats: result.llmStats });
@@ -605,6 +606,22 @@ class ProductionEngine {
           this.log('PROMPT-FUSION-FAIL', `❌ ${e.message},部分镜头降级到规则 Prompt`);
         }
       }
+
+      // ===== Phase-3.5 前置：展平 shot.fields + 统一字段命名 =====
+      // 【v2.1.4-fix13-审计修复】将 PromptFusion 的嵌套 fields 展平到顶层，并统一命名
+      currentShots = currentShots.map(shot => {
+        const flat = { ...shot };
+        if (shot.fields && typeof shot.fields === 'object') {
+          for (const [key, value] of Object.entries(shot.fields)) {
+            // snake_case → camelCase
+            const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+            // 同时保留 snake_case 和 camelCase，确保下游都能取到
+            if (!(key in flat)) flat[key] = value;
+            if (!(camelKey in flat)) flat[camelKey] = value;
+          }
+        }
+        return flat;
+      });
 
       // ===== Phase-3.5: 字段质量检查与修复（自适应预算）=====
       const remainingBudget = this._budgetRemaining();
@@ -623,6 +640,8 @@ class ProductionEngine {
             repairerTimeout: 0,
           });
           pipeline.setPRDFromBlueprint(adaptedBlueprint);
+          // 【v2.1.4-fix13-审计修复】下发全局 deadline
+          pipeline.setDeadline?.(this._globalDeadline);
           const { finalShots, summary } = await pipeline.runAll(currentShots);
           currentShots = finalShots;
           this.log('FIELD-QUALITY', `完成 (${Date.now() - fqStart}ms) | 通过:${summary.passed}/${summary.totalShots} | 修复:${summary.totalRepairs} (纯规则模式)`);
@@ -642,6 +661,8 @@ class ProductionEngine {
             repairerTimeout: 120000,
           });
           pipeline.setPRDFromBlueprint(adaptedBlueprint);
+          // 【v2.1.4-fix13-审计修复】下发全局 deadline
+          pipeline.setDeadline?.(this._globalDeadline);
           const { finalShots, summary } = await pipeline.runAll(currentShots);
           currentShots = finalShots;
           this.log('FIELD-QUALITY', `完成 (${Date.now() - fqStart}ms) | 通过:${summary.passed}/${summary.totalShots} | 修复:${summary.totalRepairs}`);
@@ -662,6 +683,8 @@ class ProductionEngine {
             repairerTimeout: 180000,
           });
           pipeline.setPRDFromBlueprint(adaptedBlueprint);
+          // 【v2.1.4-fix13-审计修复】下发全局 deadline
+          pipeline.setDeadline?.(this._globalDeadline);
           const { finalShots, summary } = await pipeline.runAll(currentShots);
           currentShots = finalShots;
           this.log('FIELD-QUALITY', `完成 (${Date.now() - fqStart}ms) | 通过:${summary.passed}/${summary.totalShots} | 修复:${summary.totalRepairs}`);
@@ -942,9 +965,9 @@ class ProductionEngine {
 
   /**
    * 并行执行多个 Agent 任务(allSettled,单点失败不阻塞其余)
-   * 保留每个任务的 [STAGE] 完成 (Xms) 日志格式
+   * 【v2.1.4-fix13-审计修复】增加外层超时保护，防止单个task hang住拖垮整个并行阶段
    */
-  async _runParallel(tasks, label) {
+  async _runParallel(tasks, label, timeoutMs = 300000) {
     const keys = Object.keys(tasks);
     const starts = keys.map(() => Date.now());
     this.log(label, `${keys.join(' + ')} 并行启动...`);
@@ -956,7 +979,17 @@ class ProductionEngine {
       })
     );
 
-    const settled = await Promise.allSettled(wrapped);
+    // 【v2.1.4-fix13-审计修复】外层超时保护：整个并行阶段最多等timeoutMs
+    let timer;
+    const timeoutPromise = new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error(`${label}并行阶段超时(${timeoutMs}ms)`)), timeoutMs);
+    });
+
+    const settled = await Promise.race([
+      Promise.allSettled(wrapped),
+      timeoutPromise
+    ]).finally(() => clearTimeout(timer));
+
     const values = [];
     settled.forEach((r, i) => {
       if (r.status === 'fulfilled') {
