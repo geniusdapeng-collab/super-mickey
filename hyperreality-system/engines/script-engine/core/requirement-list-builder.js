@@ -795,7 +795,7 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
 
       // 技术参数
       constraints: {
-        maxPromptLength: result.maxPromptLength || 3000,
+        maxPromptLength: result.maxPromptLength || 12000,
         referenceImageCount: result.referenceImageCount || 2,
         maxShotDuration: 15
       },

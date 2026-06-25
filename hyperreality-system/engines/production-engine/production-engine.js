@@ -47,8 +47,8 @@ function loadModule(name, required = false) {
 class ProductionEngine {
   constructor(options = {}) {
     this.config = {
-      maxPromptLength: 3000, // 【v2.1.4-fix10-P25-fix3】统一为3000，与质量门一致
-      targetPromptLength: 3000, // 【v2.1.4-fix10-P25-fix3】统一为3000，消除分母错配
+      maxPromptLength: 12000, // 【审计修复】与 config/prompt-length.js 保持一致
+      targetPromptLength: 12000, // 【审计修复】与 config/prompt-length.js 保持一致
       referenceImageCount: 2,
       outputDir: options.outputDir || '/tmp/hyperreality-output',
       ...options

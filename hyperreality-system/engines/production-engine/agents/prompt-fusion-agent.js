@@ -87,8 +87,10 @@ function buildFullSchema(shotId) {
 class PromptFusionAgent extends BaseAgent {
   constructor(options = {}) {
     super({ name: 'PromptFusionAgent', enabled: true, llmTimeout: 300000, ...options });
-    // 【审计修复】3000 会无差别砍掉尾部字段，提升到 12000（25字段详细描述的实际量级）
-    this.maxPromptLength = options.maxPromptLength || 12000;
+const PromptLengthConfig = require('../../config/prompt-length.js');
+// ...
+    // 【审计修复】从配置文件读取，不再硬编码
+    this.maxPromptLength = options.maxPromptLength || PromptLengthConfig.HARD_MAX || 12000;
     this.concurrency = options.concurrency || 2;
     this.llmTimeout = 300000; // 5 分钟单次（结构化输出需要更长时间）
     this.llmMaxRetries = 2;

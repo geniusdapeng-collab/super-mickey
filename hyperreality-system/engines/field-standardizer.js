@@ -579,8 +579,8 @@ function validateShot(shot) {
 
   // v2.1.4-fix9-P25: 字符数检查
   const promptLength = shot.promptCharCount || (typeof shot.prompt === 'string' ? shot.prompt.length : 0);
-  if (promptLength > 3000) {
-    warnings.push(`Prompt length ${promptLength} exceeds 3000 char limit`);
+  if (promptLength > 12000) {
+    warnings.push(`Prompt length ${promptLength} exceeds 12000 char limit`);
   }
 
   // 片头专属字段检查（强制，但分层处理）

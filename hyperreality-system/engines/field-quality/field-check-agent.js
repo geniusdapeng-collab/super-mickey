@@ -126,7 +126,7 @@ function flattenShot(shot) {
   return flat;
 }
 
-const MAX_TOTAL_CHARS = 3000;
+const MAX_TOTAL_CHARS = 12000; // 【审计修复】与 prompt-length.js 保持一致
 
 class Issue {
   constructor({ fieldEn, fieldCn, severity, issueType, description, suggestion, currentValue = '' }) {
