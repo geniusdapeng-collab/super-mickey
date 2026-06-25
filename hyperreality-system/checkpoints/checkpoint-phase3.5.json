@@ -1,5 +1,5 @@
 {
-  "phase": "phase3",
+  "phase": "phase3.5",
   "shots": [
     {
       "shotId": "SC00",
@@ -111,7 +111,13 @@
       "negative": "no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background",
       "bright_constraint": "bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination",
       "character_constraint": "只出现角色一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆",
-      "consistency": "保持角色形象一致，造型不变，面部特征与体型每帧统一"
+      "consistency": "保持角色形象一致，造型不变，面部特征与体型每帧统一",
+      "directorInstruction": "好莱坞大导演质感，电影级画面，写实风格，无特效，无科幻元素",
+      "colorPalette": "主色调：自然偏暖；辅助色：环境本色；肤色：自然健康；饱和度：中等自然；对比度：中高清晰",
+      "depthOfField": "焦点：主体面部或动作中心；景深：中等（f/4），背景适度虚化；前景：轻微虚化增加层次；层次：前景-中景-背景三层分离",
+      "cameraMovement": "从微距特写急速后拉抬升， revealing 浩瀚的猩红漩涡，最终俯视定格于标题凝结瞬间",
+      "brightConstraint": "bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination",
+      "characterConstraint": "只出现角色一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆"
     },
     {
       "shotId": "SC01",
@@ -210,7 +216,13 @@
       "negative": "no text, no watermark, no logo, no blurry, no extra limbs, deformed, distorted, low quality, no cartoon style, no flat lighting, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls objects documents signs labels screens clothing packaging, no handwritten text, no printed text, no signage text, no text overlays, no UI elements with text, no hologram, no virtual projection, no abstract elements, no neon colors, no data stream, no sci-fi elements, no medical drama exaggeration, no unrealistic symptom portrayal, no educational poster with text, no community fitness area, no futuristic equipment, no dreamlike fluidity, no wet plate photography, no AI artifacts, no macro world, no grand scale display, no time manipulation slow motion, no drone穿越微观世界",
       "bright_constraint": "bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination, LED顶灯确保面部无阴影区，反射板补充眼部光点，整体照度不低于500lux，背景保持同等亮度避免反差过大",
       "character_constraint": "只出现陈卓一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆，禁止患者、医护人员、路人等任何背景人物出现，画面为单人独角戏结构",
-      "consistency": "保持陈卓角色形象一致，短发警服造型不变，面部特征与体型每帧统一，藏青色警服颜色不偏色，肩章位置固定，衬衫领口角度一致，发型纹理方向统一，避免帧间形象漂移"
+      "consistency": "保持陈卓角色形象一致，短发警服造型不变，面部特征与体型每帧统一，藏青色警服颜色不偏色，肩章位置固定，衬衫领口角度一致，发型纹理方向统一，避免帧间形象漂移",
+      "colorPalette": "主色调：冷白偏青（医院感），色温约5500K-6000K；辅助色：不锈钢金属银灰、浅灰色地面；肤色：自然偏暖，与冷环境形成对比；饱和度：中等偏低，避免过度鲜艳，符合医疗场景克制感；对比度：中高，保持清晰层次，暗部不死黑；高光控制：顶灯反射区域略微过曝，增加真实感",
+      "depthOfField": "焦点：人物面部，精确对焦于眼睛区域；景深：中等（f/2.8），背景适度虚化可辨但保持环境信息；前景：无实体前景，画面直接切入人物；背景：走廊纵深渐变模糊，十五米纵深末段完全虚化；层次：中景（人物主体）-背景（走廊环境）两层分离，人物与背景空间关系清晰可辨；焦外成像：柔和圆形光斑，符合大光圈镜头特性",
+      "cameraMovement": "0-3s：稳定器缓慢推近（0.3m/s），从三米距离推至两米，建立人物与环境关系；3-8s：固定机位，保持画面绝对稳定，人物动作成为唯一动态元素；8-12s：手持微晃跟拍（呼吸感，幅度±2度），模拟纪录片真实观察视角；12-15s：稳定器缓慢后拉（0.2m/s），恢复初始景别，形成闭环视觉节奏；运动轨迹：直线推近，无弧线或升降变化",
+      "brightConstraint": "bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination, LED顶灯确保面部无阴影区，反射板补充眼部光点，整体照度不低于500lux，背景保持同等亮度避免反差过大",
+      "characterConstraint": "只出现陈卓一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆，禁止患者、医护人员、路人等任何背景人物出现，画面为单人独角戏结构",
+      "directorInstruction": "好莱坞大导演质感，电影级画面，写实风格，无特效，无科幻元素，纪录片式真实观察，医疗场景客观记录，拒绝戏剧化夸张表演，强调症状的真实生理表现，观众代入感优先于视觉冲击，保持科普内容的权威性与可信度"
     },
     {
       "shotId": "SC02",
@@ -309,7 +321,13 @@
       "negative": "no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls objects documents signs labels screens clothing packaging, no handwritten text, no printed text, no signage text, no text overlays, no UI elements with text, no watermark, no logo, no blurry, no extra limbs, no deformed, no distorted, no low quality, no cartoon style, no flat lighting, no gore, no blood splatter, no horror elements, no science fiction elements",
       "bright_constraint": "bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination, even light distribution across the scene",
       "character_constraint": "只出现陈卓一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆",
-      "consistency": "保持陈卓角色形象一致，短发警服造型不变，面部特征与体型每帧统一"
+      "consistency": "保持陈卓角色形象一致，短发警服造型不变，面部特征与体型每帧统一",
+      "colorPalette": "主色调：冷白偏灰蓝（诊室专业感）；辅助色：浅棕色实木暖调与蓝色床单形成冷暖对比；肤色：自然偏暖保持健康感；饱和度：整体中等偏低，克制冷静；对比度：中高，保留窗光与阴影的清晰过渡",
+      "depthOfField": "焦点：陈卓面部与上身；景深：中等偏浅（f/2.8），背景办公桌与检查床适度虚化但仍可辨识环境信息；前景：无遮挡；背景：墙面示意图与无影灯柔和虚化；层次：人物中景清晰，前景与背景自然分离",
+      "cameraMovement": "0-4秒：稳定器缓慢推近（0.2米每秒）从全景进入中景；4-10秒：固定机位保持画面绝对稳定，聚焦角色面部表演细节；10-15秒：手持微幅后拉（呼吸感，幅度正负1.5度）配合角色情绪下沉，全程无急推急拉保持克制",
+      "brightConstraint": "bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination, even light distribution across the scene",
+      "characterConstraint": "只出现陈卓一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆",
+      "directorInstruction": "好莱坞大导演质感，电影级画面，写实纪录片风格，追求真实医疗环境质感，严禁使用任何特效、科幻元素或超现实表现手法，强调角色情绪的真实传递与空间氛围的沉浸式营造，保持视觉克制与专业调性"
     },
     {
       "shotId": "SC03",
@@ -408,7 +426,13 @@
       "negative": "no text, no subtitle, no caption, no watermark, no blurry, no extra limbs, deformed, distorted, low quality, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls objects documents signs labels screens clothing packaging, no handwritten text, no printed text, no signage text, no text overlays, no UI elements with text, no cartoon style, no flat lighting, no 3D render, no illustration, no science fiction elements, no neon lights",
       "bright_constraint": "bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination, evenly lit environment, luminous foreground and background",
       "character_constraint": "只出现陈卓一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆，禁止路人或背景人物虚化出现",
-      "consistency": "保持陈卓角色形象一致，短发警服造型不变，面部特征与体型每帧统一，肤色与妆容连贯，服装肩章与质地细节稳定"
+      "consistency": "保持陈卓角色形象一致，短发警服造型不变，面部特征与体型每帧统一，肤色与妆容连贯，服装肩章与质地细节稳定",
+      "colorPalette": "主色调：暖白偏米黄（健康管理专业温馨感）；辅助色：深色皮质沙发棕黑、实木茶几浅胡桃木色、灰色地砖冷灰；肤色：自然偏暖，健康血色；饱和度：中等偏低，克制真实；对比度：中等，保持柔和层次与阴影细节",
+      "depthOfField": "焦点：人物面部与双眼；景深：中等偏浅（f/2.8），前景沙发扶手适度虚化，背景接待台与展板柔和虚化但仍可辨识形体；前景：深色皮质沙发边缘虚化形成画框式层次；背景：展板与接待台纵向排列产生渐变模糊；层次：前景（沙发）-中景（人物）-背景（接待台展板）三层清晰分离",
+      "cameraMovement": "0-4s：稳定器从沙发旁缓慢横移至人物正面（0.2m/s），同时微抬镜头对准面部；4-10s：固定机位，镜头静止捕捉人物台词与手势；10-15s：手持稳定器极缓慢前推（0.15m/s）逼近至近景，幅度控制在±1度以内保持呼吸感，全程无急停急起",
+      "brightConstraint": "bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination, evenly lit environment, luminous foreground and background",
+      "characterConstraint": "只出现陈卓一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆，禁止路人或背景人物虚化出现",
+      "directorInstruction": "好莱坞大导演质感，电影级画面，写实纪录片风格，自然光效，无特效，无科幻元素，无抽象构图，保持真实医疗环境质感，强调数据冲击下的人物真实情绪反应，每帧画面必须具备摄影级光影层次"
     },
     {
       "shotId": "SC04",
@@ -507,7 +531,13 @@
       "negative": "no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls objects documents signs labels screens clothing packaging, no handwritten text, no printed text, no signage text, no text overlays, no UI elements with text, no watermark, no logo, no blurry, no extra limbs, no deformed, no distorted, no low quality, no cartoon style, no flat lighting, no holographic, no neon, no science fiction elements, no medical diagram illustrations, no educational text graphics, no animated effects",
       "bright_constraint": "bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination, evenly lit environment, high key lighting on subject",
       "character_constraint": "只出现陈卓一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆",
-      "consistency": "保持陈卓角色形象一致，短发警服造型不变，面部特征与体型每帧统一，服装细节完整无变化"
+      "consistency": "保持陈卓角色形象一致，短发警服造型不变，面部特征与体型每帧统一，服装细节完整无变化",
+      "colorPalette": "主色调：冷白偏蓝灰（医院检验科环境）；辅助色：不锈钢金属银白与浅灰水磨石；肤色：自然偏暖形成冷暖对比；饱和度：中等偏低，克制理性；对比度：中高，保持画面通透层次",
+      "depthOfField": "焦点：陈卓面部双眼区域；景深：中等偏浅（f/2.8），背景检验窗口适度柔化；前景：无遮挡；背景：不锈钢台面与墙面标识牌渐变虚化；层次：人物中景清晰，背景检验环境朦胧分离",
+      "cameraMovement": "0-2s：稳定器固定机位静态起幅；2-5s：缓慢匀速推近至中近景（0.2m/s）；5-8s：固定机位停留，捕捉角色表情与手势；8-10s：微幅手持呼吸感（幅度±1.5度），模拟真实纪录片视角",
+      "brightConstraint": "bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination, evenly lit environment, high key lighting on subject",
+      "characterConstraint": "只出现陈卓一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆",
+      "directorInstruction": "好莱坞大导演质感，电影级纪实画面，写实医疗科普风格，无特效无科幻元素，强调真实空间质感与人物情感交流，保持画面明亮通透，禁止任何抽象或超现实视觉处理"
     }
   ],
   "opening": {
@@ -539,5 +569,5 @@
     "duration": 8
   },
   "llmStats": {},
-  "savedAt": "2026-06-25T10:18:27.308Z"
+  "savedAt": "2026-06-25T10:18:27.322Z"
 }

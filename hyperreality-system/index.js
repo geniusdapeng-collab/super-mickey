@@ -469,7 +469,24 @@ class HyperrealitySystem {
             openingShot.sceneType = openingShot.sceneType || 'opening'; // 兜底 sceneType
           }
           
-          // v1.2.6-fix5: 只对 shots 做标准化，不要用 normalized.shots 覆盖 prompts
+          // === index.js 第22173行后、第22176行前 ===
+// 【审计修复】无论优化成功/降级/异常，进入 FieldGuard 前强制确保5字段非空，防止严格校验 throw 丢字段
+if (openingShot) {
+  const openingDefaults = {
+    title_content: openingShot.title_content || openingShot.title || result.title || '未命名',
+    subtitle_content: openingShot.subtitle_content || openingShot.subtitle || '第1集',
+    title_animation: openingShot.title_animation || '主标题淡入入场，副标题延迟0.5秒跟随淡入，整体2秒',
+    title_font_design: openingShot.title_font_design || '粗体无衬线字体，白色，带微阴影',
+    opening_audio_design: openingShot.opening_audio_design || '环境音渐起，配合标题入场'
+  };
+  Object.assign(openingShot, openingDefaults);
+  // 同步 title/subtitle 顶层字段
+  openingShot.title = openingShot.title || openingShot.title_content;
+  openingShot.subtitle = openingShot.subtitle || openingShot.subtitle_content;
+  openingShot.sceneType = openingShot.sceneType || 'opening'; // 兜底 sceneType
+}
+
+// v1.2.6-fix5: 只对 shots 做标准化，不要用 normalized.shots 覆盖 prompts
           const normalized = this.fieldGuard.normalizeAndValidate(productionResult.shots, 'Final-Export');
           productionResult.shots = normalized.shots;
 

@@ -7,7 +7,7 @@
  * 在关键节点强制校验字段完整性，防止字段丢失和降级不透明
  */
 
-const { standardizeShots, validateShots, markDegraded, CRITICAL_FIELDS } = require('./field-standardizer');
+const { standardizeShots, validateShots, validateShot, markDegraded, CRITICAL_FIELDS } = require('./field-standardizer');
 
 class FieldGuard {
   constructor(options = {}) {
