@@ -480,6 +480,8 @@ function standardizeShot(rawInput = {}) {
   standard.timing = standard.timing || raw.timing || { start: 0, duration: standard.duration, end: standard.duration };
   standard.scene = standard.scene || raw.scene || raw.sceneName || '';
   standard.scene_description = standard.scene_description || raw.sceneDescription || raw.setting || '';
+  // 【v2.1.5-fix】补充 lighting 字段提取
+  standard.lighting = standard.lighting || raw.lighting || raw.lightingString || '';
   standard.prompt = standard.prompt || raw.visualPrompt || raw.prompt || raw.renderPrompt || '';
   standard.dialogue = normalizeDialogue(standard.dialogue || raw.dialogue || raw.narration || raw.line || raw.lines);
   standard.timeline = normalizeTimeline(standard.timeline, raw);
