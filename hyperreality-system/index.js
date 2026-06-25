@@ -163,25 +163,41 @@ class HyperrealitySystem {
       }
 
       // ========== Layer 1: 剧本引擎 ==========
-      console.log('📖 [Layer 1] 剧本引擎 - 生成结构化剧本...');
-      const stage1Start = Date.now();
+      let scriptResult;
+      try {
+        console.log('📖 [Layer 1] 剧本引擎 - 生成结构化剧本...');
+        const stage1Start = Date.now();
 
-      const scriptResult = await this.scriptEngine.process(intent, metadata);
+        scriptResult = await this.scriptEngine.process(intent, metadata);
 
-      result.stages.scriptEngine = {
-        blueprint: scriptResult.blueprint?.meta,
-        validation: scriptResult.validation,
-        report: scriptResult.report
-      };
-      result.stages.scriptEngine.timing = Date.now() - stage1Start;
+        // 【审计修复·P0】校验 adapted 存在且非空
+        if (!scriptResult || !scriptResult.adapted) {
+          throw new Error('scriptEngine 未产出 adapted Blueprint');
+        }
+        if (!Array.isArray(scriptResult.adapted.scenes) || scriptResult.adapted.scenes.length === 0) {
+          throw new Error('Blueprint scenes 为空，无法继续生产');
+        }
 
-      console.log(`   ✅ 剧本生成完成 (${result.stages.scriptEngine.timing}ms)`);
-      console.log(`      场景: ${scriptResult.report.scenes_count} | 角色: ${scriptResult.report.characters_count} | 台词: ${scriptResult.report.dialogues_count}`);
-      console.log(`      校验: ${scriptResult.validation.passed ? '通过' : '失败'} (${scriptResult.validation.overall_score}分)`);
-      console.log('   ✅ 剧本生成完成,直接进入制作环节');
+        result.stages.scriptEngine = {
+          blueprint: scriptResult.blueprint?.meta,
+          validation: scriptResult.validation,
+          report: scriptResult.report
+        };
+        result.stages.scriptEngine.timing = Date.now() - stage1Start;
 
-      // 剧本确认已移除:需求确认后直接跑完整预生产
-      result.confirmations.script = { approved: true, skipped: true, reason: '剧本确认环节已移除,需求确认后直接生产' };
+        console.log(`   ✅ 剧本生成完成 (${result.stages.scriptEngine.timing}ms)`);
+        console.log(`      场景: ${scriptResult.report.scenes_count} | 角色: ${scriptResult.report.characters_count} | 台词: ${scriptResult.report.dialogues_count}`);
+        console.log(`      校验: ${scriptResult.validation.passed ? '通过' : '失败'} (${scriptResult.validation.overall_score}分)`);
+        console.log('   ✅ 剧本生成完成,直接进入制作环节');
+
+        // 剧本确认已移除:需求确认后直接跑完整预生产
+        result.confirmations.script = { approved: true, skipped: true, reason: '剧本确认环节已移除,需求确认后直接生产' };
+      } catch (error) {
+        result.success = false;
+        result.errors.push({ layer: 'script-engine', error: error.message });
+        console.error(`\n❌ [Layer 1 失败] ${error.message}`);
+        return result;
+      }
 
       // ========== 适配层 ==========
       console.log('\n🔗 [Adapter] 适配层 - 转换数据格式...');
@@ -318,24 +334,30 @@ class HyperrealitySystem {
       }
 
       // ========== Layer 3: 渲染引擎 ==========
-      let renderResult = null; // 声明在作用域顶部,避免 skipRender 时 undefined
+      let renderResult = null;
 
       if (!options.skipRender) {
-        console.log('\n🎨 [Layer 3] 渲染引擎 - 提交 Seedance...');
-        const stage3Start = Date.now();
+        try {
+          console.log('\n🎨 [Layer 3] 渲染引擎 - 提交 Seedance...');
+          const stage3Start = Date.now();
 
-        renderResult = await this.renderingEngine.render(productionResult.prompts, {
-          dryRun: options.dryRun || !this.renderingEngine.config.apiKey
-        });
+          renderResult = await this.renderingEngine.render(productionResult.prompts, {
+            dryRun: options.dryRun || !this.renderingEngine.config.apiKey
+          });
 
-        result.stages.renderingEngine = {
-          render: renderResult,
-          report: this.renderingEngine.generateReport(renderResult)
-        };
-        result.stages.renderingEngine.timing = Date.now() - stage3Start;
+          result.stages.renderingEngine = {
+            render: renderResult,
+            report: this.renderingEngine.generateReport(renderResult)
+          };
+          result.stages.renderingEngine.timing = Date.now() - stage3Start;
 
-        console.log(`   ✅ 渲染完成 (${result.stages.renderingEngine.timing}ms)`);
-        console.log(`      提交: ${renderResult.submitted}/${renderResult.results.length} | 失败: ${renderResult.failed}`);
+          console.log(`   ✅ 渲染完成 (${result.stages.renderingEngine.timing}ms)`);
+          console.log(`      提交: ${renderResult.submitted}/${renderResult.results.length} | 失败: ${renderResult.failed}`);
+        } catch (error) {
+          result.errors.push({ layer: 'rendering-engine', error: error.message });
+          console.warn(`\n⚠️ [Layer 3 失败] ${error.message}`);
+          result.stages.renderingEngine = { error: error.message, skipped: false };
+        }
       } else {
         console.log('\n⚠️ [渲染] 跳过(调试模式)');
         result.stages.renderingEngine = { skipped: true };
@@ -343,26 +365,32 @@ class HyperrealitySystem {
 
       // ========== Layer 4: 后期引擎 ==========
       if (!options.skipPostProduction) {
-        console.log('\n🎬 [Layer 4] 后期引擎 - 字幕/音乐/弹幕/多版本...');
-        const stage4Start = Date.now();
+        try {
+          console.log('\n🎬 [Layer 4] 后期引擎 - 字幕/音乐/弹幕/多版本...');
+          const stage4Start = Date.now();
 
-        const postResult = await this.postProductionEngine.postProduce(
-          productionResult,
-          scriptResult,
-          renderResult || { success: false, results: [] }
-        );
+          const postResult = await this.postProductionEngine.postProduce(
+            productionResult,
+            scriptResult,
+            renderResult || { success: false, results: [] }
+          );
 
-        result.stages.postProductionEngine = {
-          success: postResult.success,
-          versions: postResult.versions,
-          stages: postResult.stages,
-          report: this.postProductionEngine.generateReport(postResult)
-        };
-        result.stages.postProductionEngine.timing = Date.now() - stage4Start;
+          result.stages.postProductionEngine = {
+            success: postResult.success,
+            versions: postResult.versions,
+            stages: postResult.stages,
+            report: this.postProductionEngine.generateReport(postResult)
+          };
+          result.stages.postProductionEngine.timing = Date.now() - stage4Start;
 
         console.log(`   ✅ 后期制作完成 (${result.stages.postProductionEngine.timing}ms)`);
         console.log(`      版本: ${Object.keys(postResult.versions).join(', ')}`);
         console.log(`      字幕: ${postResult.stages.subtitles?.count || 0}条 | 音乐: ${postResult.stages.music?.count || 0}段 | 弹幕: ${postResult.stages.danmaku?.count || 0}条`);
+        } catch (error) {
+          result.errors.push({ layer: 'post-production', error: error.message });
+          console.warn(`\n⚠️ [Layer 4 失败] ${error.message}`);
+          result.stages.postProductionEngine = { error: error.message, skipped: false };
+        }
       } else {
         console.log('\n⚠️ [后期制作] 跳过(调试模式)');
         result.stages.postProductionEngine = { skipped: true };
@@ -612,7 +640,7 @@ class HyperrealitySystem {
     console.log('   格式: {"approved": true} 或 {"approved": false, "reason": "..."}');
 
     // 轮询等待确认文件(最多30分钟)
-    const maxWait = 120 * 60 * 1000; // 30分钟
+    const maxWait = 30 * 60 * 1000; // 30分钟
     const checkInterval = 3000; // 3秒
     const startTime = Date.now();
 
@@ -622,7 +650,7 @@ class HyperrealitySystem {
           const confirmData = JSON.parse(fs.readFileSync(confirmPath, 'utf8'));
           console.log(`   ✅ 收到确认: approved=${confirmData.approved}`);
           return {
-            approved: confirmData.approved !== false,
+            approved: confirmData.approved === true || confirmData.approved === 'true' || confirmData.approved === 1,
             reason: confirmData.reason || '',
             suggestions: confirmData.suggestions || []
           };

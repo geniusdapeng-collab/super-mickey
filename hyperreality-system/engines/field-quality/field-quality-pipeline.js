@@ -59,13 +59,45 @@ class FieldQualityPipeline {
   }
 
   /**
+   * 【审计修复·P0】安全深拷贝单个 shot：过滤循环引用、跳过重型字段
+   */
+  _safeCloneShot(shot) {
+    if (shot === null || typeof shot !== 'object') return shot;
+    const seen = new WeakMap();
+    const clone = (obj) => {
+      if (obj === null || typeof obj !== 'object') return obj;
+      if (typeof obj === 'function') return undefined;
+      if (seen.has(obj)) return seen.get(obj);
+      if (Array.isArray(obj)) {
+        const arr = [];
+        seen.set(obj, arr);
+        for (const item of obj) {
+          const c = clone(item);
+          if (c !== undefined) arr.push(c);
+        }
+        return arr;
+      }
+      const result = {};
+      seen.set(obj, result);
+      for (const [k, v] of Object.entries(obj)) {
+        if (['_blueprint', '_adapter', '_llm', '_engine'].includes(k)) continue;
+        const c = clone(v);
+        if (c !== undefined) result[k] = c;
+      }
+      return result;
+    };
+    return clone(shot);
+  }
+
+  /**
    * 运行单镜头完整管线
    * @param {object} shot - 镜头提示词（25字段）
    * @param {string} shotId - 镜头ID
    * @returns {object} { finalShot, reports, logs }
    */
   async run(shot, shotId = 'shot_001') {
-    let currentShot = JSON.parse(JSON.stringify(shot));
+    // 【审计修复·P0】shot._blueprint 有循环引用，JSON.stringify 会崩，改用安全克隆
+    let currentShot = this._safeCloneShot(shot);
     const reports = [];
     const logs = [];
 

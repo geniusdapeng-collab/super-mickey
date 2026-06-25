@@ -112,30 +112,45 @@ class ProductionEngine {
     if (!this._enableResume) return null;
     try {
       const fs = require('fs');
-      const phases = ['phase3', 'phase2', 'phase1'];
+      // 【审计修复·P0】补全 phase0/phase3.5，损坏文件删除并继续搜索
+      const phases = ['phase3.5', 'phase3', 'phase2', 'phase1', 'phase0'];
       for (const phase of phases) {
         const file = path.join(this._checkpointDir, `checkpoint-${phase}.json`);
-        if (fs.existsSync(file)) {
-          const data = JSON.parse(fs.readFileSync(file, 'utf8'));
-          this.log('RESUME', `📂 发现 ${phase} checkpoint(${data.shots?.length || 0} 镜头,保存于 ${data.savedAt || 'unknown'})`);
-          return data;
+        if (!fs.existsSync(file)) continue;
+        try {
+          const data = fs.readFileSync(file, 'utf8');
+          const parsed = JSON.parse(data);
+          this.log('RESUME', `📂 发现 ${phase} checkpoint(${parsed.shots?.length || 0} 镜头,保存于 ${parsed.savedAt || 'unknown'})`);
+          return parsed;
+        } catch (e) {
+          // 【审计修复】损坏文件删除，继续搜索更低优先级的 phase
+          this.log('RESUME', `⚠️ ${phase} checkpoint 损坏(${e.message})，已删除，继续搜索`);
+          try { fs.unlinkSync(file); } catch (_) {}
+          continue;
         }
       }
     } catch (e) {
       this.log('RESUME', `加载 checkpoint 失败: ${e.message}`);
     }
+    this.log('RESUME', '无可用 checkpoint');
     return null;
   }
 
   /**
    * 【新增】清除 checkpoint(成功完成后调用)
+   * 【审计修复·P0】补全 phase0 和 phase3.5
    */
   _clearCheckpoints() {
     try {
       const fs = require('fs');
-      ['phase1', 'phase2', 'phase3'].forEach(phase => {
+      const allPhases = ['phase0', 'phase1', 'phase2', 'phase3', 'phase3.5'];
+      allPhases.forEach(phase => {
         const file = path.join(this._checkpointDir, `checkpoint-${phase}.json`);
-        if (fs.existsSync(file)) fs.unlinkSync(file);
+        if (fs.existsSync(file)) {
+          try { fs.unlinkSync(file); } catch (e) {
+            this.log('CHECKPOINT', `清除 ${phase} 失败: ${e.message}`);
+          }
+        }
       });
     } catch (e) { /* 忽略 */ }
   }
@@ -175,6 +190,7 @@ class ProductionEngine {
 
   /**
    * 【新增】增量保存 checkpoint(进程被杀也能恢复部分结果)
+   * 【审计修复·P0】安全序列化：过滤多层循环引用，先写临时文件再原子重命名
    */
   async _saveCheckpoint(phase, shots, extra = {}) {
     try {
@@ -182,29 +198,40 @@ class ProductionEngine {
       const dir = this._checkpointDir || path.join(process.cwd(), 'checkpoints');
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
       const file = path.join(dir, `checkpoint-${phase}.json`);
+      const tmpFile = file + '.tmp';
       
-      // 过滤不可序列化内容
-      const cleanShots = (shots || []).map(s => {
-        const clean = {};
-        for (const [k, v] of Object.entries(s)) {
-          if (k.startsWith('_')) continue; // 跳过内部字段
-          if (typeof v === 'function') continue;
-          clean[k] = v;
-        }
-        return clean;
-      });
-      
-      fs.writeFileSync(file, JSON.stringify({
+      const safeData = this._safeStringify({
         phase,
-        shots: cleanShots,
+        shots: shots || [],
         opening: extra.opening || null,
         llmStats: extra.llmStats || {},
         savedAt: new Date().toISOString()
-      }, null, 2));
+      });
+      
+      fs.writeFileSync(tmpFile, safeData, 'utf8');
+      fs.renameSync(tmpFile, file);
       this.log('CHECKPOINT', `✅ ${phase} 已落盘 → ${path.basename(file)}`);
     } catch (e) {
       this.log('CHECKPOINT', `保存失败(忽略): ${e.message}`);
     }
+  }
+
+  /**
+   * 【审计修复·P0】安全序列化：用 WeakSet 过滤所有层级的循环引用
+   */
+  _safeStringify(obj) {
+    const seen = new WeakSet();
+    return JSON.stringify(obj, (key, value) => {
+      if (['_blueprint', '_adapter', '_llm', '_engine', '_metadata_raw'].includes(key)) {
+        return undefined;
+      }
+      if (typeof value === 'function') return undefined;
+      if (typeof value === 'object' && value !== null) {
+        if (seen.has(value)) return undefined;
+        seen.add(value);
+      }
+      return value;
+    }, 2);
   }
 
   /**
@@ -504,7 +531,12 @@ class ProductionEngine {
           result.stages.opening = { agent: 'openingDesign', ...odResult };
           result.opening = odResult.opening;
           // 【v2.1.4-patch3】将opening数据注入到sceneType=opening的shot中
-          const openingShot = currentShots.find(s => s.sceneType === 'opening');
+          // 【审计修复·P0】先克隆片头shot再修改，避免直接变异原始对象
+          const openingIdx = currentShots.findIndex(s => s.sceneType === 'opening');
+          if (openingIdx >= 0) {
+            currentShots[openingIdx] = this._deepCloneShot(currentShots[openingIdx]);
+          }
+          const openingShot = openingIdx >= 0 ? currentShots[openingIdx] : null;
           if (openingShot) {
             const od = odResult.opening;
             // v2.1.4-fix8: 兼容下划线命名(main_title/sub_title)和驼峰命名(mainTitle/subtitle)
@@ -959,24 +991,92 @@ class ProductionEngine {
 
   /** 浅拷贝 shots(并行分支互不污染) */
   _cloneShots(shots) {
-    return (shots || []).map(s => ({ ...s }));
+    if (!Array.isArray(shots)) return [];
+    return shots.map(s => this._deepCloneShot(s));
+  }
+
+  /**
+   * 【审计修复·P0】安全深拷贝单个 shot
+   * 处理循环引用、跳过重型字段（_blueprint等）
+   */
+  _deepCloneShot(shot) {
+    if (shot === null || typeof shot !== 'object') return shot;
+
+    // 快速路径：无 _blueprint 等重型字段时直接 JSON 拷贝（最快）
+    if (!shot._blueprint && !shot._adapter && !shot._llm && !shot._engine) {
+      try {
+        return JSON.parse(JSON.stringify(shot));
+      } catch (e) {
+        // 有循环引用，走慢路径
+      }
+    }
+
+    // 慢路径：手动递归拷贝，处理循环引用
+    const seen = new WeakMap();
+    const clone = (obj) => {
+      if (obj === null || typeof obj !== 'object') return obj;
+      if (typeof obj === 'function') return undefined; // 跳过函数
+      if (seen.has(obj)) return seen.get(obj); // 循环引用：返回已拷贝的引用
+      if (Array.isArray(obj)) {
+        const arr = [];
+        seen.set(obj, arr);
+        for (const item of obj) {
+          const c = clone(item);
+          if (c !== undefined) arr.push(c);
+        }
+        return arr;
+      }
+      const result = {};
+      seen.set(obj, result);
+      for (const [key, value] of Object.entries(obj)) {
+        // 跳过已知重型/循环引用字段（保留浅引用）
+        if (['_blueprint', '_adapter', '_llm', '_engine', '_metadata_raw'].includes(key)) {
+          continue;
+        }
+        const c = clone(value);
+        if (c !== undefined) result[key] = c;
+      }
+      return result;
+    };
+
+    const result = clone(shot);
+    // 保留 _blueprint 的浅引用（太重不便深拷贝，但下游需要读取）
+    if (shot._blueprint) result._blueprint = shot._blueprint;
+    return result;
+  }
+
+  /**
+   * 【审计修复·P0】深拷贝单个字段值（用于 _mergeShotsByShotId）
+   */
+  _deepCloneValue(value) {
+    if (value === null || typeof value !== 'object') return value;
+    if (Array.isArray(value)) {
+      return value.map(v => this._deepCloneValue(v));
+    }
+    try {
+      return JSON.parse(JSON.stringify(value));
+    } catch (e) {
+      // 循环引用兜底：浅拷贝
+      return { ...value };
+    }
   }
 
   /**
    * 按 shotId 把 updatedShots 的指定字段合并回 baseShots
    * - 只在字段非空时覆盖,避免降级返回的空字符串冲掉已有数据
+   * 【审计修复·P0】merged[f] = v 是引用赋值，改为深拷贝
    */
   _mergeShotsByShotId(baseShots, updatedShots, fields) {
     const map = new Map((updatedShots || []).map(s => [s.shotId, s]));
     return baseShots.map(shot => {
       const u = map.get(shot.shotId);
       if (!u) return shot;
-      const merged = { ...shot };
+      const merged = this._deepCloneShot(shot); // 先深拷贝目标
       for (const f of fields) {
         const v = u[f];
         // 【审计修复】过滤假值，避免 0/false 覆盖有效数据
         if (v !== undefined && v !== null && v !== '' && !(typeof v === 'number' && v === 0 && f === 'duration')) {
-          merged[f] = v;
+          merged[f] = this._deepCloneValue(v); // 深拷贝源字段
         }
       }
       return merged;
