@@ -502,19 +502,20 @@ function standardizeShot(rawInput = {}) {
   standard.degradeReason = standard.degradeReason || standard.degrade_reason || raw.degradeReason || raw.degrade_reason || '';
   standard.emotionPhase = standard.emotionPhase || standard.emotion_phase || raw.emotionPhase || raw.emotion_phase || '';
   
-  // 片头字段
+  // 片头字段（始终保留，即使不是opening类型）
+  standard.title = standard.title || raw.mainTitle || raw.title || '';
+  standard.subtitle = standard.subtitle || raw.subTitle || raw.subtitle || '';
+  standard.title_content = standard.title_content || raw.title_content || '';
+  standard.subtitle_content = standard.subtitle_content || raw.subtitle_content || '';
+  standard.title_animation = standard.title_animation || raw.title_animation || '';
+  standard.title_font_design = standard.title_font_design || raw.title_font_design || '';
+  standard.opening_audio_design = standard.opening_audio_design || raw.opening_audio_design || '';
+  standard.producer = standard.producer || raw.producer || '';
+  standard.beast_voice = standard.beast_voice || raw.beastVoice || raw.beast_voice || '';
+  standard.opening_hook = standard.opening_hook || raw.openingHook || raw.opening_hook || '';
+  
   if (shotType === 'opening') {
-    standard.title = standard.title || raw.mainTitle || raw.title || '';
-    standard.subtitle = standard.subtitle || raw.subTitle || raw.subtitle || '';
-    standard.producer = standard.producer || raw.producer || '';
-    standard.beast_voice = standard.beast_voice || raw.beastVoice || '';
-    standard.opening_hook = standard.opening_hook || raw.openingHook || '';
-    // 【v2.1.4-fix13】片头专属字段（OpeningTitleOptimizer生成）
-    standard.title_content = standard.title_content || raw.title_content || '';
-    standard.subtitle_content = standard.subtitle_content || raw.subtitle_content || '';
-    standard.title_animation = standard.title_animation || raw.title_animation || '';
-    standard.title_font_design = standard.title_font_design || raw.title_font_design || '';
-    standard.opening_audio_design = standard.opening_audio_design || raw.opening_audio_design || '';
+    standard.sceneType = 'opening';
   }
 
   return standard;

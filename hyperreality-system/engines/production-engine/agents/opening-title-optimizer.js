@@ -43,6 +43,9 @@ class OpeningTitleOptimizer extends BaseAgent {
       return this._fallback(shot, blueprint);
     });
 
+    // 【调试】打印返回结果
+    console.log('[OpeningTitleOptimizer] LLM返回结果:', JSON.stringify(llmResult.result, null, 2));
+
     if (llmResult.degraded) {
       console.log(`[OpeningTitleOptimizer] 降级处理`);
       return { ...llmResult.result, degraded: true, degradeReason: llmResult.degradeReason };
