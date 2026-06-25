@@ -619,6 +619,83 @@ class HyperrealitySystem {
   /**
    * 生成提示词报告（供审阅）
    */
+  /**
+   * 【v2.1.4-fix13-队长优化】格式化提示词：序号+换行+情绪增强
+   */
+  _formatPromptWithSequenceNumbers(promptText, isOpening = false) {
+    if (!promptText || typeof promptText !== 'string') return '(空)';
+    
+    // 情绪关键词扩展映射
+    const emotionMap = {
+      'neutral': '情绪克制内敛，面无多余表情，眼神沉稳专注，面部肌肉放松自然，传递专业冷静的气场',
+      'calm': '神态安详从容，呼吸平稳，眉头舒展，嘴角自然闭合，整体氛围宁静平和，无焦虑紧张感',
+      'positive': '面部微微放松，眼神温和带光，嘴角自然上扬约5度，传递乐观自信与亲和感',
+      'high energy': '精神状态饱满，眼神明亮有神，身体姿态挺拔舒展，动作利落有力，充满积极活力',
+      'serene': '神态宁静悠远，目光柔和涣散，面部线条放松，仿佛沉浸在平和的思绪中',
+      'professional': '表情严肃专注，目光坚定直视，肩背挺直，手势精准克制，展现职业权威感',
+      'hopeful': '眼神向上微抬，瞳孔有光，嘴角轻微上扬，面部肌肉放松，传递对未来的期许',
+      'concerned': '眉头微蹙，眼神专注关切，嘴角微微下沉，面部肌肉轻微紧绷，传递担忧与责任感',
+      'tense': '眉头紧锁，眼神锐利聚焦，下颌微收，面部肌肉紧绷，身体姿态僵硬，传递紧张压迫感',
+      'warm': '面部柔和放松，眼神温和亲切，嘴角自然上扬，传递温暖关怀与信任感'
+    };
+    
+    // 解析字段
+    const fields = [];
+    const regex = /【([^】]+)】([^【]*)/g;
+    let match;
+    while ((match = regex.exec(promptText)) !== null) {
+      fields.push({ name: match[1], content: match[2].trim() });
+    }
+    
+    // 如果没有解析到字段，返回原文
+    if (fields.length === 0) return promptText;
+    
+    // 格式化输出
+    const lines = [];
+    let seq = 1;
+    
+    for (const field of fields) {
+      const seqStr = String(seq).padStart(2, '0');
+      
+      // 情绪字段增强
+      if (field.name === '情绪') {
+        let enhanced = field.content;
+        for (const [keyword, detail] of Object.entries(emotionMap)) {
+          if (enhanced.toLowerCase().includes(keyword.toLowerCase()) && !enhanced.includes('面部') && !enhanced.includes('眼神')) {
+            enhanced = enhanced.replace(new RegExp(keyword, 'gi'), detail);
+          }
+        }
+        // 如果增强后还是太短，补充默认描述
+        if (enhanced.length < 30) {
+          enhanced = `情绪基调为${enhanced}，面部微表情自然真实，眼神聚焦有神采，符合场景氛围与角色身份`;
+        }
+        lines.push(`${seqStr}.【${field.name}】${enhanced}`);
+      } else {
+        lines.push(`${seqStr}.【${field.name}】${field.content}`);
+      }
+      
+      seq++;
+    }
+    
+    // 片头额外字段（如果是片头）
+    if (isOpening) {
+      const openingFields = [
+        { name: 'title_content', label: '主标题内容' },
+        { name: 'subtitle_content', label: '副标题内容' },
+        { name: 'title_animation', label: '标题动画设计' },
+        { name: 'title_font_design', label: '标题字体设计' },
+        { name: 'opening_audio_design', label: '开场音频设计' }
+      ];
+      for (const of of openingFields) {
+        const seqStr = String(seq).padStart(2, '0');
+        lines.push(`${seqStr}.【${of.label}】（片头专属字段，需单独配置）`);
+        seq++;
+      }
+    }
+    
+    return lines.join('\n');
+  }
+
   _generatePromptsReport(prompts) {
     const lines = [];
     
@@ -632,8 +709,8 @@ class HyperrealitySystem {
     lines.push('## 镜头总览');
     lines.push('');
     // v2.0.4-fix: 增加时间轴字符串和字符数统计列
-    lines.push('| 镜头 | 时长 | 字符数 | 有定妆照 | 有时间轴 | 有约束 |');
-    lines.push('|------|------|--------|----------|----------|--------|');
+    lines.push('| 镜头 | 时长 | 字符数 | 字段数 | 有定妆照 | 有时间轴 | 有约束 |');
+    lines.push('|------|------|--------|--------|----------|----------|--------|');
     
     for (const p of prompts) {
       const hasImages = p.characterRef && p.characterRef !== 'NONE';
@@ -641,7 +718,12 @@ class HyperrealitySystem {
       const hasTimeline = !!(p.timelineString && p.timelineString.length > 3);
       const hasConstraints = typeof p.prompt === 'string' && p.prompt.includes('角色一致性') || false;
       const charCount = p.promptCharCount || (typeof p.prompt === 'string' ? p.prompt.length : 0);
-      lines.push(`| ${p.shotId} | ${p.duration || '?'}s | ${charCount} | ${hasImages ? '✓' : '✗'} | ${hasTimeline ? '✓' : '✗'} | ${hasConstraints ? '✓' : '✗'} |`);
+      // 【v2.1.4-fix13】统计字段数
+      const fieldCount = (p.prompt?.match(/【/g) || []).length;
+      const isOpening = p.shotId === 'SC00' || p.sceneType === 'opening';
+      const expectedFields = isOpening ? 30 : 25;
+      const fieldStatus = fieldCount >= expectedFields ? '✅' : (fieldCount >= expectedFields - 3 ? '⚠️' : '❌');
+      lines.push(`| ${p.shotId} | ${p.duration || '?'}s | ${charCount} | ${fieldStatus} ${fieldCount}/${expectedFields} | ${hasImages ? '✓' : '✗'} | ${hasTimeline ? '✓' : '✗'} | ${hasConstraints ? '✓' : '✗'} |`);
     }
     
     lines.push('');
@@ -649,7 +731,8 @@ class HyperrealitySystem {
     lines.push('');
     
     for (const p of prompts) {
-      lines.push(`### ${p.shotId}`);
+      const isOpening = p.shotId === 'SC00' || p.sceneType === 'opening';
+      lines.push(`### ${p.shotId}${isOpening ? '（片头·30字段）' : '（内容·25字段）'}`);
       const charCount = p.promptCharCount || (typeof p.prompt === 'string' ? p.prompt.length : 0);
       lines.push(`**长度**: ${charCount} 字符 | **定妆照**: ${p.characterRef && p.characterRef !== 'NONE' ? '有' : '无'} | **时间轴**: ${p.timelineString || '无'}`);
       lines.push('');
@@ -661,8 +744,9 @@ class HyperrealitySystem {
         }
         lines.push('');
       }
-      lines.push('```');
-      lines.push(p.prompt || '(空)');
+      // 【v2.1.4-fix13】使用新格式：序号+换行+情绪增强
+      lines.push('```markdown');
+      lines.push(this._formatPromptWithSequenceNumbers(p.prompt, isOpening));
       lines.push('```');
       lines.push('');
       lines.push('---');
@@ -671,11 +755,13 @@ class HyperrealitySystem {
     
     lines.push('## ⚠️ 审核须知');
     lines.push('');
-    lines.push('1. 确认每个镜头有【镜头时间轴】');
-    lines.push('2. 确认角色定妆照引用正确');
-    lines.push('3. 确认负面约束（暗黑风/金属光泽）已包含');
-    lines.push('4. 确认角色一致性约束已包含');
-    lines.push('5. 确认 Prompt 长度在限制以内');
+    lines.push('1. 【内容镜头】确认有 25 个字段（序号01-25）');
+    lines.push('2. 【片头镜头】确认有 30 个字段（序号01-30，含5个片头专属字段）');
+    lines.push('3. 确认【情绪】字段有具体面部/眼神描述，不是简单关键词');
+    lines.push('4. 确认角色定妆照引用正确');
+    lines.push('5. 确认负面约束（暗黑风/金属光泽）已包含');
+    lines.push('6. 确认角色一致性约束已包含');
+    lines.push('7. 确认 Prompt 长度在限制以内');
     lines.push('');
     lines.push('**请回复 "确认" 继续渲染，或 "修改" 并指出问题**');
     lines.push('');
