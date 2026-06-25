@@ -1,8 +1,0 @@
-{
-  "testedAt": "2026-06-13T15:49:14.483Z",
-  "styledImage": "/root/.openclaw/workspace/characters/chen-nurse/portraits/chen-nurse-styled-front-v2.png",
-  "result": {
-    "success": false,
-    "error": "{\"error\":{\"code\":\"InputImageSensitiveContentDetected.PrivacyInformation\",\"message\":\"The request failed because the input image may contain real person. Request id: 0217813657442508e448306abe42712131f7cc9472f1383101a64\",\"param\":\"\",\"type\":\"BadRequest\"}}"
-  }
-}

@@ -1,5 +1,1 @@
-{
-  "status": "pending",
-  "timestamp": "2026-06-23T13:46:00.000Z",
-  "note": "预占位，将在PromptFusion完成后更新为approved"
-}
+{"approved": true}

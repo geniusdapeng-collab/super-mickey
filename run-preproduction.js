@@ -4,7 +4,18 @@ const { HyperrealitySystem } = require('./hyperreality-system/index');
 
 const system = new HyperrealitySystem({
   productionEngine: {
-    agentConfig: { enableLLMAgents: true },
+    agentConfig: {
+      enableLLMAgents: true,
+      llmTimeout: 180000,
+      llmMaxRetries: 2,
+      llmModel: 'kimi-k2p6',
+      fastModel: 'kimi-k2p6',
+      totalDeadlineMs: 1200000, // 20分钟总预算
+      memThresholdMB: 1800,
+      promptFusionConcurrency: 1, // 串行处理
+      checkpointDir: './checkpoints',
+      enableResume: true
+    },
     charactersDir: path.join(__dirname, 'characters')
   }
 });

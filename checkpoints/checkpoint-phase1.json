@@ -1,0 +1,366 @@
+{
+  "phase": "phase1",
+  "shots": [
+    {
+      "shotId": "SC00",
+      "sceneType": "opening",
+      "sceneFunction": "establish",
+      "timing": {
+        "start": 0,
+        "duration": 10,
+        "end": 10
+      },
+      "duration": 10,
+      "scene": "医院健康宣教室，白色荧光灯均匀照明，白墙面贴有骨骼肌解剖图与运动损伤图形海报，木质讲台表面带有细微使用划痕，地面浅灰色防滑PVC地胶，讲台旁置金属支架白板。",
+      "mood": "警觉与紧迫，警示性叙事氛围",
+      "character": "陈卓: human, 穿警服的陈卓女士, 健康科普主讲人",
+      "characterRef": "陈卓: image://characters/chen-zhuo/portraits/chen-zhuo-front.png",
+      "action": "陈卓立于讲台侧，身体微前倾，右手轻抬至胸前，目光直视镜头，语速加快时左手下压强调。",
+      "dialogue": "陈卓|独白|警觉|你见过酱油色的尿吗？|LIP_SYNC:YES || 陈卓|独白|紧迫|这就是横纹肌溶解的警报！|LIP_SYNC:YES",
+      "characters": [
+        "chen-zhuo"
+      ],
+      "characterDescs": "陈卓: human, 穿警服的陈卓女士, 健康科普主讲人",
+      "dialogueText": "你见过酱油色的尿吗？;这就是横纹肌溶解的警报！",
+      "emotionalTarget": {
+        "valence": 0.2,
+        "arousal": 0.8,
+        "dominance": 0.6
+      },
+      "visualDirection": {
+        "shot_type": "wide",
+        "camera_movement": "缓慢推进",
+        "lighting": "自然光+环境光",
+        "color_temperature": "neutral"
+      },
+      "promptBase": "电影级镜头，超写实，概念化医疗空间，超现实比例的巨大尿液分析管作为背景象征物，赛博朋克霓虹色温，陈卓（穿警服的陈卓女士、健康科普主讲人），wide，缓慢推进，台词：「你见过酱油色的尿吗？」",
+      "worldId": "default",
+      "status": "pending",
+      "timeline": {
+        "object": {
+          "start": "T00:00",
+          "end": "T00:10",
+          "duration": 10,
+          "type": "opening",
+          "mood": "neutral, calm, intense, dramatic"
+        },
+        "string": "T00:00-T00:10 / duration: 10s / type: opening / mood: neutral, calm, intense, dramatic"
+      },
+      "allocation": {
+        "baseDuration": 10,
+        "dialogueFactor": 1.5,
+        "typeWeight": 1.2,
+        "preserved": true
+      },
+      "emotional_target": "警觉",
+      "title": "未命名",
+      "subtitle": "EPISODE 01",
+      "titleOverlay": {
+        "main_title": "未命名",
+        "sub_title": "EPISODE 01",
+        "style": "无衬线粗体，纯白发光，从裂隙中浮现后稳定"
+      },
+      "audioLayer": {
+        "bgm": "极简钢琴单音被工业电子低音撕裂，渐强至轰鸣",
+        "sound_effects": "低频空间震波、玻璃碎裂、心跳回响"
+      },
+      "lightingString": "逆光裂隙刺破绝对黑暗，高对比黑白影调，银色粒子在光束中闪烁锐利边缘光",
+      "cameraString": "微仰视角从粒子大特写急速前推并伴随小幅旋转，直抵光裂中心，制造穿越式的沉浸冲击"
+    },
+    {
+      "shotId": "SC01",
+      "sceneType": "establishing",
+      "sceneFunction": "establish",
+      "timing": {
+        "start": 10,
+        "duration": 10,
+        "end": 20
+      },
+      "duration": 10,
+      "scene": "三甲医院检验科走廊，冷白色LED顶灯连续排列向下照射，墙面涂刷浅蓝抗菌涂料，悬挂无文字标识牌指向检验窗口，靠墙设不锈钢长椅，地面浅色抛光瓷砖反射冷光。",
+      "mood": "回溯与隐忍，病理叙事开端",
+      "character": "陈卓: human, 穿警服的陈卓女士, 健康科普主讲人",
+      "characterRef": "陈卓: image://characters/chen-zhuo/portraits/chen-zhuo-front.png",
+      "action": "陈卓沿走廊缓步前行，右手扶墙停顿，转身面对镜头，左手按于右侧大腿，眉头紧锁，身体微弓。",
+      "dialogue": "陈卓|独白|沉稳|故事回到几天前。|LIP_SYNC:YES || 陈卓|独白|痛苦|肌肉突然剧痛，像被撕裂。|LIP_SYNC:YES",
+      "characters": [
+        "chen-zhuo"
+      ],
+      "characterDescs": "陈卓: human, 穿警服的陈卓女士, 健康科普主讲人",
+      "dialogueText": "故事回到几天前。;肌肉突然剧痛，像被撕裂。",
+      "emotionalTarget": {
+        "valence": 0.4,
+        "arousal": 0.6,
+        "dominance": 0.5
+      },
+      "visualDirection": {
+        "shot_type": "medium",
+        "camera_movement": "稳定机位",
+        "lighting": "均匀明亮",
+        "color_temperature": "neutral"
+      },
+      "promptBase": "电影级镜头，超写实，几何分割的负空间背景，去饱和色调，象征肌肉纤维的光绘轨迹漂浮，陈卓（穿警服的陈卓女士、健康科普主讲人），medium，稳定机位，台词：「故事回到几天前。」",
+      "worldId": "default",
+      "status": "pending",
+      "timeline": {
+        "object": {
+          "start": "T00:10",
+          "end": "T00:20",
+          "duration": 10,
+          "type": "establishing",
+          "mood": "mysterious, anticipation, wonder"
+        },
+        "string": "T00:10-T00:20 / duration: 10s / type: establishing / mood: mysterious, anticipation, wonder"
+      },
+      "allocation": {
+        "baseDuration": 10,
+        "dialogueFactor": 1.5,
+        "typeWeight": 1,
+        "preserved": true
+      },
+      "emotional_target": "痛苦"
+    },
+    {
+      "shotId": "SC02",
+      "sceneType": "conflict",
+      "sceneFunction": "advance",
+      "timing": {
+        "start": 20,
+        "duration": 12,
+        "end": 32
+      },
+      "duration": 12,
+      "scene": "医生诊室，白色墙面悬挂医学挂图，实木办公桌摆放听诊器与血压计，检查床铺蓝色一次性床单，无影灯悬于上方，窗光透入形成自然侧光，地面米白色耐磨地砖。",
+      "mood": "虚弱与恐惧，症状恶化递进",
+      "character": "陈卓: human, 穿警服的陈卓女士, 健康科普主讲人",
+      "characterRef": "陈卓: image://characters/chen-zhuo/portraits/chen-zhuo-front.png",
+      "action": "陈卓坐于检查床边缘，双手撑床沿试图起身又跌落，右手抬指镜头，左手无力垂落膝头，呼吸急促。",
+      "dialogue": "陈卓|独白|虚弱|接着全身无力，连路都走不动。|LIP_SYNC:YES || 陈卓|独白|恐惧|最可怕的是尿色越来越深。|LIP_SYNC:YES || 陈卓|独白|震惊|从茶色变成酱油色。|LIP_SYNC:YES",
+      "characters": [
+        "chen-zhuo"
+      ],
+      "characterDescs": "陈卓: human, 穿警服的陈卓女士, 健康科普主讲人",
+      "dialogueText": "接着全身无力，连路都走不动。;最可怕的是尿色越来越深。;从茶色变成酱油色。",
+      "emotionalTarget": {
+        "valence": 0.3,
+        "arousal": 0.7,
+        "dominance": 0.5
+      },
+      "visualDirection": {
+        "shot_type": "close_up",
+        "camera_movement": "手持晃动",
+        "lighting": "戏剧性明暗对比",
+        "color_temperature": "neutral"
+      },
+      "promptBase": "电影级镜头，超写实，极端对称构图的走廊空间，青橙对比光，地面反射象征性道具的投影，陈卓（穿警服的陈卓女士、健康科普主讲人），close_up，手持晃动，台词：「接着全身无力，连路都走不动。」",
+      "worldId": "default",
+      "status": "pending",
+      "timeline": {
+        "object": {
+          "start": "T00:20",
+          "end": "T00:32",
+          "duration": 12,
+          "type": "conflict",
+          "mood": "tense, determined, brave, confrontational"
+        },
+        "string": "T00:20-T00:32 / duration: 12s / type: conflict / mood: tense, determined, brave, confrontational"
+      },
+      "allocation": {
+        "baseDuration": 12,
+        "dialogueFactor": 1.5,
+        "typeWeight": 1.3,
+        "preserved": true
+      },
+      "emotional_target": "恐惧"
+    },
+    {
+      "shotId": "SC03",
+      "sceneType": "conflict",
+      "sceneFunction": "advance",
+      "timing": {
+        "start": 32,
+        "duration": 12,
+        "end": 44
+      },
+      "duration": 12,
+      "scene": "医院健康管理中心，嵌入式LED灯带洒下柔和暖白光，接待台后方排列无文字健康宣传展板，前方皮质沙发与实木茶几，地面灰色哑光瓷砖，墙面覆浅木饰面板。",
+      "mood": "严肃与专业，医学检查解析",
+      "character": "陈卓: human, 穿警服的陈卓女士, 健康科普主讲人",
+      "characterRef": "陈卓: image://characters/chen-zhuo/portraits/chen-zhuo-front.png",
+      "action": "陈卓立于接待台前，双手展开空白报告单，食指指向具体栏目，身体侧转面向镜头，左手扶台边。",
+      "dialogue": "陈卓|独白|严肃|到了医院，医生开一堆检查。|LIP_SYNC:YES || 陈卓|独白|专业|最先看的是肌酸激酶。|LIP_SYNC:YES || 陈卓|独白|震惊|正常值几百，它能飙到几万！|LIP_SYNC:YES",
+      "characters": [
+        "chen-zhuo"
+      ],
+      "characterDescs": "陈卓: human, 穿警服的陈卓女士, 健康科普主讲人",
+      "dialogueText": "到了医院，医生开一堆检查。;最先看的是肌酸激酶。;正常值几百，它能飙到几万！",
+      "emotionalTarget": {
+        "valence": 0.5,
+        "arousal": 0.6,
+        "dominance": 0.6
+      },
+      "visualDirection": {
+        "shot_type": "close_up",
+        "camera_movement": "手持晃动",
+        "lighting": "戏剧性明暗对比",
+        "color_temperature": "neutral"
+      },
+      "promptBase": "电影级镜头，超写实，超现实比例的实验室概念场景，巨型试管与漂浮的化验单，霓虹色温，陈卓（穿警服的陈卓女士、健康科普主讲人），close_up，手持晃动，台词：「到了医院，医生开一堆检查。」",
+      "worldId": "default",
+      "status": "pending",
+      "timeline": {
+        "object": {
+          "start": "T00:32",
+          "end": "T00:44",
+          "duration": 12,
+          "type": "conflict",
+          "mood": "tense, determined, brave, confrontational"
+        },
+        "string": "T00:32-T00:44 / duration: 12s / type: conflict / mood: tense, determined, brave, confrontational"
+      },
+      "allocation": {
+        "baseDuration": 12,
+        "dialogueFactor": 1.5,
+        "typeWeight": 1.3,
+        "preserved": true
+      },
+      "emotional_target": "专业"
+    },
+    {
+      "shotId": "SC04",
+      "sceneType": "emotional_climax",
+      "sceneFunction": "climax",
+      "timing": {
+        "start": 44,
+        "duration": 11,
+        "end": 55
+      },
+      "duration": 11,
+      "scene": "医院检验科窗口前，冷白色荧光灯维持恒定色温，检验窗口玻璃带有微弱反射，不锈钢台面反光，墙面悬挂无文字科室标识牌，地面浅灰色防滑地砖，窗口下设塑料取单篮。",
+      "mood": "紧迫与焦虑，数据冲击叠加",
+      "character": "陈卓: human, 穿警服的陈卓女士, 健康科普主讲人",
+      "characterRef": "陈卓: image://characters/chen-zhuo/portraits/chen-zhuo-front.png",
+      "action": "陈卓俯身于窗口台面，双手撑不锈钢台沿，身体前倾，右手握拳轻敲台面，左手接过试管架举至眼前。",
+      "dialogue": "陈卓|独白|紧迫|肌红蛋白也爆表！|LIP_SYNC:YES || 陈卓|独白|焦虑|血钾、肝酶跟着乱。|LIP_SYNC:YES || 陈卓|独白|坚定|这些指标就是求救信号。|LIP_SYNC:YES",
+      "characters": [
+        "chen-zhuo"
+      ],
+      "characterDescs": "陈卓: human, 穿警服的陈卓女士, 健康科普主讲人",
+      "dialogueText": "肌红蛋白也爆表！;血钾、肝酶跟着乱。;这些指标就是求救信号。",
+      "emotionalTarget": {
+        "valence": 0.6,
+        "arousal": 0.9,
+        "dominance": 0.8
+      },
+      "visualDirection": {
+        "shot_type": "extreme_close_up",
+        "camera_movement": "快速推近",
+        "lighting": "伦勃朗光",
+        "color_temperature": "warm"
+      },
+      "promptBase": "电影级高潮镜头，超写实，数据流空间，赛博朋克色，青橙对比强光，复杂粒子系统形成指标网络，陈卓（穿警服的陈卓女士、健康科普主讲人），extreme_close_up，快速推近，台词：「肌红蛋白也爆表！」",
+      "worldId": "default",
+      "status": "pending",
+      "timeline": {
+        "object": {
+          "start": "T00:44",
+          "end": "T00:55",
+          "duration": 11,
+          "type": "emotional_climax",
+          "mood": "hopeful, positive, intense, dramatic"
+        },
+        "string": "T00:44-T00:55 / duration: 11s / type: emotional_climax / mood: hopeful, positive, intense, dramatic"
+      },
+      "allocation": {
+        "baseDuration": 11,
+        "dialogueFactor": 1.5,
+        "typeWeight": 1.5,
+        "preserved": true
+      },
+      "emotional_target": "紧迫"
+    },
+    {
+      "shotId": "SC05",
+      "sceneType": "resolution",
+      "sceneFunction": "resolve",
+      "timing": {
+        "start": 55,
+        "duration": 10,
+        "end": 65
+      },
+      "duration": 10,
+      "scene": "医院走廊，双管荧光灯从天花板均匀投下冷白光，白墙面贴有健康知识图形海报，地面浅灰色防滑地胶，远处可见护士站与金属推车，墙角置绿色垃圾桶。",
+      "mood": "沉稳与亲和，总结与关怀并存",
+      "character": "陈卓: human, 穿警服的陈卓女士, 健康科普主讲人",
+      "characterRef": "陈卓: image://characters/chen-zhuo/portraits/chen-zhuo-front.png",
+      "action": "陈卓行走于走廊中央，三步后驻足转身，双手合十于胸前，继而右手伸出三指，左手自然摆动，微笑颔首。",
+      "dialogue": "陈卓|独白|沉稳|记住：肌痛、无力、深色尿。|LIP_SYNC:YES || 陈卓|独白|亲和|配合这三个关键指标。|LIP_SYNC:YES || 陈卓|独白|恳切|发现问题，千万别拖。|LIP_SYNC:YES",
+      "characters": [
+        "chen-zhuo"
+      ],
+      "characterDescs": "陈卓: human, 穿警服的陈卓女士, 健康科普主讲人",
+      "dialogueText": "记住：肌痛、无力、深色尿。;配合这三个关键指标。;发现问题，千万别拖。",
+      "emotionalTarget": {
+        "valence": 0.7,
+        "arousal": 0.5,
+        "dominance": 0.7
+      },
+      "visualDirection": {
+        "shot_type": "medium",
+        "camera_movement": "缓慢后拉",
+        "lighting": "温暖柔光",
+        "color_temperature": "warm"
+      },
+      "promptBase": "电影级镜头，超写实，极简负空间，去饱和背景加单色青蓝光强调，稳定几何构图，陈卓（穿警服的陈卓女士、健康科普主讲人），medium，缓慢后拉，台词：「记住：肌痛、无力、深色尿。」",
+      "worldId": "default",
+      "status": "pending",
+      "timeline": {
+        "object": {
+          "start": "T00:55",
+          "end": "T01:05",
+          "duration": 10,
+          "type": "resolution",
+          "mood": "peaceful, warm, nostalgic, hopeful"
+        },
+        "string": "T00:55-T01:05 / duration: 10s / type: resolution / mood: peaceful, warm, nostalgic, hopeful"
+      },
+      "allocation": {
+        "baseDuration": 10,
+        "dialogueFactor": 1.5,
+        "typeWeight": 1,
+        "preserved": true
+      },
+      "emotional_target": "亲和"
+    }
+  ],
+  "opening": {
+    "shotId": "S00",
+    "scene": "绝对黑暗被一道垂直光裂骤然撕开，无数银色粒子如海啸般从裂隙中喷涌而出，在虚空中翻滚凝聚成漩涡状的未知图腾，充满未知与毁灭的双重张力。",
+    "mood": "神秘、压迫、史诗感",
+    "camera": {
+      "shot_size": "大特写",
+      "movement": "急速前推并小幅旋转",
+      "angle": "微仰"
+    },
+    "cameraString": "微仰视角从粒子大特写急速前推并伴随小幅旋转，直抵光裂中心，制造穿越式的沉浸冲击",
+    "lighting": {
+      "key_light": "逆光裂隙",
+      "atmosphere": "高对比黑白，粒子边缘光"
+    },
+    "lightingString": "逆光裂隙刺破绝对黑暗，高对比黑白影调，银色粒子在光束中闪烁锐利边缘光",
+    "audioLayer": {
+      "bgm": "极简钢琴单音被工业电子低音撕裂，渐强至轰鸣",
+      "sound_effects": "低频空间震波、玻璃碎裂、心跳回响"
+    },
+    "audioLayerString": "静默中钢琴单音骤停，工业电子低音与低频空间震波轰然炸开，伴随玻璃碎裂锐响与心跳回响，建立系列声音标识",
+    "titleOverlay": {
+      "main_title": "未命名",
+      "sub_title": "EPISODE 01",
+      "style": "无衬线粗体，纯白发光，从裂隙中浮现后稳定"
+    },
+    "titleOverlayString": "主标题《未命名》以纯白发光无衬线粗体从光裂中心炸裂浮现，副标题EPISODE 01紧随其后稳定定格",
+    "duration": 7
+  },
+  "llmStats": {},
+  "savedAt": "2026-06-25T03:53:40.715Z"
+}

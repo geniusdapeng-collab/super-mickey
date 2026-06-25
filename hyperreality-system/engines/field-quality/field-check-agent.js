@@ -126,7 +126,7 @@ function flattenShot(shot) {
   return flat;
 }
 
-const MAX_TOTAL_CHARS = 2500;
+const MAX_TOTAL_CHARS = 3000;
 
 class Issue {
   constructor({ fieldEn, fieldCn, severity, issueType, description, suggestion, currentValue = '' }) {

@@ -24,7 +24,7 @@ async function main() {
     console.log('⚠️ 未找到blueprint，使用checkpoint数据构建');
     blueprint = {
       characters: ckpt.shots?.[0]?.characters || [],
-      config: { maxPromptLength: 2500 }
+      config: { maxPromptLength: 3000 }
     };
   }
   
@@ -38,7 +38,7 @@ async function main() {
   const { PromptFusionAgent } = require(PromptFusionAgentPath);
   
   const agent = new PromptFusionAgent({
-    maxPromptLength: 2500,
+    maxPromptLength: 3000,
     llmTimeout: 180000,
     llmMaxRetries: 2,
     llmModel: 'kimi-k2p6',

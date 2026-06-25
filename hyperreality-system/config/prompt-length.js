@@ -4,14 +4,14 @@
  * Prompt 长度统一配置模块
  * 超现实系统适配版 v1.0
  *
- * 系统使用 2500 字符作为 Prompt 硬上限（超现实系统扩容），理想区间为 2470-2500。
+ * 系统使用 3000 字符作为 Prompt 硬上限（超现实系统扩容），理想区间为 2470-3000。
  */
 
 const PromptLengthConfig = {
   TARGET_MIN: 2470,
-  TARGET_MAX: 2500,
-  HARD_MAX: 2500,
-  SAFE_MAX: 2480,
+  TARGET_MAX: 3000,
+  HARD_MAX: 3000,
+  SAFE_MAX: 2980,
   SYSTEM_RESERVE: 200,
   FORMAT_RESERVE: 100,
   SAFETY_MARGIN: 30,
@@ -76,14 +76,14 @@ if (require.main === module) {
     catch (err) { console.error(` ❌ ${name} - ${err.message}`); failed++; }
   }
   test('TARGET_MIN = 2470', () => assert.strictEqual(PromptLengthConfig.TARGET_MIN, 2470));
-  test('TARGET_MAX = 2500', () => assert.strictEqual(PromptLengthConfig.TARGET_MAX, 2500));
-  test('validate(2485) = true', () => assert.strictEqual(PromptLengthConfig.validate(2485), true));
-  test('validate(2501) = false', () => assert.strictEqual(PromptLengthConfig.validate(2501), false));
-  test('getStatus(2501) = overflow', () => assert.strictEqual(PromptLengthConfig.getStatus(2501), 'overflow'));
-  test('truncate 2500 char string', () => {
-    const r = PromptLengthConfig.truncate('A'.repeat(2600));
+  test('TARGET_MAX = 3000', () => assert.strictEqual(PromptLengthConfig.TARGET_MAX, 3000));
+  test('validate(2985) = true', () => assert.strictEqual(PromptLengthConfig.validate(2985), true));
+  test('validate(3001) = false', () => assert.strictEqual(PromptLengthConfig.validate(3001), false));
+  test('getStatus(3001) = overflow', () => assert.strictEqual(PromptLengthConfig.getStatus(3001), 'overflow'));
+  test('truncate 3000 char string', () => {
+    const r = PromptLengthConfig.truncate('A'.repeat(3100));
     assert.strictEqual(r.truncated, true);
-    assert.strictEqual(r.text.length, 2500);
+    assert.strictEqual(r.text.length, 3000);
   });
   console.log(`\n 结果: ${passed} 通过, ${failed} 失败\n`);
   process.exit(failed > 0 ? 1 : 0);
