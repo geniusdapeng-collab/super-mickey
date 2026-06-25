@@ -87,7 +87,7 @@ function buildFullSchema(shotId) {
 class PromptFusionAgent extends BaseAgent {
   constructor(options = {}) {
     super({ name: 'PromptFusionAgent', enabled: true, llmTimeout: 300000, ...options });
-    this.maxPromptLength = options.maxPromptLength || 2500;
+    this.maxPromptLength = options.maxPromptLength || 3000;
     this.concurrency = options.concurrency || 2;
     this.llmTimeout = 300000; // 5 分钟单次（结构化输出需要更长时间）
     this.llmMaxRetries = 2;
@@ -629,7 +629,11 @@ ${missing.map(f => `- ${f}：${FIELD_DESCS[f]}`).join('\n')}
 
     // 台词
     const dialogueField = getField('dialogue');
-    if (dialogueField) parts.push(dialogueField);
+    if (dialogueField) {
+      // 【v2.1.4-fix13】确保台词有【台词】前缀
+      const dialogueText = dialogueField.startsWith('【台词】') ? dialogueField : `【台词】${dialogueField}`;
+      parts.push(dialogueText);
+    }
 
     // 【时间轴】镜头内部微观导演调度（T00:XX相对时间戳格式）
     const timelineField = getField('timeline');
