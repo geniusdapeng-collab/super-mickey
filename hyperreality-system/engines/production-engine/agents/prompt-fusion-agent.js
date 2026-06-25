@@ -86,10 +86,10 @@ function buildFullSchema(shotId) {
 
 class PromptFusionAgent extends BaseAgent {
   constructor(options = {}) {
-    super({ name: 'PromptFusionAgent', enabled: true, llmTimeout: 180000, ...options });
+    super({ name: 'PromptFusionAgent', enabled: true, llmTimeout: 300000, ...options });
     this.maxPromptLength = options.maxPromptLength || 2500;
     this.concurrency = options.concurrency || 2;
-    this.llmTimeout = 180000; // 3 分钟单次（避免一次失败吃掉 1/3 预算）
+    this.llmTimeout = 300000; // 5 分钟单次（结构化输出需要更长时间）
     this.llmMaxRetries = 2;
   }
 
