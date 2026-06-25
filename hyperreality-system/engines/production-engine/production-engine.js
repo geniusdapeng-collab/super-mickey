@@ -973,7 +973,11 @@ class ProductionEngine {
       if (!u) return shot;
       const merged = { ...shot };
       for (const f of fields) {
-        if (u[f] !== undefined && u[f] !== null && u[f] !== '') merged[f] = u[f];
+        const v = u[f];
+        // 【审计修复】过滤假值，避免 0/false 覆盖有效数据
+        if (v !== undefined && v !== null && v !== '' && !(typeof v === 'number' && v === 0 && f === 'duration')) {
+          merged[f] = v;
+        }
       }
       return merged;
     });

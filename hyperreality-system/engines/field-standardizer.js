@@ -481,26 +481,26 @@ function standardizeShot(rawInput = {}) {
     }
   }
 
-  // 强制填充关键字段
-  standard.shot_id = standard.shot_id || raw.id || raw.shotId || '';
-  standard.scene_type = shotType === 'opening' ? 'opening' : (standard.scene_type || 'establishing');
+  // 【审计修复】统一用驼峰主键，避免同时存在 shotId(空) 和 shot_id(有值) 的幽灵字段
+  standard.shotId = standard.shotId || raw.id || raw.shotId || raw.shot_id || '';
+  standard.sceneType = shotType === 'opening' ? 'opening' : (standard.sceneType || standard.scene_type || 'establishing');
   standard.duration = standard.duration || raw.duration || raw.shotDuration || (raw.timing?.duration) || 0;
   standard.timing = standard.timing || raw.timing || { start: 0, duration: standard.duration, end: standard.duration };
   standard.scene = standard.scene || raw.scene || raw.sceneName || '';
-  standard.scene_description = standard.scene_description || raw.sceneDescription || raw.setting || '';
+  standard.sceneDescription = standard.sceneDescription || standard.scene_description || raw.sceneDescription || raw.setting || '';
   // 【v2.1.5-fix】补充 lighting 字段提取
   standard.lighting = standard.lighting || raw.lighting || raw.lightingString || '';
   standard.prompt = standard.prompt || raw.visualPrompt || raw.prompt || raw.renderPrompt || '';
   standard.dialogue = normalizeDialogue(standard.dialogue || raw.dialogue || raw.narration || raw.line || raw.lines);
   standard.timeline = normalizeTimeline(standard.timeline, raw);
   standard.portraits = normalizePortraits(standard.portraits, raw);
-  standard.character_cards = toArray(standard.character_cards || raw.characterCards || raw.peopleCards);
-  standard.characters = toArray(standard.characters || raw.characters);
-  standard.mouth_action = standard.mouth_action || raw.mouthAction || raw.mouth_action || '';
-  standard.camera_movement = standard.camera_movement || raw.cameraMovement || {};
+  standard.characterCards = standard.characterCards || standard.character_cards || toArray(raw.characterCards || raw.peopleCards);
+  standard.characters = standard.characters || toArray(raw.characters);
+  standard.mouthAction = standard.mouthAction || standard.mouth_action || raw.mouthAction || raw.mouth_action || '';
+  standard.cameraMovement = standard.cameraMovement || standard.camera_movement || raw.cameraMovement || raw.camera_movement || {};
   standard.degraded = Boolean(standard.degraded || raw.degraded);
-  standard.degrade_reason = standard.degrade_reason || raw.degradeReason || '';
-  standard.emotion_phase = standard.emotion_phase || raw.emotionPhase || '';
+  standard.degradeReason = standard.degradeReason || standard.degrade_reason || raw.degradeReason || raw.degrade_reason || '';
+  standard.emotionPhase = standard.emotionPhase || standard.emotion_phase || raw.emotionPhase || raw.emotion_phase || '';
   
   // 片头字段
   if (shotType === 'opening') {
