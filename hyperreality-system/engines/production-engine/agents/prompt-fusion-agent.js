@@ -87,7 +87,7 @@ function buildFullSchema(shotId) {
 class PromptFusionAgent extends BaseAgent {
   constructor(options = {}) {
     super({ name: 'PromptFusionAgent', enabled: true, llmTimeout: 300000, ...options });
-const PromptLengthConfig = require('../../config/prompt-length.js');
+const PromptLengthConfig = require('../../../config/prompt-length.js');
 // ...
     // 【审计修复】从配置文件读取，不再硬编码
     this.maxPromptLength = options.maxPromptLength || PromptLengthConfig.HARD_MAX || 12000;
