@@ -22,6 +22,7 @@ CODED_MODE.md
 memory/
 memory_*/
 memorized_diary/
+memory-*.md
 
 # ============================================
 # 2. API 密钥与凭证
@@ -45,6 +46,7 @@ debug_llm/
 logs/
 *.log
 running-status.json
+episodes.json
 
 # ============================================
 # 4. 大型代码转储文件
@@ -56,6 +58,7 @@ hyperreality-system-*-full*.md
 hyperreality-system-*-export*.md
 hyperreality-system-all-code.txt
 hyperreality-system-complete*.txt
+HyperrealitySystem-*.md
 
 # ============================================
 # 5. 媒体文件（图片/视频）
@@ -85,9 +88,14 @@ test-*.js
 run-*.js
 generate-*.js
 export-*.js
+export-*.sh
 pack-*.js
+pack-*.sh
 submit-*.sh
 run-*.sh
+tmp-*.js
+test-*.sh
+test-*.json
 
 # ============================================
 # 7. 诊断与报告文件
@@ -105,6 +113,13 @@ v*-patch*-release.md
 v*-patch*-fix-*.md
 v*-patch*-report.md
 verify-*.js
+IMPLEMENTATION_REPORT.md
+health-edu-*.md
+module-router-*.md
+nirath-*.md
+v6.*.md
+修改记录-*.md
+超现实系统问题诊断报告-*.md
 
 # ============================================
 # 8. 旧版本发布说明（仅保留最新）
@@ -114,9 +129,13 @@ RELEASE-v3.*
 RELEASE-v4.*
 RELEASE-v5.*
 RELEASE-v6.*
+RELEASE-v7.*
+RELEASE-v8.*
+RELEASE_v6.*
 RELEASE-v20.*
 RELEASE-v23.*
 !RELEASE-v2.1.0.md
+seedance-agent/RELEASE-*.md
 
 # ============================================
 # 9. 备份与临时文件
@@ -128,6 +147,8 @@ backup/
 *~
 .DS_Store
 Thumbs.db
+systems/deprecated/
+hyperreality-system/examples/
 
 # ============================================
 # 10. Node.js
