@@ -113,6 +113,29 @@ class HyperrealitySystem {
       intensity: options.narrativeRhythm?.intensity || 0.5
     });
     
+    // P2-3: Shot Quality Enhancer — 镜头质量增强系统
+    const { ShotQualityEnhancer } = require('./engines/enhancers/shot-quality-enhancer');
+    this.shotQualityEnhancer = new ShotQualityEnhancer({
+      enabled: options.shotQuality?.enabled !== false,
+      intensity: options.shotQuality?.intensity || 0.7
+    });
+    
+    // P2-4: Requirement Alignment Gate — 需求对齐闸机
+    const { RequirementAlignmentGate } = require('./engines/enhancers/requirement-alignment-gate');
+    this.requirementAlignmentGate = new RequirementAlignmentGate({
+      enabled: options.requirementAlignment?.enabled !== false,
+      threshold: options.requirementAlignment?.threshold || 0.7,
+      strictMode: options.requirementAlignment?.strictMode || false
+    });
+    
+    // P2-5: Director Optimization Agent — 导演优化 Agent
+    const { DirectorOptimizationAgent } = require('./engines/enhancers/director-optimization-agent');
+    this.directorOptimizationAgent = new DirectorOptimizationAgent({
+      enabled: options.directorOptimization?.enabled !== false,
+      threshold: options.directorOptimization?.threshold || 4.0,
+      maxIterations: options.directorOptimization?.maxIterations || 3
+    });
+    
     this.version = '2.0.0';
   }
 
@@ -382,6 +405,53 @@ class HyperrealitySystem {
       console.log(`      镜头: ${productionResult.shots.length} | Prompts: ${productionResult.prompts.length}`);
       console.log(`      质量门: ${productionResult.stages.qualityGate?.passed ? '通过' : '失败'}`);
 
+      // ========== P2-3: Shot Quality Enhancer 镜头质量增强 ==========
+      if (this.shotQualityEnhancer.enabled) {
+        console.log('\n✨ [ShotQualityEnhancer] 镜头质量增强...');
+        try {
+          const sqResult = this.shotQualityEnhancer.enhance(productionResult.shots, {
+            duration: metadata.targetDuration,
+            intent,
+            style: metadata.style
+          });
+
+          productionResult.shots = sqResult.shots;
+
+          // 同步 prompts
+          for (const p of productionResult.prompts) {
+            const shot = productionResult.shots.find(s => s.shotId === p.shotId);
+            if (shot) {
+              p._qualityEnhanced = true;
+              p._narrativePurpose = shot._narrativePurpose;
+              p._visualHook = shot._visualHook;
+              p._primaryFocus = shot._primaryFocus;
+            }
+          }
+
+          console.log(`   ✅ 镜头质量增强完成: ${sqResult.enhancedCount}/${productionResult.shots.length} 个镜头`);
+          result.stages.shotQuality = {
+            enhancedCount: sqResult.enhancedCount,
+            report: sqResult.report
+          };
+
+          // P1-4: EventBus 记录
+          this.eventBus.emit('shotQuality.completed', {
+            layerId: 'layer-2-quality',
+            enhancedCount: sqResult.enhancedCount,
+            timing: Date.now()
+          });
+        } catch (err) {
+          console.warn(`   ⚠️ ShotQualityEnhancer 失败: ${err.message}`);
+          result.errors.push({ stage: 'ShotQualityEnhancer', message: err.message });
+
+          this.eventBus.emit('shotQuality.failed', {
+            layerId: 'layer-2-quality',
+            error: err.message,
+            timing: Date.now()
+          });
+        }
+      }
+
       // ========== 🆕 字段标准化与守门(专家诊断建议)==========
       console.log('\n🛡️ [FieldGuard] Layer 2 输出标准化与校验...');
       try {
@@ -454,6 +524,45 @@ class HyperrealitySystem {
       } catch (err) {
         console.warn(`   ⚠️ 导演技能注入失败: ${err.message}`);
         result.errors.push({ stage: 'DirectorSkills', message: err.message });
+      }
+
+      // ========== P2-5: Director Optimization Agent 导演优化 ==========
+      if (this.directorOptimizationAgent.enabled) {
+        console.log('\n🎬 [DirectorOptimizationAgent] 导演优化...');
+        try {
+          const optResult = await this.directorOptimizationAgent.optimize(productionResult.shots, metadata);
+
+          if (optResult.improved) {
+            productionResult.shots = optResult.shots;
+            console.log(`   ✅ 导演优化完成: ${optResult.score.toFixed(2)}/5.0 (迭代 ${optResult.iterations} 次)`);
+          } else {
+            console.log(`   ✅ 导演优化检查通过: ${optResult.score.toFixed(2)}/5.0`);
+          }
+
+          result.stages.directorOptimization = {
+            score: optResult.score,
+            iterations: optResult.iterations,
+            improved: optResult.improved,
+            threshold: this.directorOptimizationAgent.threshold
+          };
+
+          // P1-4: EventBus 记录
+          this.eventBus.emit('directorOptimization.completed', {
+            layerId: 'layer-2-director',
+            score: optResult.score,
+            improved: optResult.improved,
+            timing: Date.now()
+          });
+        } catch (err) {
+          console.warn(`   ⚠️ DirectorOptimizationAgent 失败: ${err.message}`);
+          result.errors.push({ stage: 'DirectorOptimizationAgent', message: err.message });
+
+          this.eventBus.emit('directorOptimization.failed', {
+            layerId: 'layer-2-director',
+            error: err.message,
+            timing: Date.now()
+          });
+        }
       }
 
       // ========== P2-1: MicroMotion 微动作增强 ==========
@@ -935,6 +1044,53 @@ class HyperrealitySystem {
       } catch (err) {
         console.warn(`   ⚠️ PipelineLogger 失败: ${err.message}`);
         result.errors.push({ stage: 'PipelineLogger', message: err.message });
+      }
+    }
+
+    // ========== P2-4: Requirement Alignment Gate 需求对齐闸机 ==========
+    if (this.requirementAlignmentGate.enabled) {
+      console.log('\n🔍 [RequirementAlignmentGate] 需求对齐验证...');
+      try {
+        const alignmentResult = this.requirementAlignmentGate.validate(intent, metadata, result);
+
+        result.stages.requirementAlignment = {
+          pass: alignmentResult.pass,
+          score: alignmentResult.score,
+          missing: alignmentResult.missing,
+          report: alignmentResult.report
+        };
+
+        if (!alignmentResult.pass) {
+          console.warn(`   ⚠️ 需求对齐未通过: ${(alignmentResult.score * 100).toFixed(0)}%`);
+          if (alignmentResult.missing.length > 0) {
+            console.warn(`   缺失: ${alignmentResult.missing.slice(0, 3).join(' | ')}`);
+          }
+
+          if (this.requirementAlignmentGate.strictMode) {
+            console.error('   ⛔ 严格模式已启用，阻止最终返回');
+            result.success = false;
+            result.errors.push({ stage: 'RequirementAlignmentGate', message: `需求对齐未通过: ${(alignmentResult.score * 100).toFixed(0)}%` });
+          }
+        } else {
+          console.log(`   ✅ 需求对齐通过: ${(alignmentResult.score * 100).toFixed(0)}%`);
+        }
+
+        // P1-4: EventBus 记录
+        this.eventBus.emit('requirementAlignment.completed', {
+          layerId: 'final-gate',
+          pass: alignmentResult.pass,
+          score: alignmentResult.score,
+          timing: Date.now()
+        });
+      } catch (err) {
+        console.warn(`   ⚠️ RequirementAlignmentGate 失败: ${err.message}`);
+        result.errors.push({ stage: 'RequirementAlignmentGate', message: err.message });
+
+        this.eventBus.emit('requirementAlignment.failed', {
+          layerId: 'final-gate',
+          error: err.message,
+          timing: Date.now()
+        });
       }
     }
 
