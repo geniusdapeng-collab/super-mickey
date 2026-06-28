@@ -1,14 +1,16 @@
 {
   "name": "super-mickey",
-  "version": "6.5.0",
+  "version": "2.1.0",
   "description": "超级小香宝 (SuperMickey) — AI视频制作系统，献给香香 ❤️🌈",
   "main": "app/cli.js",
   "type": "commonjs",
   "scripts": {
     "start": "node app/cli.js",
+    "start:prod": "bash scripts/start-production.sh",
     "preproduction": "node --expose-gc --max-old-space-size=2048 app/cli.js preproduction",
     "preproduction:silent": "node run-taotie-silent.js",
     "health": "node scripts/check-project-health.js",
+    "test": "node tests/module-load-test.js && node tests/panda-cineforge-integration-test.js",
     "summary": "node scripts/generate-system-summary.js",
     "release:verify": "node scripts/check-project-health.js"
   },
