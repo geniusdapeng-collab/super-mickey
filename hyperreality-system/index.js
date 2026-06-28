@@ -136,6 +136,25 @@ class HyperrealitySystem {
       maxIterations: options.directorOptimization?.maxIterations || 3
     });
     
+    // ===== Phase 3: 情绪价值全链路 =====
+    // P3-1: Emotion Intent Parser — 情绪意图解析器
+    const { EmotionIntentParser } = require('./engines/emotion/emotion-intent-parser');
+    this.emotionIntentParser = new EmotionIntentParser({
+      enabled: options.emotion?.enabled !== false
+    });
+    
+    // P3-2: Emotion Arc Designer — 情绪弧线设计器
+    const { EmotionArcDesigner } = require('./engines/emotion/emotion-arc-designer');
+    this.emotionArcDesigner = new EmotionArcDesigner({
+      enabled: options.emotion?.enabled !== false
+    });
+    
+    // P3-3: Emotion Shot Syntax Injector — 情绪镜头语法注入器
+    const { EmotionShotSyntaxInjector } = require('./engines/emotion/emotion-shot-syntax');
+    this.emotionShotSyntaxInjector = new EmotionShotSyntaxInjector({
+      enabled: options.emotion?.enabled !== false
+    });
+    
     this.version = '2.0.0';
   }
 
@@ -206,6 +225,30 @@ class HyperrealitySystem {
         }
 
         console.log('   ✅ 需求清单已确认,继续创作');
+
+        // ========== P3-1: Emotion Intent Parser 情绪意图解析 ==========
+        if (this.emotionIntentParser.enabled) {
+          console.log('\n💫 [EmotionIntentParser] 情绪意图解析...');
+          try {
+            const emotionProfile = this.emotionIntentParser.parse(intent, metadata);
+            metadata._emotionProfile = emotionProfile;
+            requirementList.emotionProfile = emotionProfile;
+
+            console.log(`   ✅ 情绪解析完成: ${emotionProfile.primary}${emotionProfile.secondary ? ' + ' + emotionProfile.secondary : ''}`);
+            console.log(`      强度: ${(emotionProfile.intensity * 100).toFixed(0)}% | 触发器: ${emotionProfile.triggers.slice(0, 3).join(', ')}${emotionProfile.triggers.length > 3 ? '...' : ''}`);
+
+            result.stages.emotionIntent = {
+              primary: emotionProfile.primary,
+              secondary: emotionProfile.secondary,
+              intensity: emotionProfile.intensity,
+              triggers: emotionProfile.triggers,
+              confidence: emotionProfile.confidence
+            };
+          } catch (err) {
+            console.warn(`   ⚠️ EmotionIntentParser 失败: ${err.message}`);
+            result.errors.push({ stage: 'EmotionIntentParser', message: err.message });
+          }
+        }
 
         // 如果用户提供了修改意见,重新生成
         if (requirementConfirmation.suggestions?.length > 0) {
@@ -320,6 +363,41 @@ class HyperrealitySystem {
 
         // 剧本确认已移除:需求确认后直接跑完整预生产
         result.confirmations.script = { approved: true, skipped: true, reason: '剧本确认环节已移除,需求确认后直接生产' };
+
+        // ========== P3-2: Emotion Arc Designer 情绪弧线设计 ==========
+        if (this.emotionArcDesigner.enabled && metadata._emotionProfile) {
+          console.log('\n🎼 [EmotionArcDesigner] 情绪弧线设计...');
+          try {
+            const sceneCount = scriptResult.adapted.scenes.length;
+            const emotionArc = this.emotionArcDesigner.design(metadata._emotionProfile, {
+              duration: metadata.targetDuration || 10,
+              sceneCount,
+              narrativeMode: metadata.narrativeMode || 'dialogue'
+            });
+
+            metadata._emotionArc = emotionArc;
+            scriptResult.adapted._emotionArc = emotionArc;
+
+            console.log(`   ✅ 情绪弧线设计完成`);
+            console.log(`      曲线类型: ${emotionArc.curveType} | ${emotionArc.description}`);
+            console.log(`      场景情绪目标: ${emotionArc.targets.map(t => t.emotion).join(' → ')}`);
+
+            result.stages.emotionArc = {
+              curveType: emotionArc.curveType,
+              description: emotionArc.description,
+              targets: emotionArc.targets.map(t => ({
+                sceneIndex: t.sceneIndex,
+                emotion: t.emotion,
+                intensity: t.intensity,
+                descriptor: t.descriptor
+              }))
+            };
+          } catch (err) {
+            console.warn(`   ⚠️ EmotionArcDesigner 失败: ${err.message}`);
+            result.errors.push({ stage: 'EmotionArcDesigner', message: err.message });
+          }
+        }
+
       } catch (error) {
         result.success = false;
         result.errors.push({ layer: 'script-engine', error: error.message });
@@ -404,6 +482,44 @@ class HyperrealitySystem {
       console.log(`   ✅ 制作完成 (${result.stages.productionEngine.timing}ms)`);
       console.log(`      镜头: ${productionResult.shots.length} | Prompts: ${productionResult.prompts.length}`);
       console.log(`      质量门: ${productionResult.stages.qualityGate?.passed ? '通过' : '失败'}`);
+
+      // ========== P3-3: Emotion Shot Syntax Injection 情绪镜头语法注入 ==========
+      if (this.emotionShotSyntaxInjector.enabled && metadata._emotionArc) {
+        console.log('\n💫 [EmotionShotSyntax] 情绪镜头语法注入...');
+        try {
+          const injectedShots = this.emotionShotSyntaxInjector.inject(productionResult.shots, metadata._emotionArc);
+          productionResult.shots = injectedShots;
+
+          // 同步 prompts
+          for (const p of productionResult.prompts) {
+            const shot = productionResult.shots.find(s => s.shotId === p.shotId);
+            if (shot && shot._emotionInjected) {
+              p._emotionInjected = shot._emotionInjected;
+            }
+          }
+
+          console.log(`   ✅ 情绪镜头语法注入完成`);
+          result.stages.emotionShotSyntax = {
+            injectedCount: injectedShots.filter(s => s._emotionInjected).length
+          };
+
+          // P1-4: EventBus 记录
+          this.eventBus.emit('emotionShotSyntax.completed', {
+            layerId: 'layer-2-emotion',
+            injectedCount: injectedShots.filter(s => s._emotionInjected).length,
+            timing: Date.now()
+          });
+        } catch (err) {
+          console.warn(`   ⚠️ EmotionShotSyntax 失败: ${err.message}`);
+          result.errors.push({ stage: 'EmotionShotSyntax', message: err.message });
+
+          this.eventBus.emit('emotionShotSyntax.failed', {
+            layerId: 'layer-2-emotion',
+            error: err.message,
+            timing: Date.now()
+          });
+        }
+      }
 
       // ========== P2-3: Shot Quality Enhancer 镜头质量增强 ==========
       if (this.shotQualityEnhancer.enabled) {
