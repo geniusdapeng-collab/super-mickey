@@ -1,7 +1,7 @@
 // hyperreality-system/index.js
 // SuperMickey - 超级小香宝统一入口
 // 深度融合:剧本引擎 → 适配层 → 制作引擎 → 完整镜头
-// 版本:v2.0.0 | 日期:2026-06-29
+// 版本:v2.1.0 | 日期:2026-06-29
 
 require('./engines/process-guard'); // 【审计修复】全局崩溃防护,必须最先加载
 
@@ -78,7 +78,7 @@ class HyperrealitySystem {
     });
     this.postProductionEngine = new PostProductionEngine(options.postProductionEngine);
     this.fieldGuard = new FieldGuard({ strict: true, logPrefix: '[Hyperreality]' });
-    
+
     // 🛡️ v2.1.5-shield: 三层稳定性护盾
     this.stabilityShield = new StabilityShield({
       baselineRegistryDir: options.baselineRegistryDir || path.join(__dirname, './shields/baseline-registry/templates'),
@@ -96,97 +96,97 @@ class HyperrealitySystem {
       timeout: options.pandaCineForge?.timeout || 5000,
     });
     this.stabilityShield.initialize(this.productionEngine);
-    
+
     // ===== Phase 1: 基础设施层初始化 =====
-    // P1-1: Prompt Guardian — Prompt自动修复与防护
+    // P1-1: Prompt Guardian - Prompt自动修复与防护
     this.promptGuardian = new PromptGuardian({
       strictMode: options.promptGuardian?.strictMode || false,
       enabled: options.promptGuardian?.enabled !== false
     });
-    
-    // P1-2: Render Pipeline Guard — 渲染管线强制检查
+
+    // P1-2: Render Pipeline Guard - 渲染管线强制检查
     this.pipelineGuard = new RenderPipelineGuard({
       strictMode: options.pipelineGuard?.strictMode !== false,
       enabled: options.pipelineGuard?.enabled !== false
     });
-    
-    // P1-4: EventBus — 全链路事件追踪
+
+    // P1-4: EventBus - 全链路事件追踪
     this.eventBus = new EventBus({
       name: 'supermickey-bus',
       enabled: options.eventBus?.enabled !== false,
       maxEvents: options.eventBus?.maxEvents || 10000
     });
-    
-    // P1-5: Pipeline Logger — 全链路日志留档
+
+    // P1-5: Pipeline Logger - 全链路日志留档
     this.pipelineLogger = new PipelineLogger({
       outputDir: options.pipelineLogger?.outputDir || './output',
       format: options.pipelineLogger?.format || 'markdown',
       enabled: options.pipelineLogger?.enabled !== false
     });
-    
+
     // ===== Phase 2: 增强引擎层初始化 =====
-    // P2-1: MicroMotion Adapter — 微动作增强系统
+    // P2-1: MicroMotion Adapter - 微动作增强系统
     this.microMotionAdapter = new MicroMotionAdapter({
       enabled: options.microMotion?.enabled !== false,
       intensity: options.microMotion?.intensity || 0.5
     });
-    
-    // P2-2: Narrative Rhythm Adapter — 叙事节奏引擎
+
+    // P2-2: Narrative Rhythm Adapter - 叙事节奏引擎
     this.narrativeRhythmAdapter = new NarrativeRhythmAdapter({
       enabled: options.narrativeRhythm?.enabled !== false,
       intensity: options.narrativeRhythm?.intensity || 0.5
     });
-    
-    // P2-3: Shot Quality Enhancer — 镜头质量增强系统
+
+    // P2-3: Shot Quality Enhancer - 镜头质量增强系统
     this.shotQualityEnhancer = new ShotQualityEnhancer({
       enabled: options.shotQuality?.enabled !== false,
       intensity: options.shotQuality?.intensity || 0.7
     });
-    
-    // P2-4: Requirement Alignment Gate — 需求对齐闸机
+
+    // P2-4: Requirement Alignment Gate - 需求对齐闸机
     this.requirementAlignmentGate = new RequirementAlignmentGate({
       enabled: options.requirementAlignment?.enabled !== false,
       threshold: options.requirementAlignment?.threshold || 0.7,
       strictMode: options.requirementAlignment?.strictMode || false
     });
-    
-    // P2-5: Director Optimization Agent — 导演优化 Agent
+
+    // P2-5: Director Optimization Agent - 导演优化 Agent
     this.directorOptimizationAgent = new DirectorOptimizationAgent({
       enabled: options.directorOptimization?.enabled !== false,
       threshold: options.directorOptimization?.threshold || 4.0,
       maxIterations: options.directorOptimization?.maxIterations || 3
     });
-    
+
     // ===== Phase 3: 情绪价值全链路 =====
-    // P3-1: Emotion Intent Parser — 情绪意图解析器
+    // P3-1: Emotion Intent Parser - 情绪意图解析器
     this.emotionIntentParser = new EmotionIntentParser({
       enabled: options.emotion?.enabled !== false
     });
-    
-    // P3-2: Emotion Arc Designer — 情绪弧线设计器
+
+    // P3-2: Emotion Arc Designer - 情绪弧线设计器
     this.emotionArcDesigner = new EmotionArcDesigner({
       enabled: options.emotion?.enabled !== false
     });
-    
-    // P3-3: Emotion Shot Syntax Injector — 情绪镜头语法注入器
+
+    // P3-3: Emotion Shot Syntax Injector - 情绪镜头语法注入器
     this.emotionShotSyntaxInjector = new EmotionShotSyntaxInjector({
       enabled: options.emotion?.enabled !== false
     });
-    
+
     // ===== Phase 4: 垂直场景层 =====
-    // P4-1: Commercial Mode Enhancer — 商业广告模式
+    // P4-1: Commercial Mode Enhancer - 商业广告模式
     this.commercialModeEnhancer = new CommercialModeEnhancer({
-      enabled: options.commercialMode?.enabled === true, // 严格默认关闭，必须显式启用
+      enabled: options.commercialMode?.enabled === true, // 严格默认关闭,必须显式启用
       platform: options.commercialMode?.platform || 'douyin',
       brandConfig: options.commercialMode?.brandConfig || null
     });
-    
-    // P4-2: FPV Mode Enhancer — 极限运动/FPV 模式
+
+    // P4-2: FPV Mode Enhancer - 极限运动/FPV 模式
     this.fpvModeEnhancer = new FPVModeEnhancer({
-      enabled: options.fpvMode?.enabled === true, // 严格默认关闭，必须显式启用
+      enabled: options.fpvMode?.enabled === true, // 严格默认关闭,必须显式启用
       sportType: options.fpvMode?.sportType || 'auto'
     });
-    
+
     this.version = '2.0.0';
   }
 
@@ -215,13 +215,13 @@ class HyperrealitySystem {
 
     const totalStart = Date.now();
 
-    // 【P0-4 修复】productionResult 声明提升到 try 块之前，避免块级作用域导致 finally 后死代码
+    // 【P0-4 修复】productionResult 声明提升到 try 块之前,避免块级作用域导致 finally 后死代码
     let productionResult = null;
 
     try {
-      // 【v2.1.6-fix】系统级修复：整个创作过程启用长时间任务模式，避免HealthMonitor误判
+      // 【v2.1.6-fix】系统级修复:整个创作过程启用长时间任务模式,避免HealthMonitor误判
       this.stabilityShield.setLongTaskMode('ProductionEngine', true, 1200000); // 20分钟
-      
+
       // ========== 🆕 Layer 0: 需求清单生成确认 ==========
       if (!options.skipRequirementList) {
         console.log('📋 [Layer 0] 需求清单生成 - 解析用户意图...');
@@ -303,7 +303,7 @@ class HyperrealitySystem {
         };
         metadata = enhancedMetadata;
 
-        // 🐼 [PandaCineForge] F1: Layer 0 需求清单后 — 影视技能预召回
+        // 🐼 [PandaCineForge] F1: Layer 0 需求清单后 - 影视技能预召回
         if (this.pandaAdapter.enabled) {
           console.log('\n🐼 [PandaCineForge] F1 技能预召回...');
           try {
@@ -371,7 +371,7 @@ class HyperrealitySystem {
         console.log(`      Layer 2: ${Object.keys(engineConfigs.productionEngine).length > 0 ? '✅' : '❌'} 视觉表现配置`);
         console.log(`      Layer 3: ${Object.keys(engineConfigs.renderingEngine).length > 0 ? '✅' : '❌'} 渲染质感配置`);
         console.log(`      Layer 4: ${Object.keys(engineConfigs.postProductionEngine).length > 0 ? '✅' : '❌'} 后期风格配置`);
-        
+
         // 🛡️ v2.1.5-shield: 基线热启动判断
         const baselineMatch = this.stabilityShield.baselineRegistry.findBestMatch({
           intent,
@@ -379,14 +379,14 @@ class HyperrealitySystem {
           characters: metadata.characters,
           style: requirementList.style
         });
-        
+
         if (baselineMatch.isHotStart && baselineMatch.template) {
           console.log(`\n🛡️ [稳定性护盾] 热启动模式: 命中基线模板 ${baselineMatch.template.id}`);
           console.log(`   题材: ${baselineMatch.category} | 已使用${baselineMatch.template.metadata.usageCount}次`);
           metadata._baseline = baselineMatch.template;
           metadata._baselineCategory = baselineMatch.category;
         } else {
-          console.log(`\n🛡️ [稳定性护盾] 冷启动模式: 未命中基线，将全LLM生成`);
+          console.log(`\n🛡️ [稳定性护盾] 冷启动模式: 未命中基线,将全LLM生成`);
           metadata._baseline = null;
           metadata._baselineCategory = baselineMatch.category;
         }
@@ -401,7 +401,7 @@ class HyperrealitySystem {
         console.log('📖 [Layer 1] 剧本引擎 - 生成结构化剧本...');
         const stage1Start = Date.now();
 
-        // 🐼 [PandaCineForge] F2: Layer 1 前 — 剧本设计技能注入
+        // 🐼 [PandaCineForge] F2: Layer 1 前 - 剧本设计技能注入
         if (this.pandaAdapter.enabled && metadata._pandaSkillHints?.skills?.length > 0) {
           console.log('\n🐼 [PandaCineForge] F2 剧本技能注入...');
           try {
@@ -441,7 +441,7 @@ class HyperrealitySystem {
           throw err;
         }
         if (!Array.isArray(scriptResult.adapted.scenes) || scriptResult.adapted.scenes.length === 0) {
-          const err = new Error('Blueprint scenes 为空，无法继续生产');
+          const err = new Error('Blueprint scenes 为空,无法继续生产');
           err.code = ErrorCodes.DATA_MISSING;
           throw err;
         }
@@ -465,6 +465,38 @@ class HyperrealitySystem {
         if (this.emotionArcDesigner.enabled && metadata._emotionProfile) {
           console.log('\n🎼 [EmotionArcDesigner] 情绪弧线设计...');
           try {
+            // 🐼 [PandaCineForge] F5: 情绪弧线设计前 - 情绪/叙事技能注入
+            if (this.pandaAdapter.enabled) {
+              console.log('\n🐼 [PandaCineForge] F5 情绪技能注入...');
+              try {
+                const emotionSkills = await this.pandaAdapter.recall({
+                  call_id: `pcf_f5_${Date.now()}`,
+                  caller_agent: 'SceneDesign',
+                  route_fields: {
+                    module_target: ['MyStudio.SceneDesign'],
+                    cinematic_role: 'scene_design',
+                    deliverable_type: 'beat_sheet',
+                    project_stage: 'preproduction',
+                    sub_domain: metadata.videoType || 'cinema'
+                  },
+                  context: {
+                    project_id: metadata.projectId || 'default',
+                    caller_agent: 'SceneDesign',
+                    upstream_deliverable: 'beat_sheet_v1'
+                  },
+                  query_text: `${metadata._emotionProfile?.primary || '情绪'} 叙事节奏 情绪曲线设计`,
+                  recall_mode: 'fast',
+                  topk: 2
+                });
+                if (emotionSkills.status === 'hit' || emotionSkills.status === 'forged') {
+                  metadata._pandaEmotionSkills = emotionSkills;
+                  console.log(`   ✅ 情绪技能注入: ${emotionSkills.skills?.length || 0} 个技能 | 来源: ${emotionSkills.source_layer}`);
+                }
+              } catch (err) {
+                console.warn(`   ⚠️ PandaCineForge F5 失败: ${err.message}`);
+              }
+            }
+
             const sceneCount = scriptResult.adapted.scenes.length;
             const emotionArc = this.emotionArcDesigner.design(metadata._emotionProfile, {
               duration: metadata.targetDuration || 10,
@@ -552,7 +584,7 @@ class HyperrealitySystem {
       console.log('\n🎬 [Layer 2] 制作引擎 - 生成镜头...');
       const stage2Start = Date.now();
 
-      // 🐼 [PandaCineForge] F3: Layer 2 前 — 视觉语言技能注入
+      // 🐼 [PandaCineForge] F3: Layer 2 前 - 视觉语言技能注入
       if (this.pandaAdapter.enabled) {
         console.log('\n🐼 [PandaCineForge] F3 视觉技能注入...');
         try {
@@ -731,7 +763,39 @@ class HyperrealitySystem {
       }
 
       // ========== Phase 4: 垂直场景层（可选模式） ==========
-      
+
+      // 🐼 [PandaCineForge] F6: 垂直场景前 — 商业/短视频/FPV 技能注入
+      if (this.pandaAdapter.enabled) {
+        console.log('\n🐼 [PandaCineForge] F6 垂直场景技能注入...');
+        try {
+          const verticalSkills = await this.pandaAdapter.recall({
+            call_id: `pcf_f6_${Date.now()}`,
+            caller_agent: 'SceneDesign',
+            route_fields: {
+              module_target: ['MyStudio.SceneDesign'],
+              cinematic_role: 'scene_design',
+              deliverable_type: 'shotlist',
+              project_stage: 'production',
+              sub_domain: metadata.videoType === 'short_video' ? 'short_video' : 'cinema'
+            },
+            context: {
+              project_id: metadata.projectId || 'default',
+              caller_agent: 'SceneDesign',
+              upstream_deliverable: 'shotlist_v1'
+            },
+            query_text: `${metadata.videoType === 'short_video' ? '短视频钩子 投流策略' : '商业广告 品牌一致性'}`,
+            recall_mode: 'fast',
+            topk: 2
+          });
+          if (verticalSkills.status === 'hit' || verticalSkills.status === 'forged') {
+            metadata._pandaVerticalSkills = verticalSkills;
+            console.log(`   ✅ 垂直场景技能注入: ${verticalSkills.skills?.length || 0} 个技能 | 来源: ${verticalSkills.source_layer}`);
+          }
+        } catch (err) {
+          console.warn(`   ⚠️ PandaCineForge F6 失败: ${err.message}`);
+        }
+      }
+
       // P4-1: Commercial Mode 商业广告模式
       if (this.commercialModeEnhancer.enabled || options.commercialMode?.enabled) {
         console.log('\n📺 [CommercialMode] 商业广告模式增强...');
@@ -799,7 +863,7 @@ class HyperrealitySystem {
               timing: Date.now()
             });
           } else {
-            console.log(`   ℹ️ 未检测到极限运动内容，跳过 FPV 模式`);
+            console.log(`   i️ 未检测到极限运动内容,跳过 FPV 模式`);
           }
         } catch (err) {
           console.warn(`   ⚠️ FPVMode 失败: ${err.message}`);
@@ -857,6 +921,38 @@ class HyperrealitySystem {
       if (this.directorOptimizationAgent.enabled) {
         console.log('\n🎬 [DirectorOptimizationAgent] 导演优化...');
         try {
+          // 🐼 [PandaCineForge] F4: 导演优化前 - 导演技能注入
+          if (this.pandaAdapter.enabled) {
+            console.log('\n🐼 [PandaCineForge] F4 导演技能注入...');
+            try {
+              const directorSkills = await this.pandaAdapter.recall({
+                call_id: `pcf_f4_${Date.now()}`,
+                caller_agent: 'VisualLanguage',
+                route_fields: {
+                  module_target: ['MyStudio.VisualLanguage'],
+                  cinematic_role: 'visual_language',
+                  deliverable_type: 'color_script',
+                  project_stage: 'production',
+                  sub_domain: metadata.videoType || 'cinema'
+                },
+                context: {
+                  project_id: metadata.projectId || 'default',
+                  caller_agent: 'VisualLanguage',
+                  upstream_deliverable: 'shotlist_v1'
+                },
+                query_text: `${metadata._pandaVisualSkills?.skills?.[0]?.name || '导演技巧'} 视觉设计 镜头语言`,
+                recall_mode: 'fast',
+                topk: 2
+              });
+              if (directorSkills.status === 'hit' || directorSkills.status === 'forged') {
+                metadata._pandaDirectorSkills = directorSkills;
+                console.log(`   ✅ 导演技能注入: ${directorSkills.skills?.length || 0} 个技能 | 来源: ${directorSkills.source_layer}`);
+              }
+            } catch (err) {
+              console.warn(`   ⚠️ PandaCineForge F4 失败: ${err.message}`);
+            }
+          }
+
           const optResult = await this.directorOptimizationAgent.optimize(productionResult.shots, metadata);
 
           if (optResult.improved) {
@@ -977,7 +1073,7 @@ class HyperrealitySystem {
               timing: Date.now()
             });
           } else {
-            console.log('   ✅ Prompt Guardian 检查通过，无需修复');
+            console.log('   ✅ Prompt Guardian 检查通过,无需修复');
             result.stages.promptGuardian = {
               fixes: [],
               safe: true,
@@ -1048,12 +1144,12 @@ class HyperrealitySystem {
             }
 
             if (this.pipelineGuard.strictMode) {
-              console.error('   ⛔ 严格模式已启用，渲染被阻止');
+              console.error('   ⛔ 严格模式已启用,渲染被阻止');
               result.success = false;
               result.errors.push({ stage: 'PipelineGuard', message: `渲染管线检查未通过: ${guardResult.errors.length} 错误` });
               return result;
             } else {
-              console.warn('   ⚠️ 非严格模式，继续渲染（可能产生问题）');
+              console.warn('   ⚠️ 非严格模式,继续渲染(可能产生问题)');
             }
           } else {
             if (guardResult.warnings.length > 0) {
@@ -1062,7 +1158,7 @@ class HyperrealitySystem {
                 console.log(`      🟡 [${warn.ruleName}] ${warn.promptId}: ${warn.message}`);
               }
             } else {
-              console.log('   ✅ 检查通过，无错误无警告');
+              console.log('   ✅ 检查通过,无错误无警告');
             }
           }
 
@@ -1096,8 +1192,8 @@ class HyperrealitySystem {
           const stage3Start = Date.now();
 
           renderResult = await this.renderingEngine.render(productionResult.prompts, {
-            // 【P0-9 修复】dryRun 仅由显式选项控制，不再因缺 apiKey 强制开启
-            // 无 apiKey 时让渲染引擎自己抛错，暴露配置问题
+            // 【P0-9 修复】dryRun 仅由显式选项控制,不再因缺 apiKey 强制开启
+            // 无 apiKey 时让渲染引擎自己抛错,暴露配置问题
             dryRun: options.dryRun === true
           });
 
@@ -1121,7 +1217,7 @@ class HyperrealitySystem {
 
       // ========== Layer 4: 后期引擎 ==========
 
-      // 🐼 [PandaCineForge] F7: Layer 4 前 — 调色/混音/后期技能注入
+      // 🐼 [PandaCineForge] F7: Layer 4 前 - 调色/混音/后期技能注入
       if (this.pandaAdapter.enabled) {
         console.log('\n🐼 [PandaCineForge] F7 后期技能注入...');
         try {
@@ -1186,7 +1282,7 @@ class HyperrealitySystem {
       }
 
       // ========== 汇总 ==========
-      // 【P0-8 修复】result.success 不再无条件置 true，基于各阶段实际状态聚合
+      // 【P0-8 修复】result.success 不再无条件置 true,基于各阶段实际状态聚合
       const hasRenderError = result.stages.renderingEngine?.error || (result.stages.renderingEngine?.render?.success === false && !result.stages.renderingEngine?.skipped);
       const hasPostProdError = result.stages.postProductionEngine?.error || (result.stages.postProductionEngine?.success === false && !result.stages.postProductionEngine?.skipped);
       const hasProductionError = productionResult?.success === false;
@@ -1235,7 +1331,7 @@ class HyperrealitySystem {
                 llmMaxRetries: 2,
                 llmModel: process.env.STORMAXE_LLM_FAST_MODEL || process.env.STORMAXE_LLM_MODEL || 'kimi-k2p6'
               });
-              // 【P2-10 修复】下发 deadline，防止不受控挂起
+              // 【P2-10 修复】下发 deadline,防止不受控挂起
               optimizer.setDeadline(Date.now() + 180000); // 3分钟总体预算
               const blueprint = result.stages?.adapter || { title: result.title || '未命名' };
               const optimized = await optimizer.optimize(openingShot, blueprint);
@@ -1251,7 +1347,7 @@ class HyperrealitySystem {
                 openingShot.title = optimized.title_content || openingShot.title;
                 openingShot.subtitle = optimized.subtitle_content || openingShot.subtitle;
 
-                // v2.1.5-fix: 同步到 prompts[0]，确保双数组一致
+                // v2.1.5-fix: 同步到 prompts[0],确保双数组一致
                 if (productionResult.prompts && productionResult.prompts.length > 0) {
                   const promptOpening = productionResult.prompts.find(p => isOpeningShot(p));
                   if (promptOpening) {
@@ -1334,7 +1430,7 @@ class HyperrealitySystem {
             openingShot.sceneType = openingShot.sceneType || 'opening'; // 兜底 sceneType
           }
 
-          // v1.2.6-fix5: 只对 shots 做标准化,不要用 normalized.shots 覆盖 prompts          // v1.2.6-fix5: 只对 shots 做标准化,不要用 normalized.shots 覆盖 prompts          // v1.2.6-fix5: 只对 shots 做标准化，不要用 normalized.shots 覆盖 prompts
+          // v1.2.6-fix5: 只对 shots 做标准化,不要用 normalized.shots 覆盖 prompts          // v1.2.6-fix5: 只对 shots 做标准化,不要用 normalized.shots 覆盖 prompts          // v1.2.6-fix5: 只对 shots 做标准化,不要用 normalized.shots 覆盖 prompts
           const normalized = this.fieldGuard.normalizeAndValidate(productionResult.shots, 'Final-Export');
           productionResult.shots = normalized.shots;
 
@@ -1427,7 +1523,7 @@ class HyperrealitySystem {
           }
 
           if (this.requirementAlignmentGate.strictMode) {
-            console.error('   ⛔ 严格模式已启用，阻止最终返回');
+            console.error('   ⛔ 严格模式已启用,阻止最终返回');
             result.success = false;
             result.errors.push({ stage: 'RequirementAlignmentGate', message: `需求对齐未通过: ${(alignmentResult.score * 100).toFixed(0)}%` });
           }
@@ -1451,6 +1547,43 @@ class HyperrealitySystem {
           error: err.message,
           timing: Date.now()
         });
+      }
+    }
+
+    // 🐼 [PandaCineForge] Phase 5: 反馈飞轮 — 驱动技能成熟度进化
+    if (this.pandaAdapter.enabled) {
+      try {
+        const outcome = result.success ? 'success' : 'failed';
+        const qualityScore = result.success ? 85 : 40;
+        const failureReasons = result.errors.length > 0 ? result.errors.map(e => e.message || e.error || String(e)) : undefined;
+        
+        // 对本次注入的技能进行反馈回传
+        const skillsToFeedback = [
+          metadata._pandaSkillHints?.skills?.[0]?.skill_id,
+          metadata._pandaScriptSkills?.skills?.[0]?.skill_id,
+          metadata._pandaVisualSkills?.skills?.[0]?.skill_id,
+          metadata._pandaPostSkills?.skills?.[0]?.skill_id,
+          metadata._pandaDirectorSkills?.skills?.[0]?.skill_id,
+          metadata._pandaEmotionSkills?.skills?.[0]?.skill_id,
+          metadata._pandaVerticalSkills?.skills?.[0]?.skill_id,
+        ].filter(Boolean);
+
+        if (skillsToFeedback.length > 0) {
+          console.log(`\n🐼 [PandaCineForge] 反馈飞轮: ${skillsToFeedback.length} 个技能`);
+          for (const skillId of skillsToFeedback) {
+            this.pandaAdapter.reportFeedback(skillId, outcome, qualityScore, failureReasons)
+              .then(fb => {
+                if (fb.status === 'feedback_recorded') {
+                  console.log(`   ✅ 技能反馈: ${skillId.substring(0, 20)}... | maturity: ${fb.maturity}`);
+                }
+              })
+              .catch(err => {
+                // 静默失败，不影响主流程
+              });
+          }
+        }
+      } catch (err) {
+        // 反馈失败不影响主流程
       }
     }
 
@@ -1928,7 +2061,7 @@ class HyperrealitySystem {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const basePath = path.join(outputDir, `super-mickey-${timestamp}`);
 
-    // v2.1.5-fix: 安全写入函数（带验证）
+    // v2.1.5-fix: 安全写入函数(带验证)
     const safeWrite = async (filePath, content, label) => {
       await fs.writeFile(filePath, content);
       // 写入验证
