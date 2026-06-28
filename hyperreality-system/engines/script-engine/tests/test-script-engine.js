@@ -6,7 +6,7 @@ const { IntentParser } = require('../core/intent-parser');
 const { ScriptBlueprint } = require('../core/script-blueprint');
 const { ScriptValidator } = require('../core/script-validator');
 const { ScriptBlueprintAdapter } = require('../core/adapter');
-const { NirathExtension } = require('../extensions/nirath-extension');
+const { 示例世界Extension } = require('../extensions/nirath-extension');
 
 console.log('========================================');
 console.log('  Script Engine 测试套件 v1.0');
@@ -15,14 +15,14 @@ console.log('========================================\n');
 // 测试数据
 const testIntents = [
   {
-    name: 'Nirath 饕餮 EP01',
-    raw: '创作山海经异兽志第一集，主角饕餮，120秒，Nirath星球，小G探索',
+    name: '示例世界 示例神兽 EP01',
+    raw: '创作神话项目异兽志第一集，主角示例神兽，120秒，示例世界星球，示例角色探索',
     metadata: {
-      title: '山海经：异兽志 EP01 饕餮',
+      title: '神话项目：异兽志 EP01 示例神兽',
       target_duration: 120,
-      world_setting: 'Nirath',
+      world_setting: '示例世界',
       featured_beast_id: 'taotie',
-      protagonist: 'xiaoG'
+      protagonist: '示例角色'
     }
   },
   {
@@ -68,8 +68,8 @@ for (const test of testIntents) {
   assert(intent.metadata.title === test.metadata.title, '保留元数据标题');
   assert(intent.metadata.target_duration === test.metadata.target_duration, '保留目标时长');
   
-  if (test.metadata.world_setting === 'Nirath') {
-    assert(intent.parsed.world_setting === 'Nirath' || intent.metadata.world_setting === 'Nirath', '识别 Nirath 世界观');
+  if (test.metadata.world_setting === '示例世界') {
+    assert(intent.parsed.world_setting === '示例世界' || intent.metadata.world_setting === '示例世界', '识别 示例世界 世界观');
   }
   
   console.log(`  解析结果: ${intent.parsed.primary_mode} ${intent.parsed.hybrid_config ? '+ hybrid' : ''}`);
@@ -98,11 +98,11 @@ const blueprint = new ScriptBlueprint({
         scene_type: 'opening',
         act_id: 'ACT-1',
         timing: { start: 0, duration: 15, end: 15 },
-        characters: ['xiaoG'],
-        setting: 'Nirath硅晶草原，双月当空',
+        characters: ['示例角色'],
+        setting: '示例世界硅晶草原，双月当空',
         dialogue: {
           has_dialogue: true,
-          lines: [{ speaker: 'xiaoG', text: '原来这就是Nirath...', emotion: 'awe' }]
+          lines: [{ speaker: '示例角色', text: '原来这就是示例世界...', emotion: 'awe' }]
         }
       },
       {
@@ -111,12 +111,12 @@ const blueprint = new ScriptBlueprint({
         scene_type: 'conflict',
         act_id: 'ACT-1',
         timing: { start: 15, duration: 25, end: 40 },
-        characters: ['xiaoG', 'taotie'],
+        characters: ['示例角色', 'taotie'],
         setting: '等离子河流旁，硅晶岩石',
         dialogue: {
           has_dialogue: true,
           lines: [
-            { speaker: 'xiaoG', text: '那是什么？', emotion: 'surprise' },
+            { speaker: '示例角色', text: '那是什么？', emotion: 'surprise' },
             { speaker: 'taotie', text: '（能量涡流轰鸣）', emotion: 'neutral' }
           ]
         }
@@ -127,11 +127,11 @@ const blueprint = new ScriptBlueprint({
         scene_type: 'establishing',
         act_id: 'ACT-2',
         timing: { start: 40, duration: 30, end: 70 },
-        characters: ['xiaoG'],
+        characters: ['示例角色'],
         setting: '晶体森林深处，荧光闪烁',
         dialogue: {
           has_dialogue: true,
-          lines: [{ speaker: 'xiaoG', text: '这里的能量...好强大', emotion: 'wonder' }]
+          lines: [{ speaker: '示例角色', text: '这里的能量...好强大', emotion: 'wonder' }]
         }
       },
       {
@@ -140,12 +140,12 @@ const blueprint = new ScriptBlueprint({
         scene_type: 'emotional_climax',
         act_id: 'ACT-2',
         timing: { start: 70, duration: 30, end: 100 },
-        characters: ['xiaoG', 'taotie'],
+        characters: ['示例角色', 'taotie'],
         setting: '等离子河流交汇处，能量风暴',
         dialogue: {
           has_dialogue: true,
           lines: [
-            { speaker: 'xiaoG', text: '我明白了，你是守护者！', emotion: 'realization' },
+            { speaker: '示例角色', text: '我明白了，你是守护者！', emotion: 'realization' },
             { speaker: 'taotie', text: '（能量涡流平息）', emotion: 'calm' }
           ]
         }
@@ -156,11 +156,11 @@ const blueprint = new ScriptBlueprint({
         scene_type: 'resolution',
         act_id: 'ACT-3',
         timing: { start: 100, duration: 20, end: 120 },
-        characters: ['xiaoG'],
+        characters: ['示例角色'],
         setting: '硅晶草原，双月落下',
         dialogue: {
           has_dialogue: true,
-          lines: [{ speaker: 'xiaoG', text: '记忆即存在...我会记住的', emotion: 'determined' }]
+          lines: [{ speaker: '示例角色', text: '记忆即存在...我会记住的', emotion: 'determined' }]
         }
       }
     ]
@@ -168,17 +168,17 @@ const blueprint = new ScriptBlueprint({
   character_system: {
     characters: [
       {
-        character_id: 'xiaoG',
-        name: '小G',
+        character_id: '示例角色',
+        name: '示例角色',
         role: 'protagonist',
         visual_anchor: {
           core_features: ['银灰装甲', '东亚面孔短发', '年轻男性'],
-          reference_images: ['characters/xiaoG/front.jpg']
+          reference_images: ['characters/示例角色/front.jpg']
         }
       },
       {
         character_id: 'taotie',
-        name: '饕餮',
+        name: '示例神兽',
         role: 'featured_beast',
         visual_anchor: {
           core_features: ['碳化硅质甲壳', '腋下双眼', '巨口能量涡流'],
@@ -189,9 +189,9 @@ const blueprint = new ScriptBlueprint({
   },
   world_setting: {
     world_id: 'nirath',
-    world_name: 'Nirath星球',
+    world_name: '示例世界星球',
     era: '上古纪元',
-    core_rules: ['Nirath是地球前身'],
+    core_rules: ['示例世界是地球前身'],
     environment_tags: ['硅晶草原', '双月当空']
   }
 });
@@ -200,7 +200,7 @@ assert(blueprint.blueprint_id, '生成 blueprint_id');
 assert(blueprint.meta.title === '测试剧本', '设置标题');
 assert(blueprint.structure.scenes.length === 5, '5个场景');
 assert(blueprint.getScene('SC00').scene_name === '片头', '获取指定场景');
-assert(blueprint.getCharacter('xiaoG').role === 'protagonist', '获取指定角色');
+assert(blueprint.getCharacter('示例角色').role === 'protagonist', '获取指定角色');
 assert(blueprint.getScenesWithDialogue().length === 5, '5个场景有台词');
 assert(blueprint.getTotalDuration() === 120, '总时长 120s');
 
@@ -251,16 +251,16 @@ assert(repairPlan.repairs.length === 0, '无修复需求（因为剧本通过）
 
 console.log(`  修复计划: 无需修复 ✓`);
 
-// ========== 测试 4: NirathExtension ==========
-console.log('\n📋 测试 4: NirathExtension（世界观扩展）');
+// ========== 测试 4: 示例世界Extension ==========
+console.log('\n📋 测试 4: 示例世界Extension（世界观扩展）');
 console.log('----------------------------------------');
 
-const nirath = new NirathExtension();
+const nirath = new 示例世界Extension();
 
 assert(nirath.getWorldInfo().world_id === 'nirath', '获取世界观');
-assert(nirath.getBeastArchive('taotie').name === '饕餮', '获取异兽档案');
+assert(nirath.getBeastArchive('taotie').name === '示例神兽', '获取异兽档案');
 assert(nirath.getBeastVisualAnchor('taotie').core_features.length > 0, '获取视觉锚点');
-assert(nirath.getProtagonist().character_id === 'xiaoG', '获取主角设定');
+assert(nirath.getProtagonist().character_id === '示例角色', '获取主角设定');
 
 const visualConstraints = nirath.getVisualConstraints();
 assert(visualConstraints.must_have.length > 0, '有必须元素');
@@ -271,12 +271,12 @@ const sceneValidation = nirath.validateScene(blueprint.structure.scenes[0]);
 assert(sceneValidation.valid, '场景符合世界观');
 
 const setting = nirath.generateSceneSetting('测试场景');
-assert(setting.includes('Nirath') || setting.includes('硅') || setting.includes('双月'), '生成场景设定');
+assert(setting.includes('示例世界') || setting.includes('硅') || setting.includes('双月'), '生成场景设定');
 
-const charAnchor = nirath.generateCharacterVisualAnchor('xiaoG');
+const charAnchor = nirath.generateCharacterVisualAnchor('示例角色');
 assert(charAnchor.includes('银灰装甲'), '生成角色视觉锚点');
 
-console.log(`  Nirath 扩展测试通过 ✓`);
+console.log(`  示例世界 扩展测试通过 ✓`);
 
 // ========== 测试 5: Adapter ==========
 console.log('\n📋 测试 5: ScriptBlueprintAdapter（适配层）');
@@ -293,7 +293,7 @@ assert(adapted.worldSetting.world_id === 'nirath', '适配世界观');
 
 // 检查场景 Prompt 基础
 assert(adapted.scenes[0].prompt_base.includes('电影级'), 'Prompt 包含电影级');
-assert(adapted.scenes[0].prompt_base.includes('Nirath'), 'Prompt 包含 Nirath');
+assert(adapted.scenes[0].prompt_base.includes('示例世界'), 'Prompt 包含 示例世界');
 
 // 检查视觉方向
 assert(adapted.scenes[0].visual_direction.shot_type, '有镜头类型');

@@ -5,7 +5,7 @@ const system = new HyperrealitySystem();
 
 async function run() {
   const result = await system.create(
-    '穿警服的陈卓女士，讲解横纹肌溶解的症状以及实验室检查',
+    '示例警官，讲解横纹肌溶解的症状以及实验室检查',
     { title: '横纹肌溶解的症状以及实验室检查', target_duration: 62 },
     {
       skipRequirementConfirmation: false,  // 需要确认

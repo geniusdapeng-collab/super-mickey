@@ -19,28 +19,28 @@ const mockProductionResult = {
     { shotId: 'SC04', sceneType: 'resolution', timing: { duration: 25, start_time: 127 } }
   ],
   prompts: [
-    { shotId: 'SC00', prompt: '电影级镜头...', length: 198, imageRefs: [{characterId: 'xiaoG'}] },
-    { shotId: 'SC01', prompt: '电影级镜头...', length: 196, imageRefs: [{characterId: 'xiaoG'}] },
-    { shotId: 'SC02', prompt: '电影级镜头...', length: 198, imageRefs: [{characterId: 'xiaoG'}] },
-    { shotId: 'SC03', prompt: '电影级镜头...', length: 208, imageRefs: [{characterId: 'xiaoG'}] },
-    { shotId: 'SC04', prompt: '电影级镜头...', length: 194, imageRefs: [{characterId: 'xiaoG'}] }
+    { shotId: 'SC00', prompt: '电影级镜头...', length: 198, imageRefs: [{characterId: 'exampleCharacter'}] },
+    { shotId: 'SC01', prompt: '电影级镜头...', length: 196, imageRefs: [{characterId: 'exampleCharacter'}] },
+    { shotId: 'SC02', prompt: '电影级镜头...', length: 198, imageRefs: [{characterId: 'exampleCharacter'}] },
+    { shotId: 'SC03', prompt: '电影级镜头...', length: 208, imageRefs: [{characterId: 'exampleCharacter'}] },
+    { shotId: 'SC04', prompt: '电影级镜头...', length: 194, imageRefs: [{characterId: 'exampleCharacter'}] }
   ]
 };
 
 const mockScriptResult = {
   blueprint: {
-    meta: { title: '山海经：异兽志 EP01 饕餮', target_duration: 120 },
+    meta: { title: '神话项目：异兽志 EP01 示例神兽', target_duration: 120 },
     structure: {
       scenes: [
         {
           scene_id: 'SC00',
           scene_type: 'opening',
           scene_name: '片头',
-          setting: 'Nirath 硅晶草原，双月当空',
+          setting: '示例世界 硅晶草原，双月当空',
           timing: { duration: 31, start_time: 0 },
-          characters: ['xiaoG'],
+          characters: ['exampleCharacter'],
           dialogue: {
-            lines: [{ speaker: 'xiaoG', text: '我是小G，这是 Nirath。', emotion: 'curious' }]
+            lines: [{ speaker: 'exampleCharacter', text: '我是示例角色，这是 示例世界。', emotion: 'curious' }]
           }
         },
         {
@@ -49,22 +49,22 @@ const mockScriptResult = {
           scene_name: '探索',
           setting: '晶体森林深处',
           timing: { duration: 25, start_time: 31 },
-          characters: ['xiaoG'],
+          characters: ['exampleCharacter'],
           dialogue: {
-            lines: [{ speaker: 'xiaoG', text: '这里的晶体在发光。', emotion: 'wonder' }]
+            lines: [{ speaker: 'exampleCharacter', text: '这里的晶体在发光。', emotion: 'wonder' }]
           }
         },
         {
           scene_id: 'SC02',
           scene_type: 'conflict',
           scene_name: '遭遇',
-          setting: '饕餮领地',
+          setting: '示例神兽领地',
           timing: { duration: 33, start_time: 56 },
-          characters: ['xiaoG', 'taotie'],
+          characters: ['exampleCharacter', 'example-creature'],
           dialogue: {
             lines: [
-              { speaker: 'xiaoG', text: '小心！', emotion: 'alert' },
-              { speaker: 'taotie', text: '吼——', emotion: 'aggressive' }
+              { speaker: 'exampleCharacter', text: '小心！', emotion: 'alert' },
+              { speaker: 'example-creature', text: '吼——', emotion: 'aggressive' }
             ]
           }
         },
@@ -74,10 +74,10 @@ const mockScriptResult = {
           scene_name: '共鸣',
           setting: '记忆之河',
           timing: { duration: 38, start_time: 89 },
-          characters: ['xiaoG', 'taotie'],
+          characters: ['exampleCharacter', 'example-creature'],
           dialogue: {
             lines: [
-              { speaker: 'xiaoG', text: '你不是怪物，你是记忆。', emotion: 'empathy' }
+              { speaker: 'exampleCharacter', text: '你不是怪物，你是记忆。', emotion: 'empathy' }
             ]
           }
         },
@@ -87,15 +87,15 @@ const mockScriptResult = {
           scene_name: '启程',
           setting: '等离子河边',
           timing: { duration: 25, start_time: 127 },
-          characters: ['xiaoG'],
+          characters: ['exampleCharacter'],
           dialogue: {
-            lines: [{ speaker: 'xiaoG', text: '下一站，刑天。', emotion: 'determined' }]
+            lines: [{ speaker: 'exampleCharacter', text: '下一站，刑天。', emotion: 'determined' }]
           }
         }
       ],
       characters: [
-        { id: 'xiaoG', name: '小G', role: 'protagonist', visuals: { color: '银灰' } },
-        { id: 'taotie', name: '饕餮', role: 'featured_beast', tags: ['beast'] }
+        { id: 'exampleCharacter', name: '示例角色', role: 'protagonist', visuals: { color: '银灰' } },
+        { id: 'example-creature', name: '示例神兽', role: 'featured_beast', tags: ['beast'] }
       ]
     }
   }
@@ -163,7 +163,7 @@ async function runTest() {
   assert(firstSubtitle.type === 'identity_card', '字幕类型为身份卡');
   assert(firstSubtitle.duration > 0, '字幕有持续时间');
   assert(firstSubtitle.content?.name, '字幕有角色名');
-  assert(firstSubtitle.content?.title?.includes('Nirath'), '字幕标题包含 Nirath');
+  assert(firstSubtitle.content?.title?.includes('示例世界'), '字幕标题包含 示例世界');
   assert(firstSubtitle.content?.species, '字幕有物种信息');
   assert(firstSubtitle.content?.trait, '字幕有特征信息');
   assert(firstSubtitle.style?.position === 'bottom-left', '字幕位置在左下角');

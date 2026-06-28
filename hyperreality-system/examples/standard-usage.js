@@ -14,7 +14,7 @@ function loadConfig() {
   try {
     const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
     return {
-      apiKey: config.apiKey,
+      apiKey: process.env.VOLCENGINE_ARK_API_KEY || "YOUR_API_KEY_HERE",
       baseUrl: config.baseUrl
     };
   } catch (e) {
@@ -29,13 +29,13 @@ const config = loadConfig();
 const system = new HyperrealitySystem({
   scriptEngine: {
     scriptGenerator: {
-      apiKey: config.apiKey
+      apiKey: process.env.VOLCENGINE_ARK_API_KEY || "YOUR_API_KEY_HERE"
     }
   }
 });
 
 // 示例：健康科普视频
-const intent = '穿警服的陈卓女士，讲解横纹肌溶解的症状以及实验室检查';
+const intent = '示例警官，讲解横纹肌溶解的症状以及实验室检查';
 const metadata = {
   title: '横纹肌溶解的症状以及实验室检查',
   target_duration: 62

@@ -1,4 +1,4 @@
-# Nirath Video System v7.0 — 四层架构接口契约 v1.0
+# 示例世界 Video System v7.0 — 四层架构接口契约 v1.0
 
 > 版本：v1.0 | 日期：2026-06-07 | 状态：设计稿
 > 基于：ScriptCraft Engine 融合架构 v2.0（队长设计）+ 当前 v6.5.12 系统现状
@@ -8,7 +8,7 @@
 ## 一、设计原则
 
 ### 1.1 渐进迁移，不推翻重来
-- 当前 v6.5.12 的 `nirath-master-pipeline.js`（317KB）**不删除**，逐步拆解
+- 当前 v6.5.12 的 `example-world-pipeline.js`（317KB）**不删除**，逐步拆解
 - 新模块独立目录，通过适配层对接旧系统
 - 每次迭代必须能跑通完整预生产（P0-固化原则）
 
@@ -75,7 +75,7 @@
 
 ```json
 {
-  "$schema": "nirath://schemas/user-intent/v1",
+  "$schema": "example://schemas/user-intent/v1",
   "intent_id": "uuid",
   "raw_input": "用户原始输入文本",
   "parsed": {
@@ -88,14 +88,14 @@
     }
   },
   "metadata": {
-    "title": "山海经：异兽志 EP01 饕餮",
+    "title": "示例项目：神兽 系列",
     "target_duration": 120,
     "target_platform": ["tiktok", "bilibili"],
     "language": "zh-CN",
     "style_tags": ["hyper-realistic", "cinematic", "epic"],
-    "world_setting": "Nirath",
+    "world_setting": "示例世界",
     "featured_beast_id": "taotie",
-    "protagonist": "xiaoG"
+    "protagonist": "示例角色"
   },
   "constraints": {
     "max_prompt_length": 980,
@@ -107,7 +107,7 @@
 
 **关键字段说明**：
 - `narrative_mode`: 由意图路由器自动识别（当前系统默认为 `dramatic`）
-- `world_setting`: 世界观标识（Nirath / 地球 / 自定义）
+- `world_setting`: 世界观标识（示例世界 / 地球 / 自定义）
 - `featured_beast_id`: 异兽主角 ID（如 `taotie`）
 - `constraints`: 系统级约束，直接透传至下游
 
@@ -119,13 +119,13 @@
 
 ```json
 {
-  "$schema": "nirath://schemas/script-blueprint/v1",
+  "$schema": "example://schemas/script-blueprint/v1",
   "blueprint_id": "uuid",
   "version": "1.0.0",
   "intent_ref": "引用 IC-1 intent_id",
   
   "meta": {
-    "title": "山海经：异兽志 EP01 饕餮",
+    "title": "示例项目：神兽 系列",
     "narrative_mode": "dramatic",
     "target_duration": 120,
     "acts_count": 3,
@@ -136,7 +136,7 @@
     "acts": [
       {
         "act_id": "ACT-1",
-        "act_name": "序幕：Nirath召唤",
+        "act_name": "序幕：示例世界召唤",
         "act_function": "establish",
         "start_time": 0,
         "end_time": 15,
@@ -144,7 +144,7 @@
           {
             "beat_id": "B-1.1",
             "beat_type": "hook",
-            "description": "小G从银灰传送门降临Nirath",
+            "description": "示例角色从银灰传送门降临示例世界",
             "target_emotion": "wonder"
           }
         ]
@@ -158,12 +158,12 @@
         "scene_function": "establish",
         "act_id": "ACT-1",
         "timing": { "start": 0, "duration": 15, "end": 15 },
-        "characters": ["xiaoG"],
-        "setting": "Nirath星球，硅晶草原，双月当空",
+        "characters": ["示例角色"],
+        "setting": "示例世界星球，硅晶草原，双月当空",
         "dialogue": {
           "has_dialogue": true,
           "lines": [
-            { "speaker": "xiaoG", "text": "原来这就是Nirath...", "emotion": "awe" }
+            { "speaker": "示例角色", "text": "原来这就是示例世界...", "emotion": "awe" }
           ]
         },
         "visual_notes": "电影级远景，超写实，双月光晕",
@@ -176,22 +176,22 @@
   "character_system": {
     "characters": [
       {
-        "character_id": "xiaoG",
-        "name": "小G",
+        "character_id": "示例角色",
+        "name": "示例角色",
         "role": "protagonist",
         "voice_profile": {
-          "persona": "Nirath探索者，年轻男性，银灰装甲",
+          "persona": "示例世界探索者，年轻男性，银灰装甲",
           "tone": "curious_warm",
           "speaking_style": "口语化，略带感叹，适合短视频节奏"
         },
         "visual_anchor": {
           "core_features": ["银灰装甲", "东亚面孔短发", "年轻男性"],
-          "reference_images": ["characters/xiaoG/front.jpg"]
+          "reference_images": ["characters/示例角色/front.jpg"]
         }
       },
       {
         "character_id": "taotie",
-        "name": "饕餮",
+        "name": "示例神兽",
         "role": "featured_beast",
         "voice_profile": null,
         "visual_anchor": {
@@ -206,8 +206,8 @@
     "global_voice_policy": "dialogue_only_no_voiceover",
     "voice_profiles": [
       {
-        "voice_id": "V-xiaoG",
-        "character_id": "xiaoG",
+        "voice_id": "V-示例角色",
+        "character_id": "示例角色",
         "role": "protagonist",
         "tone": "warm_curious",
         "pace": "moderate",
@@ -220,13 +220,13 @@
   },
 
   "world_setting": {
-    "world_id": "nirath",
-    "world_name": "Nirath星球",
+    "world_id": "example",
+    "world_name": "示例世界星球",
     "era": "上古纪元",
     "core_rules": [
-      "Nirath是地球前身",
-      "硅基生命与碳基生命共存",
-      "《山海经》实为Nirath往事"
+      "示例世界是地球前身",
+      "虚构生命形态共存",
+      "《古籍神话》实为示例世界往事"
     ],
     "environment_tags": ["硅晶草原", "双月当空", "等离子河流", "晶体森林"]
   },
@@ -237,8 +237,8 @@
       "character_arcs": [],
       "want_need_pairs": []
     },
-    "nirath_extension": {
-      "beast_lore": "饕餮档案",
+    "example_extension": {
+      "beast_lore": "神兽档案",
       "memory_theme": "记忆即存在"
     }
   },
@@ -259,7 +259,7 @@
 - `dialogue` 字段必须在 `ScriptBlueprint` 中结构化，制作引擎只负责"嵌入"而非"生成"
 - `character_system` 包含角色一致性锚点（核心特征 + 定妆照路径），供下游全链路使用
 - `world_setting` 定义世界观级约束，制作引擎生成 Prompt 时必须遵守
-- `extensions` 保留类型扩展空间，当前默认填充 `dramatic_extension` + `nirath_extension`
+- `extensions` 保留类型扩展空间，当前默认填充 `dramatic_extension` + `example_extension`
 
 ---
 
@@ -267,13 +267,13 @@
 
 ```json
 {
-  "$schema": "nirath://schemas/shot-prompt/v1",
+  "$schema": "example://schemas/shot-prompt/v1",
   "shot_id": "SC01-SH01",
   "scene_id": "SC01",
   "blueprint_ref": "引用 ScriptBlueprint.blueprint_id",
 
   "prompt": {
-    "text": "电影级远景，超写实，Nirath星球硅晶草原...",
+    "text": "电影级远景，超写实，示例世界星球硅晶草原...",
     "length": 976,
     "max_length": 980
   },
@@ -282,9 +282,9 @@
     {
       "image_id": "ref-1",
       "type": "character_portrait",
-      "character_id": "xiaoG",
-      "path": "characters/xiaoG/front.jpg",
-      "inject_text": "小G正面，银灰装甲，东亚面孔短发，年轻男性，超写实"
+      "character_id": "示例角色",
+      "path": "characters/示例角色/front.jpg",
+      "inject_text": "示例角色正面，银灰装甲，东亚面孔短发，年轻男性，超写实"
     }
   ],
 
@@ -304,8 +304,8 @@
 
   "dialogue": {
     "has_dialogue": true,
-    "speaker": "xiaoG",
-    "text": "原来这就是Nirath...",
+    "speaker": "示例角色",
+    "text": "原来这就是示例世界...",
     "injected_in_prompt": true
   },
 
@@ -328,7 +328,7 @@
 
 ```json
 {
-  "$schema": "nirath://schemas/rendered-clip/v1",
+  "$schema": "example://schemas/rendered-clip/v1",
   "clip_id": "uuid",
   "shot_ref": "引用 ShotPrompt.shot_id",
   "task_id": "seedance-task-id",
@@ -362,7 +362,7 @@
 
 ```json
 {
-  "$schema": "nirath://schemas/final-video/v1",
+  "$schema": "example://schemas/final-video/v1",
   "video_id": "uuid",
   "blueprint_ref": "引用 ScriptBlueprint.blueprint_id",
   "clips": ["clip-1", "clip-2", "clip-3"],
@@ -371,13 +371,13 @@
     "cut_points": [{ "time": 15, "type": "hard_cut" }],
     "transitions": [{ "type": "fade", "duration": 0.5 }],
     "music": { "track_id": "epic-theme-1", "volume": 0.6 },
-    "subtitles": [{ "text": "原来这就是Nirath...", "start": 2, "end": 5 }],
-    "color_grade": { "lut": "nirath-warm", "intensity": 0.8 }
+    "subtitles": [{ "text": "原来这就是示例世界...", "start": 2, "end": 5 }],
+    "color_grade": { "lut": "example-warm", "intensity": 0.8 }
   },
 
   "packaging": {
-    "title_card": "山海经：异兽志 EP01",
-    "end_card": "关注我，探索更多Nirath异兽",
+    "title_card": "示例项目：神兽 EP01",
+    "end_card": "关注我，探索更多示例世界异兽",
     "platform_optimized": ["tiktok", "bilibili"]
   }
 }
@@ -477,7 +477,7 @@ engines/script-engine/
 │   ├── script-generation-prompt.md   # 剧本生成主 Prompt
 │   └── intent-classification-prompt.md # 意图分类 Prompt
 ├── extensions/
-│   ├── nirath-extension.js       # Nirath 世界观扩展
+│   ├── example-extension.js       # 示例世界 世界观扩展
 │   └── dramatic-extension.js     # 戏剧性叙事扩展
 └── tests/
     └── script-engine.test.js
@@ -499,7 +499,7 @@ UserIntent → [Intent Parser] → [Script Generator] → [Script Validator] →
 ```
 现有系统 v6.5.12:
   run-taotie-preproduction.js
-    → 调用 nirath-master-pipeline.js
+    → 调用 example-world-pipeline.js
       → 生成剧本（硬编码在 LLM Prompt 中）
       → 生成镜头 Prompt
 
@@ -520,7 +520,7 @@ UserIntent → [Intent Parser] → [Script Generator] → [Script Validator] →
 - `ScriptBlueprint` 的 `scenes` 数组直接对应现有系统的 `SC00`~`SC04` 镜头列表
 - `character_system` 中的 `visual_anchor` 直接替代现有系统的 `characters/` 定妆照查找逻辑
 - `voice_system` 中的 `dialogue` 直接替代现有系统的台词注入逻辑
-- 现有 `nirath-master-pipeline.js` 中的"剧本生成"部分逐步迁移到 `script-engine/`
+- 现有 `example-world-pipeline.js` 中的"剧本生成"部分逐步迁移到 `script-engine/`
 - 剩余"镜头拆解 + Prompt 工程"部分迁移到 `production-engine/`
 
 ---
@@ -538,12 +538,12 @@ UserIntent → [Intent Parser] → [Script Generator] → [Script Validator] →
 - [ ] 实现 `script-engine/script-generator.js`（LLM 剧本生成）
 - [ ] 实现 `script-engine/script-validator.js`（Schema + 业务校验）
 - [ ] 实现 `templates/dramatic-template.json`（戏剧性模板）
-- [ ] 接入 `nirath-extension.js`（Nirath 世界观扩展）
+- [ ] 接入 `example-extension.js`（示例世界 世界观扩展）
 - [ ] **适配层**：将 `ScriptBlueprint` 转换为现有 Pipeline 可消费的格式
-- [ ] **质量门禁**：用饕餮 EP01 完整跑通预生产，验证剧本质量
+- [ ] **质量门禁**：用示例项目 首集 完整跑通预生产，验证剧本质量
 
 ### Phase 3: 制作引擎瘦身（Week 4-5）
-- [ ] 将 `nirath-master-pipeline.js` 拆解为 `production-engine/` 模块
+- [ ] 将 `example-world-pipeline.js` 拆解为 `production-engine/` 模块
 - [ ] 保留：镜头拆解、Prompt 工程、定妆照绑定、台词注入
 - [ ] 剥离：剧本生成（迁移到 `script-engine/`）
 - [ ] **质量门禁**：拆解后预生产质量与 v6.5.12 差异 ≤ 5%
@@ -570,7 +570,7 @@ UserIntent → [Intent Parser] → [Script Generator] → [Script Validator] →
 - [ ] **质量门禁**：全链路 Token 消耗降低 20%+
 
 ### v7.0 Release（Week 12-13）
-- [ ] 全链路端到端测试（饕餮 EP01 完整流程）
+- [ ] 全链路端到端测试（示例项目 首集 完整流程）
 - [ ] 性能优化（延迟、Token、并发）
 - [ ] 文档完善 + 代码打包
 - [ ] **版本号**：v7.0.0
@@ -595,7 +595,7 @@ UserIntent → [Intent Parser] → [Script Generator] → [Script Validator] →
 
 | 现有文件 | 迁移目标 | 说明 |
 |----------|----------|------|
-| `nirath-master-pipeline.js`（317KB）| `production-engine/` | 拆解为多个模块 |
+| `example-world-pipeline.js`（317KB）| `production-engine/` | 拆解为多个模块 |
 | `opening-system-v3.js` | `production-engine/opening-builder.js` | 片头系统 |
 | `orient-primordial-core-v24.js` | `script-engine/templates/dramatic-template.json` | 剧本生成模板 |
 | `beast-prompt-injector.js` | `production-engine/beast-prompt-builder.js` | 异兽 Prompt 注入 |
@@ -603,7 +603,7 @@ UserIntent → [Intent Parser] → [Script Generator] → [Script Validator] →
 | `prompt-standard-v2.js` | `production-engine/prompt-standard.js` | Prompt 标准库 |
 | `compliance-checker.js` | `shared-kernel/compliance-engine.js` | 合规检查 |
 | `llm-reasoning-engine.js` | `shared-kernel/llm-router.js` | LLM 调用路由 |
-| `production-bible.js` | `script-engine/extensions/nirath-extension.js` | 生产圣经/世界观 |
+| `production-bible.js` | `script-engine/extensions/example-extension.js` | 生产圣经/世界观 |
 
 ### 8.2 新创建目录结构
 
@@ -637,7 +637,7 @@ UserIntent → [Intent Parser] → [Script Generator] → [Script Validator] →
 
 ### 9.1 与 ScriptCraft Engine 融合架构的对应关系
 
-| ScriptCraft 设计 | Nirath 实现 | 状态 |
+| ScriptCraft 设计 | 示例世界 实现 | 状态 |
 |------------------|-------------|------|
 | 统一入口层（Intent Router） | `script-engine/intent-parser.js` | Phase 2 |
 | 共享内核层（Shared Kernel） | `shared-kernel/` | Phase 6 |

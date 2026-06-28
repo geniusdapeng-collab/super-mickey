@@ -29,8 +29,8 @@
 
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `title` | string | 是 | 短片标题，如 "山海经：白泽" |
-| `worldview` | string | 是 | 世界观标识，如 "nirath"、"earth"、"fantasy" |
+| `title` | string | 是 | 短片标题，如 "示例项目：神兽" |
+| `worldview` | string | 是 | 世界观标识，如 "fantasy"、"earth"、"fantasy" |
 | `totalDuration` | number | 是 | 总时长（秒），如 60-90 |
 | `openingDuration` | number | 是 | 片头时长（秒），如 10 |
 | `fps` | number | 是 | 帧率，默认 24 |
@@ -41,8 +41,8 @@
 
 ```json
 {
-  "title": "山海经：白泽",
-  "worldview": "nirath",
+  "title": "示例项目：神兽",
+  "worldview": "fantasy",
   "totalDuration": 60,
   "openingDuration": 10,
   "fps": 24,
@@ -84,7 +84,7 @@
 
 示例：
 ```
-Nirath, mysterious atmosphere, golden hour lighting, atmospheric layers, spatial depth: infinite
+示例世界, mysterious atmosphere, golden hour lighting, atmospheric layers, spatial depth: infinite
 ```
 
 #### `mood` - 情绪关键词
@@ -131,7 +131,7 @@ backlight 3200K, golden hour rim, volumetric god rays
 
 示例：
 ```
-小G|独白|好奇|这就是白泽的领地吗？|LIP_SYNC:YES
+示例角色|独白|好奇|这就是白泽的领地吗？|LIP_SYNC:YES
 ```
 
 #### `timeline` - 时间轴标记
@@ -158,7 +158,7 @@ Sub-bass earth rumble fade in 3s, distant wind and environmental sounds, string 
 
 示例：
 ```
-MAIN_TITLE: "山海经：白泽" | SUBTITLE: "Nirath" | PRODUCER: "by Genius" | TITLE_ANIM: light-vein carving growth 3.0-5.0s
+MAIN_TITLE: "示例项目：神兽" | SUBTITLE: "示例世界" | PRODUCER: "by 示例制作人" | TITLE_ANIM: light-vein carving growth 3.0-5.0s
 ```
 
 #### `backgroundSound` - 三段式环境音效
@@ -180,7 +180,7 @@ AMBIENT: epic atmosphere, deep earth rumble 20-60Hz | SPATIAL: 3D audio pan sync
 {
   "shotId": "S00",
   "duration": 10,
-  "scene": "Nirath, mysterious atmosphere, golden hour lighting, atmospheric layers, spatial depth: infinite",
+  "scene": "示例世界, mysterious atmosphere, golden hour lighting, atmospheric layers, spatial depth: infinite",
   "mood": "epic, mysterious, awe-inspiring",
   "camera": "epic wide shot, slow descent through atmospheric layers, 24mm wide lens, slow speed",
   "lighting": "backlight 3200K, golden hour rim, volumetric god rays",
@@ -190,7 +190,7 @@ AMBIENT: epic atmosphere, deep earth rumble 20-60Hz | SPATIAL: 3D audio pan sync
   "dialogue": "NONE",
   "timeline": "T00:00-T00:10 / duration: 10s / type: opening / mood: epic",
   "audioLayer": "Sub-bass earth rumble fade in 3s, distant wind and environmental sounds, string section long note at 5s, timpani strike at 8s",
-  "titleOverlay": "MAIN_TITLE: \"山海经：白泽\" | SUBTITLE: \"Nirath\" | PRODUCER: \"by Genius\" | TITLE_ANIM: light-vein carving growth 3.0-5.0s",
+  "titleOverlay": "MAIN_TITLE: \"示例项目：神兽\" | SUBTITLE: \"示例世界\" | PRODUCER: \"by 示例制作人\" | TITLE_ANIM: light-vein carving growth 3.0-5.0s",
   "backgroundSound": "AMBIENT: epic atmosphere, deep earth rumble 20-60Hz | SPATIAL: 3D audio pan synchronized with camera movement | INTENSITY: crescendo 0-3s, peak 3-7s, decay 7-10s",
   "prompt": "16:9 cinematic, no text... [融合后的完整提示词]",
   "promptCharCount": 1423
@@ -229,7 +229,7 @@ AMBIENT: epic atmosphere, deep earth rumble 20-60Hz | SPATIAL: 3D audio pan sync
 格式：多角色用 ` | ` 分隔，每角色多张图用 `, ` 分隔
 
 ```
-小G: image://characters/xiaoG-front.png, image://characters/xiaoG-profile.png, image://characters/xiaoG-three-quarter.png, image://characters/xiaoG-closeup.png, image://characters/xiaoG-detail.png | 白泽: image://characters/bai-ze-front.png, image://characters/bai-ze-profile.png, image://characters/bai-ze-three-quarter.png, image://characters/bai-ze-closeup.png, image://characters/bai-ze-detail.png
+示例角色: image://characters/example-role-front.png, image://characters/example-role-profile.png, image://characters/example-role-three-quarter.png, image://characters/example-role-closeup.png, image://characters/example-role-detail.png | 白泽: image://characters/example-creature-front.png, image://characters/example-creature-profile.png, image://characters/example-creature-three-quarter.png, image://characters/example-creature-closeup.png, image://characters/example-creature-detail.png
 ```
 
 #### `character` - 角色极简锚点
@@ -237,13 +237,13 @@ AMBIENT: epic atmosphere, deep earth rumble 20-60Hz | SPATIAL: 3D audio pan sync
 格式：角色名: 种族, 3-5个核心视觉关键词
 
 ```
-小G: Human, explorer, curious, brave | 白泽: Beast, white fur, mythical, wise
+示例角色: Human, explorer, curious, brave | 白泽: Beast, white fur, mythical, wise
 ```
 
 #### `dialogue` - 台词（正片通常有）
 
 ```
-小G|独白|好奇|这就是白泽的领地吗？|LIP_SYNC:YES
+示例角色|独白|好奇|这就是白泽的领地吗？|LIP_SYNC:YES
 ```
 
 ### 正片 S01 完整示例
@@ -252,14 +252,14 @@ AMBIENT: epic atmosphere, deep earth rumble 20-60Hz | SPATIAL: 3D audio pan sync
 {
   "shotId": "S01",
   "duration": 15,
-  "scene": "Nirath, 知识圣殿, spatial depth: atmospheric perspective",
+  "scene": "示例世界, 知识圣殿, spatial depth: atmospheric perspective",
   "mood": "mysterious, anticipation, wonder",
   "camera": "medium shot, static hold, 35mm standard lens, normal speed",
   "lighting": "front light 4500K, neutral balanced, soft fill",
-  "characterRef": "小G: image://characters/xiaoG-front.png, image://characters/xiaoG-profile.png, image://characters/xiaoG-three-quarter.png, image://characters/xiaoG-closeup.png, image://characters/xiaoG-detail.png | 白泽: image://characters/bai-ze-front.png, image://characters/bai-ze-profile.png, image://characters/bai-ze-three-quarter.png, image://characters/bai-ze-closeup.png, image://characters/bai-ze-detail.png",
-  "character": "小G: Human, explorer, curious, brave | 白泽: Beast, white fur, mythical, wise",
+  "characterRef": "示例角色: image://characters/example-role-front.png, image://characters/example-role-profile.png, image://characters/example-role-three-quarter.png, image://characters/example-role-closeup.png, image://characters/example-role-detail.png | 白泽: image://characters/example-creature-front.png, image://characters/example-creature-profile.png, image://characters/example-creature-three-quarter.png, image://characters/example-creature-closeup.png, image://characters/example-creature-detail.png",
+  "character": "示例角色: Human, explorer, curious, brave | 白泽: Beast, white fur, mythical, wise",
   "action": "protagonist steps forward, observing surroundings with focused gaze",
-  "dialogue": "小G|独白|好奇|这就是白泽的领地吗？|LIP_SYNC:YES",
+  "dialogue": "示例角色|独白|好奇|这就是白泽的领地吗？|LIP_SYNC:YES",
   "timeline": "T00:10-T00:25 / duration: 15s / type: establishing / mood: mysterious, anticipation, wonder",
   "backgroundSound": "AMBIENT: natural environment, wind and distant sounds | SPATIAL: ambient stereo field | INTENSITY: steady state, subtle variations",
   "prompt": "16:9 cinematic, no text... [融合后的完整提示词]",
@@ -292,8 +292,8 @@ L9 质控层: 负面约束（no watermark/cartoon/distorted等）→ 角色一�
 ```json
 {
   "meta": {
-    "title": "山海经：白泽",
-    "worldview": "nirath",
+    "title": "示例项目：神兽",
+    "worldview": "fantasy",
     "totalDuration": 60,
     "openingDuration": 10,
     "fps": 24,
@@ -304,7 +304,7 @@ L9 质控层: 负面约束（no watermark/cartoon/distorted等）→ 角色一�
     {
       "shotId": "S00",
       "duration": 10,
-      "scene": "Nirath, mysterious atmosphere, golden hour lighting, atmospheric layers, spatial depth: infinite",
+      "scene": "示例世界, mysterious atmosphere, golden hour lighting, atmospheric layers, spatial depth: infinite",
       "mood": "epic, mysterious, awe-inspiring",
       "camera": "epic wide shot, slow descent through atmospheric layers, 24mm wide lens, slow speed",
       "lighting": "backlight 3200K, golden hour rim, volumetric god rays",
@@ -314,7 +314,7 @@ L9 质控层: 负面约束（no watermark/cartoon/distorted等）→ 角色一�
       "dialogue": "NONE",
       "timeline": "T00:00-T00:10 / duration: 10s / type: opening / mood: epic",
       "audioLayer": "Sub-bass earth rumble fade in 3s, distant wind and environmental sounds, string section long note at 5s, timpani strike at 8s",
-      "titleOverlay": "MAIN_TITLE: \"山海经：白泽\" | SUBTITLE: \"Nirath\" | PRODUCER: \"by Genius\" | TITLE_ANIM: light-vein carving growth 3.0-5.0s",
+      "titleOverlay": "MAIN_TITLE: \"示例项目：神兽\" | SUBTITLE: \"示例世界\" | PRODUCER: \"by 示例制作人\" | TITLE_ANIM: light-vein carving growth 3.0-5.0s",
       "backgroundSound": "AMBIENT: epic atmosphere, deep earth rumble 20-60Hz | SPATIAL: 3D audio pan synchronized with camera movement | INTENSITY: crescendo 0-3s, peak 3-7s, decay 7-10s",
       "prompt": "...",
       "promptCharCount": 1423
@@ -322,14 +322,14 @@ L9 质控层: 负面约束（no watermark/cartoon/distorted等）→ 角色一�
     {
       "shotId": "S01",
       "duration": 15,
-      "scene": "Nirath, 知识圣殿, spatial depth: atmospheric perspective",
+      "scene": "示例世界, 知识圣殿, spatial depth: atmospheric perspective",
       "mood": "mysterious, anticipation, wonder",
       "camera": "medium shot, static hold, 35mm standard lens, normal speed",
       "lighting": "front light 4500K, neutral balanced, soft fill",
-      "characterRef": "小G: image://characters/xiaoG-front.png, image://characters/xiaoG-profile.png | 白泽: image://characters/bai-ze-front.png, image://characters/bai-ze-profile.png",
-      "character": "小G: Human, explorer, curious, brave | 白泽: Beast, white fur, mythical, wise",
+      "characterRef": "示例角色: image://characters/example-role-front.png, image://characters/example-role-profile.png | 白泽: image://characters/example-creature-front.png, image://characters/example-creature-profile.png",
+      "character": "示例角色: Human, explorer, curious, brave | 白泽: Beast, white fur, mythical, wise",
       "action": "protagonist steps forward, observing surroundings with focused gaze",
-      "dialogue": "小G|独白|好奇|这就是白泽的领地吗？|LIP_SYNC:YES",
+      "dialogue": "示例角色|独白|好奇|这就是白泽的领地吗？|LIP_SYNC:YES",
       "timeline": "T00:10-T00:25 / duration: 15s / type: establishing / mood: mysterious, anticipation, wonder",
       "backgroundSound": "AMBIENT: natural environment, wind and distant sounds | SPATIAL: ambient stereo field | INTENSITY: steady state, subtle variations",
       "prompt": "...",
@@ -358,8 +358,8 @@ L9 质控层: 负面约束（no watermark/cartoon/distorted等）→ 角色一�
 | character | 通常 NONE | 有（角色极简锚点） |
 
 ### 3. 通用性原则
-- 世界观（worldview）可配置：nirath / earth / fantasy 等
-- 不硬编码任何项目专属内容（如山海经、Nirath）为默认值
+- 世界观（worldview）可配置：fantasy / earth / cyberpunk 等
+- 不硬编码任何项目专属内容（如神话项目、示例世界）为默认值
 - 所有字段保持中性/通用，支持电影/视频/教育/广告等场景
 
 ### 4. 保留字段（卓越系统特有）

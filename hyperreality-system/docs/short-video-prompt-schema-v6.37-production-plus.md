@@ -2,7 +2,7 @@
 
 **版本**: v6.37-production+  
 **日期**: 2026-06-13  
-**系统**: 卓越视频生成系统 (Hyperreality System / NirathMasterPipeline)  
+**系统**: 卓越视频生成系统 (Hyperreality System / 示例世界MasterPipeline)  
 **定位**: 工业级可执行管线标准，整合结构化字段、优先级策略、扩展能力  
 **状态**: 生产版本（已推送 GitHub: v6.37-Peng-optimized）
 
@@ -30,8 +30,8 @@
 
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| title | string | 是 | 短片标题，如 "山海经：白泽" |
-| worldview | string | 是 | 世界观标识：nirath / earth / fantasy / cyberpunk |
+| title | string | 是 | 短片标题，如 "示例项目：神兽" |
+| worldview | string | 是 | 世界观标识：fantasy / earth / cyberpunk |
 | totalDuration | number | 是 | 总时长（秒），如 60-90 |
 | openingDuration | number | 是 | 片头时长（秒），推荐 8-12 |
 | fps | number | 是 | 帧率，默认 24 |
@@ -42,8 +42,8 @@
 
 ```json
 {
-  "title": "山海经：白泽",
-  "worldview": "nirath",
+  "title": "示例项目：神兽",
+  "worldview": "fantasy",
   "totalDuration": 60,
   "openingDuration": 10,
   "fps": 24,
@@ -296,16 +296,16 @@ Sub-bass earth rumble fade in 3s, distant wind and environmental sounds, string 
 
 ```json
 {
-  "mainTitle": "山海经：白泽",
-  "subtitle": "Nirath",
-  "producer": "by Genius",
+  "mainTitle": "示例项目：神兽",
+  "subtitle": "示例世界",
+  "producer": "by 示例制作人",
   "titleAnim": "light-vein carving growth 3.0-5.0s"
 }
 ```
 
 **titleOverlayString 示例：**
 ```
-MAIN_TITLE: "山海经：白泽" | SUBTITLE: "Nirath" | PRODUCER: "by Genius" | TITLE_ANIM: light-vein carving growth 3.0-5.0s
+MAIN_TITLE: "示例项目：神兽" | SUBTITLE: "示例世界" | PRODUCER: "by 示例制作人" | TITLE_ANIM: light-vein carving growth 3.0-5.0s
 ```
 
 ---
@@ -329,7 +329,7 @@ MAIN_TITLE: "山海经：白泽" | SUBTITLE: "Nirath" | PRODUCER: "by Genius" | 
 
 ```json
 {
-  "colorScience": "nirath_golden_hour"
+  "colorScience": "golden_hour"
 }
 // 或
 {
@@ -439,7 +439,7 @@ if (prompt.length > 1500) {
 ### 9.3 台词规则（P0）
 
 - **统一格式**：`SPEAKER|TYPE|EMOTION|TEXT|LIP_SYNC:YES`
-  - 示例：`小G|独白|好奇|这就是白泽的领地吗？|LIP_SYNC:YES`
+  - 示例：`示例角色|独白|好奇|这就是示例神兽的领地吗？|LIP_SYNC:YES`
 - **TYPE 仅允许**：独白 / 对白 / 呼喊
 - **严禁**：旁白 或 Voiceover
 - **必须包含**：`LIP_SYNC:YES`
@@ -448,8 +448,8 @@ if (prompt.length > 1500) {
 
 - **格式**：`角色名: 种族/物种, 视觉关键词1, 视觉关键词2, 视觉关键词3`（至少 3 个，最多 5 个）
 - **禁止**：详细描述（如“十五米高的巨型身躯”）、超过 2 个颜色词、完整外貌描写
-- **示例（正）**：`白泽: lion-like beast, vertical eye, three white-flame tails, golden hooves`
-- **示例（误）**：`白泽: 一只白色神兽，十五米高，有三根尾巴，额头上有一只竖眼，金色的蹄子，全身散发着光芒` ❌
+- **示例（正）**：`示例神兽: lion-like beast, vertical eye, three white-flame tails, golden hooves`
+- **示例（误）**：`示例神兽: 一只白色神兽，十五米高，有三根尾巴，额头上有一只竖眼，金色的蹄子，全身散发着光芒` ❌
 
 ### 9.5 镜头词汇表（统一术语）
 
@@ -494,7 +494,7 @@ static, pan, tilt, dolly in, dolly out, truck, pedestal, crane, handheld, orbit,
 {
   "shotId": "S00",
   "duration": 10,
-  "scene": "Nirath, mysterious atmosphere, golden hour lighting, atmospheric layers, spatial depth: infinite",
+  "scene": "示例世界, mysterious atmosphere, golden hour lighting, atmospheric layers, spatial depth: infinite",
   "mood": "epic, mysterious, awe-inspiring",
   "camera": {
     "shotSize": "extreme wide",
@@ -533,19 +533,19 @@ static, pan, tilt, dolly in, dolly out, truck, pedestal, crane, handheld, orbit,
   },
   "audioLayerString": "Sub-bass earth rumble fade in 3s, distant wind and environmental sounds, string section long note at 5s, timpani strike at 8s",
   "titleOverlay": {
-    "mainTitle": "山海经：白泽",
-    "subtitle": "Nirath",
-    "producer": "by Genius",
+    "mainTitle": "示例项目：神兽",
+    "subtitle": "示例世界",
+    "producer": "by 示例制作人",
     "titleAnim": "light-vein carving growth 3.0-5.0s"
   },
-  "titleOverlayString": "MAIN_TITLE: \"山海经：白泽\" | SUBTITLE: \"Nirath\" | PRODUCER: \"by Genius\" | TITLE_ANIM: light-vein carving growth 3.0-5.0s",
+  "titleOverlayString": "MAIN_TITLE: \"示例项目：神兽\" | SUBTITLE: \"示例世界\" | PRODUCER: \"by 示例制作人\" | TITLE_ANIM: light-vein carving growth 3.0-5.0s",
   "backgroundSound": {
     "ambient": "deep earth rumble 20-60Hz, epic atmosphere",
     "spatial": "3D audio pan synchronized with camera movement",
     "intensity": { "crescendo": "0-3s", "peak": "3-7s", "decay": "7-10s" }
   },
   "backgroundSoundString": "AMBIENT: deep earth rumble 20-60Hz, epic atmosphere | SPATIAL: 3D audio pan synchronized with camera movement | INTENSITY: crescendo 0-3s, peak 3-7s, decay 7-10s",
-  "prompt": "16:9 cinematic, no text, no watermark, 24fps cinematic，hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film，Nirath, mysterious atmosphere, golden hour lighting, atmospheric layers, spatial depth: infinite，establishing shot, camera slowly descending through atmospheric layers，dialogue: NONE，epic wide shot, slow descent through atmospheric layers, 24mm wide lens, slow speed，timeline: T00:00-T00:10 / duration: 10s / type: opening / mood: epic，mood: epic, mysterious, awe-inspiring，backlight 3200K, golden hour rim, volumetric god rays，no watermark, no logo, no text overlay, no subtitle, no caption，blurry, low resolution, pixelated, compression artifacts，cartoon, anime, illustration, 3D render look, CGI appearance, plastic look，distorted perspective, impossible geometry, floating objects，flat lighting, overexposed, crushed blacks, double shadows，unnatural physics, fake water, static water, cardboard texture, plastic foliage，distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose",
+  "prompt": "16:9 cinematic, no text, no watermark, 24fps cinematic，hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film，示例世界, mysterious atmosphere, golden hour lighting, atmospheric layers, spatial depth: infinite，establishing shot, camera slowly descending through atmospheric layers，dialogue: NONE，epic wide shot, slow descent through atmospheric layers, 24mm wide lens, slow speed，timeline: T00:00-T00:10 / duration: 10s / type: opening / mood: epic，mood: epic, mysterious, awe-inspiring，backlight 3200K, golden hour rim, volumetric god rays，no watermark, no logo, no text overlay, no subtitle, no caption，blurry, low resolution, pixelated, compression artifacts，cartoon, anime, illustration, 3D render look, CGI appearance, plastic look，distorted perspective, impossible geometry, floating objects，flat lighting, overexposed, crushed blacks, double shadows，unnatural physics, fake water, static water, cardboard texture, plastic foliage，distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose",
   "promptCharCount": 1116,
   "mouthAction": "嘴部自然闭合，面对镜头，准备开口",
   "priorities": {
@@ -569,7 +569,7 @@ static, pan, tilt, dolly in, dolly out, truck, pedestal, crane, handheld, orbit,
 {
   "shotId": "S01",
   "duration": 15,
-  "scene": "Nirath, 知识圣殿, hexagonal stone pillars, bioluminescent fungi, spatial depth: atmospheric perspective",
+  "scene": "示例世界, 知识圣殿, hexagonal stone pillars, bioluminescent fungi, spatial depth: atmospheric perspective",
   "mood": "mysterious, anticipation, wonder",
   "camera": {
     "shotSize": "medium",
@@ -586,10 +586,10 @@ static, pan, tilt, dolly in, dolly out, truck, pedestal, crane, handheld, orbit,
     "special": ""
   },
   "lightingString": "front 4500K, neutral balanced, ambient 4500K, soft fill",
-  "characterRef": "小G: image://characters/xiaoG-front.png, image://characters/xiaoG-profile.png | 白泽: image://characters/bai-ze-front.png, image://characters/bai-ze-profile.png",
-  "character": "小G: Human, explorer, curious, brave | 白泽: Beast, white fur, mythical, wise",
+  "characterRef": "示例角色: image://characters/示例角色-front.png, image://characters/示例角色-profile.png | 示例神兽: image://characters/示例神兽-front.png, image://characters/示例神兽-profile.png",
+  "character": "示例角色: Human, explorer, curious, brave | 示例神兽: Beast, white fur, mythical, wise",
   "action": "protagonist steps forward, observing surroundings with focused gaze",
-  "dialogue": "小G|独白|好奇|这就是白泽的领地吗？|LIP_SYNC:YES",
+  "dialogue": "示例角色|独白|好奇|这就是示例神兽的领地吗？|LIP_SYNC:YES",
   "timeline": {
     "start": "T00:10",
     "end": "T00:25",
@@ -604,7 +604,7 @@ static, pan, tilt, dolly in, dolly out, truck, pedestal, crane, handheld, orbit,
     "intensity": { "crescendo": "0-5s", "peak": "5-10s", "decay": "10-15s" }
   },
   "backgroundSoundString": "AMBIENT: natural environment, wind and distant sounds 200-2kHz | SPATIAL: ambient stereo field | INTENSITY: crescendo 0-5s, peak 5-10s, decay 10-15s",
-  "prompt": "16:9 cinematic, no text, no watermark, 24fps cinematic，hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film，Nirath, 知识圣殿, hexagonal stone pillars, bioluminescent fungi, spatial depth: atmospheric perspective，小G: Human, explorer, curious, brave | 白泽: Beast, white fur, mythical, wise，protagonist steps forward, observing surroundings with focused gaze，dialogue: 小G|独白|好奇|这就是白泽的领地吗？|LIP_SYNC:YES，medium shot, static, 35mm lens, speed 1，timeline: T00:10-T00:25 / duration: 15s / type: establishing / mood: mysterious，mood: mysterious, anticipation, wonder，front 4500K, neutral balanced, ambient 4500K, soft fill，nirath world，no watermark, no logo, no text overlay, no subtitle, no caption，blurry, low resolution, pixelated, compression artifacts，cartoon, anime, illustration, 3D render look, CGI appearance, plastic look，distorted perspective, impossible geometry, floating objects，flat lighting, overexposed, crushed blacks, double shadows，unnatural physics, fake water, static water, cardboard texture, plastic foliage，distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose，natural eye colors only, no metallic shine，角色一致性：保持xiaoG、bai-ze形象一致，杜绝分身重影",
+  "prompt": "16:9 cinematic, no text, no watermark, 24fps cinematic，hyperrealistic, ultra-detailed, high dynamic range, detail in highlights and shadows, film grain, 35mm texture, cinematic film，示例世界, 知识圣殿, hexagonal stone pillars, bioluminescent fungi, spatial depth: atmospheric perspective，示例角色: Human, explorer, curious, brave | 示例神兽: Beast, white fur, mythical, wise，protagonist steps forward, observing surroundings with focused gaze，dialogue: 示例角色|独白|好奇|这就是示例神兽的领地吗？|LIP_SYNC:YES，medium shot, static, 35mm lens, speed 1，timeline: T00:10-T00:25 / duration: 15s / type: establishing / mood: mysterious，mood: mysterious, anticipation, wonder，front 4500K, neutral balanced, ambient 4500K, soft fill，fantasy world，no watermark, no logo, no text overlay, no subtitle, no caption，blurry, low resolution, pixelated, compression artifacts，cartoon, anime, illustration, 3D render look, CGI appearance, plastic look，distorted perspective, impossible geometry, floating objects，flat lighting, overexposed, crushed blacks, double shadows，unnatural physics, fake water, static water, cardboard texture, plastic foliage，distorted face, deformed face, extra fingers, plastic skin, waxy skin, unnatural pose，natural eye colors only, no metallic shine，角色一致性：保持示例角色、示例神兽形象一致，杜绝分身重影",
   "promptCharCount": 1252,
   "mouthAction": "嘴部微张，观察时自然呼吸",
   "importance": 5,
@@ -636,8 +636,8 @@ static, pan, tilt, dolly in, dolly out, truck, pedestal, crane, handheld, orbit,
 ```json
 {
   "meta": {
-    "title": "山海经：白泽",
-    "worldview": "nirath",
+    "title": "示例项目：神兽",
+    "worldview": "fantasy",
     "totalDuration": 60,
     "openingDuration": 10,
     "fps": 24,
@@ -649,7 +649,7 @@ static, pan, tilt, dolly in, dolly out, truck, pedestal, crane, handheld, orbit,
     {
       "shotId": "S00",
       "duration": 10,
-      "scene": "Nirath, mysterious atmosphere, golden hour lighting, atmospheric layers, spatial depth: infinite",
+      "scene": "示例世界, mysterious atmosphere, golden hour lighting, atmospheric layers, spatial depth: infinite",
       "mood": "epic, mysterious, awe-inspiring",
       "camera": { "shotSize": "extreme wide", "movement": "dolly in", "lens": "24mm", "speed": 0.3 },
       "cameraString": "extreme wide shot, dolly in, 24mm lens, speed 0.3",
@@ -663,8 +663,8 @@ static, pan, tilt, dolly in, dolly out, truck, pedestal, crane, handheld, orbit,
       "timelineString": "T00:00-T00:10 / duration: 10s / type: opening / mood: epic",
       "audioLayer": { "segments": [{"time":"0-3s","sound":"sub-bass earth rumble"}] },
       "audioLayerString": "sub-bass earth rumble",
-      "titleOverlay": { "mainTitle": "山海经：白泽", "subtitle": "Nirath", "producer": "by Genius" },
-      "titleOverlayString": "MAIN_TITLE: \"山海经：白泽\" | SUBTITLE: \"Nirath\" | PRODUCER: \"by Genius\"",
+      "titleOverlay": { "mainTitle": "示例项目：神兽", "subtitle": "示例世界", "producer": "by 示例制作人" },
+      "titleOverlayString": "MAIN_TITLE: \"示例项目：神兽\" | SUBTITLE: \"示例世界\" | PRODUCER: \"by 示例制作人\"",
       "backgroundSound": { "ambient": "deep earth rumble", "spatial": "3D audio pan", "intensity": {"crescendo":"0-3s"} },
       "backgroundSoundString": "AMBIENT: deep earth rumble | SPATIAL: 3D audio pan | INTENSITY: crescendo 0-3s",
       "prompt": "...",
@@ -674,16 +674,16 @@ static, pan, tilt, dolly in, dolly out, truck, pedestal, crane, handheld, orbit,
     {
       "shotId": "S01",
       "duration": 15,
-      "scene": "Nirath, 知识圣殿, spatial depth: atmospheric perspective",
+      "scene": "示例世界, 知识圣殿, spatial depth: atmospheric perspective",
       "mood": "mysterious, anticipation, wonder",
       "camera": { "shotSize": "medium", "movement": "static", "lens": "35mm", "speed": 1.0 },
       "cameraString": "medium shot, static, 35mm lens, speed 1",
       "lighting": { "keyLight": { "direction": "front", "colorTemp": 4500, "effect": "neutral balanced" } },
       "lightingString": "front 4500K, neutral balanced",
-      "characterRef": "小G: image://... | 白泽: image://...",
-      "character": "小G: Human, explorer, curious | 白泽: Beast, white fur, mythical",
+      "characterRef": "示例角色: image://... | 示例神兽: image://...",
+      "character": "示例角色: Human, explorer, curious | 示例神兽: Beast, white fur, mythical",
       "action": "protagonist steps forward",
-      "dialogue": "小G|独白|好奇|这就是白泽的领地吗？|LIP_SYNC:YES",
+      "dialogue": "示例角色|独白|好奇|这就是示例神兽的领地吗？|LIP_SYNC:YES",
       "timeline": { "start": "T00:10", "end": "T00:25", "duration": 15, "type": "establishing", "mood": "mysterious" },
       "timelineString": "T00:10-T00:25 / duration: 15s / type: establishing / mood: mysterious",
       "backgroundSound": { "ambient": "wind and distant sounds", "spatial": "ambient stereo", "intensity": {"steady":"0-100%"} },
@@ -709,5 +709,5 @@ static, pan, tilt, dolly in, dolly out, truck, pedestal, crane, handheld, orbit,
 **文档结束**
 
 - 生成系统: 卓越视频生成系统 v6.37-production+
-- 维护者: Genius
+- 维护者: 示例制作人
 - 反馈: 请联系管线团队

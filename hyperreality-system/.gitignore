@@ -10,6 +10,8 @@ temp/
 tmp/
 output/
 logs/
+checkpoints/
+debug_llm/
 *.log
 
 # 大文件类型（不推送）
@@ -24,6 +26,8 @@ logs/
 *.mp3
 *.wav
 *.flac
+
+# 图片资源（assets目录除外）
 *.jpg
 *.jpeg
 *.png
@@ -31,6 +35,12 @@ logs/
 *.webp
 *.psd
 *.ai
+
+# 允许项目配图（assets目录）
+!assets/*.jpg
+!assets/*.jpeg
+!assets/*.png
+!assets/*.gif
 *.pdf
 
 # 依赖和构建产物（不推送）
@@ -61,3 +71,10 @@ test-data/
 fixtures/
 *.test.json
 *.mock.json
+
+# 废弃脚本（不推送）
+_deprecated_scripts/
+
+# 运行时输出（不推送）
+preproduction-*.json
+checkpoint-*.json

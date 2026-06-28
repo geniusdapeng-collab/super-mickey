@@ -40,13 +40,13 @@ const result = await system.create(intent, metadata, {
 
 ## 卓越系统 (Zhuoyue System)
 
-**正确入口**: `zhuoyue-system/core/nirath-master-pipeline.js` → `NirathMasterPipeline`
+**正确入口**: `zhuoyue-system/core/example-master-pipeline.js` → `ExampleMasterPipeline`
 
 **正确调用方式**:
 ```javascript
-const { NirathMasterPipeline } = require('./zhuoyue-system/core/nirath-master-pipeline');
+const { ExampleMasterPipeline } = require('./zhuoyue-system/core/example-master-pipeline');
 
-const pipeline = new NirathMasterPipeline({
+const pipeline = new ExampleMasterPipeline({
   // 配置
 });
 

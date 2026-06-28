@@ -11,7 +11,7 @@ process.env.NODE_ENV = 'test';
 process.env.HYPERREALITY_TEST_MODE = 'true';
 
 // 模拟配置（避免加载真实密钥）
-process.env.VOLCENGINE_ARK_API_KEY = 'test-key';
+// 请设置环境变量: export VOLCENGINE_ARK_API_KEY=your_api_key
 
 const HYPERREALITY_ROOT = path.join(__dirname, '..');
 
