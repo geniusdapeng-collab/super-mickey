@@ -98,6 +98,21 @@ class HyperrealitySystem {
       enabled: options.pipelineLogger?.enabled !== false
     });
     
+    // ===== Phase 2: 增强引擎层初始化 =====
+    // P2-1: MicroMotion Adapter — 微动作增强系统
+    const { MicroMotionAdapter } = require('./engines/enhancers/micro-motion-adapter');
+    this.microMotionAdapter = new MicroMotionAdapter({
+      enabled: options.microMotion?.enabled !== false,
+      intensity: options.microMotion?.intensity || 0.5
+    });
+    
+    // P2-2: Narrative Rhythm Adapter — 叙事节奏引擎
+    const { NarrativeRhythmAdapter } = require('./engines/enhancers/narrative-rhythm-adapter');
+    this.narrativeRhythmAdapter = new NarrativeRhythmAdapter({
+      enabled: options.narrativeRhythm?.enabled !== false,
+      intensity: options.narrativeRhythm?.intensity || 0.5
+    });
+    
     this.version = '2.0.0';
   }
 
@@ -293,6 +308,48 @@ class HyperrealitySystem {
       console.log('\n🔗 [Adapter] 适配层 - 转换数据格式...');
       const adapted = scriptResult.adapted;
 
+      // ========== P2-2: 叙事节奏增强 ==========
+      if (this.narrativeRhythmAdapter.enabled) {
+        console.log('\n🎼 [NarrativeRhythm] 叙事节奏增强...');
+        try {
+          const rhythmResult = this.narrativeRhythmAdapter.enhance(adapted, metadata);
+
+          // 将增强后的蓝图替换原 adapted
+          if (rhythmResult.blueprint && rhythmResult.blueprint !== adapted) {
+            // 更新 adapted 的 scenes 和 rhythmProfile
+            adapted.scenes = rhythmResult.blueprint.scenes || adapted.scenes;
+            adapted._rhythmProfile = rhythmResult.blueprint._rhythmProfile;
+
+            console.log(`   ✅ 叙事节奏增强完成`);
+            console.log(`      情绪曲线: ${rhythmResult.blueprint._rhythmProfile?.curveType || 'default'}`);
+            console.log(`      场景节奏: ${rhythmResult.blueprint.scenes?.length || 0} 个场景已注入`);
+
+            result.stages.narrativeRhythm = {
+              curveType: rhythmResult.blueprint._rhythmProfile?.curveType,
+              dynamicMode: rhythmResult.blueprint._rhythmProfile?.dynamicMode,
+              beatInterval: rhythmResult.blueprint._rhythmProfile?.beatInterval,
+              rhythmProfile: rhythmResult.rhythmProfile
+            };
+
+            // P1-4: EventBus 记录
+            this.eventBus.emit('narrativeRhythm.completed', {
+              layerId: 'layer-1-rhythm',
+              curveType: rhythmResult.blueprint._rhythmProfile?.curveType,
+              timing: Date.now()
+            });
+          }
+        } catch (err) {
+          console.warn(`   ⚠️ 叙事节奏增强失败: ${err.message}`);
+          result.errors.push({ stage: 'NarrativeRhythm', message: err.message });
+
+          this.eventBus.emit('narrativeRhythm.failed', {
+            layerId: 'layer-1-rhythm',
+            error: err.message,
+            timing: Date.now()
+          });
+        }
+      }
+
       // ========== Layer 2: 制作引擎 ==========
       console.log('\n🎬 [Layer 2] 制作引擎 - 生成镜头...');
       const stage2Start = Date.now();
@@ -397,6 +454,49 @@ class HyperrealitySystem {
       } catch (err) {
         console.warn(`   ⚠️ 导演技能注入失败: ${err.message}`);
         result.errors.push({ stage: 'DirectorSkills', message: err.message });
+      }
+
+      // ========== P2-1: MicroMotion 微动作增强 ==========
+      if (this.microMotionAdapter.enabled) {
+        console.log('\n🎭 [MicroMotion] 微动作增强...');
+        try {
+          const mmResult = this.microMotionAdapter.enhance(productionResult.prompts, {
+            characters: metadata.characters || [],
+            emotionArc: metadata._emotionArc || null
+          });
+
+          productionResult.prompts = mmResult.prompts;
+
+          // 同步 shots
+          for (const p of productionResult.prompts) {
+            const shot = productionResult.shots.find(s => s.shotId === p.shotId);
+            if (shot && p._microMotion) {
+              shot._microMotion = p._microMotion;
+            }
+          }
+
+          console.log(`   ✅ 微动作增强完成: ${mmResult.enhancedCount}/${productionResult.prompts.length} 镜头`);
+          result.stages.microMotion = {
+            enhancedCount: mmResult.enhancedCount,
+            details: mmResult.details
+          };
+
+          // P1-4: EventBus 记录
+          this.eventBus.emit('micromotion.completed', {
+            layerId: 'layer-2-enhancer',
+            enhancedCount: mmResult.enhancedCount,
+            timing: Date.now()
+          });
+        } catch (err) {
+          console.warn(`   ⚠️ MicroMotion 失败: ${err.message}`);
+          result.errors.push({ stage: 'MicroMotion', message: err.message });
+
+          this.eventBus.emit('micromotion.failed', {
+            layerId: 'layer-2-enhancer',
+            error: err.message,
+            timing: Date.now()
+          });
+        }
       }
 
       // ========== P1-1: Prompt Guardian 自动修复 ==========
