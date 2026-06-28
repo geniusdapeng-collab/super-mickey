@@ -5,7 +5,7 @@
 
 ---
 
-## 香香彩虹桥 (Rainbow Bridge)
+## 超级小香宝 (SuperXiangBao)
 
 **正确入口**: `hyperreality-system/index.js` → `HyperrealitySystem`
 
@@ -81,7 +81,7 @@ const result = await system.create(intent, metadata, {
 ## 快捷脚本识别与处理
 
 **已归档脚本位置**:
-- `hyperreality-system/_deprecated_scripts/` — 香香彩虹桥旧快捷脚本
+- `hyperreality-system/_deprecated_scripts/` — 超级小香宝旧快捷脚本
 - `zhuoyue-system/_deprecated_scripts/` — 卓越系统旧快捷脚本（如有）
 - `short-video-system/_deprecated_scripts/` — 超短裙系统旧快捷脚本（如有）
 

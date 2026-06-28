@@ -1,12 +1,12 @@
 // engines/script-engine/core/creative-intensity-engine.js
-// Creative Intensity Engine - 创意指数引擎 (Rainbow Bridge 适配版)
-// 为香香彩虹桥四层架构重新设计的创意指数系统
+// Creative Intensity Engine - 创意指数引擎 (SuperXiangBao 适配版)
+// 为超级小香宝四层架构重新设计的创意指数系统
 // 版本: v1.0.0 | 日期: 2026-06-18
 // 设计原则: 只影响"怎么拍"，不影响"拍什么"
 
 /**
  * 创意指数解析器
- * 保留 v6.x 核心解析能力，适配香香彩虹桥输入格式
+ * 保留 v6.x 核心解析能力，适配超级小香宝输入格式
  */
 class CreativeIntensityParser {
   constructor(options = {}) {
@@ -37,7 +37,7 @@ class CreativeIntensityParser {
       }
     }
 
-    // 3. 对象字段解析 (香香彩虹桥 RequirementList 格式)
+    // 3. 对象字段解析 (超级小香宝 RequirementList 格式)
     if (typeof input === 'object' && input !== null) {
       // 直接字段
       if (typeof input.creativeIntensity === 'number') {
@@ -120,7 +120,7 @@ class CreativeIntensityParser {
 }
 
 /**
- * 香香彩虹桥能力矩阵
+ * 超级小香宝能力矩阵
  * 按 Layer 组织，适配四层架构
  */
 const CAPABILITY_MATRIX = {
@@ -231,7 +231,7 @@ const INTENSITY_LEVELS = {
 
 /**
  * 指令模板库 - 按 Layer 和等级组织
- * 适配香香彩虹桥的 shot 对象结构
+ * 适配超级小香宝的 shot 对象结构
  */
 const INSTRUCTION_TEMPLATES = {
   // Layer 1: 叙事结构
@@ -525,7 +525,7 @@ class CreativeIntensityEngine {
   // ========== 配置注入 ==========
 
   /**
-   * 生成香香彩虹桥引擎配置覆盖
+   * 生成超级小香宝引擎配置覆盖
    * 将创意指数转化为各引擎的配置参数
    */
   generateEngineConfigs(intensity, narrativeMode = 'dialogue', worldSetting = 'default') {

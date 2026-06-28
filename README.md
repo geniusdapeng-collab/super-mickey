@@ -1,4 +1,4 @@
-# 香香彩虹桥 🌈 (Xiangxiang Rainbow Bridge)
+# 超级小香宝 🌈 (Xiangxiang SuperXiangBao)
 
 > *"连接创意与渲染的桥梁，献给香香 ❤️"*
 
@@ -6,7 +6,7 @@
 
 ## 关于项目
 
-**香香彩虹桥**（英文名：Xiangxiang Rainbow Bridge）是一个 AI 视频制作系统，
+**超级小香宝**（英文名：Xiangxiang SuperXiangBao）是一个 AI 视频制作系统，
 名字灵感来源于北欧神话中的 Bifrost（彩虹桥），
 它将用户的创意与渲染引擎连接起来，让想象变成现实。
 
@@ -27,8 +27,8 @@
 ## 版本
 
 - 当前版本：v6.5.0
-- 英文名：Xiangxiang Rainbow Bridge
-- 简称：彩虹桥 / Rainbow Bridge
+- 英文名：Xiangxiang SuperXiangBao
+- 简称：彩虹桥 / SuperXiangBao
 
 ---
 

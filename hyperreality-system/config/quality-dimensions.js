@@ -2,7 +2,7 @@
 
 /**
  * 质量维度定义模块
- * 香香彩虹桥适配版 v1.0
+ * 超级小香宝适配版 v1.0
  *
  * 6维度质量评分体系：
  * 1. Prompt质量 - 文本精确性、完整性、表现力
@@ -159,7 +159,7 @@ const QualityDimensions = {
 
   printSummary() {
     console.log('\n╔══════════════════════════════════════════════════════════════╗');
-    console.log('║ 香香彩虹桥质量维度配置摘要 ║');
+    console.log('║ 超级小香宝质量维度配置摘要 ║');
     console.log('╠══════════════════════════════════════════════════════════════╣');
     for (const [key, config] of Object.entries(this.dimensions)) {
       console.log(`║ ${config.name.padEnd(10)} 权重:${String(config.weight).padEnd(5)} 及格:${String(config.passScore).padEnd(4)} 警告:${String(config.warnScore).padEnd(4)} ║`);

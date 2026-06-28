@@ -1,4 +1,4 @@
-# Rainbow Bridge v2.0.3 — Audit Fix
+# SuperXiangBao v2.0.3 — Audit Fix
 
 **发布日期**: 2026-06-20
 **版本号**: v2.0.3-audit-fix

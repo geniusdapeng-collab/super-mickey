@@ -271,7 +271,7 @@ class IntentParser {
         ...metadata
       },
       constraints: {
-        // v2.1.4-fix13-审计修复: 香香彩虹桥标准 3000
+        // v2.1.4-fix13-审计修复: 超级小香宝标准 3000
         max_prompt_length: metadata.max_prompt_length || 3000,
         reference_image_count: metadata.reference_image_count || 2,
         forbidden_elements: metadata.forbidden_elements || ['voiceover', 'metal_gloss', 'unnatural_eye_color']

@@ -2,7 +2,7 @@
 
 /**
  * 全局字段标准化器 v1.0
- * 适配香香彩虹桥四层架构
+ * 适配超级小香宝四层架构
  * 
  * 设计原则：
  * 1. 兼容中英文字段并存（不强制全中文，保持与下游API兼容性）
@@ -180,7 +180,7 @@ const FIELD_ALIAS_MAP = {
   camera: 'camera',
   镜头: 'camera',
   
-  // 香香彩虹桥特有
+  // 超级小香宝特有
   sceneFunction: 'sceneFunction',
   场景功能: 'sceneFunction',
   emotionalTarget: 'emotionalTarget',
@@ -440,7 +440,7 @@ function createEmptyShot() {
     degraded: false,
     degrade_reason: '',
     
-    // 香香彩虹桥特有
+    // 超级小香宝特有
     scene_function: '',
     emotional_target: { valence: 0, arousal: 0.5 },
     visual_direction: {},

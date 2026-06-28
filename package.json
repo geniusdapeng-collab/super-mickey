@@ -1,7 +1,7 @@
 {
-  "name": "xiangxiang-rainbow-bridge",
+  "name": "super-xiangbao",
   "version": "6.5.0",
-  "description": "香香彩虹桥 (Xiangxiang Rainbow Bridge) — 连接创意与渲染的桥梁，献给香香 ❤️🌈",
+  "description": "超级小香宝 (SuperXiangBao) — AI视频制作系统，献给香香 ❤️🌈",
   "main": "app/cli.js",
   "type": "commonjs",
   "scripts": {

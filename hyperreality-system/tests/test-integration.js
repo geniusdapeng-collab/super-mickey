@@ -5,7 +5,7 @@
 const { HyperrealitySystem } = require('../index');
 
 console.log('========================================');
-console.log('  香香彩虹桥 - 深度融合测试 v1.0');
+console.log('  超级小香宝 - 深度融合测试 v1.0');
 console.log('========================================\n');
 
 const results = {
@@ -116,7 +116,7 @@ async function runTest() {
 
   // 9. 最终报告
   assert(result.finalReport, '最终报告已生成');
-  assert(result.finalReport.includes('香香彩虹桥'), '报告包含系统名称');
+  assert(result.finalReport.includes('超级小香宝'), '报告包含系统名称');
   assert(result.finalReport.includes('镜头总览'), '报告包含镜头总览');
   assert(result.finalReport.includes('完整 Prompts'), '报告包含完整 Prompts');
 
@@ -146,7 +146,7 @@ async function runTest() {
   try {
     const fs = require('fs');
     const path = require('path');
-    const outputDir = '/tmp/rainbow-bridge-test';
+    const outputDir = '/tmp/super-xiangbao-test';
     
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });

@@ -1,4 +1,4 @@
-# Rainbow Bridge v2.0.4 Release Notes
+# SuperXiangBao v2.0.4 Release Notes
 
 ## 版本信息
 - **版本号**: v2.0.4

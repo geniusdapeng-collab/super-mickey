@@ -1,5 +1,5 @@
 // hyperreality-system/index.js
-// Rainbow Bridge - 香香彩虹桥统一入口
+// SuperXiangBao - 超级小香宝统一入口
 // 深度融合:剧本引擎 → 适配层 → 制作引擎 → 完整镜头
 // 版本:v1.2.5 | 日期:2026-06-19
 
@@ -957,7 +957,7 @@ class HyperrealitySystem {
 
     const lines = [];
 
-    lines.push('# 香香彩虹桥 - 生产报告');
+    lines.push('# 超级小香宝 - 生产报告');
     lines.push(`**版本**: v${this.version}  |  **总耗时**: ${totalTime}ms`);
     lines.push('');
 
@@ -1131,7 +1131,7 @@ class HyperrealitySystem {
     await fs.mkdir(outputDir, { recursive: true });
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const basePath = path.join(outputDir, `rainbow-bridge-${timestamp}`);
+    const basePath = path.join(outputDir, `super-xiangbao-${timestamp}`);
 
     // v2.1.5-fix: 安全写入函数（带验证）
     const safeWrite = async (filePath, content, label) => {

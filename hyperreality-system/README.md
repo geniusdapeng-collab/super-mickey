@@ -1,8 +1,8 @@
-# Hyperreal AI Video System (HAVS) — 香香彩虹桥AI视频制作系统
+# SuperXiangBao AI Video System — 超级小香宝AI视频制作系统
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/yourusername/hyperreality-system)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/yourusername/super-xiangbao)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-v2.1.5-orange)](https://github.com/yourusername/hyperreality-system/releases)
+[![Version](https://img.shields.io/badge/version-v2.1.5-orange)](https://github.com/yourusername/super-xiangbao/releases)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
 
 > **这不是又一个文生视频玩具，而是一套面向电影工业级标准的AI视频自动生产系统。**
@@ -13,11 +13,11 @@
 <details>
 <summary>🇬🇧 <strong>English Version</strong> (Click to expand)</summary>
 
-## Hyperreal AI Video System (HAVS)
+## SuperXiangBao AI Video System
 
 > **This is not another text-to-video toy, but an AI video pre-production system built to cinematic industrial standards.**
 >
-> I deconstruct cinematographic grammar from classic film language, fusing Harness Architecture, Multi-Agent Collaboration, and film & television domain skills into a systematic camera language engineering practice. Through a four-layer decoupled architecture—**Script Engine, Generation Engine, Rendering Engine, and Post-Production Engine**—HAVS enables AI to truly comprehend cinematic language rather than merely generating pixels.
+> I deconstruct cinematographic grammar from classic film language, fusing Harness Architecture, Multi-Agent Collaboration, and film & television domain skills into a systematic camera language engineering practice. Through a four-layer decoupled architecture—**Script Engine, Generation Engine, Rendering Engine, and Post-Production Engine**—SuperXiangBao enables AI to truly comprehend cinematic language rather than merely generating pixels.
 >
 > **The script is the soul, camera movement is the skeleton, and photorealism is the baseline.**
 >
@@ -29,7 +29,7 @@
 
 **I'm Genius**, an AI Product Manager and expert in AI-powered automated content production with over a decade of experience. I currently serve as an AI Product Manager at Alibaba's Qwen Business Group, and have previously held positions at Alibaba Group, Alibaba Cloud, and Ant Group, where I led products serving hundreds of millions of users and drove full-stack 0-to-1 builds—from underlying model chains to consumer-facing applications—encompassing Harness Architecture, Multi-Agent Collaboration, and Workflow Orchestration. As early as 2018, I led Alibaba Cloud's algorithm team to introduce AI pipelines into media content production. I firmly believe that when AI understands industrial-grade workflows, content production will explode exponentially.
 
-In recent years, I have been dedicating my spare time to building a multimodal AI video production project. Now, based on Seedance 2.0 and its subsequent versions, I am developing a fully automated AI video generation system that simulates Hollywood industrial filmmaking—**Hyperreal AI Video System (HAVS)**.
+In recent years, I have been dedicating my spare time to building a multimodal AI video production project. Now, based on Seedance 2.0 and its subsequent versions, I am developing a fully automated AI video generation system that simulates Hollywood industrial filmmaking—**SuperXiangBao AI Video System**.
 
 Feel free to reach out at **63904380@qq.com**.
 
@@ -41,7 +41,7 @@ Feel free to reach out at **63904380@qq.com**.
 
 **我是 Genius**，一名深耕AI产品经理与AI内容自动化生成领域产品专家，从业十余年，现在是阿里巴巴千问事业群AI产品经理，曾任职于阿里巴巴集团、阿里云及蚂蚁金服，主导过数亿用户的产品，从底层模型链路到C端应用的全链路0-1建设——覆盖 Harness 架构、Multi-Agent 协作与 Workflow 编排的AI应用体系；在2018年就带领阿里云算法团队将AI流水线引入媒体内容生产，我坚信：**当AI理解工业化节奏，内容生产必将指数级爆发。**
 
-我近几年一直业余时间打造基于AI多模态的视频剪辑项目，现在是基于 Seedance 2.0 及后续版本打造模拟好莱坞工业电影制作的全自动AI视频生成系统——**Hyperreal AI Video System（HAVS）**。
+我近几年一直业余时间打造基于AI多模态的视频剪辑项目，现在是基于 Seedance 2.0 及后续版本打造模拟好莱坞工业电影制作的全自动AI视频生成系统——**SuperXiangBao AI Video System（SuperXiangBao）**。
 
 开源这套系统，是希望找到同样痴迷于**"用AI讲好故事"**的创作者与开发者，一起把AI视频从"能看"推向"动人"，重新定义数字时代的内容生产范式。
 
@@ -51,7 +51,7 @@ Feel free to reach out at **63904380@qq.com**.
 
 ---
 
-![HAVS Features](assets/features.png)
+![SuperXiangBao Features](assets/features.png)
 
 *<center>核心能力矩阵 — 6大Agent × 25字段标准 × 全链路LLM驱动</center>*
 
@@ -116,8 +116,8 @@ Feel free to reach out at **63904380@qq.com**.
 
 ```bash
 # 克隆仓库
-git clone https://github.com/yourusername/hyperreality-system.git
-cd hyperreality-system
+git clone https://github.com/yourusername/super-xiangbao.git
+cd super-xiangbao
 
 # 安装依赖
 npm install
@@ -168,8 +168,8 @@ node examples/minimal-example.js
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                        Hyperreal AI Video System                    │
-│                              (HAVS)                                 │
+│                        SuperXiangBao AI Video System                    │
+│                              (SuperXiangBao)                                 │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  ┌─────────────────────────────────────────────────────────────┐   │
@@ -231,7 +231,7 @@ node examples/minimal-example.js
 
 ### Logo
 
-![HAVS Logo](assets/logo.jpg)
+![SuperXiangBao Logo](assets/logo.jpg)
 
 *<center>蒸汽朋克飞马 — 驾驭想象力</center>*
 
@@ -253,8 +253,8 @@ node examples/minimal-example.js
 
 欢迎 Issue、PR 和讨论！
 
-- 🐛 发现 Bug？请提交 [Issue](https://github.com/yourusername/hyperreality-system/issues)
-- 💡 有新想法？请开启 [Discussion](https://github.com/yourusername/hyperreality-system/discussions)
+- 🐛 发现 Bug？请提交 [Issue](https://github.com/yourusername/super-xiangbao/issues)
+- 💡 有新想法？请开启 [Discussion](https://github.com/yourusername/super-xiangbao/discussions)
 - 🔧 想贡献代码？请阅读 [CONTRIBUTING.md](docs/CONTRIBUTING.md)
 
 ---
@@ -262,17 +262,17 @@ node examples/minimal-example.js
 ## 📧 联系方式
 
 - **Email**: 63904380@qq.com
-- **GitHub**: [yourusername/hyperreality-system](https://github.com/yourusername/hyperreality-system)
+- **GitHub**: [yourusername/super-xiangbao](https://github.com/yourusername/super-xiangbao)
 
 ---
 
 ## 📜 License
 
-[Apache License 2.0](LICENSE) © 2024-2026 Hyperreal AI Video System Contributors
+[Apache License 2.0](LICENSE) © 2024-2026 SuperXiangBao AI Video System Contributors
 
 ---
 
 > **"当AI理解工业化节奏，内容生产必将指数级爆发。"**
 >
-> — Genius, Creator of HAVS
+> — Genius, Creator of SuperXiangBao
 

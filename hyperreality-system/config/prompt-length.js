@@ -2,9 +2,9 @@
 
 /**
  * Prompt 长度统一配置模块
- * 香香彩虹桥适配版 v1.0
+ * 超级小香宝适配版 v1.0
  *
- * 系统使用 3000 字符作为 Prompt 硬上限（香香彩虹桥扩容），理想区间为 2470-3000。
+ * 系统使用 3000 字符作为 Prompt 硬上限（超级小香宝扩容），理想区间为 2470-3000。
  */
 
 const PromptLengthConfig = {
@@ -55,7 +55,7 @@ const PromptLengthConfig = {
 
   printSummary() {
     console.log('\n╔════════════════════════════════════════════════════════╗');
-    console.log('║ 香香彩虹桥 Prompt 长度配置摘要 ║');
+    console.log('║ 超级小香宝 Prompt 长度配置摘要 ║');
     console.log('╠════════════════════════════════════════════════════════╣');
     console.log(`║ 理想区间: [${String(this.TARGET_MIN).padStart(4)}, ${String(this.TARGET_MAX).padStart(4)}] 字符 ║`);
     console.log(`║ 硬上限: ${String(this.HARD_MAX).padEnd(36)} ║`);

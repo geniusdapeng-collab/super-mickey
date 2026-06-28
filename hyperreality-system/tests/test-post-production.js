@@ -5,7 +5,7 @@ const { PostProductionEngine } = require('../engines/post-production-engine/post
 const fs = require('fs');
 
 console.log('========================================');
-console.log('  香香彩虹桥 - 后期引擎测试 v1.0');
+console.log('  超级小香宝 - 后期引擎测试 v1.0');
 console.log('========================================');
 console.log();
 
@@ -118,7 +118,7 @@ async function runTest() {
   console.log();
 
   const engine = new PostProductionEngine({
-    outputDir: '/tmp/rainbow-bridge-test-post',
+    outputDir: '/tmp/super-xiangbao-test-post',
     enableSubtitles: true,
     enableDanmaku: true,
     enableMusic: true,
@@ -252,8 +252,8 @@ async function runTest() {
   }
 
   // 保存测试报告
-  fs.writeFileSync('/tmp/rainbow-bridge-test-post/report.md', report);
-  console.log('\n💾 测试报告已保存到: /tmp/rainbow-bridge-test-post/report.md');
+  fs.writeFileSync('/tmp/super-xiangbao-test-post/report.md', report);
+  console.log('\n💾 测试报告已保存到: /tmp/super-xiangbao-test-post/report.md');
 }
 
 runTest().catch(err => {

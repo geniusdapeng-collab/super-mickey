@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * 健康科普视频 - 香香彩虹桥运行脚本
- * 横纹肌溶解 EP01 在 Rainbow Bridge 中运行
+ * 健康科普视频 - 超级小香宝运行脚本
+ * 横纹肌溶解 EP01 在 SuperXiangBao 中运行
  */
 
 const { HyperrealitySystem } = require('../hyperreality-system');
@@ -9,7 +9,7 @@ const fs = require('fs').promises;
 const path = require('path');
 
 async function main() {
-  console.log('🎬 启动香香彩虹桥 - 健康科普视频预生产\n');
+  console.log('🎬 启动超级小香宝 - 健康科普视频预生产\n');
 
   // 用户意图
   const intent = `制作一集健康科普短视频，主题为"横纹肌溶解的症状与实验室检查"。
@@ -63,7 +63,7 @@ async function main() {
     const result = await system.create(intent, metadata, options);
 
     console.log('\n' + '='.repeat(60));
-    console.log('📊 香香彩虹桥运行结果');
+    console.log('📊 超级小香宝运行结果');
     console.log('='.repeat(60));
     console.log(`成功: ${result.success ? '✅' : '❌'}`);
     console.log(`总耗时: ${result.timing?.total || 'N/A'}ms`);

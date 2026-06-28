@@ -55,7 +55,7 @@ const IDENTITY_INTRO_TEMPLATES = [
 class PostProductionEngine {
   constructor(options = {}) {
     this.config = {
-      outputDir: options.outputDir || process.env.OUTPUT_DIR || './output/rainbow-bridge-post',
+      outputDir: options.outputDir || process.env.OUTPUT_DIR || './output/super-xiangbao-post',
       hyperframesBin: options.hyperframesBin || 'npx hyperframes',
       musicSource: options.musicSource || 'pixabay',
       enableSubtitles: options.enableSubtitles !== false,      // 默认开启字幕
@@ -638,7 +638,7 @@ class PostProductionEngine {
     html.push('  </style>');
     html.push('</head>');
     html.push('<body>');
-    html.push(`<div id="stage" data-composition-id="rainbow-bridge-${version}" data-start="0" data-width="1920" data-height="1080">`);
+    html.push(`<div id="stage" data-composition-id="super-xiangbao-${version}" data-start="0" data-width="1920" data-height="1080">`);
     html.push('');
     
     let currentTime = 0;
@@ -748,7 +748,7 @@ class PostProductionEngine {
     html.push('    });');
     html.push('    ');
     html.push('    window.__timelines = window.__timelines || {};');
-    html.push(`    window.__timelines["rainbow-bridge-${version}"] = tl;`);
+    html.push(`    window.__timelines["super-xiangbao-${version}"] = tl;`);
     html.push('  </script>');
     html.push('');
     html.push('</div>'); // #stage
