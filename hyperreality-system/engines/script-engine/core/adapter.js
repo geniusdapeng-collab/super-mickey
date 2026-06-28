@@ -8,7 +8,7 @@ class ScriptBlueprintAdapter {
   constructor(options = {}) {
     this.config = {
       charactersDir: options.charactersDir || path.join(__dirname, '../../../characters'),
-      // v2.1.4-fix13-审计修复: 与超现实系统标准(3000)对齐
+      // v2.1.4-fix13-审计修复: 与香香彩虹桥标准(3000)对齐
       maxPromptLength: options.maxPromptLength || 12000,
       ...options
     };

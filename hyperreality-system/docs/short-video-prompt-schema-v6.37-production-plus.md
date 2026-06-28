@@ -2,7 +2,7 @@
 
 **版本**: v6.37-production+  
 **日期**: 2026-06-13  
-**系统**: 卓越视频生成系统 (Hyperreality System / 示例世界MasterPipeline)  
+**系统**: 卓越视频生成系统 (Rainbow Bridge / 示例世界MasterPipeline)  
 **定位**: 工业级可执行管线标准，整合结构化字段、优先级策略、扩展能力  
 **状态**: 生产版本（已推送 GitHub: v6.37-Peng-optimized）
 

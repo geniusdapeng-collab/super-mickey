@@ -1,6 +1,6 @@
 // hyperreality-system/engines/rendering-engine/rendering-engine.js
 // Rendering Engine - 渲染引擎（Layer 3）
-// 复用现有系统 Seedance 渲染核心，适配超现实系统数据格式
+// 复用现有系统 Seedance 渲染核心，适配香香彩虹桥数据格式
 // 版本：v1.0.0 | 日期：2026-06-08
 
 const fs = require('fs');
@@ -26,7 +26,7 @@ class RenderingEngine {
       apiUrl: options.apiUrl || 'https://ark.cn-beijing.volces.com/api/v3/contents/generations/tasks',
       maxConcurrent: options.maxConcurrent || 3,
       charactersDir: options.charactersDir || path.join(__dirname, '../../../characters'),
-      outputDir: options.outputDir || process.env.OUTPUT_DIR || './output/hyperreality-output',
+      outputDir: options.outputDir || process.env.OUTPUT_DIR || './output/rainbow-bridge-output',
       ...options
     };
 

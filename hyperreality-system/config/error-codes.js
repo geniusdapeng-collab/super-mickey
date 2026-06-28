@@ -2,7 +2,7 @@
 
 /**
  * 全局错误码统一管理模块
- * 超现实系统适配版 v1.0
+ * 香香彩虹桥适配版 v1.0
  * 
  * 所有 Layer/Engine/Service 统一使用，确保错误语义一致
  */
@@ -138,7 +138,7 @@ const ErrorCodeManager = {
   },
   printCheatsheet() {
     console.log('\n╔════════════════════════════════════════════════════════╗');
-    console.log('║ 超现实系统错误码速查表 ║');
+    console.log('║ 香香彩虹桥错误码速查表 ║');
     console.log('╠════════════════════════════════════════════════════════╣');
     this.listAll().forEach(({ code, name, description }) => {
       console.log(`║ [${String(code).padStart(2, '0')}] ${name.padEnd(20)} ${description.padEnd(20)} ║`);

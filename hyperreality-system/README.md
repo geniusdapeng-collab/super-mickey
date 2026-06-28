@@ -1,4 +1,4 @@
-# Hyperreal AI Video System (HAVS) — 超现实工业AI视频制作系统
+# Hyperreal AI Video System (HAVS) — 香香彩虹桥AI视频制作系统
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/yourusername/hyperreality-system)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)

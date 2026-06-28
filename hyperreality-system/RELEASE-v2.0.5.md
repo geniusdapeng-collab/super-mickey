@@ -1,4 +1,4 @@
-# Hyperreality System v2.0.5 Release Notes
+# Rainbow Bridge v2.0.5 Release Notes
 
 ## 版本信息
 - **版本号**: v2.0.5-LLM-Agent-Standardization

@@ -1,4 +1,4 @@
-# Hyperreality System v2.0.2 — Security Patch
+# Rainbow Bridge v2.0.2 — Security Patch
 
 **发布日期**: 2026-06-20
 **版本号**: v2.0.2-security-patch

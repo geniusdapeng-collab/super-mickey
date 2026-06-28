@@ -108,8 +108,8 @@ async function runPreproduction() {
     await system.save(result, outputDir);
 
     console.log(`\n💾 结果已保存到: ${outputDir}`);
-    console.log(`   报告: ${outputDir}/hyperreality-*-report.md`);
-    console.log(`   Prompts: ${outputDir}/hyperreality-*-prompts.md`);
+    console.log(`   报告: ${outputDir}/rainbow-bridge-*-report.md`);
+    console.log(`   Prompts: ${outputDir}/rainbow-bridge-*-prompts.md`);
 
   } catch (error) {
     console.error('❌ 运行错误:', error);

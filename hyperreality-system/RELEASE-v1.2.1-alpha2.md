@@ -1,7 +1,7 @@
 # Release v1.2.1-alpha2
 
 **发布日期**: 2026-06-18  
-**系统**: 超现实工业创作系统 (Hyperreality System)  
+**系统**: 香香彩虹桥 (Rainbow Bridge)  
 **版本**: v1.2.1-alpha2  
 **升级类型**: 功能增强（新增 Layer 0 需求清单模块）
 

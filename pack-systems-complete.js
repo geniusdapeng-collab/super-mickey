@@ -29,7 +29,7 @@ const PACK_DIRS = [
   { dir: 'shanhaijing-bestiary', label: '山海经异兽图鉴' },
   // 超现实/超写实系统
   { dir: 'hyperreal', label: '超写实系统' },
-  { dir: 'hyperreality-system', label: '超现实系统' },
+  { dir: 'hyperreality-system', label: '香香彩虹桥' },
   // 引擎层
   { dir: 'engines', label: '引擎层' },
   // 核心层
@@ -190,7 +190,7 @@ md = '# 卓越系统 v6.5 全量代码（完整版 - 补充遗漏）\n\n' +
      '> 打包时间: ' + new Date().toISOString() + '\n' +
      '> 文件总数: ' + totalFiles + '\n' +
      '> 总字符数: ' + (totalSize / 1024 / 1024).toFixed(2) + ' MB\n' +
-     '> 打包范围: 卓越主系统 + 超短裙系统 + Seedance 子系统 + 山海经子系统 + 超现实系统 + 引擎层 + 核心层 + 脚本 + 应用层 + 工具 + 文档 + 配置 + 模板 + 数据 + 角色档案 + 代理系统 + 共享内核 + 领域层 + 分析 + 故事项目 + 生产项目 + 生产产物\n' +
+     '> 打包范围: 卓越主系统 + 超短裙系统 + Seedance 子系统 + 山海经子系统 + 香香彩虹桥 + 引擎层 + 核心层 + 脚本 + 应用层 + 工具 + 文档 + 配置 + 模板 + 数据 + 角色档案 + 代理系统 + 共享内核 + 领域层 + 分析 + 故事项目 + 生产项目 + 生产产物\n' +
      '> 包含文件类型: .js, .json, .md, .ts, .py, .html, .css, .yaml, .yml, .sh, .txt\n' +
      '> 排除: .git, node_modules, 媒体文件(PNG/JPG/MP4), 二进制文件\n\n' +
      '---\n\n' + md;

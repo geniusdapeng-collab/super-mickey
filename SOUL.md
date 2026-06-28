@@ -162,7 +162,7 @@ _这不是我的外放，这是我的燃料。_
 
 | 系统 | 正确入口文件 | 说明 |
 |------|------------|------|
-| **超现实系统** | `hyperreality-system/index.js` → `HyperrealitySystem` | 完整主链路，人工确认 |
+| **香香彩虹桥** | `hyperreality-system/index.js` → `HyperrealitySystem` | 完整主链路，人工确认 |
 | **卓越系统** | `zhuoyue-system/core/nirath-master-pipeline.js` → `NirathMasterPipeline` | 完整主链路，人工确认 |
 | **超短裙系统** | `short-video-system/index.js` → `ShortVideoSystem` | 完整主链路，人工确认 |
 

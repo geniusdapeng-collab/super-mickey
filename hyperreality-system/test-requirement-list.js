@@ -1,11 +1,11 @@
 // test-requirement-list.js
-// 测试超现实系统需求清单模块
+// 测试香香彩虹桥需求清单模块
 
 const { RequirementListBuilder } = require('./engines/script-engine/core/requirement-list-builder');
 
 async function test() {
   console.log('========================================');
-  console.log('  超现实系统 - 需求清单模块测试 v1.0');
+  console.log('  香香彩虹桥 - 需求清单模块测试 v1.0');
   console.log('========================================\n');
 
   const builder = new RequirementListBuilder({

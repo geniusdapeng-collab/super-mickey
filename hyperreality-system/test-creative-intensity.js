@@ -1,11 +1,11 @@
 // test-creative-intensity.js
-// 测试超现实系统创意指数引擎
+// 测试香香彩虹桥创意指数引擎
 
 const { CreativeIntensityEngine, CreativeIntensityRecommender } = require('./engines/script-engine/core/creative-intensity-engine');
 
 async function test() {
   console.log('========================================');
-  console.log('  超现实系统 - 创意指数引擎测试 v1.0');
+  console.log('  香香彩虹桥 - 创意指数引擎测试 v1.0');
   console.log('========================================\n');
 
   const engine = new CreativeIntensityEngine();

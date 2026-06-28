@@ -1,6 +1,6 @@
 // engines/script-engine/core/requirement-list-builder.js
 // RequirementListBuilder - 需求清单生成确认模块 (Layer 0)
-// 适配超现实系统四层架构,在 IntentParser 和 ScriptEngine 之间
+// 适配香香彩虹桥四层架构,在 IntentParser 和 ScriptEngine 之间
 // 版本: v1.0.0 | 日期: 2026-06-18
 
 const { IntentParser } = require('./intent-parser');
@@ -17,8 +17,8 @@ function safeParseFloat(str, defaultValue = 0) {
 }
 
 /**
- * 超现实系统风格编码展开器
- * 适配超现实系统的电影级质感需求
+ * 香香彩虹桥风格编码展开器
+ * 适配香香彩虹桥的电影级质感需求
  */
 const StyleEncoder = {
   primaryStyles: {
@@ -141,7 +141,7 @@ const ParserRules = {
 
 /**
  * RequirementListBuilder - 需求清单生成确认器
- * 超现实系统 Layer 0:在 IntentParser (Layer 1前) 运行
+ * 香香彩虹桥 Layer 0:在 IntentParser (Layer 1前) 运行
  */
 class RequirementListBuilder {
   constructor(options = {}) {
@@ -167,7 +167,7 @@ class RequirementListBuilder {
     console.log(`\n📋 [Layer 0] 需求清单生成 - 解析用户意图...`);
     const startTime = Date.now();
 
-    // 1. IntentParser 快速分类(复用超现实系统已有能力)
+    // 1. IntentParser 快速分类(复用香香彩虹桥已有能力)
     const intentResult = this.intentParser.parse(userInput, metadata);
     console.log(`   ✅ IntentParser 分类: ${intentResult.parsed.narrative_mode} (置信度: ${intentResult.analysis.confidence})`);
 
@@ -441,7 +441,7 @@ class RequirementListBuilder {
   }
 
   /**
-   * 构建 LLM 提示词 - 超现实系统专用
+   * 构建 LLM 提示词 - 香香彩虹桥专用
    */
   _buildLLMPrompt(userInput, ruleResult, intentResult, metadata) {
     return `你是一位资深AI视频制片人,擅长将用户的粗略需求转化为专业的视频制作方案。
@@ -836,7 +836,7 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
 
     return `# 视频需求要点清单
 
-> 系统: 超现实系统 v${r.version}
+> 系统: 香香彩虹桥 v${r.version}
 > 生成时间: ${r.generatedAt}
 > 置信度: ${(r._analysis.confidence * 100).toFixed(0)}%
 
@@ -909,7 +909,7 @@ ${r.uncertainties.length ? `## ⚠️ 待确认项\n\n${r.uncertainties.map((u, 
         requirementList._analysis.featuredBeastId : null,
       max_prompt_length: requirementList.constraints.maxPromptLength,
       reference_image_count: requirementList.constraints.referenceImageCount,
-      // 超现实系统扩展字段
+      // 香香彩虹桥扩展字段
       creative_intensity: requirementList.creativeIntensity,
       narrative_mode: requirementList.narrativeMode,
       aspect_ratio: requirementList.aspectRatio,
