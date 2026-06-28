@@ -350,7 +350,7 @@ async function main() {
   report    生成角色报告    --episode E25 [--format md]
 
 示例:
-  node persona-vault.js womb --name "孙悟空" --desc "石猴出身的妖王" --role protagonist
+  node persona-vault.js womb --name "神话主角A" --desc "石猴出身的妖王" --role protagonist
   node persona-vault.js evolve --id C01 --episodes 80
   node persona-vault.js guard --episode E25 --script ./episode-25.json
       `);

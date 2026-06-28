@@ -65,7 +65,7 @@ class PromptQualityGate {
     // ✅ Tier-1 主体关键词也按类型扩展
     const subjectPatterns = {
       shanhaijing: /(小G|饕餮|taotie|beast|character|explorer|boy|角色|人物|主体|女士|先生|医生|护士|警察)/i,
-      generic: /(character|person|woman|man|lady|gentleman|角色|人物|主体|女士|先生|医生|护士|警察|陈卓)/i
+      generic: /(character|person|woman|man|lady|gentleman|角色|人物|主体|女士|先生|医生|护士|警察)/i
     };
     this.subjectPattern = subjectPatterns[projectType] || subjectPatterns.generic;
   }

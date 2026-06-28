@@ -61,7 +61,7 @@ class NarrationAutoTrim {
       // 精简后最小保留比例
       minRetentionRatio: 0.6,
       // 【v6.5.37-fix】场景类型最小保留字数（系统级保护）
-      // 防止closing场景被精简到无意义（如"香香躺在。"仅4字）
+      // 防止closing场景被精简到无意义（如仅4字）
       minLengthByType: {
         'opening': 8,      // 开场至少8字
         'closing': 10,     // 结尾至少10字（保护叙事对齐）

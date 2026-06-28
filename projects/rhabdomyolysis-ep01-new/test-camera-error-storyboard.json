@@ -1,0 +1,22 @@
+{
+  "project": "camera-error-test",
+  "version": "v1",
+  "shots": [
+    {
+      "id": "S01",
+      "prompt": "开场白镜头，医生角色正面站立，右手抬起做打招呼手势，嘴部微微张开正在说话介绍。这是一个健康科普节目的开场，画面需要真实摄影风格，专业纪录片质感。医生穿着白色大褂，背景是医院的走廊环境，光线柔和自然。",
+      "characters": ["doctor"],
+      "mouth_action": "嘴部微微张开正在说话",
+      "duration": 5,
+      "cameraMovement": {
+        "shotSize": "invalid_size",
+        "position": "front",
+        "movement": "push_in",
+        "speed": "silky"
+      }
+    }
+  ],
+  "projectConfig": {
+    "requiredCharacters": ["doctor"]
+  }
+}

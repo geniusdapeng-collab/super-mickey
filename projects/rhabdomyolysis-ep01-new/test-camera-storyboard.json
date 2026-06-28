@@ -1,0 +1,52 @@
+{
+  "project": "camera-test",
+  "version": "v1",
+  "shots": [
+    {
+      "id": "S01",
+      "prompt": "开场白镜头，医生角色正面站立，右手抬起做打招呼手势，嘴部微微张开正在说话介绍",
+      "characters": ["doctor"],
+      "mouth_action": "嘴部微微张开正在说话",
+      "duration": 5,
+      "cameraMovement": {
+        "shotSize": "medium",
+        "position": "front",
+        "movement": "push_in",
+        "speed": "silky",
+        "timeRange": { "start": 0, "end": 5 }
+      }
+    },
+    {
+      "id": "S02",
+      "prompt": "讲解镜头，医生侧前方特写，手势配合讲解动作",
+      "characters": ["doctor"],
+      "mouth_action": "嘴部张开正在讲解知识",
+      "duration": 5,
+      "cameraMovement": {
+        "shotSize": "close_up",
+        "position": "side_front",
+        "movement": "pan_right",
+        "speed": "smooth",
+        "timeRange": { "start": 5, "end": 10 }
+      }
+    },
+    {
+      "id": "S03",
+      "prompt": "演示镜头，全景展示操作过程",
+      "characters": ["doctor"],
+      "mouth_action": "嘴部微动配合演示",
+      "duration": 5,
+      "cameraMovement": {
+        "shotSize": "full",
+        "position": "back",
+        "movement": "track_back",
+        "speed": "fast",
+        "physics": true,
+        "timeRange": { "start": 10, "end": 15 }
+      }
+    }
+  ],
+  "projectConfig": {
+    "requiredCharacters": ["doctor"]
+  }
+}

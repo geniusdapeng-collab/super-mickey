@@ -1,7 +1,7 @@
 {
   "name": "super-mickey",
   "version": "2.1.0",
-  "description": "超级小香宝 (SuperMickey) — AI视频制作系统，献给香香 ❤️🌈",
+  "description": "超级小香宝 (SuperMickey) — AI驱动的电影级视频生成系统",
   "main": "app/cli.js",
   "type": "commonjs",
   "scripts": {

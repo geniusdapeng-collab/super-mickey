@@ -1,0 +1,30 @@
+{
+  "version": "1.0",
+  "description": "EP01文件路径配置 - 适配实际生产目录结构",
+  "episodes": {
+    "ep01": {
+      "id": "ep01",
+      "name": "饕餮·永恒饥饿",
+      "beastId": "tao-tie",
+      "date": "2026-05-08",
+      "paths": {
+        "production": "./taotie-ep01-production",
+        "output": "./output/taotie-ep01",
+        "report": "./output/taotie-ep01-preproduction-report.md",
+        "concatList": "./taotie-ep01-production/concat-list.txt"
+      },
+      "structure": {
+        "opening": "S00",
+        "intro": "S01",
+        "progress": "S02",
+        "appearance": "S03",
+        "climax": "S04",
+        "ending": "S05"
+      }
+    }
+  },
+  "alias": {
+        "episodes/ep01-2026-05-08": "./taotie-ep01-production",
+    "episodes/ep01": "./taotie-ep01-production"
+  }
+}

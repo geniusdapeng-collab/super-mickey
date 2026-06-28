@@ -71,7 +71,7 @@ class RenderPipelineGuard {
         name: '服装锁定检查',
         check: (prompt) => {
           const text = prompt.prompt || '';
-          const hasCharacter = /陈卓|小G|林警官|角色|character/i.test(text);
+          const hasCharacter = /protagonist|角色|character/i.test(text);
           if (!hasCharacter) return { pass: true };
           const hasCostumeLock = /穿[警护白][服大褂]|身穿|wearing/i.test(text);
           return {

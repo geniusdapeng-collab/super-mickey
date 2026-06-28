@@ -29,7 +29,7 @@ const FIELD_DEFINITIONS = {
       /【CHARACTER】/i,
       /【主体】/i,
       /【角色约束】/i,
-      /(?:boy|girl|man|woman|child|character|角色|人物|小G|白泽|饕餮|香香|小卓)/i,
+      /(?:boy|girl|man|woman|child|character|角色|人物|主角A|主角B|主角C)/i,
       /\d+\s*(?:year-old|岁)/i
     ]
   },

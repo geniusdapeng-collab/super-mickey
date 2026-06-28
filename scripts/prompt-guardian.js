@@ -588,10 +588,10 @@ if (require.main === module) {
   const guardian = new PromptGuardian();
   
   // 测试用例
-  const testPrompt = `16:9 cinematic | 陈卓站在健身房中，痛苦的表情，汗水浸湿衣服 | 【台词】横纹肌溶解|会导致肌肉疼痛和损伤`;
+  const testPrompt = `16:9 cinematic | 主角A站在健身房中，痛苦的表情，汗水浸湿衣服 | 【台词】横纹肌溶解|会导致肌肉疼痛和损伤`;
   
   const result = guardian.autoFix(testPrompt, [
-    { id: 'chen-zhuo', name: '陈卓', role: '警察' }
+    { id: 'protagonist-a', name: '主角A', role: '警察' }
   ]);
   
   console.log('\n🔍 测试结果:');
