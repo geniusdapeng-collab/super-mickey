@@ -1,7 +1,7 @@
 // hyperreality-system/index.js
 // SuperMickey - 超级小香宝统一入口
 // 深度融合:剧本引擎 → 适配层 → 制作引擎 → 完整镜头
-// 版本:v1.2.5 | 日期:2026-06-19
+// 版本:v2.0.0 | 日期:2026-06-29
 
 require('./engines/process-guard'); // 【审计修复】全局崩溃防护,必须最先加载
 
@@ -24,6 +24,22 @@ const { PromptGuardian } = require('./engines/prompt-guardian');
 const { RenderPipelineGuard } = require('./engines/render-pipeline-guard');
 const { EventBus } = require('./infrastructure/event-bus');
 const { PipelineLogger } = require('./engines/pipeline-logger');
+
+// ===== Phase 2: 增强引擎层注入 =====
+const { MicroMotionAdapter } = require('./engines/enhancers/micro-motion-adapter');
+const { NarrativeRhythmAdapter } = require('./engines/enhancers/narrative-rhythm-adapter');
+const { ShotQualityEnhancer } = require('./engines/enhancers/shot-quality-enhancer');
+const { RequirementAlignmentGate } = require('./engines/enhancers/requirement-alignment-gate');
+const { DirectorOptimizationAgent } = require('./engines/enhancers/director-optimization-agent');
+
+// ===== Phase 3: 情绪价值全链路注入 =====
+const { EmotionIntentParser } = require('./engines/emotion/emotion-intent-parser');
+const { EmotionArcDesigner } = require('./engines/emotion/emotion-arc-designer');
+const { EmotionShotSyntaxInjector } = require('./engines/emotion/emotion-shot-syntax');
+
+// ===== Phase 4: 垂直场景层注入 =====
+const { CommercialModeEnhancer } = require('./engines/scenarios/commercial-mode-enhancer');
+const { FPVModeEnhancer } = require('./engines/scenarios/fpv-mode-enhancer');
 
 const fs = require('fs');
 const path = require('path');
@@ -100,28 +116,24 @@ class HyperrealitySystem {
     
     // ===== Phase 2: 增强引擎层初始化 =====
     // P2-1: MicroMotion Adapter — 微动作增强系统
-    const { MicroMotionAdapter } = require('./engines/enhancers/micro-motion-adapter');
     this.microMotionAdapter = new MicroMotionAdapter({
       enabled: options.microMotion?.enabled !== false,
       intensity: options.microMotion?.intensity || 0.5
     });
     
     // P2-2: Narrative Rhythm Adapter — 叙事节奏引擎
-    const { NarrativeRhythmAdapter } = require('./engines/enhancers/narrative-rhythm-adapter');
     this.narrativeRhythmAdapter = new NarrativeRhythmAdapter({
       enabled: options.narrativeRhythm?.enabled !== false,
       intensity: options.narrativeRhythm?.intensity || 0.5
     });
     
     // P2-3: Shot Quality Enhancer — 镜头质量增强系统
-    const { ShotQualityEnhancer } = require('./engines/enhancers/shot-quality-enhancer');
     this.shotQualityEnhancer = new ShotQualityEnhancer({
       enabled: options.shotQuality?.enabled !== false,
       intensity: options.shotQuality?.intensity || 0.7
     });
     
     // P2-4: Requirement Alignment Gate — 需求对齐闸机
-    const { RequirementAlignmentGate } = require('./engines/enhancers/requirement-alignment-gate');
     this.requirementAlignmentGate = new RequirementAlignmentGate({
       enabled: options.requirementAlignment?.enabled !== false,
       threshold: options.requirementAlignment?.threshold || 0.7,
@@ -129,7 +141,6 @@ class HyperrealitySystem {
     });
     
     // P2-5: Director Optimization Agent — 导演优化 Agent
-    const { DirectorOptimizationAgent } = require('./engines/enhancers/director-optimization-agent');
     this.directorOptimizationAgent = new DirectorOptimizationAgent({
       enabled: options.directorOptimization?.enabled !== false,
       threshold: options.directorOptimization?.threshold || 4.0,
@@ -138,36 +149,31 @@ class HyperrealitySystem {
     
     // ===== Phase 3: 情绪价值全链路 =====
     // P3-1: Emotion Intent Parser — 情绪意图解析器
-    const { EmotionIntentParser } = require('./engines/emotion/emotion-intent-parser');
     this.emotionIntentParser = new EmotionIntentParser({
       enabled: options.emotion?.enabled !== false
     });
     
     // P3-2: Emotion Arc Designer — 情绪弧线设计器
-    const { EmotionArcDesigner } = require('./engines/emotion/emotion-arc-designer');
     this.emotionArcDesigner = new EmotionArcDesigner({
       enabled: options.emotion?.enabled !== false
     });
     
     // P3-3: Emotion Shot Syntax Injector — 情绪镜头语法注入器
-    const { EmotionShotSyntaxInjector } = require('./engines/emotion/emotion-shot-syntax');
     this.emotionShotSyntaxInjector = new EmotionShotSyntaxInjector({
       enabled: options.emotion?.enabled !== false
     });
     
     // ===== Phase 4: 垂直场景层 =====
     // P4-1: Commercial Mode Enhancer — 商业广告模式
-    const { CommercialModeEnhancer } = require('./engines/scenarios/commercial-mode-enhancer');
     this.commercialModeEnhancer = new CommercialModeEnhancer({
-      enabled: options.commercialMode?.enabled || false, // 默认关闭，按需启用
+      enabled: options.commercialMode?.enabled === true, // 严格默认关闭，必须显式启用
       platform: options.commercialMode?.platform || 'douyin',
       brandConfig: options.commercialMode?.brandConfig || null
     });
     
     // P4-2: FPV Mode Enhancer — 极限运动/FPV 模式
-    const { FPVModeEnhancer } = require('./engines/scenarios/fpv-mode-enhancer');
     this.fpvModeEnhancer = new FPVModeEnhancer({
-      enabled: options.fpvMode?.enabled || false, // 默认关闭，按需启用
+      enabled: options.fpvMode?.enabled === true, // 严格默认关闭，必须显式启用
       sportType: options.fpvMode?.sportType || 'auto'
     });
     
