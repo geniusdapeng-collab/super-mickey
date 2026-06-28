@@ -1,0 +1,247 @@
+/**
+ * Event Bus — 全链路事件追踪与回放 (SuperMickey 适配版)
+ * 
+ * 来源: 超短裙 short-video/infrastructure/event-bus.js
+ * 适配: SuperMickey 四层架构
+ * 
+ * 核心能力：
+ * - 发布/订阅事件
+ * - Mutations追踪（状态变更的不可变记录）
+ * - 事件回放（重现任意时刻的系统状态）
+ * - 异步事件处理
+ */
+
+'use strict';
+const EventEmitter = require('events');
+
+// ============================================================
+// SuperMickey 事件定义
+// ============================================================
+
+const SUPERMICKEY_EVENT_DEFINITIONS = {
+  // Pipeline 生命周期
+  'pipeline.started': {
+    description: 'Pipeline开始执行',
+    requiredFields: ['traceId', 'timestamp']
+  },
+  'pipeline.completed': {
+    description: 'Pipeline成功完成',
+    requiredFields: ['traceId', 'durationMs']
+  },
+  'pipeline.failed': {
+    description: 'Pipeline失败',
+    requiredFields: ['traceId', 'failedAt', 'error']
+  },
+
+  // Layer 生命周期
+  'layer.started': {
+    description: 'Layer开始执行',
+    requiredFields: ['layerId', 'layerName', 'traceId']
+  },
+  'layer.completed': {
+    description: 'Layer成功完成',
+    requiredFields: ['layerId', 'layerName', 'traceId', 'durationMs']
+  },
+  'layer.failed': {
+    description: 'Layer失败',
+    requiredFields: ['layerId', 'layerName', 'traceId', 'error']
+  },
+
+  // 阶段事件
+  'stage.started': {
+    description: 'Stage开始执行',
+    requiredFields: ['stageId', 'stageName', 'traceId']
+  },
+  'stage.completed': {
+    description: 'Stage成功完成',
+    requiredFields: ['stageId', 'stageName', 'traceId', 'durationMs']
+  },
+  'stage.failed': {
+    description: 'Stage失败',
+    requiredFields: ['stageId', 'stageName', 'traceId', 'error']
+  },
+
+  // 数据变更
+  'data.mutated': {
+    description: '数据字段被修改',
+    requiredFields: ['layerId', 'field', 'oldValue', 'newValue']
+  },
+
+  // 质量检查
+  'quality.checked': {
+    description: '质量检查完成',
+    requiredFields: ['layerId', 'checkType', 'passed']
+  },
+
+  // 情绪追踪
+  'emotion.detected': {
+    description: '情绪意图被解析',
+    requiredFields: ['layerId', 'emotion', 'intensity']
+  },
+
+  // LLM 调用
+  'llm.called': {
+    description: 'LLM调用',
+    requiredFields: ['layerId', 'provider', 'durationMs', 'status']
+  }
+};
+
+// ============================================================
+// Event Bus
+// ============================================================
+
+class EventBus extends EventEmitter {
+  constructor(options = {}) {
+    super();
+    this.name = options.name || 'supermickey-bus';
+    this.events = [];
+    this.mutations = [];
+    this.maxEvents = options.maxEvents || 10000;
+    this.enabled = options.enabled !== false;
+  }
+
+  /**
+   * 发布事件
+   * @param {string} eventName - 事件名称
+   * @param {Object} payload - 事件数据
+   */
+  emit(eventName, payload = {}) {
+    if (!this.enabled) return;
+
+    const event = {
+      name: eventName,
+      timestamp: Date.now(),
+      payload: this._sanitizePayload(payload)
+    };
+
+    this.events.push(event);
+    
+    // 限制事件数量
+    if (this.events.length > this.maxEvents) {
+      this.events = this.events.slice(-this.maxEvents);
+    }
+
+    // 调用父类的emit
+    super.emit(eventName, event);
+  }
+
+  /**
+   * 记录数据变更（Mutation）
+   * @param {string} layerId - 层级ID
+   * @param {string} field - 字段名
+   * @param {*} oldValue - 旧值
+   * @param {*} newValue - 新值
+   */
+  mutate(layerId, field, oldValue, newValue) {
+    if (!this.enabled) return;
+
+    const mutation = {
+      layerId,
+      field,
+      oldValue: this._sanitizeValue(oldValue),
+      newValue: this._sanitizeValue(newValue),
+      timestamp: Date.now()
+    };
+
+    this.mutations.push(mutation);
+    
+    this.emit('data.mutated', mutation);
+  }
+
+  /**
+   * 获取事件追踪
+   * @returns {Array} 事件列表
+   */
+  getTrace() {
+    return this.events;
+  }
+
+  /**
+   * 获取Mutations
+   * @returns {Array} Mutation列表
+   */
+  getMutations() {
+    return this.mutations;
+  }
+
+  /**
+   * 回放事件到指定时间点
+   * @param {number} timestamp - 时间戳
+   * @returns {Array} 该时间点前的事件
+   */
+  replayUntil(timestamp) {
+    return this.events.filter(e => e.timestamp <= timestamp);
+  }
+
+  /**
+   * 获取指定层级的所有事件
+   * @param {string} layerId - 层级ID
+   * @returns {Array} 事件列表
+   */
+  getLayerEvents(layerId) {
+    return this.events.filter(e => e.payload.layerId === layerId);
+  }
+
+  /**
+   * 生成执行报告
+   * @returns {Object} 报告
+   */
+  generateReport() {
+    const layers = {};
+    const stages = {};
+    
+    for (const event of this.events) {
+      if (event.payload.layerId) {
+        layers[event.payload.layerId] = (layers[event.payload.layerId] || 0) + 1;
+      }
+      if (event.payload.stageId) {
+        stages[event.payload.stageId] = (stages[event.payload.stageId] || 0) + 1;
+      }
+    }
+
+    return {
+      totalEvents: this.events.length,
+      totalMutations: this.mutations.length,
+      layers,
+      stages,
+      duration: this.events.length > 0 
+        ? this.events[this.events.length - 1].timestamp - this.events[0].timestamp 
+        : 0
+    };
+  }
+
+  /**
+   * 清空事件（谨慎使用）
+   */
+  clear() {
+    this.events = [];
+    this.mutations = [];
+  }
+
+  // ========== 私有方法 ==========
+
+  _sanitizePayload(payload) {
+    // 避免循环引用和大对象
+    try {
+      return JSON.parse(JSON.stringify(payload, (key, value) => {
+        if (typeof value === 'function') return undefined;
+        if (value instanceof Buffer) return '<Buffer>';
+        if (typeof value === 'string' && value.length > 1000) {
+          return value.substring(0, 1000) + '...';
+        }
+        return value;
+      }));
+    } catch (e) {
+      return { error: 'Payload serialization failed' };
+    }
+  }
+
+  _sanitizeValue(value) {
+    if (typeof value === 'string' && value.length > 500) {
+      return value.substring(0, 500) + '...';
+    }
+    return value;
+  }
+}
+
+module.exports = { EventBus, SUPERMICKEY_EVENT_DEFINITIONS };

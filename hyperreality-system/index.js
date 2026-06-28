@@ -18,6 +18,13 @@ const { routeAndEnhance } = require('./skills/hollywood-cinematography/cinematog
 const { FieldGuard } = require('./engines/field-guard');
 const ErrorCodes = require('./config/error-codes');
 const { StabilityShield } = require('./shields/stability-shield');
+
+// ===== Phase 1: 基础设施层注入 =====
+const { PromptGuardian } = require('./engines/prompt-guardian');
+const { RenderPipelineGuard } = require('./engines/render-pipeline-guard');
+const { EventBus } = require('./infrastructure/event-bus');
+const { PipelineLogger } = require('./engines/pipeline-logger');
+
 const fs = require('fs');
 const path = require('path');
 
@@ -64,7 +71,34 @@ class HyperrealitySystem {
     });
     this.stabilityShield.initialize(this.productionEngine);
     
-    this.version = '2.1.5';
+    // ===== Phase 1: 基础设施层初始化 =====
+    // P1-1: Prompt Guardian — Prompt自动修复与防护
+    this.promptGuardian = new PromptGuardian({
+      strictMode: options.promptGuardian?.strictMode || false,
+      enabled: options.promptGuardian?.enabled !== false
+    });
+    
+    // P1-2: Render Pipeline Guard — 渲染管线强制检查
+    this.pipelineGuard = new RenderPipelineGuard({
+      strictMode: options.pipelineGuard?.strictMode !== false,
+      enabled: options.pipelineGuard?.enabled !== false
+    });
+    
+    // P1-4: EventBus — 全链路事件追踪
+    this.eventBus = new EventBus({
+      name: 'supermickey-bus',
+      enabled: options.eventBus?.enabled !== false,
+      maxEvents: options.eventBus?.maxEvents || 10000
+    });
+    
+    // P1-5: Pipeline Logger — 全链路日志留档
+    this.pipelineLogger = new PipelineLogger({
+      outputDir: options.pipelineLogger?.outputDir || './output',
+      format: options.pipelineLogger?.format || 'markdown',
+      enabled: options.pipelineLogger?.enabled !== false
+    });
+    
+    this.version = '2.0.0';
   }
 
   /**
@@ -365,6 +399,68 @@ class HyperrealitySystem {
         result.errors.push({ stage: 'DirectorSkills', message: err.message });
       }
 
+      // ========== P1-1: Prompt Guardian 自动修复 ==========
+      if (this.promptGuardian.enabled) {
+        console.log('\n🔍 [PromptGuardian] 启动 Prompt 自动修复...');
+        try {
+          const guardianResult = this.promptGuardian.guard(productionResult.prompts, {
+            characters: metadata.characters || []
+          });
+
+          if (guardianResult.fixes.length > 0) {
+            console.log(`   ✅ 自动修复 ${guardianResult.fixes.length} 处问题:`);
+            for (const fix of guardianResult.fixes.slice(0, 5)) {
+              console.log(`      • ${fix.type}: ${fix.action}`);
+            }
+            if (guardianResult.fixes.length > 5) {
+              console.log(`      ... 等 ${guardianResult.fixes.length} 处修复`);
+            }
+
+            productionResult.prompts = guardianResult.prompts;
+
+            // 同步 shots 中的 prompt
+            for (const p of productionResult.prompts) {
+              const shot = productionResult.shots.find(s => s.shotId === p.shotId);
+              if (shot) {
+                shot.prompt = p.prompt;
+                shot.promptCharCount = p.promptCharCount || p.prompt?.length || 0;
+              }
+            }
+
+            result.stages.promptGuardian = {
+              fixes: guardianResult.fixes,
+              safe: guardianResult.safe,
+              fixCount: guardianResult.fixes.length
+            };
+
+            // P1-4: EventBus 记录 Prompt Guardian 事件
+            this.eventBus.emit('guardian.completed', {
+              layerId: 'layer-2-guardian',
+              fixCount: guardianResult.fixes.length,
+              safe: guardianResult.safe,
+              timing: Date.now()
+            });
+          } else {
+            console.log('   ✅ Prompt Guardian 检查通过，无需修复');
+            result.stages.promptGuardian = {
+              fixes: [],
+              safe: true,
+              fixCount: 0
+            };
+          }
+        } catch (err) {
+          console.warn(`   ⚠️ PromptGuardian 失败: ${err.message}`);
+          result.errors.push({ stage: 'PromptGuardian', message: err.message });
+
+          // P1-4: EventBus 记录失败事件
+          this.eventBus.emit('guardian.failed', {
+            layerId: 'layer-2-guardian',
+            error: err.message,
+            timing: Date.now()
+          });
+        }
+      }
+
       // ========== 🆕 提示词审核确认环节 ==========
       if (!options.skipPromptReview) {
         console.log('\n📝 [提示词审核] 等待人工确认...');
@@ -387,6 +483,72 @@ class HyperrealitySystem {
       } else {
         console.log('\n⚠️ [提示词审核] 跳过(调试模式)');
         result.confirmations.prompts = { approved: true, skipped: true };
+      }
+
+      // ========== P1-2: Render Pipeline Guard 强制检查 ==========
+      if (this.pipelineGuard.enabled) {
+        console.log('\n🛡️ [PipelineGuard] 启动渲染管线检查...');
+        try {
+          const guardResult = this.pipelineGuard.check(productionResult.prompts, {
+            strictMode: this.pipelineGuard.strictMode
+          });
+
+          result.stages.pipelineGuard = {
+            pass: guardResult.pass,
+            errorCount: guardResult.errors.length,
+            warningCount: guardResult.warnings.length,
+            errors: guardResult.errors,
+            warnings: guardResult.warnings
+          };
+
+          if (!guardResult.pass) {
+            console.error(`   ❌ 检查失败: ${guardResult.errors.length} 错误, ${guardResult.warnings.length} 警告`);
+            for (const err of guardResult.errors.slice(0, 3)) {
+              console.error(`      • [${err.ruleName}] ${err.promptId}: ${err.message}`);
+              console.error(`        修复: ${err.fix}`);
+            }
+            if (guardResult.errors.length > 3) {
+              console.error(`      ... 等 ${guardResult.errors.length} 个错误`);
+            }
+
+            if (this.pipelineGuard.strictMode) {
+              console.error('   ⛔ 严格模式已启用，渲染被阻止');
+              result.success = false;
+              result.errors.push({ stage: 'PipelineGuard', message: `渲染管线检查未通过: ${guardResult.errors.length} 错误` });
+              return result;
+            } else {
+              console.warn('   ⚠️ 非严格模式，继续渲染（可能产生问题）');
+            }
+          } else {
+            if (guardResult.warnings.length > 0) {
+              console.log(`   ✅ 检查通过 (${guardResult.warnings.length} 警告)`);
+              for (const warn of guardResult.warnings) {
+                console.log(`      🟡 [${warn.ruleName}] ${warn.promptId}: ${warn.message}`);
+              }
+            } else {
+              console.log('   ✅ 检查通过，无错误无警告');
+            }
+          }
+
+          // P1-4: EventBus 记录 Pipeline Guard 事件
+          this.eventBus.emit('pipelineGuard.completed', {
+            layerId: 'layer-3-guard',
+            pass: guardResult.pass,
+            errorCount: guardResult.errors.length,
+            warningCount: guardResult.warnings.length,
+            timing: Date.now()
+          });
+        } catch (err) {
+          console.warn(`   ⚠️ PipelineGuard 失败: ${err.message}`);
+          result.errors.push({ stage: 'PipelineGuard', message: err.message });
+
+          // P1-4: EventBus 记录失败事件
+          this.eventBus.emit('pipelineGuard.failed', {
+            layerId: 'layer-3-guard',
+            error: err.message,
+            timing: Date.now()
+          });
+        }
       }
 
       // ========== Layer 3: 渲染引擎 ==========
@@ -657,6 +819,23 @@ class HyperrealitySystem {
       result.prompts = productionResult.prompts || [];
       result.opening = productionResult.opening || null;
       result.degraded = productionResult.degraded || false;
+    }
+
+    // ========== P1-5: Pipeline Logger 全链路日志留档 ==========
+    if (this.pipelineLogger.enabled) {
+      try {
+        const sessionDir = this.pipelineLogger.save(result, {
+          title: metadata.title || 'untitled',
+          version: this.version,
+          intent,
+          timestamp: new Date().toISOString()
+        });
+        console.log(`\n💾 [PipelineLogger] 结果已保存: ${sessionDir}`);
+        result._sessionDir = sessionDir;
+      } catch (err) {
+        console.warn(`   ⚠️ PipelineLogger 失败: ${err.message}`);
+        result.errors.push({ stage: 'PipelineLogger', message: err.message });
+      }
     }
 
     return result;
