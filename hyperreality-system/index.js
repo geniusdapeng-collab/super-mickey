@@ -709,7 +709,6 @@ class HyperrealitySystem {
       // ========== 🆕 好莱坞导演技能注入 ==========
       console.log('\n🎬 [Director Skills] 好莱坞导演技能注入...');
       try {
-        const { routeAndEnhance } = require('./skills/hollywood-cinematography/cinematography-skill-router');
         const { enhancedShots, report } = routeAndEnhance(productionResult.shots, {
           minScore: 5,
           maxSkillsPerShot: 2
