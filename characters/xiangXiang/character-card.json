@@ -1,8 +1,8 @@
 {
-  "id": "xiangXiang",
-  "name": "香香",
+  "id": "child-character",
+  "name": "小男孩A",
   "baseIdentity": {
-    "name": "香香",
+    "name": "小男孩A",
     "age": 8,
     "gender": "boy",
     "species": "human",
@@ -76,7 +76,7 @@
     "analyzedDimensions": [],
     "lastComplianceCheck": null,
     "promptTemplates": {},
-    "minimalAnchor": "香香: Nirath异兽, Nirath原生特征, 双恒星光照反射",
+    "minimalAnchor": "小男孩A: Nirath异兽, Nirath原生特征, 双恒星光照反射",
     "portraitPaths": [
       "image://bestiary/xiangXiang-front.png",
       "image://bestiary/xiangXiang-threeQuarter.png",

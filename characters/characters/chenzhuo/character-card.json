@@ -1,8 +1,8 @@
 {
-  "id": "chenzhuo",
-  "name": "陈卓",
+  "id": "protagonist-c",
+  "name": "女主角C",
   "baseIdentity": {
-    "name": "陈卓",
+    "name": "女主角C",
     "age": 28,
     "gender": "female",
     "species": "human",
@@ -68,7 +68,7 @@
     "analyzedDimensions": [],
     "lastComplianceCheck": null,
     "promptTemplates": {},
-    "minimalAnchor": "陈卓: Nirath异兽, Nirath原生特征, 双恒星光照反射",
+    "minimalAnchor": "女主角C: Nirath异兽, Nirath原生特征, 双恒星光照反射",
     "portraitPaths": [
       "image://bestiary/chenzhuo-front.png",
       "image://bestiary/chenzhuo-threeQuarter.png",

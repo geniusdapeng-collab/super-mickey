@@ -1,8 +1,8 @@
 {
-  "id": "chen-nurse",
-  "name": "陈卓",
+  "id": "health-edu-speaker-b",
+  "name": "健康教育主讲人B",
   "baseIdentity": {
-    "name": "陈卓",
+    "name": "健康教育主讲人B",
     "age": 30,
     "gender": "female",
     "species": "human",
@@ -76,7 +76,7 @@
     "analyzedDimensions": [],
     "lastComplianceCheck": null,
     "promptTemplates": {},
-    "minimalAnchor": "陈卓: 人类, 30岁女性, 健康教育主讲人",
+    "minimalAnchor": "健康教育主讲人B: 人类, 30岁女性, 健康教育主讲人",
     "portraitPaths": [
       "image://bestiary/chen-nurse-front.png",
       "image://bestiary/chen-nurse-threeQuarter.png",

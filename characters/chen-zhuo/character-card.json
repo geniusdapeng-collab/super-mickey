@@ -1,8 +1,8 @@
 {
-  "id": "chen-zhuo",
-  "name": "陈卓",
+  "id": "protagonist-a",
+  "name": "女主角A",
   "baseIdentity": {
-    "name": "陈卓",
+    "name": "女主角A",
     "age": "35-40",
     "gender": "female",
     "species": "human",
@@ -70,7 +70,7 @@
     "analyzedDimensions": [],
     "lastComplianceCheck": null,
     "promptTemplates": {},
-    "minimalAnchor": "陈卓: 人类, 35-40岁女性",
+    "minimalAnchor": "女主角A: 人类, 35-40岁女性",
     "portraitPaths": [
       "image://bestiary/chen-zhuo-front.png",
       "image://bestiary/chen-zhuo-threeQuarter.png",

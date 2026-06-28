@@ -4,7 +4,7 @@
   "description": "角色多风格定妆照注册表 - 支持按场景/镜头调用不同风格",
   "characters": {
     "chen-nurse": {
-      "name": "陈卓（陈女士/香香妈妈）",
+      "name": "女主角（A女士/主角妈妈）",
       "referencePhoto": "characters/chen-nurse/reference-photos/reference-real.jpg",
       "styles": {
         "police": {
@@ -37,7 +37,7 @@
       }
     },
     "xiangXiang": {
-      "name": "香香",
+      "name": "小女孩",
       "referencePhoto": "characters/xiangXiang/reference-photos/reference-real.jpg",
       "styles": {
         "default": {

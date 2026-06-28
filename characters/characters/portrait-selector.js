@@ -141,13 +141,13 @@ if (require.main === module) {
   console.log('=== 测试定妆照选择器 ===\n');
   
   // 测试1: 警局场景
-  console.log('测试1: 陈卓在警局');
+  console.log('测试1: 主角在警局');
   const policePortrait = selector.selectPortrait('chen-nurse', '警局', 'front');
   console.log('  结果:', policePortrait);
   console.log();
   
   // 测试2: 家庭场景
-  console.log('测试2: 陈卓在家庭客厅');
+  console.log('测试2: 主角在家庭客厅');
   const lifePortrait = selector.selectPortrait('chen-nurse', '客厅', 'sitting');
   console.log('  结果:', lifePortrait);
   console.log();
