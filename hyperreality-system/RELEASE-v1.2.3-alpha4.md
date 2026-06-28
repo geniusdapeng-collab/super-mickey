@@ -1,7 +1,7 @@
 # Release v1.2.3-alpha4
 
 **发布日期**: 2026-06-18  
-**系统**: 超级小香宝 (SuperXiangBao)  
+**系统**: 超级小香宝 (SuperMickey)  
 **版本**: v1.2.3-alpha4  
 **升级类型**: Bug 修复 + 全链路打通
 

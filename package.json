@@ -1,7 +1,7 @@
 {
-  "name": "super-xiangbao",
+  "name": "super-mickey",
   "version": "6.5.0",
-  "description": "超级小香宝 (SuperXiangBao) — AI视频制作系统，献给香香 ❤️🌈",
+  "description": "超级小香宝 (SuperMickey) — AI视频制作系统，献给香香 ❤️🌈",
   "main": "app/cli.js",
   "type": "commonjs",
   "scripts": {

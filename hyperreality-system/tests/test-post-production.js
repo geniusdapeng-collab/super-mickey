@@ -118,7 +118,7 @@ async function runTest() {
   console.log();
 
   const engine = new PostProductionEngine({
-    outputDir: '/tmp/super-xiangbao-test-post',
+    outputDir: '/tmp/super-mickey-test-post',
     enableSubtitles: true,
     enableDanmaku: true,
     enableMusic: true,
@@ -252,8 +252,8 @@ async function runTest() {
   }
 
   // 保存测试报告
-  fs.writeFileSync('/tmp/super-xiangbao-test-post/report.md', report);
-  console.log('\n💾 测试报告已保存到: /tmp/super-xiangbao-test-post/report.md');
+  fs.writeFileSync('/tmp/super-mickey-test-post/report.md', report);
+  console.log('\n💾 测试报告已保存到: /tmp/super-mickey-test-post/report.md');
 }
 
 runTest().catch(err => {

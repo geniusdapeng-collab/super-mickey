@@ -108,8 +108,8 @@ async function runPreproduction() {
     await system.save(result, outputDir);
 
     console.log(`\n💾 结果已保存到: ${outputDir}`);
-    console.log(`   报告: ${outputDir}/super-xiangbao-*-report.md`);
-    console.log(`   Prompts: ${outputDir}/super-xiangbao-*-prompts.md`);
+    console.log(`   报告: ${outputDir}/super-mickey-*-report.md`);
+    console.log(`   Prompts: ${outputDir}/super-mickey-*-prompts.md`);
 
   } catch (error) {
     console.error('❌ 运行错误:', error);

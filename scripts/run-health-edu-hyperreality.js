@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * 健康科普视频 - 超级小香宝运行脚本
- * 横纹肌溶解 EP01 在 SuperXiangBao 中运行
+ * 横纹肌溶解 EP01 在 SuperMickey 中运行
  */
 
 const { HyperrealitySystem } = require('../hyperreality-system');

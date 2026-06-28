@@ -146,7 +146,7 @@ async function runTest() {
   try {
     const fs = require('fs');
     const path = require('path');
-    const outputDir = '/tmp/super-xiangbao-test';
+    const outputDir = '/tmp/super-mickey-test';
     
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });

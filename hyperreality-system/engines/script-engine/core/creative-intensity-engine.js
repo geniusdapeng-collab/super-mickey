@@ -1,5 +1,5 @@
 // engines/script-engine/core/creative-intensity-engine.js
-// Creative Intensity Engine - 创意指数引擎 (SuperXiangBao 适配版)
+// Creative Intensity Engine - 创意指数引擎 (SuperMickey 适配版)
 // 为超级小香宝四层架构重新设计的创意指数系统
 // 版本: v1.0.0 | 日期: 2026-06-18
 // 设计原则: 只影响"怎么拍"，不影响"拍什么"

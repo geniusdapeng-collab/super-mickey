@@ -61401,7 +61401,7 @@ mixed with bioluminescent microorganisms, creating a liquid-metal-like fluid wit
 impossible reflective and refractive properties. The conical volcanic islands are
 covered in deep crimson and black bioluminescent fern forests adapted to acidic
 atmospheric conditions, their fronds glowing with internal deep-red light. Between
-islands span natural "SuperXiangBaos" — colossal crystal arches formed over
+islands span natural "SuperMickeys" — colossal crystal arches formed over
 millions of years of volcanic mineral deposition, refracting the polar light into
 spectral rainbows that bridge the gaps between floating landmasses. The supercritical
 "sea" below flows like liquid mercury but with internal bioluminescent swirls of
@@ -61426,7 +61426,7 @@ islands, Makoto Shinkai attention to sky detail combined with Denis Villeneuve
 
 ### 变体提示词
 
-**变体A — 虹桥之巅**: `Atop the SuperXiangBao — first-person view walking across a crystal arch connecting two islands, looking down at the supercritical sea flowing like liquid starlight hundreds of meters below, the bridge refracting light to create a personal rainbow halo, volcanic peaks framing the view on both sides`
+**变体A — 虹桥之巅**: `Atop the SuperMickey — first-person view walking across a crystal arch connecting two islands, looking down at the supercritical sea flowing like liquid starlight hundreds of meters below, the bridge refracting light to create a personal rainbow halo, volcanic peaks framing the view on both sides`
 
 **变体B — 迷雾中的蓬莱**: `Penglai in the Veil — the archipelago shrouded in dense polar fog, only the glowing tips of volcanic peaks and the bioluminescent fern forests visible, crystal bridges appearing as ghostly arcs of light in the mist, the supercritical sea glowing from below like a second sky, complete loss of up and down orientation`
 

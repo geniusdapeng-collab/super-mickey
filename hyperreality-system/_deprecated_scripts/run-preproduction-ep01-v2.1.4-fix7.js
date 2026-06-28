@@ -119,9 +119,9 @@ async function runPreproduction() {
     }
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const resultPath = path.join(outputDir, `super-xiangbao-ep01-${timestamp}.json`);
-    const reportPath = path.join(outputDir, `super-xiangbao-ep01-${timestamp}-report.md`);
-    const promptsPath = path.join(outputDir, `super-xiangbao-ep01-${timestamp}-prompts.md`);
+    const resultPath = path.join(outputDir, `super-mickey-ep01-${timestamp}.json`);
+    const reportPath = path.join(outputDir, `super-mickey-ep01-${timestamp}-report.md`);
+    const promptsPath = path.join(outputDir, `super-mickey-ep01-${timestamp}-prompts.md`);
 
     fs.writeFileSync(resultPath, JSON.stringify(result, null, 2));
 

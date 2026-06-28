@@ -5,7 +5,7 @@
 
 ---
 
-## 超级小香宝 (SuperXiangBao)
+## 超级小香宝 (SuperMickey)
 
 **正确入口**: `hyperreality-system/index.js` → `HyperrealitySystem`
 

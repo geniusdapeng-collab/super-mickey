@@ -26,7 +26,7 @@ class RenderingEngine {
       apiUrl: options.apiUrl || 'https://ark.cn-beijing.volces.com/api/v3/contents/generations/tasks',
       maxConcurrent: options.maxConcurrent || 3,
       charactersDir: options.charactersDir || path.join(__dirname, '../../../characters'),
-      outputDir: options.outputDir || process.env.OUTPUT_DIR || './output/super-xiangbao-output',
+      outputDir: options.outputDir || process.env.OUTPUT_DIR || './output/super-mickey-output',
       ...options
     };
 

@@ -1,5 +1,5 @@
 // hyperreality-system/index.js
-// SuperXiangBao - 超级小香宝统一入口
+// SuperMickey - 超级小香宝统一入口
 // 深度融合:剧本引擎 → 适配层 → 制作引擎 → 完整镜头
 // 版本:v1.2.5 | 日期:2026-06-19
 
@@ -1131,7 +1131,7 @@ class HyperrealitySystem {
     await fs.mkdir(outputDir, { recursive: true });
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const basePath = path.join(outputDir, `super-xiangbao-${timestamp}`);
+    const basePath = path.join(outputDir, `super-mickey-${timestamp}`);
 
     // v2.1.5-fix: 安全写入函数（带验证）
     const safeWrite = async (filePath, content, label) => {
