@@ -1,48 +1,142 @@
-# 运行时产出
-output/execution-audit-*.json
-output/promptforge-director-input.json
-output/*.json
-output/prompts/*.md
-audit-logs/
+# SuperMickey Open Source .gitignore
+# 详见开源清理文档
 
-# 备份文件（大文件）
-output/seedance-video-platform-v6.0-patch33-FULL.md
+# ============================================
+# 1. 敏感信息与个人数据
+# ============================================
+.env
+.env.*
+!.env.example
+.gitconfig
+.openclaw/
+USER.md
+IDENTITY.md
+SOUL.md
+SOUL-*.md
+AGENTS.md
+AGENTS-*.md
+MEMORY.md
+MEMORY_APPEND.md
+HEARTBEAT.md
+CODED_MODE.md
+memory/
+memory_*/
+memorized_diary/
 
-# 视频文件（大文件，不推Git）
+# ============================================
+# 2. API 密钥与凭证
+# ============================================
+*.key
+*.pem
+*.p12
+*.pfx
+secrets/
+credentials/
+
+# ============================================
+# 3. 运行时产出与输出
+# ============================================
+output/
+productions/
+productions-*/
+videos/
+checkpoints/
+debug_llm/
+logs/
+*.log
+running-status.json
+
+# ============================================
+# 4. 大型代码转储文件
+# ============================================
+ALL-SYSTEMS-FULL-CODE-PACKAGE.md
+hyperreality-system-*-code*.md
+hyperreality-system-*-complete*.md
+hyperreality-system-*-full*.md
+hyperreality-system-*-export*.md
+hyperreality-system-all-code.txt
+hyperreality-system-complete*.txt
+
+# ============================================
+# 5. 媒体文件（图片/视频）
+# ============================================
 *.mp4
 *.avi
 *.mov
 *.mkv
 *.wmv
-
-# 压缩文件（大文件）
-*.zip
-*.tar.gz
-*.tar.bz2
-*.7z
-*.rar
-
-# 历史产物目录
-.trash/
-videos/
-productions/*/final/
-productions/*/temp/
-productions/*/drafts/
-
-# 大图片/媒体
-memorized_media/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
 *.psd
 *.tif
 *.tiff
 *.raw
+!docs/assets/*.png
+!docs/assets/*.jpg
 
-# 临时文件
+# ============================================
+# 6. 测试执行脚本（含硬编码内容）
+# ============================================
+test-*.js
+!tests/*.js
+run-*.js
+generate-*.js
+export-*.js
+pack-*.js
+submit-*.sh
+run-*.sh
+
+# ============================================
+# 7. 诊断与报告文件
+# ============================================
+*-diagnosis-*.md
+*-diagnostic-*.md
+*-analysis-*.md
+*-report-*.md
+*-fix-*.md
+audit-fix-*.md
+system-issue-*.md
+oom-analysis-*.md
+v*-technical-analysis-*.md
+v*-patch*-release.md
+v*-patch*-fix-*.md
+v*-patch*-report.md
+verify-*.js
+
+# ============================================
+# 8. 旧版本发布说明（仅保留最新）
+# ============================================
+RELEASE-v1.*
+RELEASE-v3.*
+RELEASE-v4.*
+RELEASE-v5.*
+RELEASE-v6.*
+RELEASE-v20.*
+RELEASE-v23.*
+!RELEASE-v2.1.0.md
+
+# ============================================
+# 9. 备份与临时文件
+# ============================================
+backup/
+.trash/
 *.tmp
 *.temp
 *~
 .DS_Store
 Thumbs.db
 
-# 日志
-*.log
-logs/
+# ============================================
+# 10. Node.js
+# ============================================
+node_modules/
+
+# ============================================
+# 11. 大型文档导出
+# ============================================
+*.txt
+!requirements.txt
+!LICENSE.txt
