@@ -1,7 +1,7 @@
 {
-  "name": "nirath-master-pipeline",
+  "name": "xiangxiang-rainbow-bridge",
   "version": "6.5.0",
-  "description": "AI视频生成统一平台（Nirath / Seedance）",
+  "description": "香香彩虹桥 (Xiangxiang Rainbow Bridge) — 连接创意与渲染的桥梁，献给香香 ❤️🌈",
   "main": "app/cli.js",
   "type": "commonjs",
   "scripts": {
