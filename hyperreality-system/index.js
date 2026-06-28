@@ -155,6 +155,22 @@ class HyperrealitySystem {
       enabled: options.emotion?.enabled !== false
     });
     
+    // ===== Phase 4: 垂直场景层 =====
+    // P4-1: Commercial Mode Enhancer — 商业广告模式
+    const { CommercialModeEnhancer } = require('./engines/scenarios/commercial-mode-enhancer');
+    this.commercialModeEnhancer = new CommercialModeEnhancer({
+      enabled: options.commercialMode?.enabled || false, // 默认关闭，按需启用
+      platform: options.commercialMode?.platform || 'douyin',
+      brandConfig: options.commercialMode?.brandConfig || null
+    });
+    
+    // P4-2: FPV Mode Enhancer — 极限运动/FPV 模式
+    const { FPVModeEnhancer } = require('./engines/scenarios/fpv-mode-enhancer');
+    this.fpvModeEnhancer = new FPVModeEnhancer({
+      enabled: options.fpvMode?.enabled || false, // 默认关闭，按需启用
+      sportType: options.fpvMode?.sportType || 'auto'
+    });
+    
     this.version = '2.0.0';
   }
 
@@ -599,6 +615,89 @@ class HyperrealitySystem {
         }
         // 非严格模式下继续,但记录错误
         result.errors.push({ stage: 'FieldGuard-Layer2', message: err.message });
+      }
+
+      // ========== Phase 4: 垂直场景层（可选模式） ==========
+      
+      // P4-1: Commercial Mode 商业广告模式
+      if (this.commercialModeEnhancer.enabled || options.commercialMode?.enabled) {
+        console.log('\n📺 [CommercialMode] 商业广告模式增强...');
+        try {
+          const commercialResult = this.commercialModeEnhancer.enhance(productionResult.shots, {
+            platform: options.commercialMode?.platform || this.commercialModeEnhancer.platform,
+            brandConfig: options.commercialMode?.brandConfig || this.commercialModeEnhancer.brandConfig
+          });
+
+          productionResult.shots = commercialResult.shots;
+
+          console.log(`   ✅ 商业广告模式增强完成`);
+          if (!commercialResult.complianceReport.passed) {
+            console.warn(`   ⚠️ 合规警告: ${commercialResult.complianceReport.issues.length} 项`);
+          }
+
+          result.stages.commercialMode = {
+            platform: this.commercialModeEnhancer.platform,
+            enhancements: commercialResult.enhancements.length,
+            compliancePassed: commercialResult.complianceReport.passed,
+            complianceIssues: commercialResult.complianceReport.issues.length
+          };
+
+          // P1-4: EventBus 记录
+          this.eventBus.emit('commercialMode.completed', {
+            layerId: 'layer-2-commercial',
+            platform: this.commercialModeEnhancer.platform,
+            compliancePassed: commercialResult.complianceReport.passed,
+            timing: Date.now()
+          });
+        } catch (err) {
+          console.warn(`   ⚠️ CommercialMode 失败: ${err.message}`);
+          result.errors.push({ stage: 'CommercialMode', message: err.message });
+
+          this.eventBus.emit('commercialMode.failed', {
+            layerId: 'layer-2-commercial',
+            error: err.message,
+            timing: Date.now()
+          });
+        }
+      }
+
+      // P4-2: FPV Mode 极限运动模式
+      if (this.fpvModeEnhancer.enabled || options.fpvMode?.enabled) {
+        console.log('\n🎬 [FPVMode] 极限运动模式检测...');
+        try {
+          const fpvResult = this.fpvModeEnhancer.enhance(productionResult.shots, intent);
+
+          if (fpvResult.fpvEnabled) {
+            productionResult.shots = fpvResult.shots;
+
+            console.log(`   ✅ FPV 模式增强完成: ${fpvResult.enhancements.length} 个镜头`);
+            console.log(`      运动类型: ${fpvResult.sportType}`);
+
+            result.stages.fpvMode = {
+              enabled: true,
+              sportType: fpvResult.sportType,
+              enhancements: fpvResult.enhancements.length
+            };
+
+            // P1-4: EventBus 记录
+            this.eventBus.emit('fpvMode.completed', {
+              layerId: 'layer-2-fpv',
+              sportType: fpvResult.sportType,
+              timing: Date.now()
+            });
+          } else {
+            console.log(`   ℹ️ 未检测到极限运动内容，跳过 FPV 模式`);
+          }
+        } catch (err) {
+          console.warn(`   ⚠️ FPVMode 失败: ${err.message}`);
+          result.errors.push({ stage: 'FPVMode', message: err.message });
+
+          this.eventBus.emit('fpvMode.failed', {
+            layerId: 'layer-2-fpv',
+            error: err.message,
+            timing: Date.now()
+          });
+        }
       }
 
       // ========== 🆕 好莱坞导演技能注入 ==========
