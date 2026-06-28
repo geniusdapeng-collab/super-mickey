@@ -142,7 +142,11 @@ class RuleRepairer {
 
       // 修复2：定妆照路径格式
       if (fieldEn === 'portraits' && current && issue.issueType === IssueType.FORMAT_ERROR) {
-        let normalized = current.replace(/^['"]|['"]$/g, '').trim();
+        // 【P1-7 修复】portraits 可能是数组，先归一化为字符串
+        const portraitsStr = Array.isArray(current)
+          ? current.map(p => typeof p === 'string' ? p : (p && p.path ? p.path : JSON.stringify(p))).join(', ')
+          : String(current);
+        let normalized = portraitsStr.replace(/^['"]|['"]$/g, '').trim();
         if (prd && prd.characters.length) {
           const charName = prd.characters[0].nameEn || 'character';
           normalized = `/characters/${charName}/portrait_v1.png`;
@@ -197,6 +201,18 @@ class RuleRepairer {
             }));
           }
         }
+      }
+    }
+
+    // 【P1-10 修复】RuleRepairer 写值同步 snake/camel/fields 三处
+    for (const action of actions) {
+      const fieldEn = action.fieldEn;
+      const fixed = repaired[fieldEn];
+      if (fixed === undefined) continue;
+      const camel = fieldEn.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+      if (camel !== fieldEn) repaired[camel] = fixed;
+      if (repaired.fields && typeof repaired.fields === 'object') {
+        repaired.fields[fieldEn] = fixed;
       }
     }
 

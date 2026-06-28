@@ -18,7 +18,10 @@ try {
 
 class ScriptGenerator {
   constructor(options = {}) {
-    const model = options.model || process.env.STORMAXE_LLM_MODEL || 'kimi-k2p6';
+    const model = options.model || process.env.STORMAXE_LLM_MODEL || null;
+    if (!model) {
+      console.warn('[ScriptGenerator] ⚠️ 未配置模型名，请设置 STORMAXE_LLM_MODEL 或传入 options.model');
+    }
     this.config = {
       llmEndpoint: options.llmEndpoint || process.env.LLM_ENDPOINT || 'https://ark.cn-beijing.volces.com/api/v3/chat/completions',
       apiKey: options.apiKey || process.env.VOLCENGINE_ARK_API_KEY,
@@ -132,18 +135,19 @@ ${meta.featured_beast_id ? '- 主角异兽：' + meta.featured_beast_id : ''}
 1. 禁止旁白（Voiceover），只保留角色对话（Dialogue）
 2. 每个场景必须有角色对话（台词）
 3. 台词必须口语化，适合短视频节奏（每句不超过30字）
-4. 场景时长分配：根据内容重要性、台词长度、视觉复杂度三维度分配
-5. 总时长必须严格等于 ${meta.target_duration} 秒
-6. 角色视觉锚点必须保持一致（定妆照引用）
+4. 【v2.1.5-fix-C】台词必须生成 blocks 字段：每句台词需包含 speaker/line/emotion/trigger/manner/type，emotion 必须是副词（如 confidently/hesitates/gently），trigger 必须是物理动作触发（如 looks at camera/pauses then smiles）
+5. 场景时长分配：根据内容重要性、台词长度、视觉复杂度三维度分配
+6. 总时长必须严格等于 ${meta.target_duration} 秒
+7. 角色视觉锚点必须保持一致（定妆照引用）
 
 ## 剧本结构模板
 采用三幕式结构：
 ${JSON.stringify(template.structure.acts, null, 2)}
 
 ## 世界观设定
-${meta.world_setting === 'Nirath' ? `
-- Nirath是地球前身，一个硅基与碳基生命共存的星球
-- 《山海经》实为Nirath往事的记录
+${meta.world_setting === '示例世界' ? `
+- 示例世界是地球前身，一个虚构与碳基生命共存的星球
+- 《古籍神话》实为示例世界往事的记录
 - 核心主题：记忆即存在
 - 环境特征：硅晶草原、双月当空、等离子河流、晶体森林
 - 禁止暗黑风格，要求明亮多色彩强质感
@@ -151,7 +155,7 @@ ${meta.world_setting === 'Nirath' ? `
 - 世界观：${meta.world_setting}
 ` : `
 - 现实世界设定，真实场景，写实风格
-- 环境特征：根据内容类型选择合适场景（医院、实验室、户外等）
+- 环境特征：根据内容主题选择合适场景（办公室、演播室、户外、居家等）
 - 要求明亮、专业、可信的视觉效果
 `}
 
@@ -198,7 +202,7 @@ ${meta.world_setting === 'Nirath' ? `
           "end": 结束秒数
         },
         "characters": ["角色ID"],
-        "setting": "场景时空设定",
+        "setting": "具体写实场景描述（50-80字）：墙面材质、灯光类型（真实光源）、家具/设备、地面材质。例如：白色乳胶漆墙面，嵌入式LED灯带柔和照明，深色实木办公桌摆放笔记本电脑，地面浅灰色地毯",
         "dialogue": {
           "has_dialogue": true,
           "lines": [
@@ -206,6 +210,16 @@ ${meta.world_setting === 'Nirath' ? `
               "speaker": "角色ID",
               "text": "台词内容（口语化，不超过30字）",
               "emotion": "情绪标签"
+            }
+          ],
+          "blocks": [
+            {
+              "speaker": "角色ID",
+              "line": "台词内容（口语化，不超过30字）",
+              "emotion": "情绪副词（如 confidently, hesitates, gently）",
+              "trigger": "动作触发（如 looks at camera, pauses then smiles）",
+              "manner": "说话方式（如 quietly, with a smile, direct-address）",
+              "type": "monologue|dialogue|reaction"
             }
           ]
         },
@@ -221,8 +235,8 @@ ${meta.world_setting === 'Nirath' ? `
   "character_system": {
     "characters": [
       {
-        "character_id": "xiaoG",
-        "name": "小G",
+        "character_id": "example-role",
+        "name": "示例角色",
         "role": "protagonist",
         "voice_profile": {
           "persona": "角色人设描述",
@@ -254,7 +268,7 @@ ${meta.world_setting === 'Nirath' ? `
   },
   "world_setting": {
     "world_id": "nirath",
-    "world_name": "Nirath星球",
+    "world_name": "示例世界星球",
     "era": "上古纪元",
     "core_rules": ["规则1", "规则2"],
     "environment_tags": ["环境标签1", "环境标签2"]
@@ -318,26 +332,41 @@ ${meta._directorStyle}` : ''}
    */
   async _callLLM(prompt) {
     // 【v2.1.4-fix13-审计修复】增加 Promise.race 超时保护，防止 LLM 调用 hang 住
-    const timeoutMs = this.config.timeout || 300000;
+    // 【v2.1.5-fix】修复 Promise.race + finally 死锁问题：改为手动清除定时器
+    const timeoutMs = this.config.timeout || 600000;
     let timer;
-    const timeoutPromise = new Promise((_, reject) => {
-      timer = setTimeout(() => reject(new Error(`ScriptGenerator LLM 超时(${timeoutMs}ms)`)), timeoutMs);
-    });
-
+    
     // 优先使用LLMEngine
     if (this.llmEngine) {
       try {
         console.log('[ScriptGenerator] 使用LLMEngine调用...');
-        const result = await Promise.race([
-          this.llmEngine.generate(prompt, {
-            systemPrompt: '你是一位专业的AI视频编剧。只输出严格格式的JSON，不要markdown代码块，不要解释，不要思考过程。使用最紧凑的JSON格式（不要换行和缩进）。',
-            maxTokens: 32000,
-            timeoutMs: timeoutMs,
-            forceJson: true,
-            allowReasoningFallback: false
-          }),
-          timeoutPromise
-        ]).finally(() => clearTimeout(timer));
+        
+        // 【v2.1.5-fix-B-REV】恢复systemPrompt，约束指令走system role
+        // 原因：systemPrompt移除后LLM约束变弱，导致角色服装被篡改、科幻词汇混入
+        const systemInstruction = '你是一位专业的AI视频编剧。只输出严格格式的JSON，不要markdown代码块，不要解释，不要思考过程。使用最紧凑的JSON格式（不要换行和缩进）。';
+        
+        // 创建超时promise
+        const timeoutPromise = new Promise((_, reject) => {
+          timer = setTimeout(() => reject(new Error(`ScriptGenerator LLM 超时(${timeoutMs}ms)`)), timeoutMs);
+        });
+        
+        // 调用LLM（恢复systemPrompt参数）
+        // 【P1-11 修复】统一超时阈值与 maxTokens，不再硬编码
+        const llmPromise = this.llmEngine.generate(prompt, {
+          systemPrompt: systemInstruction,
+          maxTokens: this.config.maxTokens || 8192,
+          timeoutMs: timeoutMs, // 与外层 race 同一阈值
+          forceJson: true,
+          allowReasoningFallback: false
+        });
+        // 【P1-11 修复】挂 catch 防止超时后 llmPromise 悬空 rejection 崩溃进程
+        llmPromise.catch(() => {});
+        
+        // 等待结果（带超时保护）
+        const result = await Promise.race([llmPromise, timeoutPromise]);
+        
+        // 成功后清除定时器
+        if (timer) clearTimeout(timer);
         
         // v1.2.6-fix: 正确处理LLM引擎返回结构
         if (!result.success) {
@@ -346,20 +375,57 @@ ${meta._directorStyle}` : ''}
         }
         
         // v1.2.6-fix8: forceJson 模式下，content 必非空
+        // 【v2.1.6-fix12】系统级修复：检查 content 是否为完整 JSON 剧本，不完整则从 reasoning 提取
         if (result.content && result.content.trim()) {
-          return result.content.trim();
+          const content = result.content.trim();
+          
+          // 快速验证：尝试解析并检查关键字段
+          let contentValid = false;
+          try {
+            const parsed = JSON.parse(content);
+            if (parsed.meta && parsed.structure && parsed.structure.scenes && parsed.structure.scenes.length > 0) {
+              contentValid = true;
+              console.log(`[ScriptGenerator] content JSON 验证通过: ${content.length}字符, scenes=${parsed.structure.scenes.length}`);
+            } else {
+              console.warn(`[ScriptGenerator] ⚠️ content JSON 缺少关键字段: meta=${!!parsed.meta}, structure=${!!parsed.structure}, scenes=${parsed.structure?.scenes?.length || 0}`);
+            }
+          } catch (e) {
+            console.warn(`[ScriptGenerator] ⚠️ content JSON 解析失败: ${e.message}, 长度=${content.length}`);
+          }
+          
+          if (contentValid) {
+            return content;
+          }
+          
+          // content 不完整，尝试从 reasoning 提取
+          if (result.reasoning_content && result.reasoning_content.trim()) {
+            console.warn('[ScriptGenerator] ⚠️ content 不完整，尝试从 reasoning 提取完整 JSON...');
+            const extracted = this._extractValidJson(result.reasoning_content);
+            if (extracted && extracted.meta && extracted.structure && extracted.structure.scenes && extracted.structure.scenes.length > 0) {
+              console.log(`[ScriptGenerator] ✅ 从 reasoning 提取完整 JSON: ${JSON.stringify(extracted).length}字符, scenes=${extracted.structure.scenes.length}`);
+              return JSON.stringify(extracted);
+            }
+            console.warn('[ScriptGenerator] ⚠️ 从 reasoning 提取也失败，回退使用不完整的 content');
+          }
+          
+          return content; // 返回不完整的 content，让 _parseLLMResponse 继续处理
         }
         
         // 兜底：从 reasoning 中提取 JSON 对象
+        // 【P2-1 修复】改用 _extractValidJson 替代贪婪正则，与主提取逻辑一致
         if (result.reasoning_content && result.reasoning_content.trim()) {
           console.warn('[ScriptGenerator] ⚠️ forceJson模式下仍返回空content，尝试从reasoning提取');
-          const jsonMatch = result.reasoning_content.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            return jsonMatch[0].trim();
+          const extracted = this._extractValidJson(result.reasoning_content);
+          if (extracted) {
+            const extractedJson = JSON.stringify(extracted);
+            console.log(`[ScriptGenerator] 从reasoning提取JSON: meta=${!!extracted.meta}, structure=${!!extracted.structure}, scenes=${extracted.structure?.scenes?.length || 0}`);
+            return extractedJson;
           }
         }
         throw new Error('LLM返回空内容（success=true但content为空，forceJson模式异常）');
       } catch (error) {
+        // 错误时也要清除定时器
+        if (timer) clearTimeout(timer);
         console.error('[ScriptGenerator] LLMEngine调用失败:', error.message);
         throw error;
       }
@@ -463,6 +529,8 @@ ${meta._directorStyle}` : ''}
         const primaryDesc = metadataChars[0]?.description || primaryName;
         const validNames = overrideCharacters.map(c => c.name);
         const validIds = overrideCharacters.map(c => c.character_id);
+        // 【P1-15 修复】合法speaker集合：只替换非法speaker，保留多角色对话
+        const validSpeakerSet = new Set([...validNames, ...validIds, primaryName]);
 
         // 1. 替换角色系统
         parsed.character_system = { characters: overrideCharacters };
@@ -484,7 +552,7 @@ ${meta._directorStyle}` : ''}
             // 结构A: scene.dialogue.lines = [{speaker, text, ...}]
             if (scene.dialogue?.lines && Array.isArray(scene.dialogue.lines)) {
               for (const line of scene.dialogue.lines) {
-                if (line && typeof line === 'object') {
+                if (line && typeof line === 'object' && !validSpeakerSet.has(line.speaker)) {
                   line.speaker = primaryName;
                 }
               }
@@ -496,7 +564,7 @@ ${meta._directorStyle}` : ''}
                   return { speaker: primaryName, text: line, type: '独白', emotion: '平静' };
                 }
                 if (line && typeof line === 'object') {
-                  line.speaker = primaryName;
+                  if (!validSpeakerSet.has(line.speaker)) line.speaker = primaryName;
                   return line;
                 }
                 return line;
@@ -505,7 +573,7 @@ ${meta._directorStyle}` : ''}
             // 结构C: scene.lines = [...] (部分LLM用这个)
             else if (scene.lines && Array.isArray(scene.lines)) {
               for (const line of scene.lines) {
-                if (line && typeof line === 'object') {
+                if (line && typeof line === 'object' && !validSpeakerSet.has(line.speaker)) {
                   line.speaker = primaryName;
                 }
               }
@@ -513,38 +581,37 @@ ${meta._directorStyle}` : ''}
             // 结构D: scene.dialogue 是字符串
             else if (typeof scene.dialogue === 'string' && scene.dialogue.trim()) {
               let newDialogue = scene.dialogue;
-              newDialogue = newDialogue.replace(/小G|小R|小A|小B|医生小[A-Z]|患者小[A-Z]/g, primaryName);
+              newDialogue = newDialogue.replace(/示例角色|角色R|角色A|角色B|医生小[A-Z]|患者小[A-Z]/g, primaryName);
               scene.dialogue = newDialogue;
             }
 
             // 3c. 替换场景描述中的角色名和身份描述
             if (typeof scene.description === 'string') {
-              scene.description = scene.description.replace(/小G|小R|小A|小B/g, primaryName);
+              scene.description = scene.description.replace(/示例角色|角色R|角色A|角色B/g, primaryName);
             }
             if (typeof scene.scene_description === 'string') {
-              scene.scene_description = scene.scene_description.replace(/小G|小R|小A|小B/g, primaryName);
+              scene.scene_description = scene.scene_description.replace(/示例角色|角色R|角色A|角色B/g, primaryName);
             }
             // v2.1.4-fix8: 替换 setting 和 visual_notes 中的错误角色身份
+            // 【P0-5 修复】删除硬编码的"医生→警服/女性"正则替换。
+            // 角色一致性应通过 prompt 约束 + ScriptValidator 保证，
+            // 而非在解析层对场景文本做暴力正则改写。
             if (typeof scene.setting === 'string') {
-              // 强制替换所有可能暗示其他角色的描述
-              scene.setting = scene.setting.replace(/医生|主治医师|主任医师|大夫|医师|医护人员|护士|患者|病人|路人|市民/g, primaryDesc.split(/[,，、]/)[0]);
-              scene.setting = scene.setting.replace(/白色医生服|白大褂|灰色运动服|运动服/g, '警服');
-              scene.setting = scene.setting.replace(/男性|男人|男士|男|中年男子|中年男性/g, '女性');
+              // 只保留示例角色占位符替换，不强制替换职业/性别
+              scene.setting = scene.setting.replace(/示例角色|角色R|角色A|角色B/g, primaryName);
             }
             if (typeof scene.visual_notes === 'string') {
-              scene.visual_notes = scene.visual_notes.replace(/医生|主治医师|主任医师|大夫|医师|医护人员|护士|患者|病人|路人|市民/g, primaryDesc.split(/[,，、]/)[0]);
-              scene.visual_notes = scene.visual_notes.replace(/白色医生服|白大褂|灰色运动服|运动服/g, '警服');
-              scene.visual_notes = scene.visual_notes.replace(/男性|男人|男士|男|中年男子|中年男性/g, '女性');
+              scene.visual_notes = scene.visual_notes.replace(/示例角色|角色R|角色A|角色B/g, primaryName);
             }
 
             // 3d. 替换 narration 字段
             if (scene.narration) {
               if (typeof scene.narration === 'string') {
-                scene.narration = scene.narration.replace(/小G|小R|小A|小B/g, primaryName);
+                scene.narration = scene.narration.replace(/示例角色|角色R|角色A|角色B/g, primaryName);
               } else if (Array.isArray(scene.narration)) {
                 scene.narration = scene.narration.map(n => {
-                  if (typeof n === 'string') return n.replace(/小G|小R|小A|小B/g, primaryName);
-                  if (n && typeof n === 'object') { n.speaker = primaryName; return n; }
+                  if (typeof n === 'string') return n.replace(/示例角色|角色R|角色A|角色B/g, primaryName);
+                  if (n && typeof n === 'object') { if (!validSpeakerSet.has(n.speaker)) n.speaker = primaryName; return n; }
                   return n;
                 });
               }
@@ -746,18 +813,38 @@ ${meta._directorStyle}` : ''}
    * 保存剧本到文件
    */
   async saveBlueprint(blueprint, outputPath) {
-    const json = blueprint.toJSON();
-    fs.writeFileSync(outputPath, json, 'utf-8');
-    console.log(`[ScriptGenerator] 剧本已保存: ${outputPath}`);
-    return outputPath;
+    try {
+      const json = blueprint.toJSON();
+      fs.writeFileSync(outputPath, json, 'utf-8');
+      // v2.1.5-audit: 验证文件写入成功
+      if (!fs.existsSync(outputPath) || fs.statSync(outputPath).size === 0) {
+        throw new Error(`文件写入失败或为空: ${outputPath}`);
+      }
+      console.log(`[ScriptGenerator] 剧本已保存: ${outputPath}`);
+      return outputPath;
+    } catch (e) {
+      console.error(`[ScriptGenerator] 保存剧本失败: ${e.message}`);
+      throw e; // 向上传播，让调用方决定如何处理
+    }
   }
 
   /**
    * 从文件加载剧本
    */
   static loadBlueprint(filePath) {
-    const json = fs.readFileSync(filePath, 'utf-8');
-    return ScriptBlueprint.fromJSON(json);
+    try {
+      if (!fs.existsSync(filePath)) {
+        throw new Error(`剧本文件不存在: ${filePath}`);
+      }
+      const json = fs.readFileSync(filePath, 'utf-8');
+      if (!json || json.trim().length === 0) {
+        throw new Error(`剧本文件为空: ${filePath}`);
+      }
+      return ScriptBlueprint.fromJSON(json);
+    } catch (e) {
+      console.error(`[ScriptGenerator] 加载剧本失败: ${e.message}`);
+      throw e;
+    }
   }
 }
 

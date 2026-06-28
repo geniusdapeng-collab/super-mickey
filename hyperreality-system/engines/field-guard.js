@@ -68,9 +68,29 @@ class FieldGuard {
       console.warn(`${this.logPrefix} ${context} 已就地修复 ${failingIdx.length} 个镜头`);
     }
 
+    // 【P1-8 修复】扩大致命错误判定：除 "P0 Missing" 外，纳入负面约束缺失、禁词、片头缺 title 等致命模式
+    const CRITICAL_PATTERNS = [
+      /P0 Missing/i,
+      /Missing critical negative constraint/i,
+      /forbidden words/i,
+      /missing: title/i,
+      /missing: scene/i,
+      /Opening exclusive fields missing/i,
+      /Final-Export/i
+    ];
+    const isCritical = e => CRITICAL_PATTERNS.some(p => p.test(e));
+    const criticalErrors = errors.filter(isCritical);
+    const passed = this.strict ? criticalErrors.length === 0 : true;
+    
     return {
       shots: normalized,
-      report: { passed: true, errors: [], warnings: errors, details, summary: { totalShots: normalized.length } }
+      report: {
+        passed,
+        errors: this.strict ? criticalErrors : [],
+        warnings: this.strict ? errors.filter(e => !isCritical(e)) : errors,
+        details,
+        summary: { totalShots: normalized.length, fixedShots: failingIdx.length }
+      }
     };
   }
 

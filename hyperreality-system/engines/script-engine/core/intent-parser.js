@@ -6,13 +6,13 @@ class IntentParser {
   constructor(options = {}) {
     this.config = {
       // 快速分类器：关键词匹配
-      // v1.2.7-fix-A8: 移除山海经特定词，保留通用剧情词
+      // v1.2.7-fix-A8: 移除神话项目特定词，保留通用剧情词
       keywordDict: {
         dramatic: ['短剧', '剧情', '故事', '角色', '冲突', '反转', '结局', '情感', '感动', '逆袭', '人设', '剧本', '台词'],
         educational: ['科普', '讲解', '知识', '教程', '学会', '原理', '什么是', '如何', '为什么'],
         documentary: ['纪录片', '纪实', '采访', '真实', '调查', '记录'],
         lifelog: ['家庭', '聚会', '旅行', '回忆', 'Vlog', '日常', '记录生活'],
-        commercial: ['广告', '品牌', '营销', '推广', '产品', '转化', '带货', 'CTA']
+        commercial: ['广告', '品牌', '营销', '推广', '产品', '转化', '带货', 'CTA', '宣传片', '介绍']
       },
       // 混合模式信号
       hybridSignals: {
@@ -21,8 +21,8 @@ class IntentParser {
         '纪实营销': { primary: 'documentary', secondary: 'commercial', keywords: ['品牌纪录片', '真实故事广告'] },
         '科普短剧': { primary: 'educational', secondary: 'dramatic', keywords: ['剧情科普', '故事学习'] }
       },
-      // v1.2.7-fix-A8: Nirath 世界观检测（仅山海经项目触发，不影响通用性）
-      nirathSignals: ['Nirath', 'nirath', '山海经', '异兽', '饕餮', '硅基', '碳化硅'],
+      // v1.2.7-fix-A8: 示例世界 世界观检测（仅神话项目项目触发，不影响通用性）
+      nirathSignals: ['示例世界', 'nirath', '神话项目', '神兽', '示例神兽', '虚构', '碳化硅'],
       // 默认配置
       defaultMode: 'dramatic',
       confidenceThreshold: 0.85,
@@ -47,6 +47,21 @@ class IntentParser {
       text = (rawInput || '').toString();
     }
     
+    // 【v2.1.5-fix-C】支持显式传入 narrativeMode，绕过自动分类
+    if (metadata && metadata.narrativeMode) {
+      const explicitMode = metadata.narrativeMode.toLowerCase();
+      const validModes = ['dramatic', 'educational', 'documentary', 'lifelog', 'commercial'];
+      if (validModes.includes(explicitMode)) {
+        console.log(`[IntentParser] 使用显式 narrativeMode: ${explicitMode}`);
+        return this._buildUserIntent({
+          primary_type: explicitMode,
+          confidence: 1.0,
+          scores: { [explicitMode]: 99 },
+          layer: 'explicit_metadata'
+        }, metadata, 'explicit_metadata', text);
+      }
+    }
+    
     // 第一层：快速分类器
     const fastResult = this._fastClassify(text);
     
@@ -55,7 +70,7 @@ class IntentParser {
       return this._buildUserIntent(fastResult, metadata, 'fast_classifier', text);
     }
 
-    // 第二层：深度分析（检测混合模式、Nirath世界观等）
+    // 第二层：深度分析（检测混合模式、示例世界世界观等）
     const deepResult = this._deepAnalysis(text, fastResult);
     
     return this._buildUserIntent(deepResult, metadata, 'deep_analysis', text);
@@ -69,11 +84,18 @@ class IntentParser {
     let totalMatches = 0;
 
     // 统计各类型关键词命中数
+    // 【v2.1.5-fix-C】高权重关键词：命中时加2分而非1分
+    const highWeightKeywords = {
+      commercial: ['宣传片', '品牌故事', '广告片']
+    };
+    
     for (const [type, keywords] of Object.entries(this.config.keywordDict)) {
       let matches = 0;
       for (const keyword of keywords) {
         if (text.includes(keyword)) {
-          matches++;
+          // 检查是否高权重关键词
+          const isHighWeight = highWeightKeywords[type]?.includes(keyword);
+          matches += isHighWeight ? 2 : 1;
         }
       }
       scores[type] = matches;
@@ -85,7 +107,9 @@ class IntentParser {
     let primaryType = this.config.defaultMode;
 
     for (const [type, score] of Object.entries(scores)) {
-      if (score > maxScore) {
+      // 【P0-6 修复】平分时 commercial 优先（宣传片强信号不应被 EDU 覆盖）
+      const tiePriority = { commercial: 5, dramatic: 4, documentary: 3, lifelog: 2, educational: 1 };
+      if (score > maxScore || (score === maxScore && (tiePriority[type] || 0) > (tiePriority[primaryType] || 0))) {
         maxScore = score;
         primaryType = type;
       }
@@ -116,11 +140,11 @@ class IntentParser {
       result.confidence = 0.88; // 混合模式默认置信度
     }
 
-    // 检测 Nirath 世界观
-    const isNirath = this._detectNirath(text);
-    if (isNirath) {
-      result.world_setting = 'Nirath';
-      result.nirath_signals = isNirath.matches;
+    // 检测 示例世界 世界观
+    const is示例世界 = this._detect示例世界(text);
+    if (is示例世界) {
+      result.world_setting = '示例世界';
+      result.nirath_signals = is示例世界.matches;
     }
 
     // 提取时长信息
@@ -129,7 +153,7 @@ class IntentParser {
       result.target_duration = duration;
     }
 
-    // 提取异兽 ID
+    // 提取神兽 ID
     const beastId = this._extractBeastId(text);
     if (beastId) {
       result.featured_beast_id = beastId;
@@ -157,9 +181,9 @@ class IntentParser {
   }
 
   /**
-   * 检测 Nirath 世界观
+   * 检测 示例世界 世界观
    */
-  _detectNirath(text) {
+  _detect示例世界(text) {
     const matches = [];
     for (const signal of this.config.nirathSignals) {
       if (text.includes(signal)) {
@@ -173,22 +197,19 @@ class IntentParser {
    * 提取时长（秒）
    */
   _extractDuration(text) {
-    // 匹配 "120秒", "2分钟", "120s", "2min" 等
+    // 【P2-5 修复】显式单位映射，避免 toString().includes 脆弱判断
     const patterns = [
-      /(\d+)\s*秒/,
-      /(\d+)\s*分钟/,
-      /(\d+)\s*s/i,
-      /(\d+)\s*min/i
+      { regex: /(\d+)\s*秒/, unit: 'second' },
+      { regex: /(\d+)\s*分钟/, unit: 'minute' },
+      { regex: /(\d+)\s*s/i, unit: 'second' },
+      { regex: /(\d+)\s*min/i, unit: 'minute' }
     ];
 
-    for (const pattern of patterns) {
-      const match = text.match(pattern);
+    for (const { regex, unit } of patterns) {
+      const match = text.match(regex);
       if (match) {
         let value = parseInt(match[1]);
-        // 分钟转秒
-        if (pattern.toString().includes('分钟') || pattern.toString().includes('min')) {
-          value *= 60;
-        }
+        if (unit === 'minute') value *= 60;
         return value;
       }
     }
@@ -196,11 +217,11 @@ class IntentParser {
   }
 
   /**
-   * 提取异兽 ID
+   * 提取神兽 ID
    */
   _extractBeastId(text) {
     const beastPatterns = {
-      'taotie': ['饕餮', 'tao-tie', 'taotie'],
+      'taotie': ['示例神兽', 'tao-tie', 'taotie'],
       'qilin': ['麒麟', 'qilin'],
       'fenghuang': ['凤凰', '凤凰', 'fenghuang'],
       'xiezhi': ['獬豸', 'xiezhi'],
@@ -245,7 +266,7 @@ class IntentParser {
         style_tags: metadata.style_tags || ['hyper-realistic', 'cinematic', 'epic'],
         world_setting: analysis.world_setting || metadata.world_setting || 'default',
         featured_beast_id: analysis.featured_beast_id || metadata.featured_beast_id || null,
-        // v1.2.7-fix-A8: 移除 xiaoG 硬编码，改为通用默认值
+        // v1.2.7-fix-A8: 移除 示例角色 硬编码，改为通用默认值
         protagonist: metadata.protagonist || 'protagonist',
         ...metadata
       },

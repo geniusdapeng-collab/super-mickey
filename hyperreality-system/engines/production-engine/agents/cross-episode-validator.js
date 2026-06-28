@@ -8,6 +8,7 @@ const path = require('path');
 
 class CrossEpisodeValidator {
   constructor(options = {}) {
+    this._globalDeadline = null;
     this.config = {
       // LLM配置
       llmEngine: options.llmEngine || null,
@@ -32,6 +33,13 @@ class CrossEpisodeValidator {
       },
       ...options
     };
+  }
+
+  setDeadline(deadlineMs) { this._globalDeadline = deadlineMs || null; }
+
+  _remainingMs() {
+    if (!this._globalDeadline) return this.config.timeout;
+    return Math.max(10000, this._globalDeadline - Date.now());
   }
 
   /**
@@ -140,7 +148,8 @@ class CrossEpisodeValidator {
     if (contract.mustNotCover) {
       for (const topic of contract.mustNotCover) {
         // 检查是否出现禁区关键词 + 详细展开特征（>50字连续描述）
-        const topicRegex = new RegExp(topic.substring(0, 20), 'i'); // 取前20字做模糊匹配
+        // 【P1-5 修复】转义正则元字符，防止 topic 含特殊字符时 SyntaxError 崩溃
+        const topicRegex = new RegExp(topic.substring(0, 20).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
         if (topicRegex.test(script)) {
           // 检查周围是否有详细展开的迹象（多句描述、列举、解释）
           const context = this._extractContext(script, topic, 200);
@@ -258,6 +267,11 @@ ${script.substring(0, 3000)}${script.length > 3000 ? '\n...（脚本截断，剩
           }),
           timeoutPromise
         ]).finally(() => clearTimeout(timer));
+        // 【P1-13 修复】先检查 success，失败则明确返回空并告警
+        if (!result || !result.success) {
+          console.warn(`[CrossEpisodeValidator] LLM 语义校验失败: ${result?.error || '未知'}，返回空结果`);
+          return [];
+        }
         responseText = result?.data ? JSON.stringify(result.data) : '';
       }
       // 兼容 generate 方法（如果引擎实现了的话）

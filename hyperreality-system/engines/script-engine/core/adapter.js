@@ -65,7 +65,7 @@ class ScriptBlueprintAdapter {
       target_duration: meta.target_duration,
       world_setting: blueprint.world_setting?.world_id || 'default',
       featured_beast_id: blueprint.extensions?.nirath_extension?.featured_beast_id || null,
-      // v1.2.7-fix-A10: 移除 xiaoG 硬编码
+      // v1.2.7-fix-A10: 移除 示例角色 硬编码
       protagonist: blueprint.character_system?.characters?.find(c => c.role === 'protagonist')?.character_id || null,
       
       // v1.2.5: 传递系列和平台元数据
@@ -133,7 +133,8 @@ class ScriptBlueprintAdapter {
         characters: scene.characters || [],
         
         // 对话
-        dialogue: scene.dialogue || { has_dialogue: false, lines: [] },
+        // 【v2.1.5-fix-C】透传 blocks 字段，保持完整 DIALOGUE_BLOCK 结构
+        dialogue: scene.dialogue || { has_dialogue: false, lines: [], blocks: [] },
         
         // 情感目标
         emotional_target: scene.emotional_target || { valence: 0, arousal: 0.5, dominance: 0.5 },
@@ -349,12 +350,34 @@ class ScriptBlueprintAdapter {
 
   /**
    * 适配台词系统
+   * 【v2.1.5-fix-C】同时透传 blocks 字段（DIALOGUE_BLOCK 格式）
    */
   _adaptDialogues(blueprint) {
     const dialogues = [];
     
     for (const scene of blueprint.structure.scenes || []) {
-      if (scene.dialogue?.has_dialogue && scene.dialogue.lines) {
+      // 【P1-10 修复】blocks 优先，避免与 lines 重复 push 导致下游双倍音频
+      const hasBlocks = scene.dialogue?.blocks && Array.isArray(scene.dialogue.blocks) && scene.dialogue.blocks.length > 0;
+
+      if (hasBlocks) {
+        // 优先使用 blocks（新格式），跳过 lines
+        for (const block of scene.dialogue.blocks) {
+          dialogues.push({
+            scene_id: scene.scene_id,
+            speaker: block.speaker,
+            text: block.line,
+            emotion: block.emotion || 'neutral',
+            trigger: block.trigger || '',
+            manner: block.manner || '',
+            type: block.type || 'monologue',
+            timing: {
+              start: scene.timing?.start || 0,
+              duration: scene.timing?.duration || 20
+            }
+          });
+        }
+      } else if (scene.dialogue?.has_dialogue && scene.dialogue.lines) {
+        // 仅当 blocks 不存在时才用 lines（向后兼容）
         for (const line of scene.dialogue.lines) {
           dialogues.push({
             scene_id: scene.scene_id,

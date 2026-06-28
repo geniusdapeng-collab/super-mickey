@@ -79,12 +79,15 @@ for (const spec of FIELD_SPECS) {
 }
 
 // 【v2.1.4-fix13】camelCase ↔ snake_case 双向映射，解决命名不一致
+// 【P1-9 修复】FIELD_SPECS.nameEn 全是 snake_case，原正则 /([A-Z])/g 匹配大写字母但 snake_case 无大写
+// 导致 snake === nameEn（恒等），两个 map 都是 snake→snake，camelCase 字段永远找不到
 const CAMEL_TO_SNAKE = {};
 const SNAKE_TO_CAMEL = {};
 for (const spec of FIELD_SPECS) {
-  const snake = spec.nameEn.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, '');
-  CAMEL_TO_SNAKE[spec.nameEn] = snake;
-  SNAKE_TO_CAMEL[snake] = spec.nameEn;
+  const snake = spec.nameEn; // nameEn 本身就是 snake_case
+  const camel = snake.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase()); // snake → camel
+  SNAKE_TO_CAMEL[snake] = camel;
+  CAMEL_TO_SNAKE[camel] = snake;
 }
 
 /**
@@ -194,7 +197,11 @@ class RuleChecker {
     for (const spec of FIELD_SPECS) {
       if (!spec.required) continue;
       const value = shot[spec.nameEn];
-      const isEmpty = !value || (typeof value === 'string' && !value.trim());
+      // 【P1-12 修复】增加空数组/空对象检测，避免 portraits:[]/dialogue:[] 通过完整性检查
+      const isEmpty = !value
+        || (typeof value === 'string' && !value.trim())
+        || (Array.isArray(value) && value.length === 0)
+        || (typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length === 0);
       if (isEmpty) {
         const sev = spec.priority === Priority.P0 ? Severity.FATAL : Severity.MAJOR;
         issues.push(new Issue({
@@ -382,7 +389,10 @@ class RuleChecker {
     }
 
     // 台词：句末标点+标点规范
-    const dl = shot.dialogue || '';
+    // 【P1-6 修复】dialogue 可能被 field-standardizer 转为数组，需归一化为字符串
+    const dl = Array.isArray(shot.dialogue)
+      ? shot.dialogue.map(d => typeof d === 'string' ? d : (d && d.text ? d.text : '')).join('')
+      : (shot.dialogue || '');
     if (dl) {
       if (!/[。！？…]$/.test(dl)) {
         issues.push(new Issue({

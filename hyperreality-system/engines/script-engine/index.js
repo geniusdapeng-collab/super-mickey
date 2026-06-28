@@ -7,7 +7,8 @@ const { ScriptBlueprint } = require('./core/script-blueprint');
 const { ScriptGenerator } = require('./core/script-generator');
 const { ScriptValidator } = require('./core/script-validator');
 const { ScriptBlueprintAdapter } = require('./core/adapter');
-const { NirathExtension } = require('./extensions/nirath-extension');
+const { CreativeIntensityEngine } = require('./core/creative-intensity-engine');
+const { 示例世界Extension: NirathExtension } = require('./extensions/nirath-extension');
 
 class ScriptEngine {
   constructor(options = {}) {
@@ -32,6 +33,24 @@ class ScriptEngine {
     // 1. 解析意图
     const userIntent = this.intentParser.parse(rawInput, metadata);
     console.log(`[ScriptEngine] 意图解析完成: ${userIntent.parsed.primary_mode}`);
+
+    // 【P0-7 修复】接入 CreativeIntensityEngine，创意指数影响"怎么拍"
+    const ciValue = metadata.creativeIntensity || metadata.creative_intensity || 0.7;
+    try {
+      const creativeEngine = new CreativeIntensityEngine();
+      const engineConfigs = creativeEngine.generateEngineConfigs(ciValue, userIntent.parsed?.narrative_mode || 'dialogue');
+      const layerInstructions = creativeEngine.generateLayerInstructions('Layer 1', ciValue, userIntent.parsed?.narrative_mode || 'dialogue');
+      userIntent.metadata = userIntent.metadata || {};
+      userIntent.metadata._creativeIntensity = {
+        intensity: ciValue,
+        instructions: layerInstructions,
+        configs: engineConfigs
+      };
+      userIntent.metadata.creativeIntensity = ciValue; // camelCase 兜底
+      console.log(`[ScriptEngine] CreativeIntensity 接入完成: intensity=${ciValue}`);
+    } catch (e) {
+      console.warn('[ScriptEngine] CreativeIntensity 接入失败:', e.message);
+    }
 
     // 2. 生成剧本（需要 LLM）
     let blueprint;
@@ -85,7 +104,7 @@ class ScriptEngine {
    */
   /**
    * 从模板生成剧本（无需 LLM）
-   * v1.2.7-fix-A9: 通用化降级模板，移除山海经硬编码
+   * v1.2.7-fix-A9: 通用化降级模板，移除神话项目硬编码
    */
   _generateFromTemplate(userIntent) {
     const meta = userIntent.metadata;
@@ -93,13 +112,13 @@ class ScriptEngine {
     const sceneCount = 5;
     const sceneDuration = Math.floor(duration / sceneCount);
 
-    // v1.2.7-fix-A9: 从 metadata 获取角色，而非硬编码 xiaoG
+    // v1.2.7-fix-A9: 从 metadata 获取角色，而非硬编码 example-role
     const characters = meta.characters || [];
     const protagonist = characters[0] || { name: '主讲人', description: '主讲人' };
     const protagonistId = protagonist.id || protagonist.name || 'protagonist';
     const protagonistName = protagonist.name || '主讲人';
 
-    // v1.2.7-fix-A9: 通用场景设定（非山海经特定）
+    // v1.2.7-fix-A9: 通用场景设定（非神话项目特定）
     const worldSetting = meta.world_setting || 'default';
     const settings = [
       '开场建立氛围，远景展开',

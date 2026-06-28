@@ -91,9 +91,10 @@ const PromptLengthConfig = require('../../../config/prompt-length.js');
 // ...
     // 【审计修复】从配置文件读取，不再硬编码
     this.maxPromptLength = options.maxPromptLength || PromptLengthConfig.HARD_MAX || 12000;
-    this.concurrency = options.concurrency || 2;
-    this.llmTimeout = 300000; // 5 分钟单次（结构化输出需要更长时间）
-    this.llmMaxRetries = 2;
+    // 【P2-11 修复】删除 concurrency 死代码；llmTimeout 走 options，允许外部配置覆盖
+    // this.concurrency = options.concurrency || 2; // 死代码，process() 中从未使用
+    this.llmTimeout = options.llmTimeout || this.llmTimeout || 300000;
+    this.llmMaxRetries = options.llmMaxRetries || 2;
   }
 
   _getSystemPrompt() {
@@ -111,7 +112,7 @@ const PromptLengthConfig = require('../../../config/prompt-length.js');
 6. 【色彩/色调】：调色方案+色温倾向+饱和度。格式："主色调：冷白偏青（医院感）；辅助色：暖木色讲台点缀；肤色：自然偏暖；饱和度：中等偏低，避免过度鲜艳；对比度：中高，保持清晰层次"
 7. 【景深】：焦点控制+虚化程度+前景/背景层次。格式："焦点：人物面部；景深：中等（f/2.8），背景适度虚化可辨；前景：讲台边缘轻微虚化；背景：走廊纵深渐变模糊；层次：前景-中景（人物）-背景三层分离"
 8. 【运镜】：镜头运动方式（推/拉/摇/移/跟/升降/手持/稳定器）。格式："0-3s：稳定器缓慢推近（0.3m/s）→ 3-6s：固定机位 → 6-10s：手持微晃跟拍（呼吸感）"
-9. 【角色】：角色身份、姿态、表情（如：穿警服的陈卓女士，健康科普主讲人，站姿挺拔，表情关切）
+9. 【角色】：角色身份、姿态、表情（如：穿警服的示例角色，健康科普主讲人，站姿挺拔，表情关切）
 10. 【服装】：详细服装描述（颜色、款式、质地、配饰）。格式："藏青色警服外套（毛呢质地，肩章完整），内搭浅蓝色衬衫（棉质，领口整洁），黑色西裤，黑色皮鞋"
 11. 【化妆】：妆容、发型细节。格式："短发整齐（黑色，长度及耳），素颜淡妆，眉毛自然，唇色淡粉，无夸张妆容"
 12. 【动作】：角色具体动作（手势、步伐、视线）。格式："右手自然抬起至胸前做强调手势，左手自然下垂，身体微微前倾，目光直视镜头"
@@ -140,35 +141,40 @@ const PromptLengthConfig = require('../../../config/prompt-length.js');
     {
       "shotId": "SC01",
       "fields": {
-        "constraint": "Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no caption, no watermark",
-        "baseline": "8K resolution, cinematic quality, highly detailed, photorealistic, intricate textures, sharp focus",
-        "scene": "三甲医院检验科走廊，冷白色LED顶灯连续照射，墙面白色瓷砖，地面浅灰色防滑地胶，不锈钢检验窗口，走廊纵深约十五米",
-        "lighting": "主光：顶部LED面板灯 5600K冷白光，均匀漫射无阴影；补光：墙面反射光填充阴影；背景光：走廊尽头窗户自然光 6500K；特效：检验窗口玻璃微弱反射光",
-        "composition": "景别：中景（膝上）；主体位置：画面黄金分割右1/3处；线条引导：走廊纵深由近及远；画框边缘：左侧留白1/4展示环境",
-        "color_palette": "主色调：冷白偏青（医院感）；辅助色：不锈钢金属银灰；肤色：自然偏暖；饱和度：中等偏低；对比度：中高",
-        "depth_of_field": "焦点：人物面部；景深：中等（f/2.8），背景适度虚化可辨；前景：无；背景：走廊纵深渐变模糊；层次：中景（人物）-背景两层",
-        "camera_movement": "0-2s：稳定器缓慢推近（0.3m/s）→ 2-6s：固定机位 → 6-10s：手持微晃（呼吸感，幅度±2度）",
-        "character": "穿警服的陈卓女士，健康科普主讲人，短发整齐，站姿挺拔，表情关切",
-        "costume": "藏青色警服外套（毛呢质地，肩章完整），内搭浅蓝色衬衫（棉质，领口整洁），黑色西裤，黑色皮鞋",
-        "makeup": "短发整齐（黑色，长度及耳），素颜淡妆，眉毛自然，唇色淡粉",
-        "action": "右手自然抬起至胸前做强调手势，左手自然下垂，身体微微前倾，目光直视镜头",
-        "props": "手持：空白A4文件夹（白色，无文字）；背景：不锈钢检验窗口台面",
-        "portraits": "image://characters/chen-zhuo/portraits/chen-zhuo-front.png",
-        "dialogue": "典型症状是肌肉疼痛、无力。",
-        "timeline": "T00:00 - 中景，陈卓站立讲台前，阳光从侧面照入；缓缓抬起头，目光注视镜头\nT00:02 - 近景过渡，镜头缓慢推进至面部；眼神由冷静转为关切，嘴角微微抿紧\nT00:04 - 特写定格，陈卓眼部区域；眼睛眨动一次，瞳孔中反射出讲台景象",
-        "mood": "calm, professional",
-        "pacing": "整体：沉稳中等节奏；开头：缓慢引入（2s）；中段：稍快推进（紧迫感）；高潮：停顿强调（1s留白）；结尾：平缓收尾",
-        "transition": "切镜（硬切，保持紧张感）",
-        "audio": "环境音：医院走廊低频设备嗡鸣，远处隐约脚步声；音乐：冷色调氛围音乐铺底，低沉弦乐",
-        "negative": "no watermark, no logo, no cartoon style, no flat lighting, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters",
-        "bright_constraint": "bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination",
-        "character_constraint": "只出现陈卓一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆",
-        "director_instruction": "好莱坞大导演质感，电影级画面，写实风格，无特效，无科幻元素",
-        "consistency": "保持陈卓角色形象一致，短发警服造型不变，面部特征与体型每帧统一"
+        "constraint": "画幅比例、分辨率、格式、帧率等技术约束",
+        "baseline": "8K分辨率、画质风格、细节增强词",
+        "scene": "场景环境描述（≥120字符，含地点、时间、空间、材质）",
+        "lighting": "灯光设计（≥150字符，含主光方向+色温K值+光质+补光+背景光）",
+        "composition": "构图设计（≥100字符，含景别+主体位置+线条引导+画框边缘）",
+        "color_palette": "色彩方案（≥80字符，含主色调+辅助色+肤色+饱和度+对比度）",
+        "depth_of_field": "景深控制（≥80字符，含焦点+光圈+前景/背景虚化+层次）",
+        "camera_movement": "运镜设计（≥100字符，含运动方式+速度+时间分布+起止点）",
+        "character": "角色外貌与姿态（根据实际角色设定，不要套用固定示例）",
+        "costume": "服装描述（颜色、款式、质地、配饰）",
+        "makeup": "妆容发型细节",
+        "action": "具体动作（≥120字符，含手势+步伐+视线+情绪+姿态）",
+        "props": "关键道具（手持物、桌面物品、背景物件）",
+        "portraits": "定妆照引用路径（如：image://characters/角色名/portrait.png）",
+        "dialogue": "角色台词（纯台词内容，不要写画外音/旁白）",
+        "timeline": "时间轴（≥200字符，分≥3段，T00:XX格式，每段含画面+动作）",
+        "mood": "情绪关键词（1-2个，如calm/professional/tense）",
+        "pacing": "节奏（五段式：整体/开头/中段/高潮/结尾）",
+        "transition": "转场方式（类型+持续时间+方向）",
+        "audio": "音频（≥100字符，环境音+音乐风格+音量+BPM）",
+        "negative": "负面约束（通用负面词+场景特定负面词）",
+        "bright_constraint": "明亮约束（亮度/光照强制要求）",
+        "character_constraint": "角色约束（只出现指定角色，禁止分身/克隆）",
+        "director_instruction": "导演指令（≥80字符，风格定位+质感要求+禁忌）",
+        "consistency": "跨镜头一致性（角色/光线/色调统一）"
       }
     }
   ]
 }
+
+【⚠️ 重要：示例仅用于展示字段结构，不得直接复制内容】
+上述示例中的具体描述（如"三甲医院检验科走廊"、"藏青色警服"等）仅为字段格式演示，
+实际生成时必须根据当前项目的真实场景、真实角色、真实内容重新创作，严禁照搬示例内容。
+每个字段必须根据镜头信息独立生成，与示例无关。
 
 关键要求：
 1. 【内容充分性要求】每个字段描述必须充分详细，参考以下最低字符数要求：
@@ -259,7 +265,13 @@ const PromptLengthConfig = require('../../../config/prompt-length.js');
   async _fuseSingleShot(shot, ratio, characters) {
     const prompt = this._buildBatchPrompt([shot], ratio, characters);
     // 【v2.1.4-fix10-P25-fix3】把空 schema 换成带 25 字段键名的完整模板
-    const schema = { shots: [buildFullSchema(shot.shotId)] };
+    // 【P1-4 修复】schema 加 required/requiredArrays/rejectEmptyArray，让质量门真正生效
+    const schema = {
+      required: ['shots'],
+      requiredArrays: ['shots'],
+      rejectEmptyArray: true,
+      shots: [buildFullSchema(shot.shotId)]
+    };
 
     const llmResult = await this._callLLM(prompt, schema, () => {
       throw new Error('LLM fallback');
@@ -271,8 +283,14 @@ const PromptLengthConfig = require('../../../config/prompt-length.js');
     // 【v2.1.4-fix10】在 LLM 输出入口统一标准化为 snake_case
     fields = normalizeFields(fields);
     
-    // 【v2.1.4-fix10-P25-fix3】字段完整性校验 + 定向补齐
-    fields = await this._ensureFieldCompleteness(shot, fields, ratio, characters);
+    // 【P1-4 修复】根据LLM结果和字段完整性标记降级状态
+    const usedFallback = llmResult.degraded || Object.keys(fields).length === 0;
+    const completeness = await this._ensureFieldCompleteness(shot, fields, ratio, characters);
+    fields = completeness.fields;
+    const finalDegraded = usedFallback || completeness.usedRuleFallback;
+    const finalDegradeReason = finalDegraded
+      ? (usedFallback ? '主LLM失败,规则兜底' : '部分字段规则补齐')
+      : null;
     
     // 【v2.1.4-fix9-P25-fix7】将 fields 中的关键字段展开到 shot 顶层
     const expandedFields = { ...fields };
@@ -287,8 +305,8 @@ const PromptLengthConfig = require('../../../config/prompt-length.js');
       fusionText: fields.scene || '',
       prompt: fullPrompt,
       promptCharCount: this._countChars(fullPrompt),
-      degraded: false,
-      degradeReason: null
+      degraded: finalDegraded, // 【P1-4 修复】真实降级标记
+      degradeReason: finalDegradeReason
     };
   }
 
@@ -297,6 +315,7 @@ const PromptLengthConfig = require('../../../config/prompt-length.js');
    * 先校验，缺哪些就只让 LLM 补哪些，一次轻量调用搞定
    */
   async _ensureFieldCompleteness(shot, fields, ratio, characters) {
+    let usedRuleFallback = false;
     // 1. 找出缺失或过短字段
     const missing = REQUIRED_FIELDS.filter(f => {
       const v = fields[f];
@@ -305,7 +324,7 @@ const PromptLengthConfig = require('../../../config/prompt-length.js');
       return min > 0 && this._countChars(String(v)) < min;
     });
 
-    if (missing.length === 0) return fields; // 全齐，无需补
+    if (missing.length === 0) return { fields, usedRuleFallback: false }; // 全齐，无需补
 
     console.log(`[PromptFusion] ${shot.shotId} 缺失/过短字段 ${missing.length} 个: ${missing.join(',')} → 定向补齐`);
 
@@ -314,9 +333,11 @@ const PromptLengthConfig = require('../../../config/prompt-length.js');
     const fillSchema = { shotId: shot.shotId, fields: Object.fromEntries(missing.map(k => [k, STANDARD_FIELDS_SCHEMA[k]])) };
 
     try {
+      // 【P1-2 修复】fill调用用小预算，不占用主调用时间
       const fillResult = await this._callLLM(fillPrompt, fillSchema, () => null, {
         maxRetries: 1,
-        maxTokens: 4096 // 只补几个字段，预算充足
+        maxTokens: 4096,
+        timeoutMs: 45000 // fill 用小预算
       });
       const fillFields = fillResult?.result?.fields || fillResult?.result?.[shot.shotId] || {};
       const normalized = normalizeFields(fillFields);
@@ -332,6 +353,7 @@ const PromptLengthConfig = require('../../../config/prompt-length.js');
     // 3. 仍缺的字段，才用规则兜底（明确标记来源，便于审计）
     const stillMissing = REQUIRED_FIELDS.filter(f => !fields[f] || String(fields[f]).trim() === '');
     if (stillMissing.length > 0) {
+      usedRuleFallback = true;
       const shotData = this._extractFieldsFromShot(shot);
       for (const f of stillMissing) {
         if (shotData[f]) fields[f] = shotData[f];
@@ -340,7 +362,7 @@ const PromptLengthConfig = require('../../../config/prompt-length.js');
       console.warn(`[PromptFusion] ${shot.shotId} 规则兜底 ${stillMissing.length} 字段`);
     }
 
-    return fields;
+    return { fields, usedRuleFallback };
   }
 
   /**
@@ -366,7 +388,8 @@ const PromptLengthConfig = require('../../../config/prompt-length.js');
 
       try {
         console.log(`  🔄 补全尝试 ${attempt}/${maxRetries}...`);
-        const filled = await this._ensureFieldCompleteness(shot, fields, ratio, characters);
+        const completeness = await this._ensureFieldCompleteness(shot, fields, ratio, characters);
+        const filled = completeness.fields;
         
         // 检查是否还有空字段
         const stillEmpty = REQUIRED_FIELDS.filter(f => !filled[f] || String(filled[f]).trim() === '');
@@ -475,7 +498,7 @@ ${missing.map(f => `- ${f}：${FIELD_DESCS[f]}`).join('\n')}
       const d = shot.duration;
       const seg1 = Math.floor(d * 0.3);
       const seg2 = Math.floor(d * 0.6);
-      result.timeline = `T00:00 - 全景establishing，环境展示；T00:0${seg1} - 中景推进，人物动作；T00:0${seg2} - 情绪收尾，光线平复`;
+      result.timeline = `T00:00 - 全景establishing，环境展示；T00:${String(seg1).padStart(2, '0')} - 中景推进，人物动作；T00:${String(seg2).padStart(2, '0')} - 情绪收尾，光线平复`;
     }
     if (shot.characterRef) result.portraits = shot.characterRef;
     
@@ -608,14 +631,14 @@ ${missing.map(f => `- ${f}：${FIELD_DESCS[f]}`).join('\n')}
     if (actionHasForbidden) {
       console.warn(`[PromptFusionAgent] ⚠️ 镜头 ${shot.shotId} 动作含禁止词汇: "${actionDesc.substring(0, 50)}..."，强制替换为写实动作`);
       // 提取角色名
-      const charName = shot.character?.name || '陈卓';
+      const charName = shot.character?.name || '示例角色';
       // 根据场景类型生成写实动作
       const fallbackActions = [
-        '镜头缓慢推近，陈卓站立讲台前，自然手势讲解，眼神注视镜头，警服在荧光灯下轮廓清晰',
-        '稳定机位中景，陈卓沿走廊缓步前行，侧头指向检验窗口，白大褂医生从背景走过',
-        '手持微晃跟拍，陈卓靠近检查床，手指轻触医学挂图，无影灯在头顶形成柔和光晕',
-        '固定机位中景，陈卓坐于沙发边缘，双手交叠置于膝上，LED灯带在身后形成均匀轮廓光',
-        '缓慢后拉全景，陈卓站立检验窗口前，转身面向镜头，不锈钢台面反射冷白色光源'
+        '镜头缓慢推近，示例角色站立讲台前，自然手势讲解，眼神注视镜头，警服在荧光灯下轮廓清晰',
+        '稳定机位中景，示例角色沿走廊缓步前行，侧头指向检验窗口，白大褂医生从背景走过',
+        '手持微晃跟拍，示例角色靠近检查床，手指轻触医学挂图，无影灯在头顶形成柔和光晕',
+        '固定机位中景，示例角色坐于沙发边缘，双手交叠置于膝上，LED灯带在身后形成均匀轮廓光',
+        '缓慢后拉全景，示例角色站立检验窗口前，转身面向镜头，不锈钢台面反射冷白色光源'
       ];
       const idx = parseInt(shot.shotId.replace(/\D/g, '')) || 0;
       actionDesc = fallbackActions[idx % fallbackActions.length];
@@ -631,11 +654,20 @@ ${missing.map(f => `- ${f}：${FIELD_DESCS[f]}`).join('\n')}
     if (portraitsField) parts.push(`【定妆照】${portraitsField}`);
 
     // 台词
-    const dialogueField = getField('dialogue');
-    if (dialogueField) {
-      // 【v2.1.4-fix13】确保台词有【台词】前缀
-      const dialogueText = dialogueField.startsWith('【台词】') ? dialogueField : `【台词】${dialogueField}`;
-      parts.push(dialogueText);
+    // 【v2.1.6】优先使用 dialogueBlocks 渲染为 Seedance 2.0 内联格式
+    if (shot.dialogueBlocks && Array.isArray(shot.dialogueBlocks) && shot.dialogueBlocks.length > 0) {
+      const renderedDialogue = this._renderDialogueBlocks(shot.dialogueBlocks, shot.duration || 10);
+      if (renderedDialogue) {
+        parts.push(renderedDialogue);
+      }
+    } else {
+      // 回退：使用旧的 dialogue 字段
+      const dialogueField = getField('dialogue');
+      if (dialogueField) {
+        // 【v2.1.4-fix13】确保台词有【台词】前缀
+        const dialogueText = dialogueField.startsWith('【台词】') ? dialogueField : `【台词】${dialogueField}`;
+        parts.push(dialogueText);
+      }
     }
 
     // 【时间轴】镜头内部微观导演调度（T00:XX相对时间戳格式）
@@ -647,7 +679,7 @@ ${missing.map(f => `- ${f}：${FIELD_DESCS[f]}`).join('\n')}
       const duration = shot.duration || 10;
       const seg1 = Math.floor(duration * 0.3);
       const seg2 = Math.floor(duration * 0.6);
-      parts.push(`【时间轴】T00:00 - 全景establishing，环境展示，冷静氛围；T00:0${seg1} - 中景推进，人物动作，情绪升温；T00:0${seg2} - 情绪收尾，光线平复`);
+      parts.push(`【时间轴】T00:00 - 全景establishing，环境展示，冷静氛围；T00:${String(seg1).padStart(2, '0')} - 中景推进，人物动作，情绪升温；T00:${String(seg2).padStart(2, '0')} - 情绪收尾，光线平复`);
     }
 
     // 【情绪】
@@ -750,11 +782,11 @@ ${missing.map(f => `- ${f}：${FIELD_DESCS[f]}`).join('\n')}
       const actionForbidden = ['全息', '虚拟', '投影', '空间扭曲', '时间残影', '霓虹', '数据流', '光即角色', '抽象构图', '梦境流动性', '手绘动画', '湿版摄影', '黑色电影'];
       if (actionForbidden.some(w => actionDesc.includes(w))) {
         const fallbackActions = [
-          '镜头缓慢推近，陈卓站立讲台前，自然手势讲解，眼神注视镜头，警服在荧光灯下轮廓清晰',
-          '稳定机位中景，陈卓沿走廊缓步前行，侧头指向检验窗口，白大褂医生从背景走过',
-          '手持微晃跟拍，陈卓靠近检查床，手指轻触医学挂图，无影灯在头顶形成柔和光晕',
-          '固定机位中景，陈卓坐于沙发边缘，双手交叠置于膝上，LED灯带在身后形成均匀轮廓光',
-          '缓慢后拉全景，陈卓站立检验窗口前，转身面向镜头，不锈钢台面反射冷白色光源'
+          '镜头缓慢推近，示例角色站立讲台前，自然手势讲解，眼神注视镜头，警服在荧光灯下轮廓清晰',
+          '稳定机位中景，示例角色沿走廊缓步前行，侧头指向检验窗口，白大褂医生从背景走过',
+          '手持微晃跟拍，示例角色靠近检查床，手指轻触医学挂图，无影灯在头顶形成柔和光晕',
+          '固定机位中景，示例角色坐于沙发边缘，双手交叠置于膝上，LED灯带在身后形成均匀轮廓光',
+          '缓慢后拉全景，示例角色站立检验窗口前，转身面向镜头，不锈钢台面反射冷白色光源'
         ];
         const idx = parseInt(shot.shotId?.replace(/\D/g, '') || '0') || 0;
         actionDesc = fallbackActions[idx % fallbackActions.length];
@@ -820,12 +852,8 @@ ${missing.map(f => `- ${f}：${FIELD_DESCS[f]}`).join('\n')}
   }
 
   _countChars(str) {
-    if (!str) return 0;
-    let count = 0;
-    for (const char of str) {
-      count += (char.charCodeAt(0) > 127) ? 1.5 : 1;
-    }
-    return Math.ceil(count);
+    // 【P2-13 修复】使用真实字符数，中文不再按1.5计
+    return str ? String(str).length : 0;
   }
 
   _extractPureDialogue(dialogue) {
@@ -835,6 +863,35 @@ ${missing.map(f => `- ${f}：${FIELD_DESCS[f]}`).join('\n')}
       return parts[3].trim();
     }
     return dialogue.trim();
+  }
+
+  /**
+   * 【v2.1.6】将 DIALOGUE_BLOCK 数组渲染为 Seedance 2.0 内联对话格式
+   * 格式：【台词】[时间戳] 角色 trigger, emotion 说："line"
+   */
+  _renderDialogueBlocks(blocks, duration) {
+    if (!blocks || blocks.length === 0) return '';
+    
+    const lines = [];
+    const segmentDuration = duration / blocks.length;
+    
+    for (let i = 0; i < blocks.length; i++) {
+      const b = blocks[i];
+      const startTime = Math.round(i * segmentDuration);
+      const endTime = Math.round((i + 1) * segmentDuration);
+      const timeStr = `[${String(startTime).padStart(2, '0')}s-${String(endTime).padStart(2, '0')}s]`;
+      
+      // 构建内联格式
+      const trigger = b.trigger || 'looks at camera';
+      const emotion = b.emotion || 'neutral';
+      const line = b.line || '';
+      const speaker = b.speaker || '角色';
+      
+      // Seedance 2.0 格式：时间戳 + 动作触发 + 情绪副词 + 说："台词"
+      lines.push(`${timeStr} ${speaker} ${trigger}, ${emotion} 说："${line}"`);
+    }
+    
+    return '【台词】' + lines.join('\n');
   }
 
   _buildBatchPrompt(shots, ratio, characters) {
@@ -869,13 +926,13 @@ ${sufficiency}
 
 【角色服装锁定 - 强制不可修改】
 角色服装必须与角色设定完全一致，禁止根据场景修改：
-- 正确："陈卓女士，穿警服的陈女士，健康科普主讲人，短发，站姿挺拔"
+- 正确："示例角色女士，穿警服的陈女士，健康科普主讲人，短发，站姿挺拔"
 - 错误："白色医生服"、"白大褂"、"浅蓝色衬衫"（禁止根据场景更换服装）
 【角色】字段必须严格使用角色设定中的原始服装描述，不可自由发挥。
 
 【动作写实锁定 - 强制不可修改】
 【动作】字段必须是真实物理动作和镜头运动，严禁使用任何科幻/抽象/超现实词汇：
-- 正确："镜头缓慢推近，陈卓站立讲台前，自然手势讲解"
+- 正确："镜头缓慢推近，示例角色站立讲台前，自然手势讲解"
 - 错误："全息投影"、"空间扭曲"、"时间残影"、"霓虹色数据流"、"抽象构图"、"梦境流动性"、"湿版摄影"、"光即角色"
 - 正确运镜：推近、跟拍、手持、稳定器、缓慢后拉、固定机位
 - 错误运镜：无人机穿越微观世界、时间操控慢动作、宏大比例展示

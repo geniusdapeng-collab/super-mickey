@@ -57,7 +57,12 @@ class OpeningDesignAgent extends BaseAgent {
     });
 
     if (llmResult.degraded) {
-      return { opening: llmResult.result, degraded: true, degradeReason: llmResult.degradeReason };
+      // 【P0-1 修复】降级时 llmResult.result 是 _fallback() 的返回值 { opening: {...} }
+      // 必须取 .opening 提取内层对象，与成功分支保持一致，避免双重包裹
+      const opening = (llmResult.result && llmResult.result.opening)
+        ? llmResult.result.opening
+        : llmResult.result;
+      return { opening, degraded: true, degradeReason: llmResult.degradeReason };
     }
 
     console.log(`[OpeningDesignAgent] 完成 ✓`);
@@ -65,7 +70,8 @@ class OpeningDesignAgent extends BaseAgent {
   }
 
   _buildPrompt(blueprint) {
-    const title = blueprint.title || '未命名';
+    // v2.1.5-fix: 优先从 config.title 或 metadata.title 获取，适配 AdaptedBlueprint 数据结构
+    const title = blueprint.config?.title || blueprint.metadata?.title || blueprint.title || '未命名';
     const meta = blueprint._metadata || blueprint.config?._metadata || {};
     const isSeries = meta.isSeries || false;
     const episodeNumber = meta.episodeNumber || 1;

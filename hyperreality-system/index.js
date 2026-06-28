@@ -14,10 +14,26 @@ const { PostProductionEngine } = require('./engines/post-production-engine/post-
 const { RequirementListBuilder } = require('./engines/script-engine/core/requirement-list-builder');
 const { CreativeIntensityEngine } = require('./engines/script-engine/core/creative-intensity-engine');
 const { OpeningTitleOptimizer } = require('./engines/production-engine/agents/opening-title-optimizer');
-const { routeAndEnhance } = require('../skills/hollywood-cinematography/cinematography-skill-router');
+const { routeAndEnhance } = require('./skills/hollywood-cinematography/cinematography-skill-router');
 const { FieldGuard } = require('./engines/field-guard');
+const ErrorCodes = require('./config/error-codes');
+const { StabilityShield } = require('./shields/stability-shield');
 const fs = require('fs');
 const path = require('path');
+
+// v2.1.5-fix: 日志级别控制
+const LOG_LEVEL = process.env.LOG_LEVEL || 'info';
+const LOG_LEVELS = { debug: 0, info: 1, warn: 2, error: 3 };
+const CURRENT_LOG_LEVEL = LOG_LEVELS[LOG_LEVEL] || 1;
+
+function log(level, ...args) {
+  if (LOG_LEVELS[level] >= CURRENT_LOG_LEVEL) {
+    const prefix = `[${level.toUpperCase()}]`;
+    if (level === 'error') console.error(prefix, ...args);
+    else if (level === 'warn') console.warn(prefix, ...args);
+    else console.log(prefix, ...args);
+  }
+}
 
 class HyperrealitySystem {
   constructor(options = {}) {
@@ -37,7 +53,18 @@ class HyperrealitySystem {
     });
     this.postProductionEngine = new PostProductionEngine(options.postProductionEngine);
     this.fieldGuard = new FieldGuard({ strict: true, logPrefix: '[Hyperreality]' });
-    this.version = '2.0.5';
+    
+    // 🛡️ v2.1.5-shield: 三层稳定性护盾
+    this.stabilityShield = new StabilityShield({
+      baselineRegistryDir: options.baselineRegistryDir || path.join(__dirname, './shields/baseline-registry/templates'),
+      primaryModel: options.primaryModel || 'kimi-k2p6',
+      backupModel: options.backupModel || 'kimi-k2p5',
+      cacheEnabled: options.cacheEnabled !== false,
+      llmTimeout: options.llmTimeout || 300000
+    });
+    this.stabilityShield.initialize(this.productionEngine);
+    
+    this.version = '2.1.5';
   }
 
   /**
@@ -65,7 +92,13 @@ class HyperrealitySystem {
 
     const totalStart = Date.now();
 
+    // 【P0-4 修复】productionResult 声明提升到 try 块之前，避免块级作用域导致 finally 后死代码
+    let productionResult = null;
+
     try {
+      // 【v2.1.6-fix】系统级修复：整个创作过程启用长时间任务模式，避免HealthMonitor误判
+      this.stabilityShield.setLongTaskMode('ProductionEngine', true, 1200000); // 20分钟
+      
       // ========== 🆕 Layer 0: 需求清单生成确认 ==========
       if (!options.skipRequirementList) {
         console.log('📋 [Layer 0] 需求清单生成 - 解析用户意图...');
@@ -157,6 +190,25 @@ class HyperrealitySystem {
         console.log(`      Layer 2: ${Object.keys(engineConfigs.productionEngine).length > 0 ? '✅' : '❌'} 视觉表现配置`);
         console.log(`      Layer 3: ${Object.keys(engineConfigs.renderingEngine).length > 0 ? '✅' : '❌'} 渲染质感配置`);
         console.log(`      Layer 4: ${Object.keys(engineConfigs.postProductionEngine).length > 0 ? '✅' : '❌'} 后期风格配置`);
+        
+        // 🛡️ v2.1.5-shield: 基线热启动判断
+        const baselineMatch = this.stabilityShield.baselineRegistry.findBestMatch({
+          intent,
+          title: metadata.title,
+          characters: metadata.characters,
+          style: requirementList.style
+        });
+        
+        if (baselineMatch.isHotStart && baselineMatch.template) {
+          console.log(`\n🛡️ [稳定性护盾] 热启动模式: 命中基线模板 ${baselineMatch.template.id}`);
+          console.log(`   题材: ${baselineMatch.category} | 已使用${baselineMatch.template.metadata.usageCount}次`);
+          metadata._baseline = baselineMatch.template;
+          metadata._baselineCategory = baselineMatch.category;
+        } else {
+          console.log(`\n🛡️ [稳定性护盾] 冷启动模式: 未命中基线，将全LLM生成`);
+          metadata._baseline = null;
+          metadata._baselineCategory = baselineMatch.category;
+        }
       } else {
         console.log('\n⚠️ [Layer 0] 需求清单生成跳过(调试模式)');
         result.stages.requirementList = { skipped: true };
@@ -172,10 +224,14 @@ class HyperrealitySystem {
 
         // 【审计修复·P0】校验 adapted 存在且非空
         if (!scriptResult || !scriptResult.adapted) {
-          throw new Error('scriptEngine 未产出 adapted Blueprint');
+          const err = new Error('scriptEngine 未产出 adapted Blueprint');
+          err.code = ErrorCodes.DATA_MISSING;
+          throw err;
         }
         if (!Array.isArray(scriptResult.adapted.scenes) || scriptResult.adapted.scenes.length === 0) {
-          throw new Error('Blueprint scenes 为空，无法继续生产');
+          const err = new Error('Blueprint scenes 为空，无法继续生产');
+          err.code = ErrorCodes.DATA_MISSING;
+          throw err;
         }
 
         result.stages.scriptEngine = {
@@ -212,7 +268,7 @@ class HyperrealitySystem {
         this.productionEngine.updateAgentConfig(options.productionEngine.agentConfig);
       }
 
-      const productionResult = await this.productionEngine.produce(adapted, options.productionEngine?.agentConfig);
+      productionResult = await this.productionEngine.produce(adapted, options.productionEngine?.agentConfig);
 
       result.stages.productionEngine = {
         shots: productionResult.shots.map(s => {
@@ -271,7 +327,7 @@ class HyperrealitySystem {
       // ========== 🆕 好莱坞导演技能注入 ==========
       console.log('\n🎬 [Director Skills] 好莱坞导演技能注入...');
       try {
-        const { routeAndEnhance } = require('../skills/hollywood-cinematography/cinematography-skill-router');
+        const { routeAndEnhance } = require('./skills/hollywood-cinematography/cinematography-skill-router');
         const { enhancedShots, report } = routeAndEnhance(productionResult.shots, {
           minScore: 5,
           maxSkillsPerShot: 2
@@ -342,7 +398,9 @@ class HyperrealitySystem {
           const stage3Start = Date.now();
 
           renderResult = await this.renderingEngine.render(productionResult.prompts, {
-            dryRun: options.dryRun || !this.renderingEngine.config.apiKey
+            // 【P0-9 修复】dryRun 仅由显式选项控制，不再因缺 apiKey 强制开启
+            // 无 apiKey 时让渲染引擎自己抛错，暴露配置问题
+            dryRun: options.dryRun === true
           });
 
           result.stages.renderingEngine = {
@@ -397,7 +455,14 @@ class HyperrealitySystem {
       }
 
       // ========== 汇总 ==========
-      result.success = true;
+      // 【P0-8 修复】result.success 不再无条件置 true，基于各阶段实际状态聚合
+      const hasRenderError = result.stages.renderingEngine?.error || (result.stages.renderingEngine?.render?.success === false && !result.stages.renderingEngine?.skipped);
+      const hasPostProdError = result.stages.postProductionEngine?.error || (result.stages.postProductionEngine?.success === false && !result.stages.postProductionEngine?.skipped);
+      const hasProductionError = productionResult?.success === false;
+      result.success = result.errors.length === 0 && !hasRenderError && !hasPostProdError && !hasProductionError;
+      if (result.errors.length > 0 || hasRenderError || hasPostProdError || hasProductionError) {
+        result.degraded = true;
+      }
       result.timing.total = Date.now() - totalStart;
 
       console.log(`\n🏁 [完成] 总耗时: ${result.timing.total}ms`);
@@ -411,7 +476,7 @@ class HyperrealitySystem {
         // v2.0.6: 先在FieldGuard之前处理片头字段(避免校验失败阻断)
         const adapter = result.stages?.adapter || {};
         // 【审计修复】统一片头判定,兼容 SC00/S00
-        const openingShot = productionResult.shots.find(s => isOpeningShot(s));
+        let openingShot = productionResult.shots.find(s => isOpeningShot(s));
         if (openingShot) {
           // 如果片头缺少title/subtitle,先用adapter标题兜底
           if (!openingShot.title || openingShot.title === '未命名') {
@@ -430,16 +495,17 @@ class HyperrealitySystem {
 
           // 【v2.1.4-fix11-G】片头优化必须在FieldGuard之前执行,确保片头字段被正确添加
           // 【审计修复】统一片头判定,兼容 SC00/S00
-          const openingShot = productionResult.shots.find(s => isOpeningShot(s));
+          openingShot = productionResult.shots.find(s => isOpeningShot(s));
           if (openingShot) {
             console.log('\n🎬 [OpeningTitleOptimizer] 片头专属字段优化...');
             try {
               const optimizer = new OpeningTitleOptimizer({
                 llmTimeout: 120000,
                 llmMaxRetries: 2,
-                // 【v2.1.4-fix13-审计修复】从环境变量读取模型,消除硬编码
                 llmModel: process.env.STORMAXE_LLM_FAST_MODEL || process.env.STORMAXE_LLM_MODEL || 'kimi-k2p6'
               });
+              // 【P2-10 修复】下发 deadline，防止不受控挂起
+              optimizer.setDeadline(Date.now() + 180000); // 3分钟总体预算
               const blueprint = result.stages?.adapter || { title: result.title || '未命名' };
               const optimized = await optimizer.optimize(openingShot, blueprint);
 
@@ -453,6 +519,20 @@ class HyperrealitySystem {
 
                 openingShot.title = optimized.title_content || openingShot.title;
                 openingShot.subtitle = optimized.subtitle_content || openingShot.subtitle;
+
+                // v2.1.5-fix: 同步到 prompts[0]，确保双数组一致
+                if (productionResult.prompts && productionResult.prompts.length > 0) {
+                  const promptOpening = productionResult.prompts.find(p => isOpeningShot(p));
+                  if (promptOpening) {
+                    promptOpening.title_content = optimized.title_content;
+                    promptOpening.subtitle_content = optimized.subtitle_content;
+                    promptOpening.title_animation = optimized.title_animation;
+                    promptOpening.title_font_design = optimized.title_font_design;
+                    promptOpening.opening_audio_design = optimized.opening_audio_design;
+                    promptOpening.title = optimized.title_content || promptOpening.title;
+                    promptOpening.subtitle = optimized.subtitle_content || promptOpening.subtitle;
+                  }
+                }
 
                 console.log('   ✅ 片头优化完成');
                 console.log('   主标题:', optimized.title_content);
@@ -469,6 +549,20 @@ class HyperrealitySystem {
 
                 openingShot.title = openingShot.title_content;
                 openingShot.subtitle = openingShot.subtitle_content;
+
+                // v2.1.5-fix: 降级分支也同步到 prompts
+                if (productionResult.prompts && productionResult.prompts.length > 0) {
+                  const promptOpening = productionResult.prompts.find(p => isOpeningShot(p));
+                  if (promptOpening) {
+                    promptOpening.title_content = openingShot.title_content;
+                    promptOpening.subtitle_content = openingShot.subtitle_content;
+                    promptOpening.title_animation = openingShot.title_animation;
+                    promptOpening.title_font_design = openingShot.title_font_design;
+                    promptOpening.opening_audio_design = openingShot.opening_audio_design;
+                    promptOpening.title = openingShot.title;
+                    promptOpening.subtitle = openingShot.subtitle;
+                  }
+                }
               }
             } catch (e) {
               console.warn('   ⚠️ 片头优化失败:', e.message);
@@ -478,6 +572,18 @@ class HyperrealitySystem {
               openingShot.title_animation = openingShot.title_animation || '主标题淡入入场,副标题延迟0.5秒跟随淡入,整体2秒';
               openingShot.title_font_design = openingShot.title_font_design || '粗体无衬线字体,白色,带微阴影';
               openingShot.opening_audio_design = openingShot.opening_audio_design || '环境音渐起,配合标题入场';
+
+              // v2.1.5-fix: 异常分支也同步到 prompts
+              if (productionResult.prompts && productionResult.prompts.length > 0) {
+                const promptOpening = productionResult.prompts.find(p => isOpeningShot(p));
+                if (promptOpening) {
+                  promptOpening.title_content = openingShot.title_content;
+                  promptOpening.subtitle_content = openingShot.subtitle_content;
+                  promptOpening.title_animation = openingShot.title_animation;
+                  promptOpening.title_font_design = openingShot.title_font_design;
+                  promptOpening.opening_audio_design = openingShot.opening_audio_design;
+                }
+              }
             }
           }
 
@@ -540,6 +646,9 @@ class HyperrealitySystem {
         stack: error.stack
       });
       console.error(`\n❌ [系统错误] ${error.message}`);
+    } finally {
+      // 【v2.1.6-fix】关闭长时间任务模式
+      this.stabilityShield.setLongTaskMode('ProductionEngine', false);
     }
 
     // 【v2.1.4-fix13-审计修复】将完整 shots/prompts/opening 挂到 result,供调用方获取完整数据
@@ -1016,6 +1125,7 @@ class HyperrealitySystem {
    */
   async save(result, outputDir) {
     const fs = require('fs').promises;
+    const fsSync = require('fs');
     const path = require('path');
 
     await fs.mkdir(outputDir, { recursive: true });
@@ -1023,42 +1133,60 @@ class HyperrealitySystem {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const basePath = path.join(outputDir, `hyperreality-${timestamp}`);
 
+    // v2.1.5-fix: 安全写入函数（带验证）
+    const safeWrite = async (filePath, content, label) => {
+      await fs.writeFile(filePath, content);
+      // 写入验证
+      if (!fsSync.existsSync(filePath)) {
+        throw new Error(`${label} 写入后文件不存在: ${filePath}`);
+      }
+      const stats = fsSync.statSync(filePath);
+      if (stats.size === 0) {
+        throw new Error(`${label} 写入后文件大小为0: ${filePath}`);
+      }
+    };
+
     // 保存完整结果 JSON
-    await fs.writeFile(
+    await safeWrite(
       `${basePath}-result.json`,
-      JSON.stringify(result, null, 2)
+      JSON.stringify(result, null, 2),
+      '结果JSON'
     );
 
     // 保存 Markdown 报告
     if (result.finalReport) {
-      await fs.writeFile(
+      await safeWrite(
         `${basePath}-report.md`,
-        result.finalReport
+        result.finalReport,
+        '报告MD'
       );
     }
 
     // 保存提示词审核报告
     if (result.confirmations?.prompts?.report) {
-      await fs.writeFile(
+      await safeWrite(
         `${basePath}-prompt-review.md`,
-        result.confirmations.prompts.report
+        result.confirmations.prompts.report,
+        '提示词审核'
       );
     }
 
     // 保存后期制作报告
     if (result.stages?.postProductionEngine?.report) {
-      await fs.writeFile(
+      await safeWrite(
         `${basePath}-post-production.md`,
-        result.stages.postProductionEngine.report
+        result.stages.postProductionEngine.report,
+        '后期制作报告'
       );
     }
 
     // 保存 Prompts 单独文件
     if (result.stages?.productionEngine?.prompts) {
       const promptsMD = this._generatePromptsOnlyMD(result.stages.productionEngine.prompts);
-      await fs.writeFile(
+      await safeWrite(
         `${basePath}-prompts.md`,
-        promptsMD
+        promptsMD,
+        'Prompts清单'
       );
     }
 

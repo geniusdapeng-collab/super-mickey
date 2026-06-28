@@ -46,8 +46,8 @@ const SCENE_MUSIC_MAP = {
 
 // 角色身份介绍模板
 const IDENTITY_INTRO_TEMPLATES = [
-  "Nirath 星球探险者 | 人类 {name}",
-  "硅基碳基共生体 | 守护者 {name}",
+  "虚构星球探险者 | 人类 {name}",
+  "虚构生命共生体 | 守护者 {name}",
   "记忆探寻者 | 旅人 {name}",
   "星界行者 | {name} 的人类形态"
 ];
@@ -55,7 +55,7 @@ const IDENTITY_INTRO_TEMPLATES = [
 class PostProductionEngine {
   constructor(options = {}) {
     this.config = {
-      outputDir: options.outputDir || '/tmp/hyperreality-post',
+      outputDir: options.outputDir || process.env.OUTPUT_DIR || './output/hyperreality-post',
       hyperframesBin: options.hyperframesBin || 'npx hyperframes',
       musicSource: options.musicSource || 'pixabay',
       enableSubtitles: options.enableSubtitles !== false,      // 默认开启字幕
@@ -63,6 +63,8 @@ class PostProductionEngine {
       enableMusic: options.enableMusic !== false,              // 默认开启音乐
       subtitleStyle: options.subtitleStyle || 'identity-card', // identity-card / lower-third / none
       versions: options.versions || ['standard', 'clean', 'subtitled', 'raw'],
+      // 【P2-25 修复】GSAP CDN 可配置，支持离线/内网环境
+      gsapCdnUrl: options.gsapCdnUrl || 'https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js',
       ...options
     };
 
@@ -101,7 +103,7 @@ class PostProductionEngine {
       this.log('POST-PROD', '\n🎬 [Stage 1] 字幕生成 - 身份介绍式字幕');
       const stage1Start = Date.now();
       
-      const subtitleTracks = await this.generateIdentitySubtitles(scriptResult);
+      const subtitleTracks = await this.generateIdentitySubtitles(scriptResult, productionResult);
       result.stages.subtitles = {
         tracks: subtitleTracks,
         count: subtitleTracks.length,
@@ -195,8 +197,8 @@ class PostProductionEngine {
    * 
    * 示例：
    * ┌─────────────────┐
-   * │ 小G              │
-   * │ Nirath 星球探险者 │
+   * │ 示例角色              │
+   * │ 虚构星球探险者 │
    * │ 人类 · 银灰装甲    │
    * └─────────────────┘
    */
@@ -232,7 +234,7 @@ class PostProductionEngine {
           // 信息内容
           content: {
             name: char.name || charId,
-            title: identity.title,           // 如 "Nirath 星球探险者"
+            title: identity.title,           // 如 "虚构星球探险者"
             species: identity.species,        // 如 "人类"
             trait: identity.trait,            // 如 "银灰装甲"
             role: identity.role               // 如 "主角"
@@ -257,7 +259,7 @@ class PostProductionEngine {
 
   /**
    * 生成角色身份信息（通用化）
-   * B2-fix: 移除 Nirath 硬编码，从角色数据动态生成
+   * B2-fix: 移除 虚构星球 硬编码，从角色数据动态生成
    */
   generateCharacterIdentity(character, scene) {
     const name = character.name || '未知';
@@ -267,7 +269,7 @@ class PostProductionEngine {
     const species = this.inferSpecies(character);
     const trait = this.extractTrait(character, scene);
 
-    // B2-fix: 通用化标题，基于 role 而非 Nirath
+    // B2-fix: 通用化标题，基于 role 而非 虚构星球
     let title;
     if (isProtagonist) {
       title = `${species} ${name}`;
@@ -288,7 +290,7 @@ class PostProductionEngine {
 
   /**
    * 推断物种（通用化）
-   * B2-fix: 移除 xiaoG/taotie 硬编码，基于 visual_anchor 推断
+   * B2-fix: 移除 example-role/示例神兽 硬编码，基于 visual_anchor 推断
    */
   inferSpecies(character) {
     // B2-fix: 从 visual_anchor.core_features 推断种族
@@ -430,7 +432,7 @@ class PostProductionEngine {
     }
     
     // 场景类型弹幕
-    // B9-fix: 通用化弹幕，移除山海经硬编码
+    // B9-fix: 通用化弹幕，移除神话项目硬编码
     const typeComments = {
       opening: ['🔥 开局！', '⚡ 来了来了', '期待！', '开始了'],
       establishing: ['🌟 好美', '学到了', '涨知识', '有意思'],
@@ -443,11 +445,8 @@ class PostProductionEngine {
       danmakuPool.push(...typeComments[sceneType]);
     }
     
-    // 从设定提取关键词弹幕
-    if (setting.includes('Nirath')) danmakuPool.push('Nirath 星球！');
-    if (setting.includes('晶体')) danmakuPool.push('晶体森林！');
-    if (setting.includes('双月')) danmakuPool.push('双月当空！');
-    if (chars.includes('taotie') || chars.includes('饕餮')) danmakuPool.push('饕餮！');
+    // 【P2-24 修复】删除神话硬编码，弹幕池由调用方或配置注入
+    // 保留随机选择逻辑，移除写死的关键词
     
     // 随机选择 3-5 条
     const count = 3 + Math.floor(Math.random() * 3);
@@ -521,6 +520,9 @@ class PostProductionEngine {
       htmlPath,
       configPath,
       features: versionConfig,
+      // 【P0-3 修复】透传 shots 和 musicTracks，供 qualityCheck 做实质性检查
+      shots: (productionResult && productionResult.shots) || [],
+      musicTracks: musicTracks || [],
       // 渲染命令（实际使用时）
       renderCommand: `${this.config.hyperframesBin} render ${htmlPath} --output ${path.join(versionDir, 'output.mp4')}`,
       previewCommand: `${this.config.hyperframesBin} preview ${htmlPath}`
@@ -588,7 +590,11 @@ class PostProductionEngine {
     const shots = productionResult.shots || [];
     const blueprint = scriptResult.blueprint;
       // B10-fix: 标准输出用 duration 字段，不是 timing.duration
-      const totalDuration = shots.reduce((sum, s) => sum + (s.duration || s.timing?.duration || 25), 0);
+    // 【P2-26 修复】删除未使用的 totalDuration（死代码）
+    // const totalDuration = shots.reduce((sum, s) => sum + (s.duration || s.timing?.duration || 25), 0);
+    
+    // 【P0-11 修复】构建 renderResult 映射，消费真实渲染路径
+    const renderMap = new Map((renderResult?.results || []).map(r => [r.shotId, r]));
     
     let html = [];
     
@@ -644,16 +650,21 @@ class PostProductionEngine {
       // B10-fix: 优先使用顶层 duration 字段
       const duration = shot.duration || shot.timing?.duration || 25;
       
-      // 视频片段（实际使用时替换为渲染后的视频文件）
+      // 【P0-11 修复】视频源优先使用 renderResult 真实路径，非硬编码文件名
+      const renderEntry = renderMap.get(shot.shotId);
+      const videoSrc = renderEntry?.videoPath || renderEntry?.videoUrl || `shot-${shot.shotId}.mp4`;
+      
+      // 视频片段
       html.push(`  <!-- Shot ${shot.shotId} -->`);
       html.push(`  <video class="clip" data-start="${currentTime}" data-duration="${duration}" data-track-index="${trackIndex++}"`);
-      html.push(`         src="shot-${shot.shotId}.mp4" muted playsinline style="width:100%; height:100%;"></video>`);
+      html.push(`         src="${videoSrc}" muted playsinline style="width:100%; height:100%;"></video>`);
       html.push('');
       
       // 转场效果（镜头之间）
       if (config.transitions && i < shots.length - 1) {
+        const transId = `trans-${shot.shotId}-${shots[i+1].shotId}`;
         html.push(`  <!-- Transition ${shot.shotId} → ${shots[i+1].shotId} -->`);
-        html.push(`  <div class="clip transition" data-start="${currentTime + duration - 0.5}" data-duration="0.5" data-track-index="${trackIndex++}"`);
+        html.push(`  <div id="${transId}" class="clip transition" data-start="${currentTime + duration - 0.5}" data-duration="0.5" data-track-index="${trackIndex++}"`);
         html.push(`       style="opacity: 0;"></div>`);
         html.push('');
       }
@@ -680,8 +691,14 @@ class PostProductionEngine {
       for (const track of musicTracks) {
         const start = track.sceneId ? this.getSceneStartTime(track.sceneId, shots) : 0;
         const duration = track.searchParams?.duration || 25;
-        html.push(`  <audio class="clip" data-start="${start}" data-duration="${duration}" data-track-index="${trackIndex++}"`);
-        html.push(`         data-volume="${track.config.volume}" src="music-${track.sceneId}.mp3"></audio>`);
+        // 【P0-11 修复】音乐源优先使用真实 URL 或 filePath，不存在时不生成 audio 标签
+        const musicSrc = track.source?.url || track.filePath;
+        if (musicSrc) {
+          html.push(`  <audio class="clip" data-start="${start}" data-duration="${duration}" data-track-index="${trackIndex++}"`);
+          html.push(`         data-volume="${track.config.volume}" src="${musicSrc}"></audio>`);
+        } else {
+          html.push(`  <!-- 音乐 ${track.sceneId}: 无可用音源 -->`);
+        }
       }
       html.push('');
     }
@@ -701,7 +718,7 @@ class PostProductionEngine {
     
     // ========== GSAP 动画 ==========
     html.push('  <!-- GSAP 动画 -->');
-    html.push('  <script src="https://cdn.jsdelivr.net/npm/gsap@3/dist/gsap.min.js"></script>');
+    html.push(`  <script src="${this.config.gsapCdnUrl}"></script>`);
     html.push('  <script>');
     html.push('    const tl = gsap.timeline({ paused: true });');
     html.push('    ');
@@ -723,9 +740,12 @@ class PostProductionEngine {
     html.push('      );');
     html.push('    });');
     html.push('    ');
-    html.push('    // 转场淡入');
-    html.push('    tl.to(".transition", { opacity: 1, duration: 0.25, ease: "power2.in" }, "-=0.5");');
-    html.push('    tl.to(".transition", { opacity: 0, duration: 0.25, ease: "power2.out" });');
+    html.push('    // 转场淡入淡出（【P2-23 修复】按每个 transition 的 data-start 单独编排，避免全选择器同时触发）');
+    html.push('    document.querySelectorAll(".transition").forEach(trans => {');
+    html.push('      const tStart = parseFloat(trans.dataset.start) || 0;');
+    html.push('      tl.to(trans, { opacity: 1, duration: 0.25, ease: "power2.in" }, tStart);');
+    html.push('      tl.to(trans, { opacity: 0, duration: 0.25, ease: "power2.out" }, tStart + 0.25);');
+    html.push('    });');
     html.push('    ');
     html.push('    window.__timelines = window.__timelines || {};');
     html.push(`    window.__timelines["hyperreality-${version}"] = tl;`);
@@ -741,7 +761,8 @@ class PostProductionEngine {
   getSceneStartTime(sceneId, shots) {
     let time = 0;
     for (const shot of shots) {
-      if (shot.shotId === sceneId || shot.sceneId === sceneId) {
+      // 【P1-23 修复】shotId 即 scene_id 的值，无需检查不存在的 sceneId 字段
+      if (shot.shotId === sceneId) {
         return time;
       }
       time += shot.duration || shot.timing?.duration || 25;
@@ -753,24 +774,52 @@ class PostProductionEngine {
    * 质量检查
    */
   async qualityCheck(versions) {
+    const fs = require('fs');
     const issues = [];
     
-    // 检查每个版本
+    // 【P1-21 修复】qualityCheck 改为实质性检查：文件存在、引用有效、shots非空
     for (const [version, data] of Object.entries(versions)) {
-      // 检查 HTML 文件是否存在
+      // 1. 检查 HTML 文件真实存在
       if (!data.htmlPath) {
         issues.push(`版本 ${version}: HTML 文件路径缺失`);
+      } else if (!fs.existsSync(data.htmlPath)) {
+        issues.push(`版本 ${version}: HTML 文件不存在 (${data.htmlPath})`);
       }
       
-      // 检查版本特征是否匹配
+      // 2. 检查 shots 非空
+      if (!data.shots || data.shots.length === 0) {
+        issues.push(`版本 ${version}: shots 为空`);
+      }
+      
+      // 3. 检查引用的视频/音频文件存在
+      if (data.shots && data.shots.length > 0) {
+        for (const shot of data.shots) {
+          const videoSrc = shot.videoSrc || shot.videoPath || `shot-${shot.shotId}.mp4`;
+          if (videoSrc && !videoSrc.startsWith('http') && !fs.existsSync(videoSrc)) {
+            issues.push(`版本 ${version}: 视频文件不存在 (${videoSrc})`);
+          }
+        }
+      }
+      
+      // 4. 检查音乐文件存在
+      if (data.musicTracks && data.musicTracks.length > 0) {
+        for (const track of data.musicTracks) {
+          const musicSrc = track.source?.url || track.filePath;
+          if (musicSrc && !musicSrc.startsWith('http') && !fs.existsSync(musicSrc)) {
+            issues.push(`版本 ${version}: 音乐文件不存在 (${musicSrc})`);
+          }
+        }
+      }
+      
+      // 5. 特征配置保留为辅助检查（非阻塞）
       const expectedFeatures = this.getVersionConfig(version);
       if (JSON.stringify(expectedFeatures) !== JSON.stringify(data.features)) {
-        issues.push(`版本 ${version}: 特征配置不匹配`);
+        issues.push(`版本 ${version}: 特征配置不匹配(警告)`);
       }
     }
     
     return {
-      passed: issues.length === 0,
+      passed: issues.filter(i => !i.includes('(警告)')).length === 0,
       issues
     };
   }

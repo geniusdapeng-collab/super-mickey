@@ -21,11 +21,12 @@ class RenderingEngine {
     this.config = {
       apiKey: options.apiKey || process.env.VOLCENGINE_ARK_API_KEY,
       // 【v2.1.4-fix13-审计修复】endpoint 从环境变量读取，消除硬编码
-      endpoint: options.endpoint || process.env.VOLCENGINE_ARK_ENDPOINT || 'ep-20260518004622-jp46s',
+      // 【P1-25 修复】默认改 null，未配置时显式报错，避免凭据泄漏+跨账号不可用
+      endpoint: options.endpoint || process.env.VOLCENGINE_ARK_ENDPOINT || null,
       apiUrl: options.apiUrl || 'https://ark.cn-beijing.volces.com/api/v3/contents/generations/tasks',
       maxConcurrent: options.maxConcurrent || 3,
       charactersDir: options.charactersDir || path.join(__dirname, '../../../characters'),
-      outputDir: options.outputDir || '/tmp/hyperreality-output',
+      outputDir: options.outputDir || process.env.OUTPUT_DIR || './output/hyperreality-output',
       ...options
     };
 
@@ -77,13 +78,25 @@ class RenderingEngine {
     };
 
     try {
-      // 检查 API 密钥
+      // 检查 API 密钥和 endpoint
       if (!this.config.apiKey && !options.dryRun) {
         throw new Error('VOLCENGINE_ARK_API_KEY 未设置，无法渲染');
       }
+      if (!this.config.endpoint && !options.dryRun) {
+        throw new Error('VOLCENGINE_ARK_ENDPOINT 未设置，无法渲染');
+      }
+      
+      // 【P1-24 修复】过滤空/无效 prompt，避免单坏镜头拖垮整批
+      const validPrompts = prompts.filter(p => p && typeof p.prompt === 'string' && p.prompt.length > 50);
+      if (validPrompts.length === 0) {
+        throw new Error('无有效 prompt（所有 prompt 为空或长度不足50字符）');
+      }
+      if (validPrompts.length < prompts.length) {
+        this.log('RENDER', `⚠️ 过滤掉 ${prompts.length - validPrompts.length} 个无效 prompt`);
+      }
 
       // 构建渲染数据结构（兼容现有系统）
-      const shots = prompts.map(p => this._convertToShotFormat(p));
+      const shots = validPrompts.map(p => this._convertToShotFormat(p));
 
       if (options.dryRun) {
         // 模拟模式：只验证不提交
@@ -102,17 +115,30 @@ class RenderingEngine {
 
         // 生成绑定清单（从 prompts 的 imageRefs 提取）
         const manifest = this._generateBindingManifest(prompts);
+        // 【P2-21 修复】改为异步 IO，避免阻塞事件循环
         const manifestPath = path.join(this.config.outputDir, 'binding-manifest.json');
-        if (!fs.existsSync(this.config.outputDir)) {
-          fs.mkdirSync(this.config.outputDir, { recursive: true });
+        const fsp = require('fs').promises;
+        try {
+          await fsp.mkdir(this.config.outputDir, { recursive: true });
+          await fsp.writeFile(manifestPath, JSON.stringify(manifest, null, 2), 'utf8');
+          const stats = await fsp.stat(manifestPath);
+          if (stats.size === 0) {
+            throw new Error(`清单文件写入后大小为0: ${manifestPath}`);
+          }
+        } catch (e) {
+          throw new Error(`清单文件操作失败: ${e.message}`);
         }
-        fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
 
-        // 调用现有系统的提交核心
-        const submitResult = await this.submitter.submit(shots, {
+        // 【P1-18 修复】给 submit 调用加外层超时，防止 Seedance 提交永久挂起
+        const SUBMIT_TIMEOUT = 120000; // 2分钟
+        const submitPromise = this.submitter.submit(shots, {
           bindingManifestPath: manifestPath,
           skipValidation: options.skipValidation
         });
+        const submitResult = await Promise.race([
+          submitPromise,
+          new Promise((_, reject) => setTimeout(() => reject(new Error('渲染提交超时(2分钟)')), SUBMIT_TIMEOUT))
+        ]);
 
         result.results = submitResult.results;
         result.submitted = submitResult.results.filter(r => r.success).length;
@@ -120,16 +146,22 @@ class RenderingEngine {
         result.success = submitResult.success;
 
       } else {
-        // 无提交器，模拟
-        this.log('RENDER', '⚠️ 无提交器，使用模拟模式');
+        // 【P0-10 修复】无提交器时显式失败，不再返回 mock 假成功
+        this.log('RENDER', '❌ 渲染核心未加载(render-submitter-core.js缺失)，无法真实渲染');
+        result.success = false;
+        result.degraded = true;
+        result.mode = 'mock';
+        result.errors.push('RenderSubmitterCore 未加载');
         result.results = shots.map(s => ({
-          success: true,
+          success: false,
           shotId: s.shotId,
-          taskId: `MOCK-${s.shotId}`,
-          status: 'mock'
+          taskId: null,
+          status: 'mock',
+          error: '渲染核心未加载'
         }));
-        result.submitted = shots.length;
-        result.success = true;
+        result.submitted = 0;
+        result.failed = shots.length;
+        this.log('RENDER', `❌ 渲染失败: 0/${prompts.length} 成功 (RenderSubmitterCore未加载)`);
       }
 
       result.timing.total = Date.now() - startTime;
@@ -137,11 +169,15 @@ class RenderingEngine {
       this.log('RENDER', `   耗时: ${result.timing.total}ms`);
 
     } catch (error) {
+      // 【P2-22 修复】异常时填充失败 results，避免 failed=0 误导
       result.success = false;
-      result.errors.push({
-        stage: 'RENDER',
-        message: error.message
-      });
+      result.errors.push({ stage: 'RENDER', message: error.message });
+      if (!result.results || result.results.length === 0) {
+        result.results = (shots || []).map(s => ({
+          shotId: s.shotId, success: false, status: 'error', error: error.message
+        }));
+        result.failed = result.results.length;
+      }
       this.log('RENDER', `❌ 渲染失败: ${error.message}`);
     }
 
@@ -159,10 +195,13 @@ class RenderingEngine {
       prompt: prompt.prompt,
       duration: prompt.duration || 12, // 使用实际时长
       isOpening: prompt.shotId === 'S00' || prompt.shotId === 'SC00',
-      // 定妆照引用（v6.37-P0: 从 characterRef 解析）
-      referenceImages: this._parseCharacterRef(prompt.characterRef),
+      // 定妆照引用（v6.37-P0: 优先读标准 portraits 字段，兜底 characterRef）
+      // 【P2-20 修复】25字段标准是 portraits，characterRef 为兼容兜底
+      referenceImages: this._parseCharacterRef(
+        prompt.fields?.portraits || prompt.portraits || prompt.characterRef
+      ),
       // 字符数
-      promptLength: prompt.promptCharCount || prompt.length || 0,
+      promptLength: prompt.promptCharCount || (typeof prompt.prompt === 'string' ? prompt.prompt.length : 0) || 0,
       // v6.37-P0: 保留新字段用于调试
       mood: prompt.mood,
       camera: prompt.camera,
@@ -178,7 +217,8 @@ class RenderingEngine {
     if (!characterRef || characterRef === 'NONE') return [];
     
     const refs = [];
-    const parts = characterRef.split(' | ');
+    // 【P1-17 修复】多角色分隔符统一为 '; '（与 buildCharacterRef 构建侧一致）
+    const parts = characterRef.split('; ');
     
     for (const part of parts) {
       const match = part.match(/(.+?):\s*(.+)/);
@@ -193,7 +233,7 @@ class RenderingEngine {
           const charDir = dirMatch ? dirMatch[1] : charName;
           
           refs.push({
-            characterId: charName,      // 显示名（如"陈卓"）
+            characterId: charName,      // 显示名（如"示例角色"）
             characterDir: charDir,      // 实际目录名（如"chen-zhuo"）
             path: path,
             angle: angleMatch ? angleMatch[1] : 'unknown'
@@ -236,35 +276,40 @@ class RenderingEngine {
           };
 
           // v1.2.7-fix-A2: 自动扫描 portraits 目录，补全4角度
-          // 使用 characterDir（实际目录名，如 chen-zhuo）而非 characterId（显示名，如陈卓）
           const charDirPath = path.join(this.config.charactersDir, ref.characterDir || charId);
           const portraitsDir = path.join(charDirPath, 'portraits');
           
+          // 【P1-20 修复】目录不存在时跳过而非崩溃
           if (fs.existsSync(portraitsDir)) {
-            const files = fs.readdirSync(portraitsDir);
-            for (const angle of REQUIRED_ANGLES) {
-              // 查找匹配角度的文件（支持前缀，如 chen-zhuo-front.png）
-              const matchedFile = files.find(f => f.includes(`-${angle}.png`) || f === `${angle}.png`);
-              if (matchedFile) {
-                // 生成包含角色目录的完整相对路径，如 chen-zhuo/portraits/chen-zhuo-front.png
-                const relativePath = path.join(ref.characterDir || charId, 'portraits', matchedFile);
-                characters[charId].portraits[angle] = relativePath;
-                console.log(`[BindingManifest] 角色 ${charId} ${angle}: ${relativePath}`);
+            try {
+              const files = fs.readdirSync(portraitsDir);
+              for (const angle of REQUIRED_ANGLES) {
+                const matchedFile = files.find(f => f.includes(`-${angle}.png`) || f === `${angle}.png`);
+                if (matchedFile) {
+                  const relativePath = path.join(ref.characterDir || charId, 'portraits', matchedFile);
+                  characters[charId].portraits[angle] = relativePath;
+                  console.log(`[BindingManifest] 角色 ${charId} ${angle}: ${relativePath}`);
+                }
               }
+            } catch (e) {
+              console.warn(`[BindingManifest] 读取 portraits 目录失败: ${portraitsDir} - ${e.message}`);
             }
           }
           
           // 如果 portraits 目录不存在，尝试直接查找 charDir
-          if (!fs.existsSync(portraitsDir)) {
-            const files = fs.readdirSync(charDirPath).filter(f => f.endsWith('.png') || f.endsWith('.jpg'));
-            for (const angle of REQUIRED_ANGLES) {
-              const matchedFile = files.find(f => f.includes(`-${angle}.png`) || f === `${angle}.png`);
-              if (matchedFile) {
-                // 生成包含角色目录的完整相对路径
-                const relativePath = path.join(ref.characterDir || charId, matchedFile);
-                characters[charId].portraits[angle] = relativePath;
-                console.log(`[BindingManifest] 角色 ${charId} ${angle}: ${relativePath}`);
+          if (!fs.existsSync(portraitsDir) && fs.existsSync(charDirPath)) {
+            try {
+              const files = fs.readdirSync(charDirPath).filter(f => f.endsWith('.png') || f.endsWith('.jpg'));
+              for (const angle of REQUIRED_ANGLES) {
+                const matchedFile = files.find(f => f.includes(`-${angle}.png`) || f === `${angle}.png`);
+                if (matchedFile) {
+                  const relativePath = path.join(ref.characterDir || charId, matchedFile);
+                  characters[charId].portraits[angle] = relativePath;
+                  console.log(`[BindingManifest] 角色 ${charId} ${angle}: ${relativePath}`);
+                }
               }
+            } catch (e) {
+              console.warn(`[BindingManifest] 读取角色目录失败: ${charDirPath} - ${e.message}`);
             }
           }
         }
@@ -328,7 +373,9 @@ class RenderingEngine {
               headers: {
                 'Authorization': `Bearer ${this.config.apiKey}`,
                 'Content-Type': 'application/json'
-              }
+              },
+              // 【P1-18 修复】添加 AbortSignal.timeout，防止 Seedance 查询永久挂起
+              signal: AbortSignal.timeout(15000)
             });
 
             if (!response.ok) {
@@ -346,9 +393,13 @@ class RenderingEngine {
         })
       );
 
-      // 汇总状态
-      const allDone = results.every(r => r.status === 'succeeded' || r.status === 'failed');
-      const anyFailed = results.some(r => r.status === 'failed');
+      // 【P1-19 修复】任务状态判定支持更多终态变体，避免永久 in_progress
+      const TERMINAL_OK = new Set(['succeeded', 'success', 'completed', 'done']);
+      const TERMINAL_FAIL = new Set(['failed', 'failure', 'error', 'canceled', 'cancelled', 'timeout', 'rejected']);
+      const isTerminal = (s) => TERMINAL_OK.has(s) || TERMINAL_FAIL.has(s);
+      
+      const allDone = results.every(r => isTerminal(r.status));
+      const anyFailed = results.some(r => TERMINAL_FAIL.has(r.status));
 
       return {
         status: allDone ? (anyFailed ? 'partial_failure' : 'completed') : 'in_progress',

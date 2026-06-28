@@ -236,15 +236,23 @@ class RequirementListBuilder {
     };
 
     // 推断视频类型
+    // 【P0-6 修复】改为"全部打分取最高"而非"首条命中即 break"，
+    // 商业/宣传片强信号优先于教育科普
+    const matchedTypes = [];
     for (const rule of this.rules.videoTypeRules) {
       for (const keyword of rule.keywords) {
         if (text.includes(keyword.toLowerCase())) {
-          result.videoType = rule.type;
-          result.videoTypeName = rule.name;
+          matchedTypes.push(rule.type);
           break;
         }
       }
-      if (result.videoType) break;
+    }
+    if (matchedTypes.length > 0) {
+      const priority = { ADV: 3, PROMO: 3, DRAMA: 2, DOC: 2, EDU: 1, LIFELOG: 1 };
+      const bestType = matchedTypes.sort((a, b) => (priority[b] || 0) - (priority[a] || 0))[0];
+      const bestRule = this.rules.videoTypeRules.find(r => r.type === bestType);
+      result.videoType = bestType;
+      result.videoTypeName = bestRule?.name || bestType;
     }
 
     // 推断平台
@@ -389,16 +397,12 @@ class RequirementListBuilder {
 
     try {
       if (typeof llmEngine.generate === 'function') {
-        // 方式1: .generate({prompt, maxTokens, temperature}) - 兼容旧接口
+        // 【P1-16 修复】统一调用契约 (prompt, options)，与 ScriptGenerator/CrossEpisodeValidator 一致
         const response = await Promise.race([
-          llmEngine.generate({
-            prompt: prompt,
-            maxTokens: 2500,
-            temperature: 1
-          }),
+          llmEngine.generate(prompt, { maxTokens: 2500, temperature: 1, timeoutMs }),
           timeoutPromise
         ]).finally(() => clearTimeout(timer));
-        responseText = response.success ? (response.content || '') : '';
+        responseText = response?.success ? (response.content || '') : '';
       } else if (typeof llmEngine.chat === 'function') {
         // 方式2: .chat(systemPrompt, userPrompt, temperature) - BaseAgent 标准接口
         const result = await Promise.race([
@@ -690,7 +694,7 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
 
     // 从用户输入中提取角色名
     const text = result.raw_input || '';
-    // 修复:支持 "穿警服的陈卓女士" 这种格式,正确提取名字
+    // 修复:支持 "穿警服的示例警官女士" 这种格式,正确提取名字
     const nameMatches = text.match(/([^,。\s]{1,6})女士|([^,。\s]{1,6})先生|([^,。\s]{1,6})讲解|([^,。\s]{1,6})介绍/);
     if (nameMatches) {
       const name = (nameMatches[1] || nameMatches[2] || nameMatches[3] || nameMatches[4]).trim();
