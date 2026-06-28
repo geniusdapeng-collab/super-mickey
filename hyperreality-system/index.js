@@ -12,6 +12,8 @@ const { ProductionEngine } = require('./engines/production-engine/production-eng
 const { RenderingEngine } = require('./engines/rendering-engine/rendering-engine');
 const { PostProductionEngine } = require('./engines/post-production-engine/post-production-engine');
 const { RequirementListBuilder } = require('./engines/script-engine/core/requirement-list-builder');
+// 🐼 [PandaCineForge] Phase 3: 影视技能引擎适配器
+const { PandaCineForgeAdapter } = require('./engines/panda-cineforge-adapter');
 const { CreativeIntensityEngine } = require('./engines/script-engine/core/creative-intensity-engine');
 const { OpeningTitleOptimizer } = require('./engines/production-engine/agents/opening-title-optimizer');
 const { routeAndEnhance } = require('./skills/hollywood-cinematography/cinematography-skill-router');
@@ -84,6 +86,14 @@ class HyperrealitySystem {
       backupModel: options.backupModel || 'kimi-k2p5',
       cacheEnabled: options.cacheEnabled !== false,
       llmTimeout: options.llmTimeout || 300000
+    });
+
+    // 🐼 [PandaCineForge] Phase 3: 影视技能引擎适配器
+    this.pandaAdapter = new PandaCineForgeAdapter({
+      enabled: options.pandaCineForge?.enabled === true,
+      autoStart: options.pandaCineForge?.autoStart !== false,
+      endpoint: options.pandaCineForge?.endpoint || 'http://127.0.0.1:8765',
+      timeout: options.pandaCineForge?.timeout || 5000,
     });
     this.stabilityShield.initialize(this.productionEngine);
     
@@ -293,6 +303,40 @@ class HyperrealitySystem {
         };
         metadata = enhancedMetadata;
 
+        // 🐼 [PandaCineForge] F1: Layer 0 需求清单后 — 影视技能预召回
+        if (this.pandaAdapter.enabled) {
+          console.log('\n🐼 [PandaCineForge] F1 技能预召回...');
+          try {
+            const skillHints = await this.pandaAdapter.recall({
+              call_id: `pcf_f1_${Date.now()}`,
+              caller_agent: 'SceneDesign',
+              route_fields: {
+                module_target: ['MyStudio.SceneDesign'],
+                cinematic_role: 'scene_design',
+                deliverable_type: 'beat_sheet',
+                project_stage: 'preproduction',
+                sub_domain: requirementList.videoType || 'cinema'
+              },
+              context: {
+                project_id: metadata.projectId || 'default',
+                caller_agent: 'SceneDesign',
+                project_type: requirementList.videoType || 'feature_film'
+              },
+              query_text: `${requirementList.style.primary} ${requirementList.videoTypeName || '电影'} 剧本结构`,
+              recall_mode: 'fast',
+              topk: 2
+            });
+            if (skillHints.status === 'hit' || skillHints.status === 'forged') {
+              metadata._pandaSkillHints = skillHints;
+              console.log(`   ✅ 技能预召回: ${skillHints.skills?.length || 0} 个技能 | 来源: ${skillHints.source_layer}`);
+            } else {
+              console.log(`   ⚠️ 技能预召回降级: ${skillHints.reason || skillHints.status}`);
+            }
+          } catch (err) {
+            console.warn(`   ⚠️ PandaCineForge F1 失败: ${err.message}`);
+          }
+        }
+
         // ========== 🆕 创意指数解析与配置注入 ==========
         const intensity = this.creativeIntensityEngine.parse(requirementList);
         const narrativeMode = requirementList.narrativeMode || 'dialogue';
@@ -356,6 +400,37 @@ class HyperrealitySystem {
       try {
         console.log('📖 [Layer 1] 剧本引擎 - 生成结构化剧本...');
         const stage1Start = Date.now();
+
+        // 🐼 [PandaCineForge] F2: Layer 1 前 — 剧本设计技能注入
+        if (this.pandaAdapter.enabled && metadata._pandaSkillHints?.skills?.length > 0) {
+          console.log('\n🐼 [PandaCineForge] F2 剧本技能注入...');
+          try {
+            const scriptSkills = await this.pandaAdapter.recall({
+              call_id: `pcf_f2_${Date.now()}`,
+              caller_agent: 'SceneDesign',
+              route_fields: {
+                module_target: ['MyStudio.SceneDesign'],
+                cinematic_role: 'scene_design',
+                deliverable_type: 'beat_sheet',
+                project_stage: 'preproduction',
+                sub_domain: metadata.videoType || 'cinema'
+              },
+              context: {
+                project_id: metadata.projectId || 'default',
+                upstream_deliverable: metadata._pandaSkillHints?.skills?.[0]?.deliverable_type
+              },
+              query_text: `${metadata._pandaSkillHints?.skills?.[0]?.name || '剧本结构'} 叙事设计`,
+              recall_mode: 'fast',
+              topk: 2
+            });
+            if (scriptSkills.status === 'hit' || scriptSkills.status === 'forged') {
+              metadata._pandaScriptSkills = scriptSkills;
+              console.log(`   ✅ 剧本技能注入: ${scriptSkills.skills?.length || 0} 个技能 | 来源: ${scriptSkills.source_layer}`);
+            }
+          } catch (err) {
+            console.warn(`   ⚠️ PandaCineForge F2 失败: ${err.message}`);
+          }
+        }
 
         scriptResult = await this.scriptEngine.process(intent, metadata);
 
@@ -476,6 +551,38 @@ class HyperrealitySystem {
       // ========== Layer 2: 制作引擎 ==========
       console.log('\n🎬 [Layer 2] 制作引擎 - 生成镜头...');
       const stage2Start = Date.now();
+
+      // 🐼 [PandaCineForge] F3: Layer 2 前 — 视觉语言技能注入
+      if (this.pandaAdapter.enabled) {
+        console.log('\n🐼 [PandaCineForge] F3 视觉技能注入...');
+        try {
+          const visualSkills = await this.pandaAdapter.recall({
+            call_id: `pcf_f3_${Date.now()}`,
+            caller_agent: 'VisualLanguage',
+            route_fields: {
+              module_target: ['MyStudio.VisualLanguage'],
+              cinematic_role: 'visual_language',
+              deliverable_type: 'shotlist',
+              project_stage: 'production',
+              sub_domain: metadata.videoType || 'cinema'
+            },
+            context: {
+              project_id: metadata.projectId || 'default',
+              caller_agent: 'VisualLanguage',
+              upstream_deliverable: 'beat_sheet_v1'
+            },
+            query_text: `${metadata._pandaScriptSkills?.skills?.[0]?.name || '镜头语言'} 分镜设计 运镜`,
+            recall_mode: 'fast',
+            topk: 2
+          });
+          if (visualSkills.status === 'hit' || visualSkills.status === 'forged') {
+            metadata._pandaVisualSkills = visualSkills;
+            console.log(`   ✅ 视觉技能注入: ${visualSkills.skills?.length || 0} 个技能 | 来源: ${visualSkills.source_layer}`);
+          }
+        } catch (err) {
+          console.warn(`   ⚠️ PandaCineForge F3 失败: ${err.message}`);
+        }
+      }
 
       // 【修复】应用运行时 agentConfig(解决配置不生效问题)
       if (options.productionEngine?.agentConfig) {
@@ -1013,6 +1120,39 @@ class HyperrealitySystem {
       }
 
       // ========== Layer 4: 后期引擎 ==========
+
+      // 🐼 [PandaCineForge] F7: Layer 4 前 — 调色/混音/后期技能注入
+      if (this.pandaAdapter.enabled) {
+        console.log('\n🐼 [PandaCineForge] F7 后期技能注入...');
+        try {
+          const postSkills = await this.pandaAdapter.recall({
+            call_id: `pcf_f7_${Date.now()}`,
+            caller_agent: 'AudioDesign',
+            route_fields: {
+              module_target: ['MyStudio.AudioDesign'],
+              cinematic_role: 'audio_design',
+              deliverable_type: 'mix_plan',
+              project_stage: 'postproduction',
+              sub_domain: metadata.videoType || 'cinema'
+            },
+            context: {
+              project_id: metadata.projectId || 'default',
+              caller_agent: 'AudioDesign',
+              upstream_deliverable: 'shotlist_v1'
+            },
+            query_text: `${metadata._pandaVisualSkills?.skills?.[0]?.name || '后期制作'} 调色 混音 剪辑`,
+            recall_mode: 'fast',
+            topk: 2
+          });
+          if (postSkills.status === 'hit' || postSkills.status === 'forged') {
+            metadata._pandaPostSkills = postSkills;
+            console.log(`   ✅ 后期技能注入: ${postSkills.skills?.length || 0} 个技能 | 来源: ${postSkills.source_layer}`);
+          }
+        } catch (err) {
+          console.warn(`   ⚠️ PandaCineForge F7 失败: ${err.message}`);
+        }
+      }
+
       if (!options.skipPostProduction) {
         try {
           console.log('\n🎬 [Layer 4] 后期引擎 - 字幕/音乐/弹幕/多版本...');
