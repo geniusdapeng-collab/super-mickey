@@ -17,7 +17,7 @@
  * 5. 失败隔离：单个请求失败不影响其他请求
  *
  * @version v1.0
- * @author 小G
+ * @author Core Team
  * @priority P1 - 稳定性工程
  */
 

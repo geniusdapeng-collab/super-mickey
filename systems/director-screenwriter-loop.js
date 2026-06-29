@@ -14,7 +14,7 @@
  * - 导演风格库（Phase 2）暂不挂载
  * 
  * @version v1.0 (v6.2-patch68)
- * @author 小G
+ * @author Core Team
  */
 
 const { DirectorFinalReview } = require('./director-final-review.js');

@@ -10,7 +10,7 @@
  * P2（缺失则风格漂移）：主体层 + 风格层 + 音频层
  * 
  * @version v2.0-B+
- * @author 小G
+ * @author Core Team
  */
 
 class PromptTierArchitecture {

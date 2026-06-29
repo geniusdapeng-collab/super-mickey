@@ -25,7 +25,7 @@
  * - overall: 综合评分
  *
  * @version v1.0
- * @author 小G
+ * @author Core Team
  * @priority P1 - 业务架构
  */
 

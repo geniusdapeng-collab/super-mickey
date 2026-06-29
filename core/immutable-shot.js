@@ -12,7 +12,7 @@
  * 设计模式：Immutable.js风格 + 函数式更新
  *
  * @version v1.0
- * @author 小G
+ * @author Core Team
  * @priority P0 - 数据完整性
  */
 

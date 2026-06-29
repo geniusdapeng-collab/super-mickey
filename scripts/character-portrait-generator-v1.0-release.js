@@ -31,7 +31,7 @@ const https = require('https');
 const CharacterFeatureExtractor = require('../systems/character-feature-extractor');
 
 // ========== API 配置 ==========
-const ENDPOINT = process.env.SEEDREAM_ENDPOINT || 'ep-20260518004750-lz76f';
+const ENDPOINT = process.env.SEEDREAM_ENDPOINT || '003cENDPOINT_IMG003e';
 const API_BASE = 'https://ark.cn-beijing.volces.com/api/v3/images/generations';
 const OUTPUT_BASE = path.join(process.cwd(), 'characters');
 

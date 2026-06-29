@@ -290,7 +290,7 @@
 
   "rendering_params": {
     "model": "seedance-2.0",
-    "endpoint": "ep-20260518004622-jp46s",
+    "endpoint": "003cENDPOINT_STD003e",
     "aspect_ratio": "16:9",
     "duration": 15,
     "negative_prompt": "禁止旁白，禁止金属光泽，禁止人物眼睛非自然色"

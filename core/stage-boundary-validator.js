@@ -15,7 +15,7 @@
  * v2.0: 阶段边界验证，error模式，自动修复，可阻断
  *
  * @version v2.0
- * @author 小G
+ * @author Core Team
  * @priority P0 - 数据完整性
  */
 

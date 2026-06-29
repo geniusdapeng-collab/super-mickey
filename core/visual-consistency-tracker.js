@@ -27,7 +27,7 @@
  * - time_of_day: 时间（早晨、中午、傍晚、夜晚）
  *
  * @version v1.0
- * @author 小G
+ * @author Core Team
  * @priority P2 - 山海经专项
  */
 

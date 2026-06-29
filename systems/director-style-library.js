@@ -12,7 +12,7 @@
  * 提取原则：吸收精华，不照搬全部，结合Nirath世界观定制
  * 
  * @version v1.0 (v6.2-patch69)
- * @author 小G
+ * @author Core Team
  */
 
 class DirectorStyleLibrary {

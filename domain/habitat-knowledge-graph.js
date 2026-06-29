@@ -26,7 +26,7 @@
  * - 秘境: 幽都、归墟、桃林
  *
  * @version v1.0
- * @author 小G
+ * @author Core Team
  * @priority P2 - 山海经专项
  */
 

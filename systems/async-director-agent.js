@@ -13,7 +13,7 @@
  * node async-director-agent.js --input=input.json --output=output.json
  * 
  * @version v1.0 (v6.2-patch71)
- * @author 小G
+ * @author Core Team
  */
 
 const fs = require('fs');

@@ -15,7 +15,7 @@
  * 4. 订阅者可选择同步/异步处理
  *
  * @version v2.0
- * @author 小G
+ * @author Core Team
  * @priority P0 - 架构基础
  */
 

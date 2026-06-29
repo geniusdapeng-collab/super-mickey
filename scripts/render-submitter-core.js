@@ -26,7 +26,7 @@ const REQUIRED_ANGLES = ['front', 'threeQuarter', 'closeup', 'side'];
 class RenderSubmitterCore {
   constructor(options = {}) {
     this.apiKey = options.apiKey || process.env.VOLCENGINE_ARK_API_KEY;
-    this.endpoint = options.endpoint || 'ep-20260518004622-jp46s';
+    this.endpoint = options.endpoint || '003cENDPOINT_STD003e';
     this.apiUrl = options.apiUrl || 'https://ark.cn-beijing.volces.com/api/v3/contents/generations/tasks';
     this.charactersDir = options.charactersDir || path.join(__dirname, '..', 'characters');
     this.outputDir = options.outputDir || path.join(__dirname, '..', 'output');

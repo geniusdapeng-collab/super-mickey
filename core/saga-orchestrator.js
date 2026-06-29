@@ -13,7 +13,7 @@
  * 设计模式：Saga Pattern（参考 Chris Richardson《微服务模式》）
  *
  * @version v1.0
- * @author 小G
+ * @author Core Team
  * @priority P0 - 架构基础
  */
 

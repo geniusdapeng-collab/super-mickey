@@ -9,7 +9,7 @@
  * - Nirath风格注入
  * 
  * @version v1.0
- * @author 小G
+ * @author Core Team
  */
 
 class PromptBuilder {

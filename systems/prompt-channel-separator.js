@@ -13,7 +13,7 @@
  * - 每个通道独立输出，下游按需取用
  *
  * @version v1.0
- * @author 小G
+ * @author Core Team
  */
 
 class PromptChannelSeparator {

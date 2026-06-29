@@ -27,7 +27,7 @@
  * - camera: 运镜（连贯性、跳切检测）
  *
  * @version v1.0
- * @author 小G
+ * @author Core Team
  * @priority P1 - 业务架构
  */
 

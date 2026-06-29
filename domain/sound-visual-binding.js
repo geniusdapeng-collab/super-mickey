@@ -35,7 +35,7 @@
  * - 沙漠: 风沙、寂静、驼铃
  *
  * @version v1.0
- * @author 小G
+ * @author Core Team
  * @priority P2 - 山海经专项
  */
 

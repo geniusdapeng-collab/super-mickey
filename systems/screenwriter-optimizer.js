@@ -17,7 +17,7 @@
  * - 不回流前序链路
  * 
  * @version v1.0 (v6.2-patch68)
- * @author 小G
+ * @author Core Team
  */
 
 const { ContinuityEngine } = require('./continuity-engine.js');

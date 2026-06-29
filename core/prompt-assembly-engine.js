@@ -23,7 +23,7 @@
  * - 智能：知道哪些字段是核心（视觉描述）vs 可裁剪（环境补充）
  *
  * @version v1.0
- * @author 小G
+ * @author Core Team
  * @priority P0 - 数据完整性
  */
 

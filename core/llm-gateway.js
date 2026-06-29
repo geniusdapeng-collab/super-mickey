@@ -17,7 +17,7 @@
  * - 旧代码可渐进迁移
  *
  * @version v1.0
- * @author 小G
+ * @author Core Team
  * @priority P0 - 架构基础
  */
 

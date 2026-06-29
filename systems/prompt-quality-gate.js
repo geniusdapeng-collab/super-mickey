@@ -8,7 +8,7 @@
  * - 评分维度: Tier完整性/视觉纯度/利用率/技术有效性/情绪一致性/约束完整性
  *
  * @version v1.0
- * @author 小G
+ * @author Core Team
  */
 
 class PromptQualityGate {

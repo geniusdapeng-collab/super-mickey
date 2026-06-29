@@ -9,7 +9,7 @@
  * 4. 转场类型建议 — 基于相邻镜头参数推荐合法转场类型
  * 
  * @version v1.0
- * @author 小G
+ * @author Core Team
  */
 
 class ContinuityEngine {

@@ -5,7 +5,7 @@
  * P1-7: 场景枚举表，主数据管理，数据一致性
  * 
  * @version v1.0
- * @author 小G
+ * @author Core Team
  */
 
 class WorldviewAndSceneManager {

@@ -9,7 +9,7 @@
  * - 包含审核发现问题 + 导演专业优化，不是单纯审核
  * 
  * @version v1.0
- * @author 小G
+ * @author Core Team
  */
 
 const { DirectorStyleLibrary } = require('./director-style-library.js');

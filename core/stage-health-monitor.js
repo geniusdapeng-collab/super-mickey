@@ -18,7 +18,7 @@
  * 5. RepairLog: 修复日志，可审计
  *
  * @version v1.0
- * @author 小G
+ * @author Core Team
  * @priority P1 - 稳定性工程
  */
 

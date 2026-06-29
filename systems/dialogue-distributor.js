@@ -17,7 +17,7 @@
  * - NARRATION: 画外音旁白，不对嘴
  * 
  * @version v1.0
- * @author 小G
+ * @author Core Team
  */
 
 class DialogueDistributor {

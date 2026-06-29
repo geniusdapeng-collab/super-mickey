@@ -16,7 +16,7 @@
  * 4. 生成审计报告（JSON/Table）
  *
  * @version v1.0
- * @author 小G
+ * @author Core Team
  * @priority P0 - 数据完整性
  */
 

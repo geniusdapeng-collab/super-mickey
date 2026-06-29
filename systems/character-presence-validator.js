@@ -8,7 +8,7 @@
  * - 防止" narration 中有角色但 characters 数组缺失"导致定妆照/文字描述丢失
  * 
  * @version v1.0
- * @author 小G
+ * @author Core Team
  */
 
 class CharacterPresenceValidator {
