@@ -175,3 +175,4 @@ debug_llm/
 # open-source-check: passed
 products/
 projects/
+.openclaw/config/volcengine.json
