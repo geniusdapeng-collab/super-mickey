@@ -1,6 +1,0 @@
-file '/root/.openclaw/workspace/projects/rhabdomyolysis-ep01-universal/production/render-v4/S01-v5.mp4'
-file '/root/.openclaw/workspace/projects/rhabdomyolysis-ep01-universal/production/render-v4/S03-v5.mp4'
-file '/root/.openclaw/workspace/projects/rhabdomyolysis-ep01-universal/production/render-v4/S04-v5.mp4'
-file '/root/.openclaw/workspace/projects/rhabdomyolysis-ep01-universal/production/render-v4/S06-v5.mp4'
-file '/root/.openclaw/workspace/projects/rhabdomyolysis-ep01-universal/production/render-v4/S07-v5.mp4'
-file '/root/.openclaw/workspace/projects/rhabdomyolysis-ep01-universal/production/render-v4/S08-v5.mp4'
