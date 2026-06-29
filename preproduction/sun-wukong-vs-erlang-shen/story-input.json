@@ -1,0 +1,21 @@
+{
+  "title": "孙悟空大战二郎神",
+  "englishTitle": "Monkey King vs Erlang Shen",
+  "narrative_mode": "dramatic",
+  "target_duration": 30,
+  "target_platform": ["youtube", "tiktok", "bilibili"],
+  "language": "zh-CN",
+  "style_tags": ["cinematic", "epic", "mythological", "hyper-realistic", "wuxia"],
+  "protagonist": "sun-wukong",
+  "antagonist": "erlang-shen",
+  "plot": "齐天大圣孙悟空与显圣二郎真君杨戬的天庭终极对决",
+  "scenes": [
+    {
+      "scene_name": "天庭终极对决",
+      "location": "天庭战场——破碎的凌霄宝殿前，云海翻涌，闪电交加",
+      "characters": ["sun-wukong", "erlang-shen"],
+      "plot": "孙悟空与二郎神在天庭战场展开终极对决，双方神通尽出，天地变色",
+      "emotion_target": "震撼、紧张、史诗感"
+    }
+  ]
+}
