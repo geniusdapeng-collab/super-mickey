@@ -1,0 +1,50 @@
+const https = require('https');
+
+const API_KEY = process.env.VOLCENGINE_ARK_API_KEY;
+if (!API_KEY) {
+  console.error('❌ 错误：环境变量 VOLCENGINE_ARK_API_KEY 未设置');
+  process.exit(1);
+}
+const taskIds = [
+  { id: 'cgt-20260531213346-7h49b', shot: 'S00' },
+  { id: 'cgt-20260531213338-g6mg8', shot: 'S01' },
+  { id: 'cgt-20260531213342-mth5l', shot: 'S02' },
+  { id: 'cgt-20260531213404-28v9l', shot: 'S03' },
+  { id: 'cgt-20260531214625-22d98', shot: 'S04' },
+  { id: 'cgt-20260531213401-clm9g', shot: 'S05' }
+];
+
+async function checkStatus(task) {
+  return new Promise((resolve) => {
+    const req = https.request({
+      hostname: 'ark.cn-beijing.volces.com',
+      path: '/api/v3/contents/generations/tasks/' + task.id,
+      method: 'GET',
+      headers: {
+        'Authorization': 'Bearer ' + API_KEY
+      }
+    }, (res) => {
+      let data = '';
+      res.on('data', (chunk) => data += chunk);
+      res.on('end', () => {
+        try {
+          const resp = JSON.parse(data);
+          resolve({ shot: task.shot, id: task.id, raw: resp });
+        } catch (e) {
+          resolve({ shot: task.shot, id: task.id, status: 'error', raw: data });
+        }
+      });
+    });
+    req.on('error', (e) => resolve({ shot: task.shot, id: task.id, status: 'error', error: e.message }));
+    req.end();
+  });
+}
+
+(async () => {
+  for (const task of taskIds) {
+    const result = await checkStatus(task);
+    console.log('=== ' + result.shot + ' ===');
+    console.log(JSON.stringify(result.raw, null, 2).substring(0, 500));
+    console.log();
+  }
+})();

@@ -283,11 +283,11 @@ if (!characterManagerText) {
 }
 
 // ========== 4. 角色卡检查 ==========
-results.push(section('4. 陈卓角色卡检查'));
+results.push(section('4. ChenZhuo角色卡检查'));
 
 if (!chenCardJson) {
   results.push(fail(
-    '陈卓角色卡无法解析',
+    'ChenZhuo角色卡无法解析',
     '请检查 characters/chen-nurse/character-card.json 是否存在且为合法 JSON（不能带注释）'
   ));
 } else {
@@ -301,41 +301,41 @@ if (!chenCardJson) {
 
   if (outfit) {
     results.push(pass(
-      '陈卓角色卡已包含 outfit',
+      'ChenZhuo角色卡已包含 outfit',
       `outfit=${outfit}`
     ));
   } else {
     results.push(fail(
-      '陈卓角色卡仍缺少 outfit',
+      'ChenZhuo角色卡仍缺少 outfit',
       '请确保 visualIdentity.outfit 或 appearance.clothing.promptFragment 已写入'
     ));
   }
 
   if (role && role !== 'nurse') {
     results.push(pass(
-      '陈卓角色卡角色字段已修正',
+      'ChenZhuo角色卡角色字段已修正',
       `role=${role}`
     ));
   } else if (role === 'nurse') {
     results.push(warn(
-      '陈卓角色卡 role 仍为 nurse',
+      'ChenZhuo角色卡 role 仍为 nurse',
       '如果入口角色定义是 presenter，建议同步修正角色卡或依赖 stageCharacters 运行时覆盖'
     ));
   } else {
     results.push(warn(
-      '陈卓角色卡 role 缺失',
+      'ChenZhuo角色卡 role 缺失',
       '建议显式写入 presenter'
     ));
   }
 
   if (/Nirath|异兽|双恒星/.test(minimalAnchor)) {
     results.push(fail(
-      '陈卓角色卡 minimalAnchor 仍含 Nirath 残留',
+      'ChenZhuo角色卡 minimalAnchor 仍含 Nirath 残留',
       `minimalAnchor=${minimalAnchor}`
     ));
   } else {
     results.push(pass(
-      '陈卓角色卡 minimalAnchor 已去 Nirath',
+      'ChenZhuo角色卡 minimalAnchor 已去 Nirath',
       `minimalAnchor=${minimalAnchor}`
     ));
   }
