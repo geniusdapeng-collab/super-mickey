@@ -18,7 +18,7 @@ class UniversalRenderPipeline {
     
     // API配置
     this.apiKey = process.env.VOLCENGINE_ARK_API_KEY;
-    this.modelId = projectConfig.modelId || 'ep-20260518004622-jp46s';
+    this.modelId = projectConfig.modelId || '003cENDPOINT_STD003e';
     this.baseUrl = 'https://ark.cn-beijing.volces.com';
     
     // 输出配置

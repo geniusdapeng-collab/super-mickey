@@ -6,7 +6,7 @@
   "description": "项目描述",
   "characters": ["coach-li", "chen-nurse"],
   "voiceStyle": "温柔女声，健康科普主持人",
-  "modelId": "ep-20260518004622-jp46s",
+  "modelId": "003cENDPOINT_STD003e",
   "outputDir": "./production/shots",
   "outputSpecs": {
     "resolution": "1920x1080",
