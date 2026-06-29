@@ -161,3 +161,15 @@ node_modules/
 *.txt
 !requirements.txt
 !LICENSE.txt
+
+# ============================================
+# 12. 生产过程数据（保留本地，不进入仓库）
+# ============================================
+characters/
+products/
+projects/
+stories/
+debug_llm/
+
+# 检查完成标记
+# open-source-check: passed
