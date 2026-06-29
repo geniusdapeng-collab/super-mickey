@@ -1,0 +1,176 @@
+[
+  {
+    "shotId": "SC00",
+    "sceneType": "opening",
+    "duration": 4,
+    "lines": [
+      {
+        "segmentId": "SC00-DL01",
+        "speaker": "sun-wukong",
+        "text": "二郎神！今日定要分个高下！",
+        "emotion": "aggressively",
+        "deliveryNote": "loudly，spins staff overhead",
+        "actionNote": "spins staff overhead",
+        "subtext": "对白",
+        "duration": 2,
+        "seedanceCue": "LIP_SYNC:sun-wukong|EMOTION:aggressively|ACTION:spins staff overhead"
+      },
+      {
+        "segmentId": "SC00-DL02",
+        "speaker": "erlang-shen",
+        "text": "泼猴，休得猖狂！",
+        "emotion": "coldly",
+        "deliveryNote": "calmly，points blade forward",
+        "actionNote": "points blade forward",
+        "subtext": "对白",
+        "duration": 2,
+        "seedanceCue": "LIP_SYNC:erlang-shen|EMOTION:coldly|ACTION:points blade forward"
+      }
+    ]
+  },
+  {
+    "shotId": "SC01",
+    "sceneType": "establishing",
+    "duration": 4,
+    "lines": [
+      {
+        "segmentId": "SC01-DL01",
+        "speaker": "erlang-shen",
+        "text": "看法宝！",
+        "emotion": "sharply",
+        "deliveryNote": "direct-address，opens third eye golden glow",
+        "actionNote": "opens third eye golden glow",
+        "subtext": "对白",
+        "duration": 2,
+        "seedanceCue": "LIP_SYNC:erlang-shen|EMOTION:sharply|ACTION:opens third eye golden glow"
+      },
+      {
+        "segmentId": "SC01-DL02",
+        "speaker": "sun-wukong",
+        "text": "来得好！",
+        "emotion": "excitedly",
+        "deliveryNote": "with a grin，tightens grip on staff",
+        "actionNote": "tightens grip on staff",
+        "subtext": "对白",
+        "duration": 2,
+        "seedanceCue": "LIP_SYNC:sun-wukong|EMOTION:excitedly|ACTION:tightens grip on staff"
+      }
+    ]
+  },
+  {
+    "shotId": "SC02",
+    "sceneType": "conflict",
+    "duration": 5,
+    "lines": [
+      {
+        "segmentId": "SC02-DL01",
+        "speaker": "sun-wukong",
+        "text": "吃俺老孙一棒！",
+        "emotion": "fiercely",
+        "deliveryNote": "loudly，leaps into air",
+        "actionNote": "leaps into air",
+        "subtext": "对白",
+        "duration": 3,
+        "seedanceCue": "LIP_SYNC:sun-wukong|EMOTION:fiercely|ACTION:leaps into air"
+      },
+      {
+        "segmentId": "SC02-DL02",
+        "speaker": "erlang-shen",
+        "text": "不过如此！",
+        "emotion": "mockingly",
+        "deliveryNote": "through gritted teeth，deflects strike",
+        "actionNote": "deflects strike",
+        "subtext": "对白",
+        "duration": 3,
+        "seedanceCue": "LIP_SYNC:erlang-shen|EMOTION:mockingly|ACTION:deflects strike"
+      }
+    ]
+  },
+  {
+    "shotId": "SC03",
+    "sceneType": "conflict",
+    "duration": 5,
+    "lines": [
+      {
+        "segmentId": "SC03-DL01",
+        "speaker": "erlang-shen",
+        "text": "你的路数被我破了！",
+        "emotion": "triumphantly",
+        "deliveryNote": "coldly，presses blade down",
+        "actionNote": "presses blade down",
+        "subtext": "对白",
+        "duration": 3,
+        "seedanceCue": "LIP_SYNC:erlang-shen|EMOTION:triumphantly|ACTION:presses blade down"
+      },
+      {
+        "segmentId": "SC03-DL02",
+        "speaker": "sun-wukong",
+        "text": "嘿嘿，那可未必！",
+        "emotion": "slyly",
+        "deliveryNote": "with a smirk，pulls out hair strand",
+        "actionNote": "pulls out hair strand",
+        "subtext": "对白",
+        "duration": 3,
+        "seedanceCue": "LIP_SYNC:sun-wukong|EMOTION:slyly|ACTION:pulls out hair strand"
+      }
+    ]
+  },
+  {
+    "shotId": "SC04",
+    "sceneType": "conflict",
+    "duration": 5,
+    "lines": [
+      {
+        "segmentId": "SC04-DL01",
+        "speaker": "sun-wukong",
+        "text": "有点意思...",
+        "emotion": "defiantly",
+        "deliveryNote": "through gritted teeth，leans back struggling",
+        "actionNote": "leans back struggling",
+        "subtext": "对白",
+        "duration": 3,
+        "seedanceCue": "LIP_SYNC:sun-wukong|EMOTION:defiantly|ACTION:leans back struggling"
+      },
+      {
+        "segmentId": "SC04-DL02",
+        "speaker": "erlang-shen",
+        "text": "认输吧！",
+        "emotion": "commandingly",
+        "deliveryNote": "sharply，pushes forward harder",
+        "actionNote": "pushes forward harder",
+        "subtext": "对白",
+        "duration": 3,
+        "seedanceCue": "LIP_SYNC:erlang-shen|EMOTION:commandingly|ACTION:pushes forward harder"
+      }
+    ]
+  },
+  {
+    "shotId": "SC05",
+    "sceneType": "emotional_climax",
+    "duration": 7,
+    "lines": [
+      {
+        "segmentId": "SC05-DL01",
+        "speaker": "sun-wukong",
+        "text": "该结束了！",
+        "emotion": "explosively",
+        "deliveryNote": "loudly，eyes glow crimson red",
+        "actionNote": "eyes glow crimson red",
+        "subtext": "对白",
+        "duration": 4,
+        "seedanceCue": "LIP_SYNC:sun-wukong|EMOTION:explosively|ACTION:eyes glow crimson red"
+      },
+      {
+        "segmentId": "SC05-DL02",
+        "speaker": "erlang-shen",
+        "text": "...下次再战。",
+        "emotion": "reluctantly",
+        "deliveryNote": "quietly，leaps back sheathing blade",
+        "actionNote": "leaps back sheathing blade",
+        "subtext": "对白",
+        "duration": 4,
+        "seedanceCue": "LIP_SYNC:erlang-shen|EMOTION:reluctantly|ACTION:leaps back sheathing blade"
+      }
+    ]
+  }
+]

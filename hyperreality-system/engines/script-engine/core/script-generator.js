@@ -352,12 +352,13 @@ ${meta._directorStyle}` : ''}
         
         // 调用LLM（恢复systemPrompt参数）
         // 【P1-11 修复】统一超时阈值与 maxTokens，不再硬编码
+        // 【修复】禁用 forceJson，让模型自由输出，避免JSON模式返回空content
         const llmPromise = this.llmEngine.generate(prompt, {
           systemPrompt: systemInstruction,
           maxTokens: this.config.maxTokens || 8192,
           timeoutMs: timeoutMs, // 与外层 race 同一阈值
-          forceJson: true,
-          allowReasoningFallback: false
+          forceJson: false,
+          allowReasoningFallback: true
         });
         // 【P1-11 修复】挂 catch 防止超时后 llmPromise 悬空 rejection 崩溃进程
         llmPromise.catch(() => {});
