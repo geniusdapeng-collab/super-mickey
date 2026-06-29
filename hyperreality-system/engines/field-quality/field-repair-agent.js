@@ -301,7 +301,10 @@ class LLMRepairer {
 
     try {
       const response = await Promise.race([
-        this.llm.chat(LLM_REPAIRER_SYSTEM_PROMPT, userPrompt, 0.3),
+        this.llm.reason(userPrompt, { 
+          systemPrompt: LLM_REPAIRER_SYSTEM_PROMPT, 
+          temperature: 0.3 
+        }),
         timeoutPromise
       ]).finally(() => clearTimeout(timer));
 

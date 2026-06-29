@@ -43,12 +43,17 @@ class RenderPipelineGuard {
           const promptText = prompt.prompt || '';
           const hasDialogue = /【台词】/.test(promptText);
           if (!hasDialogue) return { pass: true };
-          const hasAudio = prompt.generate_audio === true;
-          return {
-            pass: hasAudio,
-            message: hasAudio ? null : 'Prompt包含台词但 generate_audio 未设为 true',
-            fix: '设置 generate_audio: true'
-          };
+          // v6.5.60-fix: 如果检测到台词但未开启音频，自动设置而不是报错
+          if (prompt.generate_audio !== true) {
+            prompt.generate_audio = true;
+            return {
+              pass: true, // 改为通过，但给出警告
+              message: '已自动设置 generate_audio: true（检测到台词）',
+              fix: '已自动修复',
+              severity: 'warning'
+            };
+          }
+          return { pass: true };
         }
       },
       {
@@ -71,13 +76,14 @@ class RenderPipelineGuard {
         name: '服装锁定检查',
         check: (prompt) => {
           const text = prompt.prompt || '';
-          const hasCharacter = /protagonist|角色|character/i.test(text);
+          const hasCharacter = /protagonist|角色|character|孙悟空|杨戬|二郎神|猴王/i.test(text);
           if (!hasCharacter) return { pass: true };
-          const hasCostumeLock = /穿[警护白][服大褂]|身穿|wearing/i.test(text);
+          // v6.5.60-fix: 支持古装/神话服装 + 现代职业服装
+          const hasCostumeLock = /穿[警护白][服大褂]|身穿|wearing|锁子黄金甲|凤翅紫金冠|藕丝步云履|虎皮裙|飞凤帽|战甲|古装|仙衣|道袍|铠甲/i.test(text);
           return {
             pass: hasCostumeLock,
             message: hasCostumeLock ? null : 'Prompt未明确锁定角色服装',
-            fix: '在角色描述前添加"穿警服的/穿护士服的/穿白大褂的"'
+            fix: '在角色描述前添加服装描述（如"身穿锁子黄金甲、凤翅紫金冠"或"穿警服的"）'
           };
         }
       },
@@ -86,8 +92,20 @@ class RenderPipelineGuard {
         name: '外观特征锚定',
         check: (prompt) => {
           const text = prompt.prompt || '';
+          // v6.5.60-fix: 古装场景检查神话特征，现代场景检查职业特征
+          const hasAncient = /锁子黄金甲|凤翅紫金冠|藕丝步云履|天眼|火眼金睛|猴毛/i.test(text);
           const hasPolice = /穿警服/.test(text);
-          if (!hasPolice) return { pass: true };
+          if (!hasAncient && !hasPolice) return { pass: true };
+          if (hasAncient) {
+            const hasAnchor = /天眼|火眼金睛|金箍棒|三尖两刃刀/i.test(text);
+            return {
+              pass: hasAnchor,
+              message: hasAnchor ? null : '古装角色但未描述标志性特征（天眼、火眼金睛等）',
+              fix: '添加标志性特征描述（如"额前天眼开启"、"火眼金睛闪烁"）',
+              severity: 'warning'
+            };
+          }
+          // 现代职业场景
           const hasAnchor = /警帽|警徽|肩章|领花|胸牌/.test(text);
           return {
             pass: hasAnchor,
@@ -150,7 +168,9 @@ class RenderPipelineGuard {
         name: 'Prompt长度检查',
         check: (prompt) => {
           const text = prompt.prompt || '';
-          const maxLength = prompt.maxLength || 1500;
+          // v6.5.60-fix: 25字段系统默认12000字符，旧版8字段系统1500字符
+          const is25Field = /【角色】|【场景】|【动作】|【情绪】|【运镜】|【光影】/.test(text);
+          const maxLength = prompt.maxLength || (is25Field ? 12000 : 1500);
           return {
             pass: text.length <= maxLength,
             message: text.length <= maxLength ? null : `Prompt ${text.length} 字符，超过 ${maxLength} 上限`,

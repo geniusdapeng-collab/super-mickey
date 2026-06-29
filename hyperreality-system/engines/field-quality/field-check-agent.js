@@ -604,7 +604,10 @@ class LLMChecker {
 
     try {
       const response = await Promise.race([
-        this.llm.chat(LLM_CHECKER_SYSTEM_PROMPT, userPrompt, 0.2),
+        this.llm.reason(userPrompt, { 
+          systemPrompt: LLM_CHECKER_SYSTEM_PROMPT, 
+          temperature: 0.2 
+        }),
         timeoutPromise
       ]).finally(() => clearTimeout(timer));
 
