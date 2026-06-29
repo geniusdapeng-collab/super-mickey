@@ -108,7 +108,7 @@ console.log('\n=== 提交渲染 ===');
 const seed = Math.floor(Math.random() * 1000000);
 console.log(`Seed: ${seed}`);
 
-const ENDPOINT = 'ep-20260518004622-jp46s';
+const ENDPOINT = '003cENDPOINT_STD003e';
 const API_KEY = process.env.VOLCENGINE_ARK_API_KEY;
 if (!API_KEY) {
   console.error('❌ 错误：环境变量 VOLCENGINE_ARK_API_KEY 未设置');

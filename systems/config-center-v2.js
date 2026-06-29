@@ -134,9 +134,9 @@ const DEFAULT_CONFIG = {
   // 渲染引擎配置
   render: {
     engine: 'Seedance-2.0',
-    endpoint: 'ep-20260518004622-jp46s',
-    fastEndpoint: 'ep-20260518003432-n8v8f',
-    imageEndpoint: 'ep-20260518004750-lz76f',
+    endpoint: '003cENDPOINT_STD003e',
+    fastEndpoint: '003cENDPOINT_FAST003e',
+    imageEndpoint: '003cENDPOINT_IMG003e',
     maxConcurrent: 3,
     safetyGate: {
       tripleLockEnabled: true,

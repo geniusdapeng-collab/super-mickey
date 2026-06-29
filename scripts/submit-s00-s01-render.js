@@ -7,7 +7,7 @@ if (!API_KEY) {
   console.error('❌ 错误：环境变量 VOLCENGINE_ARK_API_KEY 未设置');
   process.exit(1);
 }
-const ENDPOINT = 'ep-20260518004622-jp46s';
+const ENDPOINT = '003cENDPOINT_STD003e';
 const API_URL = 'https://ark.cn-beijing.volces.com/api/v3/contents/generations/tasks';
 
 // 角色别名映射
