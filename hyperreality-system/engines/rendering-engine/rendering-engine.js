@@ -228,13 +228,13 @@ class RenderingEngine {
         
         paths.forEach(path => {
           const angleMatch = path.match(/-(\w+)\.png$/);
-          // 从路径提取实际目录名，如 image://characters/chen-zhuo/front.png → chen-zhuo
+          // 从路径提取实际目录名，如 image://characters/example-character/front.png → example-character
           const dirMatch = path.match(/characters\/([^\/]+)\//);
           const charDir = dirMatch ? dirMatch[1] : charName;
           
           refs.push({
             characterId: charName,      // 显示名（如"示例角色"）
-            characterDir: charDir,      // 实际目录名（如"chen-zhuo"）
+            characterDir: charDir,      // 实际目录名（如"example-character"）
             path: path,
             angle: angleMatch ? angleMatch[1] : 'unknown'
           });
