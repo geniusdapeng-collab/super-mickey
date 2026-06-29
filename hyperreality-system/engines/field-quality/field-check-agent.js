@@ -224,7 +224,7 @@ class RuleChecker {
     if (di) {
       const diLower = (di && typeof di === "string") ? di.toLowerCase() : "";
       const hasStyle = /质感|风格|纪录片|电影|广告|cinematic|documentary|realistic|photorealistic|hollywood/.test(diLower);
-      const hasRealism = /写实|无特效|无科幻|realistic|no effect|no sci/.test(diLower);
+      const hasRealism = /写实|真实|超写实|epic|真实感|无特效|realistic|no effect|no sci/.test(diLower);
       const hasMood = /基调|氛围|情绪|冷静|紧张|温馨|tone|mood|atmosphere|professional|intense|warm/.test(diLower);
       const missing = [];
       if (!hasStyle) missing.push('风格定位');
@@ -233,9 +233,9 @@ class RuleChecker {
       if (missing.length) {
         issues.push(new Issue({
           fieldEn: 'director_instruction', fieldCn: '导演指令',
-          severity: Severity.FATAL, issueType: IssueType.INCOMPLETE,
+          severity: Severity.MAJOR, issueType: IssueType.INCOMPLETE,
           description: `导演指令缺少要素：${missing.join('、')}`,
-          suggestion: `导演指令须覆盖风格定位+写实要求+情绪基调，当前缺少：${missing.join('、')}。示例：'纪录片真实感，手持摄影风格，自然光效，无特效，冷静专业基调'`,
+          suggestion: `导演指令建议覆盖风格定位+写实要求+情绪基调，当前缺少：${missing.join('、')}`,
           currentValue: (typeof di === "string" ? di.slice(0, 60) : String(di).slice(0, 60))
         }));
       }
@@ -253,9 +253,9 @@ class RuleChecker {
       if (missing.length) {
         issues.push(new Issue({
           fieldEn: 'constraint', fieldCn: '约束',
-          severity: Severity.FATAL, issueType: IssueType.INCOMPLETE,
+          severity: Severity.MAJOR, issueType: IssueType.INCOMPLETE,
           description: `约束字段缺少技术参数：${missing.join('、')}`,
-          suggestion: `约束须包含画幅+分辨率+格式+帧率，示例：'Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps'`,
+          suggestion: `约束建议包含画幅+分辨率+格式+帧率`,
           currentValue: (typeof cs === "string" ? cs.slice(0, 60) : String(cs).slice(0, 60))
         }));
       }
@@ -272,9 +272,9 @@ class RuleChecker {
       if (missing.length) {
         issues.push(new Issue({
           fieldEn: 'lighting', fieldCn: '灯光',
-          severity: Severity.FATAL, issueType: IssueType.INCOMPLETE,
+          severity: Severity.MAJOR, issueType: IssueType.INCOMPLETE,
           description: `灯光字段缺少要素：${missing.join('、')}`,
-          suggestion: `灯光须含主光+色温+光质三要素。示例：'key light: soft diffused window light at 5600K, fill light: LED panel at 4000K, low contrast 2:1'`,
+          suggestion: `灯光建议含主光+色温+光质三要素`,
           currentValue: (typeof lt === "string" ? lt.slice(0, 60) : String(lt).slice(0, 60))
         }));
       }
@@ -294,9 +294,9 @@ class RuleChecker {
       if (missing.length) {
         issues.push(new Issue({
           fieldEn: 'camera_movement', fieldCn: '运镜',
-          severity: Severity.FATAL, issueType: IssueType.INCOMPLETE,
+          severity: Severity.MAJOR, issueType: IssueType.INCOMPLETE,
           description: `运镜字段缺少要素：${missing.join('、')}`,
-          suggestion: `运镜须含运动方式+速度+时间分布。示例：'slow push in toward the protagonist's face, 0.5m/s constant speed, duration 3 seconds'`,
+          suggestion: `运镜建议含运动方式+速度+时间分布`,
           currentValue: (typeof cm === "string" ? cm.slice(0, 60) : String(cm).slice(0, 60))
         }));
       }
@@ -309,9 +309,9 @@ class RuleChecker {
       if (!ngLower.includes('no text') || !ngLower.includes('no watermark')) {
         issues.push(new Issue({
           fieldEn: 'negative', fieldCn: '负面约束',
-          severity: Severity.FATAL, issueType: IssueType.INCOMPLETE,
+          severity: Severity.MAJOR, issueType: IssueType.INCOMPLETE,
           description: "负面约束缺少基础排除项：'no text' 和 'no watermark'",
-          suggestion: "负面约束必须包含 'no text, no watermark' 两项基础排除，建议同时包含 no blurry, no extra limbs 等通用负面词",
+          suggestion: "负面约束建议包含 'no text, no watermark' 两项基础排除",
           currentValue: (typeof ng === "string" ? ng.slice(0, 60) : String(ng).slice(0, 60))
         }));
       }
@@ -381,9 +381,9 @@ class RuleChecker {
     if (pt && !/\/characters\/[\w_]+\/portrait_v\d+\.(png|jpg)/.test(pt)) {
       issues.push(new Issue({
         fieldEn: 'portraits', fieldCn: '定妆照',
-        severity: Severity.FATAL, issueType: IssueType.FORMAT_ERROR,
+        severity: Severity.MAJOR, issueType: IssueType.FORMAT_ERROR,
         description: `定妆照路径格式不规范：${safeSlice(pt, 0, 40)}`,
-        suggestion: '路径格式应为：/characters/{角色英文名}/portrait_v{版本号}.{png|jpg}，示例：/characters/chen_zhuo/portrait_v1.png',
+        suggestion: '路径格式建议：/characters/{角色英文名}/portrait_v{版本号}.{png|jpg}',
         currentValue: safeSlice(pt, 0, 40)
       }));
     }
@@ -397,9 +397,9 @@ class RuleChecker {
       if (!/[。！？…]$/.test(dl)) {
         issues.push(new Issue({
           fieldEn: 'dialogue', fieldCn: '台词',
-          severity: Severity.FATAL, issueType: IssueType.FORMAT_ERROR,
-          description: '台词缺少句末标点（须以 。！？… 结尾）',
-          suggestion: `句末标点是口型闭合的信号标记，不可省略。建议在台词末尾添加 '。'：'${dl}。'`,
+          severity: Severity.MAJOR, issueType: IssueType.FORMAT_ERROR,
+          description: '台词缺少句末标点（建议以 。！？… 结尾）',
+          suggestion: `建议在台词末尾添加 '。'：'${dl}。'`,
           currentValue: (typeof dl === "string" ? dl.slice(0, 60) : String(dl).slice(0, 60))
         }));
       }

@@ -79,7 +79,7 @@ class RenderPipelineGuard {
           const hasCharacter = /protagonist|角色|character|孙悟空|杨戬|二郎神|猴王/i.test(text);
           if (!hasCharacter) return { pass: true };
           // v6.5.60-fix: 支持古装/神话服装 + 现代职业服装
-          const hasCostumeLock = /穿[警护白][服大褂]|身穿|wearing|锁子黄金甲|凤翅紫金冠|藕丝步云履|虎皮裙|飞凤帽|战甲|古装|仙衣|道袍|铠甲/i.test(text);
+          const hasCostumeLock = /穿[警护白][服大褂]|身穿|wearing|dressed in|in a|锁子黄金甲|凤翅紫金冠|藕丝步云履|虎皮裙|飞凤帽|战甲|古装|仙衣|道袍|铠甲|armor/i.test(text);
           return {
             pass: hasCostumeLock,
             message: hasCostumeLock ? null : 'Prompt未明确锁定角色服装',
