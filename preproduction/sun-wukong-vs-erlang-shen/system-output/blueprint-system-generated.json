@@ -1,0 +1,588 @@
+{
+  "blueprint_id": "3a044fca-7f2b-470d-98f5-58ab5c3f0b4b",
+  "version": "1.0.0",
+  "intent_ref": "42bb1f08-dfe0-45ba-b3fd-ae24f0407a59",
+  "meta": {
+    "title": "孙悟空大战二郎神",
+    "narrative_mode": "commercial",
+    "target_duration": 30,
+    "acts_count": 3,
+    "scenes_count": 6,
+    "_metadata": {
+      "isSeries": false,
+      "episodeNumber": 1,
+      "totalEpisodes": 1,
+      "hasOpening": true,
+      "noNextEpisodePreview": false,
+      "aspectRatio": "16:9",
+      "seriesContentPlan": null
+    }
+  },
+  "structure": {
+    "acts": [
+      {
+        "act_id": "ACT-1",
+        "act_name": "第一幕",
+        "act_function": "establish",
+        "start_time": 0,
+        "end_time": 9,
+        "beats": [
+          {
+            "beat_id": "B-1.1",
+            "beat_type": "hook",
+            "description": "云端对峙，神妖气场碰撞",
+            "target_emotion": "wonder"
+          },
+          {
+            "beat_id": "B-1.2",
+            "beat_type": "setup",
+            "description": "互报名号，挑衅升级",
+            "target_emotion": "tension"
+          }
+        ]
+      },
+      {
+        "act_id": "ACT-2",
+        "act_name": "第二幕",
+        "act_function": "confront",
+        "start_time": 9,
+        "end_time": 19,
+        "beats": [
+          {
+            "beat_id": "B-2.1",
+            "beat_type": "rising",
+            "description": "兵刃交锋，火星四溅",
+            "target_emotion": "tension"
+          },
+          {
+            "beat_id": "B-2.2",
+            "beat_type": "rising",
+            "description": "神通对拼，天眼破幻",
+            "target_emotion": "awe"
+          }
+        ]
+      },
+      {
+        "act_id": "ACT-3",
+        "act_name": "第三幕",
+        "act_function": "resolve",
+        "start_time": 19,
+        "end_time": 30,
+        "beats": [
+          {
+            "beat_id": "B-3.1",
+            "beat_type": "climax",
+            "description": "终极奥义对轰",
+            "target_emotion": "awe"
+          },
+          {
+            "beat_id": "B-3.2",
+            "beat_type": "resolution",
+            "description": "势均力敌，对视收势",
+            "target_emotion": "joy"
+          }
+        ]
+      }
+    ],
+    "scenes": [
+      {
+        "scene_id": "SC00",
+        "scene_name": "凌霄对峙",
+        "scene_type": "opening",
+        "scene_function": "establish",
+        "act_id": "ACT-1",
+        "timing": {
+          "start": 0,
+          "duration": 5,
+          "end": 5
+        },
+        "characters": [
+          "sun-wukong",
+          "erlang-shen"
+        ],
+        "setting": "云海翻腾的苍穹战场，阳光穿透云层形成丁达尔效应，远处南天门若隐若现，脚下是流动的白色云浪，空气中悬浮金色光尘",
+        "dialogue": {
+          "has_dialogue": true,
+          "lines": [
+            {
+              "speaker": "sun-wukong",
+              "text": "二郎神！今日定要分个胜负！",
+              "emotion": "fiercely"
+            },
+            {
+              "speaker": "erlang-shen",
+              "text": "妖猴，你逃不出我天眼！",
+              "emotion": "coldly"
+            }
+          ],
+          "blocks": [
+            {
+              "speaker": "sun-wukong",
+              "line": "二郎神！今日定要分个胜负！",
+              "emotion": "fiercely",
+              "trigger": "points golden staff forward",
+              "manner": "with a roar",
+              "type": "dialogue"
+            },
+            {
+              "speaker": "erlang-shen",
+              "line": "妖猴，你逃不出我天眼！",
+              "emotion": "coldly",
+              "trigger": "third eye glows brightly",
+              "manner": "narrowing eyes",
+              "type": "dialogue"
+            }
+          ]
+        },
+        "visual_notes": "孙悟空火眼金睛红眼发光，金箍棒斜指，二郎神天眼微睁，两人逆光剪影",
+        "emotional_target": {
+          "valence": 0.5,
+          "arousal": 0.8,
+          "dominance": 0.6
+        }
+      },
+      {
+        "scene_id": "SC01",
+        "scene_name": "挑衅升级",
+        "scene_type": "establishing",
+        "scene_function": "advance",
+        "act_id": "ACT-1",
+        "timing": {
+          "start": 5,
+          "duration": 4,
+          "end": 9
+        },
+        "characters": [
+          "sun-wukong",
+          "erlang-shen"
+        ],
+        "setting": "云层低气压区，暗紫色雷云在背景翻滚，闪电间歇照亮银色与金色铠甲，狂风卷起云气形成漩涡",
+        "dialogue": {
+          "has_dialogue": true,
+          "lines": [
+            {
+              "speaker": "sun-wukong",
+              "text": "你这第三只眼，也就只能照照路！",
+              "emotion": "mockingly"
+            },
+            {
+              "speaker": "erlang-shen",
+              "text": "口出狂言！受死！",
+              "emotion": "angrily"
+            }
+          ],
+          "blocks": [
+            {
+              "speaker": "sun-wukong",
+              "line": "你这第三只眼，也就只能照照路！",
+              "emotion": "mockingly",
+              "trigger": "spins golden staff casually",
+              "manner": "with a smirk",
+              "type": "dialogue"
+            },
+            {
+              "speaker": "erlang-shen",
+              "line": "口出狂言！受死！",
+              "emotion": "angrily",
+              "trigger": "grips blade tighter",
+              "manner": "through gritted teeth",
+              "type": "dialogue"
+            }
+          ]
+        },
+        "visual_notes": "近距离表情特写，猴毛与束发带在风中飘动，铠甲反光",
+        "emotional_target": {
+          "valence": 0.4,
+          "arousal": 0.9,
+          "dominance": 0.5
+        }
+      },
+      {
+        "scene_id": "SC02",
+        "scene_name": "兵刃交锋",
+        "scene_type": "conflict",
+        "scene_function": "conflict",
+        "act_id": "ACT-2",
+        "timing": {
+          "start": 9,
+          "duration": 5,
+          "end": 14
+        },
+        "characters": [
+          "sun-wukong",
+          "erlang-shen"
+        ],
+        "setting": "低空云层，被战斗冲击波撕裂的云海，兵器碰撞产生金色与银色火花，高速移动留下的残影轨迹",
+        "dialogue": {
+          "has_dialogue": true,
+          "lines": [
+            {
+              "speaker": "sun-wukong",
+              "text": "吃我一棒！",
+              "emotion": "fiercely"
+            },
+            {
+              "speaker": "erlang-shen",
+              "text": "太慢了！",
+              "emotion": "confidently"
+            },
+            {
+              "speaker": "sun-wukong",
+              "text": "还有三棒！",
+              "emotion": "excitedly"
+            }
+          ],
+          "blocks": [
+            {
+              "speaker": "sun-wukong",
+              "line": "吃我一棒！",
+              "emotion": "fiercely",
+              "trigger": "leaps into air",
+              "manner": "shouting",
+              "type": "dialogue"
+            },
+            {
+              "speaker": "erlang-shen",
+              "line": "太慢了！",
+              "emotion": "confidently",
+              "trigger": "deflects staff with blade",
+              "manner": "smirking",
+              "type": "dialogue"
+            },
+            {
+              "speaker": "sun-wukong",
+              "line": "还有三棒！",
+              "emotion": "excitedly",
+              "trigger": "creates three afterimages",
+              "manner": "laughing",
+              "type": "dialogue"
+            }
+          ]
+        },
+        "visual_notes": "高速动态模糊，金箍棒与三尖两刃刀碰撞特写，火花四溅",
+        "emotional_target": {
+          "valence": 0.5,
+          "arousal": 0.95,
+          "dominance": 0.6
+        }
+      },
+      {
+        "scene_id": "SC03",
+        "scene_name": "神通对拼",
+        "scene_type": "conflict",
+        "scene_function": "advance",
+        "act_id": "ACT-2",
+        "timing": {
+          "start": 14,
+          "duration": 5,
+          "end": 19
+        },
+        "characters": [
+          "sun-wukong",
+          "erlang-shen"
+        ],
+        "setting": "破碎的云端竞技场，天眼金光与分身猴毛弥漫，能量波纹扭曲空间，铠甲表面反射刺目光芒",
+        "dialogue": {
+          "has_dialogue": true,
+          "lines": [
+            {
+              "speaker": "sun-wukong",
+              "text": "七十二变，看招！",
+              "emotion": "playfully"
+            },
+            {
+              "speaker": "erlang-shen",
+              "text": "天眼开！破幻！",
+              "emotion": "sternly"
+            }
+          ],
+          "blocks": [
+            {
+              "speaker": "sun-wukong",
+              "line": "七十二变，看招！",
+              "emotion": "playfully",
+              "trigger": "transforms into multiple figures",
+              "manner": "chanting",
+              "type": "dialogue"
+            },
+            {
+              "speaker": "erlang-shen",
+              "line": "天眼开！破幻！",
+              "emotion": "sternly",
+              "trigger": "vertical eye emits golden beam",
+              "manner": "commanding",
+              "type": "dialogue"
+            }
+          ]
+        },
+        "visual_notes": "分身残影与天眼金光射线对穿，空间扭曲特效",
+        "emotional_target": {
+          "valence": 0.5,
+          "arousal": 0.9,
+          "dominance": 0.5
+        }
+      },
+      {
+        "scene_id": "SC04",
+        "scene_name": "终极对轰",
+        "scene_type": "emotional_climax",
+        "scene_function": "climax",
+        "act_id": "ACT-3",
+        "timing": {
+          "start": 19,
+          "duration": 6,
+          "end": 25
+        },
+        "characters": [
+          "sun-wukong",
+          "erlang-shen"
+        ],
+        "setting": "天穹裂隙处，紫金色雷电交加，两人武器尖端凝聚巨大能量球，空间撕裂露出黑色虚空，强风撕扯铠甲披风",
+        "dialogue": {
+          "has_dialogue": true,
+          "lines": [
+            {
+              "speaker": "sun-wukong",
+              "text": "法天象地！",
+              "emotion": "mightily"
+            },
+            {
+              "speaker": "erlang-shen",
+              "text": "元神真身！",
+              "emotion": "solemnly"
+            },
+            {
+              "speaker": "sun-wukong",
+              "text": "接招吧！",
+              "emotion": "excitedly"
+            },
+            {
+              "speaker": "erlang-shen",
+              "text": "来！",
+              "emotion": "fiercely"
+            }
+          ],
+          "blocks": [
+            {
+              "speaker": "sun-wukong",
+              "line": "法天象地！",
+              "emotion": "mightily",
+              "trigger": "body expands towering",
+              "manner": "roaring",
+              "type": "dialogue"
+            },
+            {
+              "speaker": "erlang-shen",
+              "line": "元神真身！",
+              "emotion": "solemnly",
+              "trigger": "silver aura explodes outward",
+              "manner": "chanting deeply",
+              "type": "dialogue"
+            },
+            {
+              "speaker": "sun-wukong",
+              "line": "接招吧！",
+              "emotion": "excitedly",
+              "trigger": "raises enlarged staff overhead",
+              "manner": "laughing wildly",
+              "type": "dialogue"
+            },
+            {
+              "speaker": "erlang-shen",
+              "line": "来！",
+              "emotion": "fiercely",
+              "trigger": "charges blade with white lightning",
+              "manner": "shouting",
+              "type": "dialogue"
+            }
+          ]
+        },
+        "visual_notes": "法相天地巨大化，能量汇聚，武器对撞前的蓄力帧",
+        "emotional_target": {
+          "valence": 0.6,
+          "arousal": 1,
+          "dominance": 0.7
+        }
+      },
+      {
+        "scene_id": "SC05",
+        "scene_name": "收势",
+        "scene_type": "resolution",
+        "scene_function": "resolve",
+        "act_id": "ACT-3",
+        "timing": {
+          "start": 25,
+          "duration": 5,
+          "end": 30
+        },
+        "characters": [
+          "sun-wukong",
+          "erlang-shen"
+        ],
+        "setting": "爆炸后的平静云海，蘑菇云状能量余波缓缓扩散，两人各退百米悬停，武器斜指地面，铠甲冒着轻烟，夕阳余晖染红云层",
+        "dialogue": {
+          "has_dialogue": true,
+          "lines": [
+            {
+              "speaker": "sun-wukong",
+              "text": "嘿嘿，有点意思。",
+              "emotion": "satisfactorily"
+            },
+            {
+              "speaker": "erlang-shen",
+              "text": "妖猴，下次定擒你。",
+              "emotion": "calmly"
+            },
+            {
+              "speaker": "sun-wukong",
+              "text": "俺老孙等着！",
+              "emotion": "confidently"
+            }
+          ],
+          "blocks": [
+            {
+              "speaker": "sun-wukong",
+              "line": "嘿嘿，有点意思。",
+              "emotion": "satisfactorily",
+              "trigger": "wipes nose with thumb",
+              "manner": "grinning",
+              "type": "dialogue"
+            },
+            {
+              "speaker": "erlang-shen",
+              "line": "妖猴，下次定擒你。",
+              "emotion": "calmly",
+              "trigger": "sheathes blade slowly",
+              "manner": "steady",
+              "type": "dialogue"
+            },
+            {
+              "speaker": "sun-wukong",
+              "line": "俺老孙等着！",
+              "emotion": "confidently",
+              "trigger": "slings staff over shoulder",
+              "manner": "winking",
+              "type": "dialogue"
+            }
+          ]
+        },
+        "visual_notes": "慢镜头，能量余波，两位战士的喘息与自信对视",
+        "emotional_target": {
+          "valence": 0.7,
+          "arousal": 0.6,
+          "dominance": 0.5
+        }
+      }
+    ]
+  },
+  "character_system": {
+    "characters": [
+      {
+        "character_id": "sun-wukong",
+        "name": "孙悟空",
+        "role": "protagonist",
+        "visual_anchor": {
+          "core_features": [
+            "齐天大圣",
+            "金色紧箍咒",
+            "火眼金睛（红眼发光）",
+            "棕色猴毛",
+            "金色龙纹铠甲",
+            "手持金箍棒"
+          ],
+          "reference_images": [
+            "characters/sun-wukong/portraits/front.jpg"
+          ]
+        },
+        "voice_profile": {
+          "persona": "齐天大圣，金色紧箍咒、火眼金睛（红眼发光）、棕色猴毛、金色龙纹铠甲、手持金箍棒",
+          "tone": "专业",
+          "speaking_style": "口语化科普"
+        }
+      },
+      {
+        "character_id": "erlang-shen",
+        "name": "二郎神",
+        "role": "antagonist",
+        "visual_anchor": {
+          "core_features": [
+            "显圣真君",
+            "天眼（金色竖眼发光）",
+            "天蓝色束发带",
+            "银白铠甲",
+            "手持三尖两刃刀"
+          ],
+          "reference_images": [
+            "characters/erlang-shen/portraits/front.jpg"
+          ]
+        },
+        "voice_profile": {
+          "persona": "显圣真君，天眼（金色竖眼发光）、天蓝色束发带、银白铠甲、手持三尖两刃刀",
+          "tone": "专业",
+          "speaking_style": "口语化科普"
+        }
+      }
+    ]
+  },
+  "voice_system": {
+    "global_voice_policy": "dialogue_only_no_voiceover",
+    "voice_profiles": [
+      {
+        "voice_id": "V-sun-wukong",
+        "character_id": "sun-wukong",
+        "role": "protagonist",
+        "tone": "狂傲张扬",
+        "pace": "fast",
+        "constraints": {
+          "forbidden_words": [
+            "现代",
+            "手机",
+            "网络"
+          ],
+          "max_line_length": 30
+        }
+      },
+      {
+        "voice_id": "V-erlang-shen",
+        "character_id": "erlang-shen",
+        "role": "antagonist",
+        "tone": "冷峻威严",
+        "pace": "medium",
+        "constraints": {
+          "forbidden_words": [
+            "现代",
+            "手机",
+            "网络"
+          ],
+          "max_line_length": 30
+        }
+      }
+    ]
+  },
+  "world_setting": {
+    "world_id": "chinese_mythology",
+    "world_name": "中国古典神话",
+    "era": "上古神话纪元",
+    "core_rules": [
+      "神妖可踏云而战",
+      "神通可变化万千",
+      "兵器碰撞产生法力震荡"
+    ],
+    "environment_tags": [
+      "九霄云海",
+      "神兵光辉"
+    ]
+  },
+  "extensions": {
+    "dramatic_extension": {},
+    "nirath_extension": {
+      "featured_beast_id": null,
+      "memory_theme": "记忆即存在"
+    }
+  },
+  "quality_report": {
+    "evaluator": "DramaBench",
+    "scores": {},
+    "passed": false
+  }
+}
