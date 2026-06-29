@@ -94,7 +94,7 @@ Body:
 2. **"Compare with X"** — Side-by-side with other tools
 3. **"Under the hood"** — Deep dives into specific agents
 4. **"Community spotlight"** — Feature contributors
-5. **"Roadmap voting"** — Let community prioritize features
+5. **"Community spotlight"** — Feature contributors
 
 ### Tutorial Articles to Write
 

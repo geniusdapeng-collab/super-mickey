@@ -826,40 +826,6 @@ const review = await agent.review(shotCard, sceneCard, adjacentShots);
 
 ---
 
-## Roadmap
-
-### v6.x (Current — Stable)
-- [x] Director Review Agent v4 with 6-question framework
-- [x] Prompt Engine Agent v4 with 8-step generation
-- [x] Scene Card Agent with emotion/light control
-- [x] Shot Design Agent v4 with 25-field standard
-- [x] Production Bible knowledge base
-- [x] Light Tier system (A/B/C/D)
-- [x] Continuity Manager
-- [x] Prompt Guardian auto-repair
-- [x] Pre-production service with checkpoints
-
-### v7.0 (Q3 2026)
-- [ ] **Script Engine** — Structured screenplay generation
-- [ ] **Rendering Engine** — Multi-model adapter (Kling, Pika, Runway)
-- [ ] **Post-Production Engine** — AI editing and packaging
-- [ ] **Shared Kernel** — LLM Router, Token Budget, Compliance
-- [ ] **MCP Server** — Native Model Context Protocol support
-- [ ] **REST API** — HTTP interface for remote agents
-
-### v7.1 (Q4 2026)
-- [ ] Commercial template engine
-- [ ] A/B testing framework
-- [ ] Analytics dashboard
-- [ ] Multi-language dialogue support
-
-### v7.2 (2027)
-- [ ] Custom engine plugins
-- [ ] Hybrid mode editor
-- [ ] Community template marketplace
-
----
-
 ## How to Star & Contribute
 
 ### Show Your Support
