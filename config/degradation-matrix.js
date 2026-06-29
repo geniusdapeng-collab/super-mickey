@@ -26,7 +26,7 @@
  * - degrade_quality: 降低质量但继续（如减少渲染质量）
  *
  * @version v1.0
- * @author 小G
+ * @author Core Team
  * @priority P1 - 稳定性工程
  */
 

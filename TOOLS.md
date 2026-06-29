@@ -9,9 +9,9 @@
 ### 接入点
 | 模型 | 类型 | 接入点 | 用途 |
 |------|------|--------|------|
-| Seedance-2.0 | 视频 | `ep-20260518004622-jp46s` | 高质量渲染 |
-| Seedance-2.0-fast | 视频 | `ep-20260518003432-n8v8f` | 快速渲染 |
-| Seedream-5.0-lite | 图片 | `ep-20260518004750-lz76f` | 定妆照/概念图 |
+| Seedance-2.0 | 视频 | `003cENDPOINT_STD003e` | 高质量渲染 |
+| Seedance-2.0-fast | 视频 | `003cENDPOINT_FAST003e` | 快速渲染 |
+| Seedream-5.0-lite | 图片 | `003cENDPOINT_IMG003e` | 定妆照/概念图 |
 
 ### 端点与限制
 - 视频: `https://ark.cn-beijing.volces.com/api/v3/contents/generations/tasks`

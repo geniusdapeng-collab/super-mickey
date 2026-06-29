@@ -9,17 +9,17 @@ const path = require('path');
 const https = require('https');
 const { execSync } = require('child_process');
 
-const productionDir = '/root/.openclaw/workspace/taotie-ep01-production';
-const finalOutput = '/root/.openclaw/workspace/taotie-ep01-final-v3.mp4';
+const productionDir = '/tmp/super-mickey-production';
+const finalOutput = '/tmp/super-mickey-final-output.mp4';
 
-// 视频URL列表（v6.2-patch90）
+// 视频URL列表（请替换为你自己的渲染结果URL）
 const shotUrls = {
-  'S00': 'https://ark-acg-cn-beijing.tos-cn-beijing.volces.com/doubao-seedance-2-0/02178023443621800000000000000000000ffffac17783fb1f61b.mp4?X-Tos-Algorithm=TOS4-HMAC-SHA256&X-Tos-Credential=AKLTYWJkZTExNjA1ZDUyNDc3YzhjNTM5OGIyNjBhNDcyOTQ%2F20260531%2Fcn-beijing%2Ftos%2Frequest&X-Tos-Date=20260531T133909Z&X-Tos-Expires=86400&X-Tos-Signature=7eb3f1465237c57f066bc41a161d6a69bbe699fcabae558311a0911ec03779b0&X-Tos-SignedHeaders=host',
-  'S01': 'https://ark-acg-cn-beijing.tos-cn-beijing.volces.com/doubao-seedance-2-0/02178023441074000000000000000000000ffffac152ff3ebfc55.mp4?X-Tos-Algorithm=TOS4-HMAC-SHA256&X-Tos-Credential=AKLTYWJkZTExNjA1ZDUyNDc3YzhjNTM5OGIyNjBhNDcyOTQ%2F20260531%2Fcn-beijing%2Ftos%2Frequest&X-Tos-Date=20260531T133909Z&X-Tos-Expires=86400&X-Tos-Signature=7c75a8e9e993f019456cedca5d529ff5e0ec151e9a14c40f96a05bfb7de3a1c0&X-Tos-SignedHeaders=host',
-  'S02': 'https://ark-acg-cn-beijing.tos-cn-beijing.volces.com/doubao-seedance-2-0/02178023442394800000000000000000000ffffac17783fb1f62d.mp4?X-Tos-Algorithm=TOS4-HMAC-SHA256&X-Tos-Credential=AKLTYWJkZTExNjA1ZDUyNDc3YzhjNTM5OGIyNjBhNDcyOTQ%2F20260531%2Fcn-beijing%2Ftos%2Frequest&X-Tos-Date=20260531T133909Z&X-Tos-Expires=86400&X-Tos-Signature=7d85f1465237c57f066bc41a161d6a69bbe699fcabae558311a0911ec03779b0&X-Tos-SignedHeaders=host',
-  'S03': 'https://ark-acg-cn-beijing.tos-cn-beijing.volces.com/doubao-seedance-2-0/02178023444861000000000000000000000ffffac17783fb1f64d.mp4?X-Tos-Algorithm=TOS4-HMAC-SHA256&X-Tos-Credential=AKLTYWJkZTExNjA1ZDUyNDc3YzhjNTM5OGIyNjBhNDcyOTQ%2F20260531%2Fcn-beijing%2Ftos%2Frequest&X-Tos-Date=20260531T133909Z&X-Tos-Expires=86400&X-Tos-Signature=7f95f1465237c57f066bc41a161d6a69bbe699fcabae558311a0911ec03779b0&X-Tos-SignedHeaders=host',
-  'S04': 'https://ark-acg-cn-beijing.tos-cn-beijing.volces.com/doubao-seedance-2-0/02178024646688800000000000000000000ffffac152ff3ebfc7d.mp4?X-Tos-Algorithm=TOS4-HMAC-SHA256&X-Tos-Credential=AKLTYWJkZTExNjA1ZDUyNDc3YzhjNTM5OGIyNjBhNDcyOTQ%2F20260531%2Fcn-beijing%2Ftos%2Frequest&X-Tos-Date=20260531T165753Z&X-Tos-Expires=86400&X-Tos-Signature=824aa8e9e993f019456cedca5d529ff5e0ec151e9a14c40f96a05bfb7de3a1c0&X-Tos-SignedHeaders=host',
-  'S05': 'https://ark-acg-cn-beijing.tos-cn-beijing.volces.com/doubao-seedance-2-0/02178024648114600000000000000000000ffffac17783f4631a1.mp4?X-Tos-Algorithm=TOS4-HMAC-SHA256&X-Tos-Credential=AKLTYWJkZTExNjA1ZDUyNDc3YzhjNTM5OGIyNjBhNDcyOTQ%2F20260531%2Fcn-beijing%2Ftos%2Frequest&X-Tos-Date=20260531T165719Z&X-Tos-Expires=86400&X-Tos-Signature=c7a9b3f8e5bb3f118e18cd8e8306f51057272530597a552df9dafaef2989cd7b&X-Tos-SignedHeaders=host'
+  'S00': 'https://your-video-cdn.com/shot-s00.mp4',
+  'S01': 'https://your-video-cdn.com/shot-s01.mp4',
+  'S02': 'https://your-video-cdn.com/shot-s02.mp4',
+  'S03': 'https://your-video-cdn.com/shot-s03.mp4',
+  'S04': 'https://your-video-cdn.com/shot-s04.mp4',
+  'S05': 'https://your-video-cdn.com/shot-s05.mp4'
 };
 
 async function downloadVideo(url, outputPath) {

@@ -1,5 +1,5 @@
 {
-  "apiKey": "ark-0e6994f7-bf34-4f3a-9e78-0fc02aa5fc92-42751",
+  "apiKey": "<YOUR_ARK_API_KEY>",
   "baseUrl": "ark.cn-beijing.volces.com",
   "endpoints": {
     "video": "/api/v3/contents/generations/tasks",
@@ -8,27 +8,27 @@
   "models": {
     "seedance-2-0": {
       "modelId": "doubao-seedance-2-0-260128",
-      "presetEndpointId": "ep-m-20260518003302-245xb",
-      "customEndpointId": "ep-20260518004622-jp46s",
-      "endpointName": "openclaw2",
+      "presetEndpointId": "<PRESET_ENDPOINT_ID>",
+      "customEndpointId": "<CUSTOM_ENDPOINT_ID>",
+      "endpointName": "<YOUR_ENDPOINT_NAME>",
       "type": "video",
       "quality": "high",
       "speed": "standard"
     },
     "seedance-2-0-fast": {
       "modelId": "doubao-seedance-2-0-fast-260128",
-      "presetEndpointId": "ep-m-20260518003252-p4chz",
-      "customEndpointId": "ep-20260518003432-n8v8f",
-      "endpointName": "openclaw",
+      "presetEndpointId": "<PRESET_ENDPOINT_ID>",
+      "customEndpointId": "<CUSTOM_ENDPOINT_ID>",
+      "endpointName": "<YOUR_ENDPOINT_NAME>",
       "type": "video",
       "quality": "high",
       "speed": "fast"
     },
     "seedream-5-0": {
       "modelId": "doubao-seedream-5-0-260128",
-      "presetEndpointId": "ep-m-20260518003223-58l4t",
-      "customEndpointId": "ep-20260518004750-lz76f",
-      "endpointName": "openclaw3",
+      "presetEndpointId": "<PRESET_ENDPOINT_ID>",
+      "customEndpointId": "<CUSTOM_ENDPOINT_ID>",
+      "endpointName": "<YOUR_ENDPOINT_NAME>",
       "type": "image",
       "quality": "high"
     }

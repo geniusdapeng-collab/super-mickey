@@ -144,7 +144,7 @@
           {
             "beat_id": "B-1.1",
             "beat_type": "hook",
-            "description": "小G从银灰传送门降临Nirath",
+            "description": "AgentX从银灰传送门降临Nirath",
             "target_emotion": "wonder"
           }
         ]
@@ -177,7 +177,7 @@
     "characters": [
       {
         "character_id": "xiaoG",
-        "name": "小G",
+        "name": "AgentX",
         "role": "protagonist",
         "voice_profile": {
           "persona": "Nirath探索者，年轻男性，银灰装甲",
@@ -284,13 +284,13 @@
       "type": "character_portrait",
       "character_id": "xiaoG",
       "path": "characters/xiaoG/front.jpg",
-      "inject_text": "小G正面，银灰装甲，东亚面孔短发，年轻男性，超写实"
+      "inject_text": "AgentX正面，银灰装甲，东亚面孔短发，年轻男性，超写实"
     }
   ],
 
   "rendering_params": {
     "model": "seedance-2.0",
-    "endpoint": "ep-20260518004622-jp46s",
+    "endpoint": "003cENDPOINT_STD003e",
     "aspect_ratio": "16:9",
     "duration": 15,
     "negative_prompt": "禁止旁白，禁止金属光泽，禁止人物眼睛非自然色"
