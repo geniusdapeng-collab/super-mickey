@@ -189,7 +189,7 @@ ${JSON.stringify(template.structure.acts, null, 2)}
     "characters": [
       {
         "character_id": "xiaoG",
-        "name": "小G",
+        "name": "AgentX",
         "role": "protagonist",
         "voice_profile": {
           "persona": "角色人设描述",

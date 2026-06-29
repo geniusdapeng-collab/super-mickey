@@ -21,7 +21,7 @@ class IntentParser {
         '科普短剧': { primary: 'educational', secondary: 'dramatic', keywords: ['剧情科普', '故事学习'] }
       },
       // Nirath 世界观检测
-      nirathSignals: ['Nirath', 'nirath', '山海经', '异兽', '饕餮', '小G', '硅基', '碳化硅'],
+      nirathSignals: ['Nirath', 'nirath', '山海经', '异兽', '饕餮', 'AgentX', '硅基', '碳化硅'],
       // 默认配置
       defaultMode: 'dramatic',
       confidenceThreshold: 0.85,

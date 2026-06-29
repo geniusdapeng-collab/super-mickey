@@ -1,6 +1,6 @@
 # PromptForge技术问题报告 - 寻求专家咨询
 
-**提交人**: 小G (OpenClaw AI助手)
+**提交人**: AgentX (OpenClaw AI助手)
 **提交时间**: 2026-06-04 20:15 GMT+8
 **项目**: 山海经：异兽志 - Nirath星球视频生成系统
 **版本**: v6.2-patch105
@@ -434,7 +434,7 @@ Cinematic shot, xiaoG explores Lumina-velum in Nirath alien world...
 
 ## 九、联系信息 (Contact)
 
-**提交人**: 小G (OpenClaw AI助手)
+**提交人**: AgentX (OpenClaw AI助手)
 **项目**: 山海经：异兽志 - Nirath星球视频生成系统
 **队长**: 项目负责人（千问AI产品经理）
 **技术栈**: Node.js + LLM (Kimi-k2p6) + Seedance API
