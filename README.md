@@ -1,343 +1,945 @@
-# SuperMickey（超级小香宝）(限时内测版)
+# SuperMickey AI Video Generation System
 
-> **AI 驱动的电影级视频生成系统** — 从一句话到完整成片，全流程自动化
+<p align="center">
+  <img src="./assets/logo.png" alt="SuperMickey Logo" width="200"/>
+</p>
 
-[![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](./CHANGELOG.md)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
-[![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
-[![Python](https://img.shields.io/badge/python-%3E%3D3.9-blue.svg)](https://python.org/)
+<p align="center">
+  <b>Enterprise-Grade AI Video Production Pipeline</b><br/>
+  <i>From Script to Screen — Fully Automated, Cinema-Quality Video Generation</i>
+</p>
+
+<p align="center">
+  <a href="#stars"><img src="https://img.shields.io/github/stars/geniusdapeng-collab/super-mickey?style=social" alt="Stars"/></a>
+  <a href="#license"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License"/></a>
+  <a href="#version"><img src="https://img.shields.io/badge/Version-6.5.53--beta-green.svg" alt="Version"/></a>
+  <a href="#node"><img src="https://img.shields.io/badge/Node-%3E%3D24-339933?logo=node.js" alt="Node"/></a>
+  <a href="#ai"><img src="https://img.shields.io/badge/AI--Native-Ready-ff6b6b.svg" alt="AI-Native"/></a>
+</p>
 
 ---
 
-## 🎯 一句话描述
+## Table of Contents
 
-SuperMickey 是一个**端到端 AI 视频创作平台**，通过分层架构将 LLM 智能注入剧本、制作、渲染、后期全流程，实现从自然语言意图到专业级视频的自动化生产。
+- [What is SuperMickey?](#what-is-supermickey)
+- [Why SuperMickey?](#why-supermickey)
+- [System Architecture](#system-architecture)
+- [Core Agents](#core-agents)
+- [Quick Start (For AI Agents & Humans)](#quick-start)
+- [AI Agent Integration Guide](#ai-agent-integration-guide)
+- [Field Standards](#field-standards)
+- [Configuration](#configuration)
+- [Project Structure](#project-structure)
+- [API Reference](#api-reference)
+- [Roadmap](#roadmap)
+- [How to Star & Contribute](#how-to-star--contribute)
+- [Changelog](#changelog)
+- [License](#license)
 
-## 🚀 核心能力
+---
 
-| 能力 | 描述 | 技术亮点 |
-|------|------|----------|
-| **智能剧本引擎** | 从一句话意图生成结构化剧本（场景、镜头、对话） | 三层叙事结构 + 情绪弧线设计 |
-| **电影级制作引擎** | 自动设计运镜、构图、光影、角色动作 | 导演优化 Agent + 微动作增强 |
-| **多平台渲染** | 一键生成适配 Seedance 等平台的渲染 Prompt | 智能 Prompt 工程 + 字段标准化 |
-| **后期自动处理** | 字幕、音乐、弹幕、多版本自动生成 | 情绪匹配 + 平台合规 |
-| **影视技能库** | 集成 PandaCineForge 专业影视知识引擎 | 7 个融合点覆盖全流程 |
+## What is SuperMickey?
 
-## 💰 商业价值与前景
+**SuperMickey** is a production-grade AI video generation system that bridges the gap between creative storytelling and automated video production. Originally built for cinematic short-form content creation, it has evolved into a modular, multi-agent pipeline capable of producing high-quality videos from structured story inputs.
 
-SuperMickey 面向**个人创作者、MCN 机构、品牌方、影视教育**四大核心场景：
+The system treats video production as a **software engineering problem** — with strict quality gates, versioned checkpoints, automated reviews, and structured data contracts between every pipeline stage.
 
-| 场景 | 痛点 | 价值 |
-|------|------|------|
-| **个人创作者** | 有创意但缺乏专业影视制作能力 | 一句话到成片，降低电影级创作门槛 |
-| **MCN 机构** | 内容产能瓶颈，人力成本高涨 | 全自动化流水线，产能提升 10x+ |
-| **品牌方** | 广告制作周期长、成本高 | 快速生成多版本广告素材，A/B 测试成本趋零 |
-| **影视教育** | 学生缺乏实践机会 | 即时反馈的创作环境，加速技能习得 |
+> **Built for AI Agents, loved by humans.** Every module is designed to be programmatically discoverable and executable by autonomous agents.
 
-**市场前景：**
-- AI 视频生成正处于技术奇点，2024-2026 年全球市场规模预计 CAGR 超过 60%
-- Seedance 2.0+ 等模型持续突破，电影级画质门槛已大幅降低
-- 真正的瓶颈从"能不能生成"转向"能不能控制"——这正是 SuperMickey 的核心竞争力
-- 开源生态将加速技术迭代，先行者定义行业标准
+### At a Glance
 
-> **限时内测版** — 核心功能稳定，API 可能迭代。及时 Star 和下载，过期可能转为付费版本。
+| Metric | Value |
+|--------|-------|
+| **Lines of Code** | 206,000+ |
+| **Modules** | 787 files |
+| **Agent Types** | 4 specialized production agents |
+| **Pipeline Stages** | 17+ sequential stages |
+| **Field Definitions** | 25+ shot-level fields |
+| **Quality Dimensions** | 5-dimension scoring framework |
+| **Render Adapters** | Seedance 2.0 (extensible to Kling, Pika, Runway) |
 
-## 🏗️ 架构概览
+---
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    SuperMickey v2.1.0                        │
-├─────────────────────────────────────────────────────────────┤
-│  Layer 0: 需求清单生成（意图解析 → 结构化需求）              │
-│  Layer 1: 剧本引擎（叙事结构 → 分场景剧本）                  │
-│  Layer 2: 制作引擎（视觉语言 → 镜头设计）                    │
-│  Layer 3: 渲染引擎（Prompt 工程 → 平台提交）                 │
-│  Layer 4: 后期引擎（字幕/音乐/弹幕 → 多版本输出）            │
-├─────────────────────────────────────────────────────────────┤
-│  增强层: 情绪弧线 · 叙事节奏 · 导演优化 · 商业/FPV 模式      │
-├─────────────────────────────────────────────────────────────┤
-│  护盾层: 稳定性护盾 · 字段标准化 · 流程审计 · 健康监控       │
-├─────────────────────────────────────────────────────────────┤
-│  🐼 PandaCineForge: 影视技能库（剧本/镜头/调色/混音）        │
-└─────────────────────────────────────────────────────────────┘
-```
+## Why SuperMickey?
 
-## 📦 快速开始
+### The Problem
 
-### 环境要求
+Most AI video tools give you a text box and pray. Professionals need:
+- **Character consistency** across shots
+- **Camera continuity** (screen direction, OFA/EFA chains)
+- **Emotion arcs** that build across scenes
+- **Quality assurance** before rendering costs are sunk
+- **Structured output** that can be versioned, diffed, and automated
 
-- **Node.js** >= 18.0.0
-- **Python** >= 3.9（用于 PandaCineForge 技能引擎，可选）
-- **Git**
+### The Solution
 
-### 安装
+SuperMickey provides a **complete pre-production pipeline**:
 
-```bash
-# 克隆仓库
-git clone https://github.com/geniusdapeng-collab/super-mickey.git
-cd super-mickey
+1. **Script Engine** parses your intent into a structured blueprint
+2. **Scene Card Agent** designs the visual strategy (light, emotion, color)
+3. **Shot Design Agent** breaks scenes into individual shots with 25+ structured fields
+4. **Director Review Agent** runs a 6-question review + 5-dimension quality score
+5. **Prompt Engine Agent** generates optimized, length-aware render prompts
+6. **Render Engine** submits to video generation APIs with full parameter control
+7. **Post-Production Engine** assembles, grades, and packages the final output
 
-# 安装 Node.js 依赖
-npm install
+---
 
-# 安装 Python 依赖（如需启用技能引擎）
-pip3 install openai numpy
+## System Architecture
 
-# 配置环境变量（复制模板并修改）
-cp .env.example .env
-# 编辑 .env 填入你的 API Key
-```
+### 4-Layer Architecture Overview
 
-### 使用
+<p align="center">
+  <img src="./assets/arch-1-overview.png" alt="System Architecture Overview" width="100%"/>
+</p>
 
-```bash
-# 启动 PandaCineForge 技能引擎（可选）
-python3 hyperreality-system/skills/panda-cineforge/server.py &
+### Layer 1: Script Engine
 
-# 运行预生产流程
-npm run start:prod
+The **single source of truth** for the entire pipeline.
 
-# 运行测试
-npm test
-```
+| Component | Purpose |
+|-----------|---------|
+| `IntentParser` | Classifies narrative mode (dramatic/educational/documentary/commercial) |
+| `ScriptGenerator` | Generates structured `ScriptBlueprint` JSON via LLM |
+| `ScriptValidator` | Schema + business rule validation |
+| `ScriptBlueprint` | Immutable output: characters, scenes, dialogue, world rules |
 
-### 编程方式使用
+### Layer 2: Production Engine
+
+The creative core — 4 specialized agents orchestrated via Event Bus.
+
+<p align="center">
+  <img src="./assets/arch-2-agents.png" alt="Multi-Agent Collaboration Flow" width="100%"/>
+</p>
+
+### Layer 3: Rendering Engine
+
+| Component | Purpose |
+|-----------|---------|
+| `MultiModelAdapter` | Unified interface for Seedance/Kling/Pika/Runway |
+| `RenderQueue` | Batch submission with rate limiting |
+| `QualityGate` | Pre-render validation (prompt length, consistency, compliance) |
+
+### Layer 4: Post-Production Engine
+
+| Component | Purpose |
+|-----------|---------|
+| `AIEditor` | Automated cutting with hard-cut/fade transitions |
+| `SubtitleGenerator` | Dialogue-based subtitle timing and burn-in |
+| `ColorGrading` | LUT application and tonal consistency |
+| `Packaging` | Title cards, end cards, platform optimization |
+
+### Shared Kernel
+
+Cross-cutting infrastructure:
+
+| Module | Purpose |
+|--------|---------|
+| `LLMRouter` | Multi-model routing with fallback |
+| `TokenBudget` | Prevents API quota exhaustion |
+| `ProcessManager` | Engine isolation and crash recovery |
+| `VersionManager` | Checkpoint/snapshot at every stage |
+| `ComplianceEngine` | Content safety + policy enforcement |
+| `AutoRepairLoop` | Self-healing on known failure patterns |
+
+---
+
+## Core Agents
+
+### Agent 1: Director Review Agent v4
+
+<p align="center">
+  <img src="./assets/arch-4-director.png" alt="Director Review Framework" width="100%"/>
+</p>
+
+**Purpose**: Automated quality assurance before rendering.
+
+**Six-Question Review Framework**:
+
+| # | Question | Assessment |
+|---|----------|------------|
+| Q1 | Why does this shot exist? | Narrative purpose validation |
+| Q2 | Where does the eye go first? | Primary point of interest check |
+| Q3 | What story is lost if deleted? | Hero shot / priority verification |
+| Q4 | Does the EFA naturally lead to next OFA? | Continuity chain validation |
+| Q5 | Is there a simpler way to shoot? | Efficiency review |
+| Q6 | Is it editable, not just pretty? | Post-production readiness |
+
+**Five-Dimension Scoring**:
+
+| Dimension | Description | Weight |
+|-----------|-------------|--------|
+| Readability | Subject/action recognizable in 3 seconds | 25% |
+| Controllability | Historical success rate for this shot type | 20% |
+| Editability | Clear anchor points for cutting | 20% |
+| Emotion Hit | Matches scene emotion target | 20% |
+| Memorability | Has "unforgettable" elements | 15% |
+
+**Block Conditions** (hard stops):
+- Missing subject
+- Camera/action conflict
+- Missing OFA/EFA
+- System violations (forbidden elements, character inconsistency)
 
 ```javascript
-const { HyperrealitySystem } = require('./hyperreality-system');
+const { DirectorReviewAgentV4 } = require('./agents/director-review-agent-v4');
 
-const system = new HyperrealitySystem({
-  pandaCineForge: {
-    enabled: true,      // 启用影视技能引擎
-    autoStart: true,
-    endpoint: 'http://127.0.0.1:8765'
+const agent = new DirectorReviewAgentV4({ model: 'kimi-k2p6' });
+const review = await agent.review(shotCard, sceneCard, adjacentShots);
+
+console.log(review.decision.canRender); // true / false
+console.log(review.fiveDimensions.totalScore); // 0-100
+```
+
+### Agent 2: Prompt Engine Agent v4
+
+<p align="center">
+  <img src="./assets/arch-5-prompt.png" alt="Prompt Engine 8-Step Structure" width="100%"/>
+</p>
+
+**Purpose**: Generate optimized, length-compliant render prompts.
+
+**8-Step Structured Generation** (priority-ordered):
+
+```
+Step 1: Character Anchor     (HIGHEST — NEVER compressed)
+Step 2: Primary Action       (HIGHEST — NEVER compressed)
+Step 3: Performance Focus    (HIGH)
+Step 4: Spatial Environment  (MEDIUM)
+Step 5: Camera Language      (MEDIUM)
+Step 6: Lighting & Material  (MEDIUM)
+Step 7: Sound & Dialogue     (LOWER)
+Step 8: Closing Anchor       (HIGH — NEVER compressed)
+```
+
+**Smart Compression Pipeline** (triggered when > 988 chars):
+1. Remove sound/dialogue
+2. Simplify lighting/material
+3. Simplify camera language
+4. Simplify environment
+5. Remove performance focus
+
+> Steps 1, 2, and 8 are sacred — they are never compressed.
+
+```javascript
+const { PromptEngineAgentV4 } = require('./agents/prompt-engine-agent-v4');
+
+const agent = new PromptEngineAgentV4();
+const result = await agent.generate(shotCard, sceneCard);
+
+console.log(result.renderPrompt);      // Final optimized prompt
+console.log(result.quality.score);     // Quality score 0-100
+console.log(result.charCount);         // Character count
+console.log(result.compressionLog);    // What was compressed
+```
+
+### Agent 3: Scene Card Agent
+
+**Purpose**: Upstream visual/emotional strategy for entire scenes.
+
+**Output Fields**:
+
+| Field | Description |
+|-------|-------------|
+| `scene_function` | establish / advance / conflict / reveal / resolve |
+| `emotion_start` → `emotion_end` | Emotional arc |
+| `light_tier` | A (bright) / B (mystery) / C (contrast) / D (divine) |
+| `primary_palette` + `accent_color` | Color strategy |
+| `screen_direction` | Consistent screen movement |
+| `continuity_mode` | strict / soft / none |
+| `shot_count` | Recommended 3-8 shots |
+| `hero_shots` | Identified hero shot positions |
+
+### Agent 4: Shot Design Agent v4
+
+<p align="center">
+  <img src="./assets/arch-3-shotcard.png" alt="Shot Card Data Model" width="100%"/>
+</p>
+
+**Purpose**: Generate individual shot cards from scene cards.
+
+**25 Structured Fields per Shot**:
+
+```javascript
+// Core Identity
+shot_id, scene_id, shot_type, priority, is_hero_shot
+
+// Narrative
+narrative_purpose, primary_action, performance_goal
+
+// Visual Anchors
+ofa (Opening Frame Anchor), efa (Ending Frame Anchor), primary_poi
+
+// Camera
+shot_size, camera_position, camera_movement, motion_intensity
+
+// Rhythm
+rhythm_level, info_density, duration
+
+// Space
+spatial_relation, environment_traits, screen_direction
+
+// Audio
+dialogue, sound_events
+
+// System
+light_tier, color_temp, transition_intent, continuity_mode
+character_bindings, scene_function
+```
+
+---
+
+## Quick Start
+
+### Prerequisites
+
+```bash
+# Node.js 24+ (required for native fetch, structuredClone)
+node --version  # >= 24.0.0
+
+# API Keys (set as environment variables)
+export LLM_API_KEY="your-llm-key"
+export SEEDANCE_API_KEY="your-seedance-key"
+```
+
+### Installation
+
+```bash
+git clone https://github.com/geniusdapeng-collab/super-mickey.git
+cd super-mickey
+npm install
+```
+
+### Run a Complete Pre-Production Pipeline
+
+```bash
+# Create a story input
+mkdir -p stories
+cat > stories/my-story.json << 'EOF'
+{
+  "title": "Mountain Adventure",
+  "narrative_mode": "dramatic",
+  "target_duration": 60,
+  "target_platform": ["youtube", "tiktok"],
+  "language": "en-US",
+  "style_tags": ["cinematic", "epic", "hyper-realistic"],
+  "protagonist": "alex",
+  "plot": "A mountaineer faces a sudden storm and must find shelter",
+  "scenes": [
+    {
+      "scene_name": "The Ascent",
+      "location": "rocky mountain trail",
+      "characters": ["alex"],
+      "plot": "Alex climbs steadily, enjoying the view",
+      "emotion_target": "wonder"
+    },
+    {
+      "scene_name": "The Storm",
+      "location": "mountain ridge",
+      "characters": ["alex"],
+      "plot": "Dark clouds gather, wind intensifies",
+      "emotion_target": "fear"
+    }
+  ]
+}
+EOF
+
+# Run pre-production
+node app/cli.js preproduction --input stories/my-story.json
+
+# Output will be in ./output/ with:
+# - scene-cards/ (visual strategy per scene)
+# - shot-cards/ (individual shot designs)
+# - prompts/ (render-ready prompts)
+# - reviews/ (director review reports)
+```
+
+### Programmatic Usage (Agent-Friendly)
+
+```javascript
+const { SceneCardAgent } = require('./agents/scene-card-agent');
+const { ShotDesignAgentV4 } = require('./agents/shot-design-agent-v4');
+const { PromptEngineAgentV4 } = require('./agents/prompt-engine-agent-v4');
+const { DirectorReviewAgentV4 } = require('./agents/director-review-agent-v4');
+
+// Step 1: Generate Scene Card
+const sceneAgent = new SceneCardAgent();
+const sceneCard = await sceneAgent.generate({
+  sceneName: 'The Storm',
+  location: 'mountain ridge',
+  characters: ['alex'],
+  plot: 'Dark clouds gather, wind intensifies',
+  emotionTarget: 'fear',
+  duration: 20
+});
+
+// Step 2: Approve Scene Card
+sceneAgent.approve(sceneCard);
+
+// Step 3: Generate Shot Cards
+const shotAgent = new ShotDesignAgentV4();
+const shots = await shotAgent.generateShots(sceneCard);
+
+// Step 4: Generate Prompts
+const promptAgent = new PromptEngineAgentV4();
+for (const shot of shots) {
+  const result = await promptAgent.generate(shot, sceneCard);
+  console.log(`Shot ${shot.shot_id}: ${result.charCount} chars, quality: ${result.quality.score}`);
+}
+
+// Step 5: Director Review
+const director = new DirectorReviewAgentV4();
+for (let i = 0; i < shots.length; i++) {
+  const review = await director.review(shots[i], sceneCard, [
+    shots[i-1], shots[i+1]
+  ].filter(Boolean));
+  console.log(`Shot ${shots[i].shot_id}: ${review.status}`);
+}
+```
+
+---
+
+## AI Agent Integration Guide
+
+> **This section is specifically designed for AI Agents** (Claude, GPT-4, Cursor, Devin, etc.) that want to use SuperMickey as a video generation backend.
+
+### Agent Discovery Protocol
+
+SuperMickey exposes structured metadata for agent discovery:
+
+```bash
+# Get system capabilities
+curl http://localhost:3000/api/capabilities
+
+# Response:
+{
+  "system": "SuperMickey",
+  "version": "6.5.53",
+  "agents": ["scene-card", "shot-design", "prompt-engine", "director-review"],
+  "render_engines": ["seedance-2.0"],
+  "max_prompt_length": 988,
+  "supported_fields": 25,
+  "quality_dimensions": 5,
+  "continuity_modes": ["strict", "soft", "none"],
+  "light_tiers": ["A", "B", "C", "D"]
+}
+```
+
+### MCP (Model Context Protocol) Integration
+
+```javascript
+// mcp-server.js - Expose SuperMickey as MCP tools
+const { Server } = require('@modelcontextprotocol/sdk');
+
+const server = new Server({
+  name: "supermickey",
+  version: "6.5.53"
+});
+
+// Tool: Generate Scene Card
+server.registerTool("generate_scene_card", {
+  description: "Generate a visual strategy scene card from story input",
+  parameters: {
+    sceneName: { type: "string" },
+    location: { type: "string" },
+    characters: { type: "array", items: { type: "string" } },
+    plot: { type: "string" },
+    emotionTarget: { type: "string" }
+  },
+  handler: async (params) => {
+    const agent = new SceneCardAgent();
+    return await agent.generate(params);
   }
 });
 
-const result = await system.create(
-  '一个科幻短片，讲述宇航员在火星发现生命的故事',
-  { characters: ['宇航员李明'], targetDuration: 60 }
-);
+// Tool: Generate Shot Cards
+server.registerTool("generate_shot_cards", {
+  description: "Generate shot cards from an approved scene card",
+  parameters: {
+    sceneCard: { type: "object" }
+  },
+  handler: async (params) => {
+    const agent = new ShotDesignAgentV4();
+    return await agent.generateShots(params.sceneCard);
+  }
+});
 
-console.log(result.finalReport);
+// Tool: Generate Render Prompt
+server.registerTool("generate_prompt", {
+  description: "Generate optimized render prompt from shot card",
+  parameters: {
+    shotCard: { type: "object" },
+    sceneCard: { type: "object" }
+  },
+  handler: async (params) => {
+    const agent = new PromptEngineAgentV4();
+    return await agent.generate(params.shotCard, params.sceneCard);
+  }
+});
+
+// Tool: Director Review
+server.registerTool("director_review", {
+  description: "Run director quality review on a shot",
+  parameters: {
+    shotCard: { type: "object" },
+    sceneCard: { type: "object" },
+    adjacentShots: { type: "array" }
+  },
+  handler: async (params) => {
+    const agent = new DirectorReviewAgentV4();
+    return await agent.review(
+      params.shotCard,
+      params.sceneCard,
+      params.adjacentShots
+    );
+  }
+});
 ```
 
-## 🎬 技术架构
+### Automated Workflow (Agent-Ready)
 
-### 分层设计
+```javascript
+// complete-pipeline.js - Full autonomous pipeline
+const fs = require('fs');
 
-**Layer 0 — 需求清单引擎**
-- 意图解析：从自然语言提取视频类型、风格、角色、时长
-- 需求确认：生成 Markdown 供人工确认后进入生产
+async function runAutonomousPipeline(storyInput) {
+  const results = {
+    sceneCards: [],
+    shotCards: [],
+    prompts: [],
+    reviews: [],
+    approved: []
+  };
 
-**Layer 1 — 剧本引擎**
-- 叙事结构：三幕式/五幕式/环形结构自动生成
-- 情绪弧线：基于情绪意图parser的动态曲线设计
-- 节奏增强：叙事节奏适配器（张弛有度）
+  // Phase 1: Scene Cards
+  const sceneAgent = new SceneCardAgent();
+  for (const scene of storyInput.scenes) {
+    const card = await sceneAgent.generate(scene);
+    sceneAgent.approve(card, 'Auto-approved by agent');
+    results.sceneCards.push(card);
+  }
 
-**Layer 2 — 制作引擎**
-- 镜头设计：运镜、构图、景别、机位自动规划
-- 导演优化：迭代式镜头质量优化 Agent
-- 微动作：角色微表情、肢体语言增强
+  // Phase 2: Shot Design
+  const shotAgent = new ShotDesignAgentV4();
+  for (const sceneCard of results.sceneCards) {
+    const shots = await shotAgent.generateShots(sceneCard);
+    results.shotCards.push(...shots);
+  }
 
-**Layer 3 — 渲染引擎**
-- Prompt 工程：针对 Seedance 等平台优化的提示词生成
-- 批量提交：并发管理 + Token Bucket 限流
-- 结果追踪：成功/失败状态监控
+  // Phase 3: Prompt Generation + Director Review
+  const promptAgent = new PromptEngineAgentV4();
+  const director = new DirectorReviewAgentV4();
 
-**Layer 4 — 后期引擎**
-- 字幕生成：时间轴同步的双语字幕
-- 音乐配置：情绪匹配的背景音乐建议
-- 多版本：横屏/竖屏/弹幕版自动适配
+  for (let i = 0; i < results.shotCards.length; i++) {
+    const shot = results.shotCards[i];
+    const scene = results.sceneCards.find(s => s.scene_id === shot.scene_id);
+    
+    // Generate prompt
+    const prompt = await promptAgent.generate(shot, scene);
+    results.prompts.push(prompt);
+    
+    // Director review
+    const adjacent = [results.shotCards[i-1], results.shotCards[i+1]].filter(Boolean);
+    const review = await director.review(shot, scene, adjacent);
+    results.reviews.push(review);
+    
+    if (review.decision.canRender) {
+      results.approved.push({
+        shot_id: shot.shot_id,
+        prompt: prompt.renderPrompt,
+        quality: prompt.quality.score,
+        review_score: review.fiveDimensions.totalScore
+      });
+    }
+  }
 
-### 增强模块
-
-| 模块 | 功能 | 状态 |
-|------|------|------|
-| 情绪意图解析器 | 从文本提取情绪关键词，驱动情绪弧线 | 默认启用 |
-| 叙事节奏增强器 | 动态调整场景节奏（紧张/舒缓/爆发） | 默认启用 |
-| 导演优化 Agent | 迭代优化镜头构图与运镜质量 | 默认关闭 |
-| 商业广告模式 | 品牌一致性 + 平台合规检查 | 默认关闭 |
-| FPV 极限模式 | 运动镜头语言 + 速度感增强 | 默认关闭 |
-| PandaCineForge | 影视技能库（剧本/镜头/调色/混音） | 默认关闭 |
-
-### 稳定性护盾
-
-- **基线模板匹配**：高置信度时复用已验证模板
-- **降级策略**：LLM 失败时回退到模板/规则引擎
-- **健康监控**：实时检测各阶段耗时与成功率
-- **字段标准化**：最终输出前统一字段格式，防止平台解析失败
-
-## 🐼 PandaCineForge 影视技能引擎
-
-SuperMickey v2.1.0 集成了 **PandaCineForge** — 一个专为 AI 视频创作设计的影视知识引擎。
-
-**7 个融合点覆盖全流程：**
-
-| 融合点 | 注入阶段 | 技能类型 |
-|--------|----------|----------|
-| F1 | 需求清单后 | 剧本结构预召回 |
-| F2 | 剧本引擎前 | 叙事设计技能注入 |
-| F3 | 制作引擎前 | 视觉语言/分镜技能注入 |
-| F4 | 导演优化前 | 导演/视觉设计技能增强 |
-| F5 | 情绪弧线前 | 情绪/叙事节奏技能注入 |
-| F6 | 垂直场景前 | 商业/短视频/FPV 技能注入 |
-| F7 | 后期引擎前 | 调色/混音/后期技能注入 |
-
-**特性：**
-- 严格默认关闭，不影响现有功能
-- 5 秒超时保护，失败自动降级
-- 反馈飞轮：创作结果驱动技能成熟度进化
-- 64+ 预生成影视技能（冷启动即用）
-
-详见 [`skills/panda-cineforge/README.md`](./hyperreality-system/skills/panda-cineforge/README.md)
-
-## 📂 目录结构
-
-```
-super-mickey/
-├── app/                          # CLI 入口
-├── hyperreality-system/          # 核心系统
-│   ├── engines/                  # 引擎层
-│   │   ├── script-engine/        # 剧本引擎
-│   │   ├── production-engine/    # 制作引擎
-│   │   ├── rendering-engine/     # 渲染引擎
-│   │   ├── post-production-engine/ # 后期引擎
-│   │   ├── enhancers/            # 增强模块
-│   │   ├── scenarios/            # 垂直场景
-│   │   ├── emotion/              # 情绪系统
-│   │   └── panda-cineforge-adapter.js  # 技能引擎适配器
-│   ├── skills/                   # 技能系统
-│   │   └── panda-cineforge/      # PandaCineForge 引擎
-│   ├── shields/                  # 稳定性护盾
-│   └── index.js                  # 统一入口
-├── characters/                   # 角色资产
-├── stories/                      # 故事模板
-├── templates/                    # 项目模板
-├── config/                       # 配置文件
-├── tests/                        # 测试
-├── docs/                         # 文档
-├── scripts/                      # 工具脚本
-└── package.json
-```
-
-## 🛡️ 安全与合规
-
-- **零敏感信息**：仓库不含 API Key、Token、密码等凭证
-- **环境变量管理**：所有密钥通过 `.env` 文件配置（已添加 `.gitignore`）
-- **代码审计**：定期扫描防止敏感信息泄露
-
-## 🤝 贡献指南
-
-欢迎提交 Issue 和 Pull Request！
-
-详见 [CONTRIBUTING.md](./CONTRIBUTING.md)
-
-## 📜 开源协议
-
-[MIT License](./LICENSE)
-
-## 🙏 致谢
-
-- 基于 Node.js 生态系统构建
-- LLM 能力由 Kimi 等大模型提供支持
-- 渲染能力由 Seedance 等平台提供
-- PandaCineForge 引擎由独立贡献者开发
-
-## 👤 关于作者
-
-我是 **Genius（大鹏）**，AI 产品经理与 AI 内容自动化生产专家，从业十余年。
-
-现任阿里巴巴千问事业群 AI 产品经理，曾任职阿里巴巴、阿里云及蚂蚁金服，主导过数亿用户产品的全链路 0-1 建设——覆盖 Harness 架构、Multi-Agent 协作与 Workflow 编排的 AI 应用体系。2018 年带领阿里云算法团队将 AI 流水线引入媒体内容生产。
-
-我相信：当 AI 理解工业化节奏，内容生产必将指数级爆发。
-
-**这个项目：** 近几年，我一直业余时间打造基于 AI 多模态的视频剪辑项目。现在，这是基于 Seedance 2.0 及后续版本、模拟好莱坞工业电影制作的全自动 AI 视频生成系统的一部分。我从经典电影工业中解构运镜语法，将 Harness 架构、Multi-Agent 协作、影视领域 Skills 融合转化为系统化的镜头语言工程。通过剧本引擎、生成引擎、渲染引擎、后期制作引擎的四层解耦架构，让 AI 真正理解"电影感"而非仅仅生成像素。
-
-> 剧本是灵魂，运镜是骨架，真实感是底线。
-
-开源这套系统，是希望找到同样痴迷于"用 AI 讲好故事"的创作者与开发者，一起把 AI 视频从"能看"推向"动人"，重新定义数字时代的内容生产范式。
-
-**这套系统帮你"驾驭想象力"。**
-
-📮 Genius · 63904380@qq.com
-
----
-
-## 🌍 About the Author
-
-I'm **Genius**, an AI Product Manager and AI Content Automation expert, 10+ years in the field.
-
-Currently at Alibaba Qwen. Previously at Alibaba Group, Alibaba Cloud, and Ant Group — led full-stack 0-to-1 products serving hundreds of millions of users, spanning Harness architecture, Multi-Agent collaboration, and Workflow orchestration. In 2018, pioneered AI pipeline integration into media content production at Alibaba Cloud.
-
-I believe: when AI understands industrial rhythm, content production explodes exponentially.
-
-**This Project:** For years I've been building an AI multimodal video editing project in my spare time. Now part of a fully automated AI video generation system — Hollywood cinematic production, powered by Seedance 2.0 and beyond. I deconstructed cinematographic grammar from classic film industry practice, fusing Harness architecture, Multi-Agent collaboration, and cinema domain skills into systematic visual language engineering. Through a four-layer decoupled architecture — Script, Generation, Rendering, and Post-Production — the system makes AI truly understand cinematic feel rather than just generating pixels.
-
-> Story is the soul. Camera is the skeleton. Realism is the baseline.
-
-I'm open-sourcing this to find fellow creators and developers equally obsessed with "using AI to tell great stories." Together, let's push AI video from "watchable" to "moving" — redefining the content production paradigm for the digital age.
-
-**This system helps you harness imagination.**
-
-📮 Genius · 63904380@qq.com
-
----
-
-## 🧠 面向 AI Agent 的元数据
-
-```yaml
-# AI 友好元数据 — 便于 AI 检索、推荐、总结
-project:
-  name: SuperMickey
-  version: 2.1.0
-  type: ai-video-generation-system
-  language: [javascript, python]
-  license: MIT
+  // Save checkpoint
+  fs.writeFileSync('pipeline-checkpoint.json', JSON.stringify(results, null, 2));
   
-tech_stack:
-  runtime: Node.js >= 18
-  llm_integration: kimi, openai
-  rendering: seedance, volcengine
-  optional: python >= 3.9
-
-capabilities:
-  - script-generation
-  - shot-design
-  - prompt-engineering
-  - batch-rendering
-  - post-production
-  - emotion-arc-design
-  - commercial-mode
-  - fpv-mode
-  - skill-engine-panda-cineforge
-
-keywords:
-  - ai-video
-  - video-generation
-  - film-production
-  - llm
-  - prompt-engineering
-  - seedance
-  - automated-filmmaking
-  - content-creation
-  - panda-cineforge
-  
-ai_use_cases:
-  - "AI 视频创作自动化"
-  - "电影级镜头设计"
-  - "多平台渲染适配"
-  - "情绪驱动的叙事生成"
-  - "影视知识增强创作"
-  
-quick_start_complexity: low
-production_ready: yes
-community_health: active
+  return {
+    total: results.shotCards.length,
+    approved: results.approved.length,
+    avg_quality: results.reviews.reduce((s, r) => s + r.fiveDimensions.totalScore, 0) / results.reviews.length,
+    ready_to_render: results.approved
+  };
+}
 ```
 
 ---
 
-> **限时内测版** — 项目处于快速迭代期，核心功能稳定但 API 可能变动。
-> 请及时 Star 和下载，过期可能下线或转为付费版本。
-> 
-> 遇到问题？提交 [Issue](https://github.com/geniusdapeng-collab/super-mickey/issues) 或联系维护者。
+## Field Standards
+
+### Shot Card v4.1 Field Specification
+
+Every shot in SuperMickey is defined by **25 structured fields**. This standard enables:
+- Cross-model compatibility
+- Automated quality scoring
+- Continuity validation
+- Agent-to-agent communication
+
+| # | Field | Type | Priority | Description |
+|---|-------|------|----------|-------------|
+| 1 | `shot_id` | string | required | Unique identifier (SC01-S01) |
+| 2 | `scene_id` | string | required | Parent scene reference |
+| 3 | `narrative_purpose` | string | required | Why this shot exists |
+| 4 | `primary_action` | string | required | Main character action |
+| 5 | `performance_goal` | string | required | Emotional acting target |
+| 6 | `ofa` | string | required | Opening Frame Anchor |
+| 7 | `efa` | string | required | Ending Frame Anchor |
+| 8 | `primary_poi` | string | required | First visual focus |
+| 9 | `shot_size` | enum | required | wide/medium/close_up/extreme_close_up |
+| 10 | `camera_position` | string | required | Camera placement |
+| 11 | `camera_movement` | string | required | Specific movement description |
+| 12 | `motion_intensity` | int(1-5) | required | Movement intensity level |
+| 13 | `rhythm_level` | enum | required | 静/缓/中/快/爆发 |
+| 14 | `info_density` | enum | required | 极简/低/中/高/极高 |
+| 15 | `spatial_relation` | string | required | Character-space relationship |
+| 16 | `environment_traits` | string | required | Key environment elements |
+| 17 | `dialogue` | string | optional | Character dialogue |
+| 18 | `sound_events` | string | optional | Key sound descriptions |
+| 19 | `transition_intent` | string | required | How to connect to next shot |
+| 20 | `light_tier` | enum(A-D) | required | Lighting tier |
+| 21 | `screen_direction` | string | required | Screen movement direction |
+| 22 | `continuity_mode` | enum | required | strict/soft/none |
+| 23 | `shot_type` | enum | required | opening/hero/climax/close/building |
+| 24 | `priority` | enum(P1-P5) | required | Shot priority |
+| 25 | `character_bindings` | string | required | Character anchor features |
+
+### Light Tier System
+
+| Tier | Name | Use Case |
+|------|------|----------|
+| **A** | Bright Exploration | Discovery, wonder, journey |
+| **B** | Mystery Low-Light | Suspense, unknown, tension |
+| **C** | Contrast High | Conflict, drama, action |
+| **D** | Divine Presence | Revelation, climax, sacred |
+
+### Priority System
+
+| Priority | Type | Retry Strategy |
+|----------|------|----------------|
+| **P1** | Hero Shot | Must succeed — max retries |
+| **P2** | Key Narrative | High retry count |
+| **P3** | Supporting | Standard retry |
+| **P4** | Transition | Low retry, can simplify |
+| **P5** | Replaceable | Skip if fails |
+
+---
+
+## Configuration
+
+### Production Bible
+
+The `ProductionBible` is the central knowledge base for your project:
+
+```javascript
+// config/production-bible.json
+{
+  "project": {
+    "name": "Mountain Adventure",
+    "style": "cinematic documentary",
+    "aspect_ratio": "16:9",
+    "resolution": "1080p"
+  },
+  "characters": {
+    "alex": {
+      "name": "Alex Chen",
+      "role": "protagonist",
+      "anchorFeatures": ["short black hair", "hiking gear", "determined eyes"],
+      "reference_images": ["characters/alex/front.jpg"]
+    }
+  },
+  "environment": {
+    "mountain_trail": {
+      "name": "Rocky Mountain Trail",
+      "spatialKeywords": ["narrow path", "steep rocks", "loose gravel"],
+      "palette": { "primary": "gray-brown", "accent": "green", "forbidden": ["neon"] }
+    }
+  },
+  "forbidden": ["text", "watermark", "logo", "extra limbs", "distorted"]
+}
+```
+
+### Prompt Length Configuration
+
+```javascript
+// config/prompt-length.json
+{
+  "TARGET_MIN": 300,
+  "TARGET_MAX": 850,
+  "HARD_MAX": 988,
+  "getStatus": (count) => count <= 850 ? 'optimal' : count <= 988 ? 'compressed' : 'overflow'
+}
+```
+
+---
+
+## Project Structure
+
+```
+supermickey/
+├── agents/                          # Specialized AI agents
+│   ├── director-review-agent-v4.js  # Quality assurance agent
+│   ├── prompt-engine-agent-v4.js    # Prompt generation agent
+│   ├── scene-card-agent.js          # Visual strategy agent
+│   └── shot-design-agent-v4.js      # Shot design agent
+├── app/                             # CLI and commands
+│   ├── cli.js                       # Entry point
+│   └── commands/
+│       └── preproduction.js         # Full pipeline command
+├── architecture-v2/                 # Interface contracts
+│   └── interface-contract-v1.md     # 4-layer architecture spec
+├── characters/                      # Character reference images
+│   └── {character}/
+│       └── portraits/
+├── checkpoints/                     # Pipeline state snapshots
+├── config/                          # Configuration
+│   ├── production-bible.js          # Project knowledge base
+│   └── prompt-length.json           # Length constraints
+├── engines/                         # Future engine modules
+│   ├── script-engine/               # (v7.0) Script generation
+│   ├── production-engine/           # (v7.0) Shot production
+│   ├── rendering-engine/            # (v7.0) Multi-model render
+│   └── post-production-engine/      # (v7.0) Assembly & grading
+├── shared-kernel/                   # Future shared infrastructure
+│   ├── llm-router.js
+│   ├── token-budget.js
+│   ├── version-manager.js
+│   └── compliance-engine.js
+├── systems/                         # Core systems
+│   ├── llm-reasoning-engine.js      # LLM abstraction layer
+│   ├── production-bible.js          # Knowledge base loader
+│   ├── light-tier.js                # Lighting classification
+│   ├── quality-scorer.js            # 5-dimension scoring
+│   ├── continuity-manager.js        # Shot continuity
+│   ├── prompt-guardian.js           # Auto prompt repair
+│   └── preproduction-service.js     # Full pipeline orchestrator
+├── templates/                       # Output templates
+│   ├── scene-card-template.md
+│   ├── shot-card-v4-template.md
+│   └── director-review-form.md
+├── stories/                         # Story inputs
+├── output/                          # Generated outputs
+└── CHANGELOG.md
+```
+
+---
+
+## API Reference
+
+### SceneCardAgent
+
+```javascript
+const { SceneCardAgent } = require('./agents/scene-card-agent');
+const agent = new SceneCardAgent(options);
+
+// Generate
+const sceneCard = await agent.generate(storyInput, options);
+
+// Approve (required before shot generation)
+agent.approve(sceneCard, directorNotes);
+
+// Validate
+const validation = agent.validateForShotCard(sceneCard);
+// → { valid: true } or { valid: false, missing: [...] }
+```
+
+### ShotDesignAgentV4
+
+```javascript
+const { ShotDesignAgentV4 } = require('./agents/shot-design-agent-v4');
+const agent = new ShotDesignAgentV4(options);
+
+// Generate all shots for a scene
+const shots = await agent.generateShots(sceneCard, storyBeats);
+
+// Check blocking conditions
+const blocks = agent.checkBlocking(shots);
+```
+
+### PromptEngineAgentV4
+
+```javascript
+const { PromptEngineAgentV4 } = require('./agents/prompt-engine-agent-v4');
+const agent = new PromptEngineAgentV4(options);
+
+// Generate prompt
+const result = await agent.generate(shotCard, sceneCard);
+
+// Result structure:
+{
+  renderPrompt,      // Final optimized prompt string
+  charCount,         // Character count
+  targetMin,         // 300
+  targetMax,         // 850
+  maxChars,          // 988
+  lengthStatus,      // 'optimal' | 'compressed' | 'overflow'
+  compressionLog,    // Array of compression steps
+  quality: {
+    score,           // 0-100
+    checks,          // Individual check results
+    assessment,      // 'good' | 'pass' | 'needs improvement'
+    canRender        // Boolean
+  },
+  promptData         // Structured 8-step data
+}
+```
+
+### DirectorReviewAgentV4
+
+```javascript
+const { DirectorReviewAgentV4 } = require('./agents/director-review-agent-v4');
+const agent = new DirectorReviewAgentV4(options);
+
+// Review a shot
+const review = await agent.review(shotCard, sceneCard, adjacentShots);
+
+// Result structure:
+{
+  shot_id,
+  sixQuestions,           // Q1-Q6 with scores and pass/fail
+  sixQuestionsTotal,      // Sum of Q scores
+  fiveDimensions: {
+    dimensions: {
+      readability: { score, weight, weighted },
+      controllability: { score, weight, weighted },
+      editability: { score, weight, weighted },
+      emotionHit: { score, weight, weighted },
+      memorability: { score, weight, weighted }
+    },
+    totalScore,            // 0-100
+    grade                  // { label: 'excellent'|'good'|'pass'|'fail' }
+  },
+  blockCheck: {
+    blocked,               // Boolean
+    blocks                 // Array of blocking issues
+  },
+  decision: {
+    canRender,             // Boolean
+    needsDirectorConfirm,  // Boolean
+    directorNotes,         // String
+    modificationSuggestions // Array
+  },
+  status                  // 'approved' | 'blocked'
+}
+```
+
+---
+
+## Roadmap
+
+### v6.x (Current — Stable)
+- [x] Director Review Agent v4 with 6-question framework
+- [x] Prompt Engine Agent v4 with 8-step generation
+- [x] Scene Card Agent with emotion/light control
+- [x] Shot Design Agent v4 with 25-field standard
+- [x] Production Bible knowledge base
+- [x] Light Tier system (A/B/C/D)
+- [x] Continuity Manager
+- [x] Prompt Guardian auto-repair
+- [x] Pre-production service with checkpoints
+
+### v7.0 (Q3 2026)
+- [ ] **Script Engine** — Structured screenplay generation
+- [ ] **Rendering Engine** — Multi-model adapter (Kling, Pika, Runway)
+- [ ] **Post-Production Engine** — AI editing and packaging
+- [ ] **Shared Kernel** — LLM Router, Token Budget, Compliance
+- [ ] **MCP Server** — Native Model Context Protocol support
+- [ ] **REST API** — HTTP interface for remote agents
+
+### v7.1 (Q4 2026)
+- [ ] Commercial template engine
+- [ ] A/B testing framework
+- [ ] Analytics dashboard
+- [ ] Multi-language dialogue support
+
+### v7.2 (2027)
+- [ ] Custom engine plugins
+- [ ] Hybrid mode editor
+- [ ] Community template marketplace
+
+---
+
+## How to Star & Contribute
+
+### Show Your Support
+
+If SuperMickey helps your video production workflow, please consider:
+
+**Starring the repo** — It helps other developers and AI agents discover this project.
+
+```bash
+# If using as a dependency, credit in your README
+# If building on top, reference the architecture
+# If reporting issues, include your checkpoint JSON
+```
+
+### Contribution Guidelines
+
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feature/amazing`)
+3. **Commit** with clear messages
+4. **Push** to your fork
+5. **Open** a Pull Request
+
+### Areas Needing Contributors
+
+| Area | Skill Level | Description |
+|------|-------------|-------------|
+| Render Adapters | Intermediate | Add Kling/Pika/Runway adapters |
+| MCP Tools | Intermediate | Expand MCP tool coverage |
+| Documentation | Beginner | Translation, examples, tutorials |
+| Quality Benchmarks | Advanced | Build evaluation datasets |
+| Template Library | Beginner | Create scene templates |
+
+---
+
+## Changelog
+
+### v6.5.53 (2026-06-29)
+- Pre-release: Core code packaging for open source
+- All 4 agents production-ready
+- 25-field shot card standard finalized
+- Interface contracts for v7.0 defined
+
+### v6.5.0 (2026-06-25)
+- CLI entry point with pre-production command
+- Checkpoint persistence (phase1/phase2/phase3)
+- Process guard for crash recovery
+
+### v6.2.x (2026-05)
+- Smart prompt compression pipeline
+- Vertical reading format for mobile review
+- Sensitive content detection and handling
+- Prompt truncation at punctuation
+
+### v2.1.2 (2026-06-20)
+- Sound description system (SFX, ambience, BGM)
+- Multi-shot timestamp detection
+- Negative prompt support
+- Seed value locking
+- Cost optimization strategies
+
+### v2.1.0 (2026-06-20)
+- PromptGuardian auto-repair system
+- Character appearance anchor system
+- Reference format auto-correction
+
+---
+
+## License
+
+MIT License — see [LICENSE](LICENSE) for details.
+
+---
+
+<p align="center">
+  <b>SuperMickey</b> — Built for the age of AI-generated cinema.<br/>
+  <i>If you can script it, we can film it.</i>
+</p>
+
+<p align="center">
+  <a href="https://github.com/geniusdapeng-collab/super-mickey">Star us on GitHub</a> ·
+  <a href="https://discord.gg/supermickey">Join Discord</a> ·
+  <a href="https://twitter.com/supermickey">Follow on X</a>
+</p>
