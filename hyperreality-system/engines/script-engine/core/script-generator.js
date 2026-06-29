@@ -375,8 +375,11 @@ ${meta._directorStyle}` : ''}
           throw new Error(`LLM引擎错误: ${result.error}`);
         }
         
-        // v1.2.6-fix8: forceJson 模式下，content 必非空
-        // 【v2.1.6-fix12】系统级修复：检查 content 是否为完整 JSON 剧本，不完整则从 reasoning 提取
+        // 【v2.1.6-fix14】增强JSON提取：从content和reasoning中智能提取
+        let extractedJson = null;
+        let jsonSource = null;
+        
+        // 优先尝试从content中提取JSON
         if (result.content && result.content.trim()) {
           const content = result.content.trim();
           
@@ -398,13 +401,37 @@ ${meta._directorStyle}` : ''}
             return content;
           }
           
+          // content 不是有效 JSON，尝试使用增强提取方法
+          console.warn('[ScriptGenerator] ⚠️ content非有效JSON，尝试增强提取...');
+          extractedJson = this._extractJsonFromText(content);
+          if (extractedJson) {
+            try {
+              const parsed = JSON.parse(extractedJson);
+              if (parsed.meta && parsed.structure && parsed.structure.scenes) {
+                jsonSource = 'content-enhanced';
+                console.log(`[ScriptGenerator] 从content增强提取JSON成功: ${extractedJson.length}字符, scenes=${parsed.structure.scenes.length}`);
+                return extractedJson;
+              }
+            } catch (e) {
+              console.warn(`[ScriptGenerator] 增强提取的JSON解析失败: ${e.message}`);
+            }
+          }
+          
           // content 不完整，尝试从 reasoning 提取
           if (result.reasoning_content && result.reasoning_content.trim()) {
             console.warn('[ScriptGenerator] ⚠️ content 不完整，尝试从 reasoning 提取完整 JSON...');
-            const extracted = this._extractValidJson(result.reasoning_content);
-            if (extracted && extracted.meta && extracted.structure && extracted.structure.scenes && extracted.structure.scenes.length > 0) {
-              console.log(`[ScriptGenerator] ✅ 从 reasoning 提取完整 JSON: ${JSON.stringify(extracted).length}字符, scenes=${extracted.structure.scenes.length}`);
-              return JSON.stringify(extracted);
+            extractedJson = this._extractJsonFromText(result.reasoning_content);
+            if (extractedJson) {
+              try {
+                const parsed = JSON.parse(extractedJson);
+                if (parsed.meta && parsed.structure && parsed.structure.scenes) {
+                  jsonSource = 'reasoning';
+                  console.log(`[ScriptGenerator] ✅ 从 reasoning 提取完整 JSON: ${extractedJson.length}字符, scenes=${parsed.structure.scenes.length}`);
+                  return extractedJson;
+                }
+              } catch (e) {
+                console.warn(`[ScriptGenerator] reasoning提取的JSON解析失败: ${e.message}`);
+              }
             }
             console.warn('[ScriptGenerator] ⚠️ 从 reasoning 提取也失败，回退使用不完整的 content');
           }
@@ -413,17 +440,22 @@ ${meta._directorStyle}` : ''}
         }
         
         // 兜底：从 reasoning 中提取 JSON 对象
-        // 【P2-1 修复】改用 _extractValidJson 替代贪婪正则，与主提取逻辑一致
         if (result.reasoning_content && result.reasoning_content.trim()) {
-          console.warn('[ScriptGenerator] ⚠️ forceJson模式下仍返回空content，尝试从reasoning提取');
-          const extracted = this._extractValidJson(result.reasoning_content);
+          console.warn('[ScriptGenerator] ⚠️ content为空，尝试从reasoning提取');
+          const extracted = this._extractJsonFromText(result.reasoning_content);
           if (extracted) {
-            const extractedJson = JSON.stringify(extracted);
-            console.log(`[ScriptGenerator] 从reasoning提取JSON: meta=${!!extracted.meta}, structure=${!!extracted.structure}, scenes=${extracted.structure?.scenes?.length || 0}`);
-            return extractedJson;
+            try {
+              const parsed = JSON.parse(extracted);
+              if (parsed.meta && parsed.structure && parsed.structure.scenes) {
+                console.log(`[ScriptGenerator] 从reasoning提取JSON: ${extracted.length}字符, scenes=${parsed.structure.scenes.length}`);
+                return extracted;
+              }
+            } catch (e) {
+              console.warn(`[ScriptGenerator] reasoning提取的JSON解析失败: ${e.message}`);
+            }
           }
         }
-        throw new Error('LLM返回空内容（success=true但content为空，forceJson模式异常）');
+        throw new Error('LLM返回空内容且无法从reasoning提取有效JSON');
       } catch (error) {
         // 错误时也要清除定时器
         if (timer) clearTimeout(timer);
@@ -805,6 +837,74 @@ ${meta._directorStyle}` : ''}
           }
         }
       }
+    }
+
+    return null;
+  }
+
+  // 【v2.1.6-fix14】增强JSON提取：从文本中智能提取JSON（支持markdown代码块、括号匹配等）
+  _extractJsonFromText(text) {
+    if (!text || typeof text !== 'string') return null;
+
+    // 1. 从 markdown 代码块中提取
+    const codeBlockMatch = text.match(/```json\s*([\s\S]*?)\s*```/i);
+    if (codeBlockMatch?.[1]) {
+      const candidate = codeBlockMatch[1].trim();
+      try { JSON.parse(candidate); return candidate; } catch (_) {}
+    }
+
+    // 2. 从 ``` 代码块中提取（无语言标识）
+    const genericBlockMatch = text.match(/```\s*([\s\S]*?)\s*```/);
+    if (genericBlockMatch?.[1]) {
+      const candidate = genericBlockMatch[1].trim();
+      try { JSON.parse(candidate); return candidate; } catch (_) {}
+    }
+
+    // 3. 整体尝试解析
+    const trimmed = text.trim();
+    try { JSON.parse(trimmed); return trimmed; } catch (_) {}
+
+    // 4. 从文本中搜索JSON对象（使用括号匹配）
+    let start = text.indexOf('{');
+    if (start === -1) return null;
+
+    let braceCount = 0;
+    let inString = false;
+    let escaped = false;
+    let lastValidEnd = -1;
+
+    for (let i = start; i < text.length; i++) {
+      const ch = text[i];
+      if (inString) {
+        if (escaped) { escaped = false; }
+        else if (ch === '\\') { escaped = true; }
+        else if (ch === '"') { inString = false; }
+        continue;
+      }
+      if (ch === '"') { inString = true; }
+      else if (ch === '{') { braceCount++; }
+      else if (ch === '}') {
+        braceCount--;
+        if (braceCount === 0) lastValidEnd = i + 1;
+      }
+    }
+
+    if (lastValidEnd > start) {
+      const candidate = text.substring(start, lastValidEnd);
+      try { JSON.parse(candidate); return candidate; } catch (_) {}
+    }
+
+    // 5. 尝试补全不闭合的JSON（处理截断）
+    const lastBrace = text.lastIndexOf('}');
+    const firstBrace = text.indexOf('{');
+    if (firstBrace >= 0) {
+      let candidate = text.substring(firstBrace, lastBrace >= firstBrace ? lastBrace + 1 : undefined);
+      let open = 0, close = 0;
+      for (const ch of candidate) { if (ch === '{') open++; else if (ch === '}') close++; }
+      candidate += '}'.repeat(Math.max(0, open - close));
+      candidate = candidate.replace(/,\s*"[^"]*"?\s*:\s*"[^"]*$/, '');
+      candidate = candidate.replace(/,\s*"[^"]*"?\s*:\s*$/, '');
+      try { JSON.parse(candidate); return candidate; } catch (_) {}
     }
 
     return null;
