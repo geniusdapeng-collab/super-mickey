@@ -79,6 +79,8 @@ HyperrealitySystem-*.md
 *.raw
 !docs/assets/*.png
 !docs/assets/*.jpg
+!assets/*.png
+!assets/*.jpg
 
 # ============================================
 # 6. 测试执行脚本（含硬编码内容）
