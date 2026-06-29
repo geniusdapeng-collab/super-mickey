@@ -2330,7 +2330,7 @@ class NirathMasterPipeline {
 【重要约束】`);
       parts.push(`- 本视频为真实世界纪录片/科普风格，禁止使用任何虚构元素`);
       parts.push(`- 禁止出现：外星生态、Nirath、异兽、科幻场景、超自然现象`);
-      parts.push(`- 禁止出现："小G迈出第一步"、"迎向异兽"、"选择信任"、"勇敢告别"、"温柔注视"等Nirath专属叙事短语`);
+      parts.push(`- 禁止出现："AgentX迈出第一步"、"迎向异兽"、"选择信任"、"勇敢告别"、"温柔注视"等Nirath专属叙事短语`);
       parts.push(`- 所有角色必须是真实人类，禁止虚构角色`);
       parts.push(`- 场景必须是真实医疗/教育环境`);
     }
@@ -2555,7 +2555,7 @@ ${isNirath
 }
 
 ## 关键规则(P0级约束)
-- ❌ 绝对禁止生成旁白/叙述性文字(如"小G来到了...")
+- ❌ 绝对禁止生成旁白/叙述性文字(如"AgentX来到了...")
 - ✅ 必须生成角色对白/台词(角色自己说的话)
 - ✅ 严格遵循每个场景指定的角色列表,禁止引入未声明角色
 - ✅ 台词内容必须与场景名称和场景描述的主题一致(如"症状讲解"场景必须围绕症状展开)
@@ -3214,7 +3214,7 @@ ${isNirath
     const genericChars = [
       { id: 'chen-nurse', keywords: ['陈女士', 'chen-nurse', '护士', '主讲', '主持人'] },
       { id: 'coach-li', keywords: ['李明教练', 'coach-li', '教练', '李教练', '康复专家'] },
-      { id: 'xiaoG', keywords: ['小G', '小g', '男孩', ' protagonist', '主角'] }
+      { id: 'xiaoG', keywords: ['AgentX', 'AgentX', '男孩', ' protagonist', '主角'] }
     ];
 
     for (const char of genericChars) {
@@ -3263,7 +3263,7 @@ ${isNirath
     const isBefore = index < midPoint;
     const sceneType = scene.type || 'explanation';
 
-    // === 要素1: 小G冒险主动性 ===
+    // === 要素1: AgentX冒险主动性 ===
     // 🔥 v6.1-fix: 每镜至少注入2个主动行为关键词,确保检查器能检测到
     const initiativeKeywords = ['主动', '伸出', '触碰', '接近', '迈出', '向前', '探索', '引导', '决定', '选择', '勇敢', '迎向', '追逐', '奔跑', '突破', '面对', '直视', '挑战', '不后退', '不逃避', '迎上去', '坚定', '决心'];
     const existingInitiatives = initiativeKeywords.filter(kw => enriched.includes(kw));
@@ -3282,7 +3282,7 @@ ${isNirath
       const actionIndex = (index + (parseInt(scene.id?.slice(1) || '0') % 100)) % actions.length;
       const action1 = actions[actionIndex];
       const action2 = actions[(actionIndex + 1) % actions.length];
-      enriched += `,小G${action1},${action2}`;
+      enriched += `,AgentX${action1},${action2}`;
     }
 
     // === 要素2: 异兽独特性 ===
@@ -3311,13 +3311,13 @@ ${isNirath
         // 前半场:注入好奇、试探、轻微不安
         const hasCuriosity = ['好奇', '疑问', '探索', '试探', '想知道', '观察'].some(kw => enriched.includes(kw));
         if (!hasCuriosity) {
-          enriched += ',小G表情好奇而略带试探';
+          enriched += ',AgentX表情好奇而略带试探';
         }
       } else {
         // 后半场:注入信任、坚定、温柔
         const hasTenderness = ['温柔', '信任', '坚定', '微笑', '理解', '释然'].some(kw => enriched.includes(kw));
         if (!hasTenderness) {
-          enriched += ',小G表情温柔而坚定';
+          enriched += ',AgentX表情温柔而坚定';
         }
       }
     }
@@ -3328,12 +3328,12 @@ ${isNirath
       if (index === 0) {
         // 开场:轻微犹豫
         if (!['犹豫', '紧张', '不安', '警惕'].some(kw => enriched.includes(kw))) {
-          enriched += ',小G initially slightly hesitant yet curious';
+          enriched += ',AgentX initially slightly hesitant yet curious';
         }
       } else if (index === totalScenes - 1) {
         // 结尾:完成转变
         if (!['坚定', '勇敢', '温柔', '信任', '接纳'].some(kw => enriched.includes(kw))) {
-          enriched += ',小G眼神坚定充满信任,完成成长转变';
+          enriched += ',AgentX眼神坚定充满信任,完成成长转变';
         }
       }
     }
@@ -3791,7 +3791,7 @@ ${isNirath
 
     const injector = this.modules.protagonistInjector;
     const protagonistId = input?.protagonistId || 'xiaoG';
-    const protagonistName = input?.protagonistName || '小G';
+    const protagonistName = input?.protagonistName || 'AgentX';
 
     const result = injector.inject(storyboard, { protagonistId, protagonistName });
 
@@ -4293,7 +4293,7 @@ ${isNirath
         if (isBeatName) {
           // 对于beatName,只检查narration是否包含与场景相关的关键词
           const narrationLower = shot.narration.toLowerCase();
-          const hasSceneRelated = ['饕餮', '小G', 'Nirath', '钩吾山', '荒原', '双眼', '种子', '触碰'].some(kw =>
+          const hasSceneRelated = ['饕餮', 'AgentX', 'Nirath', '钩吾山', '荒原', '双眼', '种子', '触碰'].some(kw =>
             narrationLower.includes(kw.toLowerCase())
           );
 
@@ -5216,7 +5216,7 @@ ${isNirath
           try {
             const context = {
               totalShots: storyboard.shots.length,
-              protagonistName: this.projectConfig.protagonistName || '小G',
+              protagonistName: this.projectConfig.protagonistName || 'AgentX',
               beastId: this.projectConfig.beastId || '',
               beastName: this.projectConfig.beastName || '',
               habitat: this.projectConfig.habitat || shot.scene || '',
@@ -6255,7 +6255,7 @@ ${isNirath
       }
       // 构建 @Image 引用行（最多2张）
       for (const sel of selectedAngles) {
-        const charName = sel.charId === 'xiaoG' ? '小G' : (sel.charId === 'tao-tie' ? '饕餮' : sel.charId);
+        const charName = sel.charId === 'xiaoG' ? 'AgentX' : (sel.charId === 'tao-tie' ? '饕餮' : sel.charId);
         const coreDesc = charCoreDesc[sel.charId] || ['核心特征'];
         const angleDescMap = {
           'front': '正面', 'threeQuarter': '侧面', 'closeup': '近景', 'side': '另一侧面'
@@ -8914,13 +8914,13 @@ ${isNirath
     const discoveryDialogues = {
       '裂隙微光': {
         dialogue: '看那些晶丝...它们在模仿我的动作。这下面有东西在呼吸。',
-        visualPrompt: '超写实,电影级微距镜头,晶状菌丝如神经网般覆盖岩壁,孢子雾在裂隙中缓慢升腾。小G俯身观察,手指轻触菌丝,菌丝随即发出幽蓝光芒并产生共振波纹。裂隙深处透出不明光源,照亮漂浮的孢子微粒如金色尘埃。',
+        visualPrompt: '超写实,电影级微距镜头,晶状菌丝如神经网般覆盖岩壁,孢子雾在裂隙中缓慢升腾。AgentX俯身观察,手指轻触菌丝,菌丝随即发出幽蓝光芒并产生共振波纹。裂隙深处透出不明光源,照亮漂浮的孢子微粒如金色尘埃。',
         emotion: 'curiosity',
         dangerLevel: 'medium'
       },
       '深渊发现': {
         dialogue: '这些结晶...它们在跟着我移动。不是风,是某种感应。',
-        visualPrompt: '超写实,电影级光影,深渊底部发光结晶体,随主角靠近产生脉动光芒。小G蹲下观察,结晶体表面倒映出双恒星光色。',
+        visualPrompt: '超写实,电影级光影,深渊底部发光结晶体,随主角靠近产生脉动光芒。AgentX蹲下观察,结晶体表面倒映出双恒星光色。',
         emotion: 'curiosity',
         dangerLevel: 'low'
       }
@@ -9024,7 +9024,7 @@ ${isNirath
       visualElements.push('穷奇翼爪展开,撕裂周围孢子雾,翼膜透光呈现血管状能量纹路');
     }
     if (dialogue.includes('缺') || dialogue.includes('要')) {
-      visualElements.push('小G站在两兽之间,身体微微前倾,双手张开呈调解姿态,表情紧张但坚定');
+      visualElements.push('AgentX站在两兽之间,身体微微前倾,双手张开呈调解姿态,表情紧张但坚定');
     }
 
     // 将视觉元素注入visualPrompt

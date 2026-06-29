@@ -275,7 +275,7 @@ const SHANHAI_ONE_SHOT_TEMPLATES = {
       },
       
       camera: {
-        perspective: 'POV（小G视角）',
+        perspective: 'POV（AgentX视角）',
         lens: '8mm鱼眼',
         movement: '穿越崩塌废墟，九尾狐在前引导',
         speed: 'fast（快速）→ silky（丝滑减速）',

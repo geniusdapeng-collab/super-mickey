@@ -211,7 +211,7 @@ class PromptBuilder {
     // 提取关键词并转化为视觉元素
     const visualElements = [];
     
-    if (script.includes('小G') || script.includes('主角')) {
+    if (script.includes('AgentX') || script.includes('主角')) {
       visualElements.push('protagonist in frame');
     }
     if (script.includes('烛龙') || script.includes('神兽')) {
@@ -495,7 +495,7 @@ if (require.main === module) {
   
   const result = builder.build({
     sceneName: '永夜裂谷',
-    script: '我是小G，今天带大家来到永夜裂谷',
+    script: '我是AgentX，今天带大家来到永夜裂谷',
     characters: ['xiaoG'],
     type: 'opening',
     emotionPhase: 'establishing',

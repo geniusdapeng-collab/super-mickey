@@ -2,7 +2,7 @@
  * 成长痕迹系统 v1.0
  * Growth Trace System
  * 
- * 功能：在角色档案中记录小G从X→Y的转变弧光
+ * 功能：在角色档案中记录AgentX从X→Y的转变弧光
  * 核心能力：
  * - 初始状态标记（恐惧/犹豫/不解）
  * - 转变触发点记录（关键镜头/台词/动作）
@@ -426,7 +426,7 @@ class GrowthTraceSystem {
         hasTurningPoint: turningPoints.length > 0,
         continuitySet: !!trace.continuity.nextEpisode
       },
-      summary: `本集小G从${initial.description}成长为${final.description}，经历${turningPoints.length}个转变时刻（${criticalPoints.length}个关键），信心+${final.growthDelta.confidence}，信任+${final.growthDelta.trustLevel}`
+      summary: `本集AgentX从${initial.description}成长为${final.description}，经历${turningPoints.length}个转变时刻（${criticalPoints.length}个关键），信心+${final.growthDelta.confidence}，信任+${final.growthDelta.trustLevel}`
     };
   }
 

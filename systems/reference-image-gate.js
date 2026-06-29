@@ -3,7 +3,7 @@
  * 
  * 最严格的硬拦截机制 + 多角色全角度支持：
  * - 含角色的镜头，不传对应角色的全部定妆照 → 完全无法提交渲染
- * - 支持任意数量角色同框（小G+N神兽 / N神兽 / 任意组合）
+ * - 支持任意数量角色同框（AgentX+N神兽 / N神兽 / 任意组合）
  * - 每个角色必须传全部4角度（front, threeQuarter, closeup, side）
  * - 三层防护：预生产预警 → 渲染前置硬拦截 → API最终防线
  */
@@ -505,7 +505,7 @@ class ReferenceImageGate {
 
 Seedance 2.0 绑定规范:
    在 Prompt 中显式使用 @image 格式引用角色：
-   @image1 作为小G角色形象参考
+   @image1 作为AgentX角色形象参考
    @image2 作为饕餮角色形象参考
    
    content 数组中必须包含：

@@ -326,7 +326,7 @@ if (require.main === module) {
   // 测试4: 通用场景
   const shot4 = {
     id: 'S04',
-    visualPrompt: '小G站在开阔地带，看着远处的风景'
+    visualPrompt: 'AgentX站在开阔地带，看着远处的风景'
   };
   console.log('\n=== 场景4: 通用场景 ===');
   console.log('  分析:', designer.analyzeScene(shot4.visualPrompt));

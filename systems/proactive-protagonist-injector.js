@@ -5,7 +5,7 @@
  * v6.5.34-fix: 全局禁用narration，只注入visualPrompt/prompt，不再污染narration
  * 
  * 产品机制：在故事板生成后、Prompt构建前，自动检测并注入主角主动动作。
- * 解决五要素「小G冒险主动性不足」的系统性问题。
+ * 解决五要素「AgentX冒险主动性不足」的系统性问题。
  * 
  * 挂载点：NirathMasterPipeline Stage 7之后（故事板校验后）
  * 
@@ -21,7 +21,7 @@ class ProactiveProtagonistInjector {
   constructor(config = {}) {
     this.config = {
       protagonistId: config.protagonistId || 'xiaoG',
-      protagonistName: config.protagonistName || '小G',
+      protagonistName: config.protagonistName || 'AgentX',
       // 主动性动作词库（按优先级排序）
       initiativeActions: [
         // 核心主动动作（高权重，优先注入）

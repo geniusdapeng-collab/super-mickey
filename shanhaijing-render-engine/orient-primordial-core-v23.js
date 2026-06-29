@@ -712,7 +712,7 @@ if (require.main === module) {
           S01: { act: 'Act1-铺垫', beat: '世界建立', purpose: '建立Nirath世界', emotionArc: 'peaceful→excited' },
           S02: { act: 'Act1-铺垫', beat: '生活常态', purpose: '展示晨光', emotionArc: 'peaceful→peaceful' },
           S03: { act: 'Act1-铺垫', beat: '异常出现', purpose: '十日并出', emotionArc: 'peaceful→alarmed' },
-          S04: { act: 'Act2-冲突', beat: '灾难降临', purpose: '小G躲藏', emotionArc: 'scared→determined' }
+          S04: { act: 'Act2-冲突', beat: '灾难降临', purpose: 'AgentX躲藏', emotionArc: 'scared→determined' }
         },
         EP02: {
           S05: { act: 'Act2-冲突', beat: '英雄登场', purpose: '后羿登场', emotionArc: 'determined→compassionate' },
@@ -727,7 +727,7 @@ if (require.main === module) {
           S12: { act: 'Act4-结局', beat: '最后一箭', purpose: '第十太阳回归', emotionArc: 'offering→balanced' }
         },
         EP04: {
-          S13: { act: 'Act4-结局', beat: '新生', purpose: '小G走出地窖', emotionArc: 'amazed→grateful' },
+          S13: { act: 'Act4-结局', beat: '新生', purpose: 'AgentX走出地窖', emotionArc: 'amazed→grateful' },
           S14: { act: 'Act4-结局', beat: '埋葬弓箭', purpose: '埋葬Biobow', emotionArc: 'grateful→peaceful' },
           S15: { act: 'Act4-结局', beat: '纪念', purpose: '箭林生长', emotionArc: 'peaceful→hopeful' },
           S16: { act: 'Act4-结局', beat: '传承', purpose: '测量日影', emotionArc: 'hopeful→content' }

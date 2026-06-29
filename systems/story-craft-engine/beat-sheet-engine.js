@@ -111,7 +111,7 @@ class BeatSheetEngine {
       visualTask: `异兽视角："这是什么？危险吗？"`,
       emotionTarget: { emotion: 'tension', intensity: 0.5 },
       requiredElements: [
-        '小G的出现方式（意外闯入/主动探索/被吸引）',
+        'AgentX的出现方式（意外闯入/主动探索/被吸引）',
         '异兽的警觉反应（不是攻击，是评估）',
         '双方第一次"看见"对方'
       ],
@@ -135,8 +135,8 @@ class BeatSheetEngine {
       emotionTarget: { emotion: 'confusion', intensity: 0.7 },
       requiredElements: [
         '一个"反常"动作（与异兽"恐怖"形象矛盾）',
-        '小G注意到这个反常',
-        '观众和小G同时产生疑问'
+        'AgentX注意到这个反常',
+        '观众和AgentX同时产生疑问'
       ],
       narrationTemplate: this.generateNarrationTemplate('crack', beastProfile, theme, coreTwist),
       visualPromptTemplate: this.generateVisualTemplate('crack', beastProfile, theme, coreTwist),
@@ -159,7 +159,7 @@ class BeatSheetEngine {
       requiredElements: [
         '核心真相的视觉呈现（必须震撼）',
         '异兽的"脆弱/温柔"一面暴露',
-        '小G的反应（从恐惧到理解）'
+        'AgentX的反应（从恐惧到理解）'
       ],
       narrationTemplate: this.generateNarrationTemplate('twist', beastProfile, theme, coreTwist, emotionalAnchor),
       visualPromptTemplate: this.generateVisualTemplate('twist', beastProfile, theme, coreTwist, emotionalAnchor),
@@ -177,7 +177,7 @@ class BeatSheetEngine {
       name: '余韵',
       timeRange: { start: this.beatDuration * 4, end: this.duration },
       narrativeFunction: '和解/礼物/代价，主题定格',
-      visualTask: `${name}和小G的共同画面，主题${theme}的视觉化`,
+      visualTask: `${name}和AgentX的共同画面，主题${theme}的视觉化`,
       emotionTarget: { emotion: 'relief', intensity: 0.8 },
       requiredElements: [
         '和解的视觉符号（触碰/共享/并肩）',
@@ -215,10 +215,10 @@ class BeatSheetEngine {
     
     const templates = {
       hook: `Nirath ${habitatName}，${name}在进行日常行为（不是攻击姿态），环境细节暗示异常`,
-      deepen: `${name}警觉反应（毛发竖立/低吼/眼神变化），小G意外闯入，双方第一次对视`,
-      crack: `${name}展示${feature}，但动作是"守护/创造"而非"攻击/毁灭"，小G注意到矛盾`,
-      twist: `${name}的核心真相视觉化：${feature} = ${coreTwist}，环境发生剧变，小G表情从恐惧到理解`,
-      resonance: `${name}和小G同框（触碰/共享/并肩），${habitatName}环境呼应开场但已重生/改变，主题定格画面`
+      deepen: `${name}警觉反应（毛发竖立/低吼/眼神变化），AgentX意外闯入，双方第一次对视`,
+      crack: `${name}展示${feature}，但动作是"守护/创造"而非"攻击/毁灭"，AgentX注意到矛盾`,
+      twist: `${name}的核心真相视觉化：${feature} = ${coreTwist}，环境发生剧变，AgentX表情从恐惧到理解`,
+      resonance: `${name}和AgentX同框（触碰/共享/并肩），${habitatName}环境呼应开场但已重生/改变，主题定格画面`
     };
     return templates[phase] || '';
   }
@@ -268,14 +268,14 @@ class BeatSheetEngine {
         subjective: `环境细节带有${name}的主观感知：气味、温度、磁场的微弱震颤`
       },
       deepen: {
-        eyeLevel: `从${name}的眼睛高度拍摄，小G在画面中显得渺小（8岁男孩仅及${name}胸部）`,
+        eyeLevel: `从${name}的眼睛高度拍摄，AgentX在画面中显得渺小（8岁男孩仅及${name}胸部）`,
         edgeFrame: `画面左侧边缘可见${name}的毛发/皮肤纹理，强调"这是它的眼睛在看"`,
-        subjective: `${name}的视角下，小G的动作被慢放解读——他的手势是友好还是威胁？`
+        subjective: `${name}的视角下，AgentX的动作被慢放解读——他的手势是友好还是威胁？`
       },
       crack: {
-        eyeLevel: '低角度从异兽胸口高度向上拍摄，小G和天空同时入镜',
+        eyeLevel: '低角度从异兽胸口高度向上拍摄，AgentX和天空同时入镜',
         edgeFrame: `画面上方边缘${name}的下颚/毛发入镜，暗示它在低头注视`,
-        subjective: `${name}注意到小G眼中的变化——从恐惧到困惑，这是300年来第一次`
+        subjective: `${name}注意到AgentX眼中的变化——从恐惧到困惑，这是300年来第一次`
       },
       twist: {
         eyeLevel: `从${name}腋下双眼的高度拍摄（暗红色竖瞳视角），世界呈现出不同的光谱`,
@@ -283,9 +283,9 @@ class BeatSheetEngine {
         subjective: `腋下双眼看到的"黑暗"其实是正在过滤的毒素，色彩在红外光谱中呈现为温暖的金橙色`
       },
       resonance: {
-        eyeLevel: `从${name}低头的高度拍摄，小G在画面中央，${name}的前肢/身体在画面边缘形成保护性包围`,
+        eyeLevel: `从${name}低头的高度拍摄，AgentX在画面中央，${name}的前肢/身体在画面边缘形成保护性包围`,
         edgeFrame: `画面上方边缘${name}的下巴/嘴角入镜（不再可怕，而是温柔的弧度）`,
-        subjective: `${name}的视角：小G手掌中的种子发出与孢子相同频率的微光——这是它300年来第一次"被看见"`
+        subjective: `${name}的视角：AgentX手掌中的种子发出与孢子相同频率的微光——这是它300年来第一次"被看见"`
       }
     };
     

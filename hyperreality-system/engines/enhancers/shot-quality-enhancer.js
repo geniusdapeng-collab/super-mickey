@@ -226,7 +226,7 @@ class ShotQualityEnhancer {
     if (/孢子|spore/.test(text)) foreground = 'floating luminous spores in foreground depth';
     if (/水|river|lake/.test(text)) foreground = 'reflective surface distortion in foreground';
     if (/神兽|白泽|beast|baize/.test(text)) midground = 'beast body or face as dominant midground subject';
-    if (/小g|boy|少年/.test(text)) midground = 'xiaoG body reaction as readable midground anchor';
+    if (/AgentX|boy|少年/.test(text)) midground = 'xiaoG body reaction as readable midground anchor';
     if (/山|sky|cliff|mountain/.test(text)) background = 'monumental geological backdrop';
     if (/洞|cave/.test(text)) background = 'deep cave darkness with readable depth falloff';
 
@@ -240,7 +240,7 @@ class ShotQualityEnhancer {
     if (/手|hand|触碰|reach/.test(text)) return 'the reaching hand as the first visual focal point';
     if (/裂缝|crack|光脉|glow/.test(text)) return 'the glowing crack as the first visual focal point';
     if (/白泽|baize|神兽/.test(text)) return 'the beast silhouette or face as the first visual focal point';
-    if (/小g|boy|少年/.test(text)) return 'xiaoG facial reaction as the first visual focal point';
+    if (/AgentX|boy|少年/.test(text)) return 'xiaoG facial reaction as the first visual focal point';
 
     return 'single readable visual center with no competing subject';
   }

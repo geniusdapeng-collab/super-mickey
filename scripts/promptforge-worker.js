@@ -20,7 +20,7 @@ function buildOptimizationPrompt(sourceText, shotId) {
 2. 不要输出"让我构思/分析/建议/最终版本"等文字
 3. 保留主体、动作、场景、光影、运镜、情绪
 4. 输出 180-700 字符
-5. 英文为主，可保留必要专有名词如 Nirath、小G、白泽
+5. 英文为主，可保留必要专有名词如 Nirath、AgentX、白泽
 6. 禁止 markdown、禁止 JSON、禁止编号
 
 输入：

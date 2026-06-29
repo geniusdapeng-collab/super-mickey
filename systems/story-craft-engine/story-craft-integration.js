@@ -276,7 +276,7 @@ validation: { isValid: true/false, errors: [] }
 
 要求：
 1. 每个节拍最多 1 句异兽台词（beastLines）
-2. 每个节拍最多 1 句小G台词（humanLines）
+2. 每个节拍最多 1 句AgentX台词（humanLines）
 3. 旁白（nirathLines）用于叙事推进
 4. 嘴部动作（mouthActions）与台词匹配
 5. 钻石台词（最核心台词）不超过 3 句
@@ -352,7 +352,7 @@ validation: { isValid: true/false, errors: [] }
       return this.encounterDynamics.generateDynamics(beatResult, psycheResult, dialogueResult);
     }
 
-    const prompt = `请生成异兽与小G的相遇动力学描述。
+    const prompt = `请生成异兽与AgentX的相遇动力学描述。
 
 节拍：${JSON.stringify(beatResult.beats.map(b => ({ id: b.id, name: b.name })), null, 2)}
 心理：${JSON.stringify(psycheResult.psyche?.desireCore || {}, null, 2)}
@@ -360,8 +360,8 @@ validation: { isValid: true/false, errors: [] }
 要求输出每个节拍的动力学阶段：
 - stage.beast.bodyLanguage: 异兽肢体语言
 - stage.beast.emotionalState: 异兽情绪状态
-- stage.human.bodyLanguage: 小G肢体语言
-- stage.human.emotionalState: 小G情绪状态
+- stage.human.bodyLanguage: AgentX肢体语言
+- stage.human.emotionalState: AgentX情绪状态
 - stage.interaction.type: 互动类型
 - stage.interaction.spatialRelationship: 空间关系
 - stage.audience.perceives: 观众感知
@@ -522,9 +522,9 @@ validation: { isValid: true/false, errors: [] }
       parts.push(`（${beastLine.text}）`);
     }
     
-    // 小G台词（如果有）
+    // AgentX台词（如果有）
     if (humanLine) {
-      parts.push(`小G："${humanLine.text}"`);
+      parts.push(`AgentX："${humanLine.text}"`);
     }
     
     return parts.join(' ');
@@ -575,7 +575,7 @@ validation: { isValid: true/false, errors: [] }
         enrichments.push(`【动态】异兽${stage.beast.bodyLanguage}，动作充满力量感，肌肉线条在光照下清晰可见`);
       }
       if (stage?.human?.bodyLanguage) {
-        enrichments.push(`【人物】小G${stage.human.bodyLanguage}，姿态传达出${stage.human?.emotionalState || '复杂情绪'}`);
+        enrichments.push(`【人物】AgentX${stage.human.bodyLanguage}，姿态传达出${stage.human?.emotionalState || '复杂情绪'}`);
       }
       
       // 5. Nirath 环境特征
@@ -586,7 +586,7 @@ validation: { isValid: true/false, errors: [] }
     
     // 互动动力学（肢体语言）
     if (stage) {
-      parts.push(`【动作】异兽：${stage.beast.bodyLanguage} | 小G：${stage.human.bodyLanguage} | 空间：${stage.interaction.spatialRelationship}`);
+      parts.push(`【动作】异兽：${stage.beast.bodyLanguage} | AgentX：${stage.human.bodyLanguage} | 空间：${stage.interaction.spatialRelationship}`);
     }
     
     // 嘴部动作

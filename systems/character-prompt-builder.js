@@ -334,7 +334,7 @@ class CharacterPromptBuilder {
     if (name.includes('教练') || name.includes('coach')) return '教练';
     if (name.includes('护士') || name.includes('nurse')) return '护士';
     if (name.includes('医生') || name.includes('doctor')) return '医生';
-    if (name.includes('小') && name.includes('G')) return '男孩'; // 小G
+    if (name.includes('小') && name.includes('G')) return '男孩'; // AgentX
     
     // 从 role 推断
     const lowerRole = (role || '').toLowerCase();

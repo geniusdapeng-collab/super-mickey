@@ -3,7 +3,7 @@
  * Five-Element Inspector
  * 
  * 功能：在剧本/故事板层面强制检查山海经视频五要素完整性
- * 五要素：小G冒险主动性、异兽独特性、情感共鸣度、成长转变、Nirath世界观一致性
+ * 五要素：AgentX冒险主动性、异兽独特性、情感共鸣度、成长转变、Nirath世界观一致性
  * 
  * 注入点：
  * - 剧本生成后、故事板设计前（前置闸机）
@@ -17,7 +17,7 @@ class FiveElementInspector {
       // 各要素最低阈值（0-100）
       // 🔥 v6.1-fix: 根据实际镜头数量（5-6镜）调整阈值，确保系统能稳定通过
       thresholds: {
-        adventureInitiative: 30,      // 小G冒险主动性（原40，现30）
+        adventureInitiative: 30,      // AgentX冒险主动性（原40，现30）
         beastUniqueness: 35,        // 异兽独特性（原50，现35）
         emotionalResonance: 40,     // 情感共鸣度（保持40）
         growthTransformation: 25,    // 成长转变（原30，现25）
@@ -51,7 +51,7 @@ class FiveElementInspector {
     this.results = [];
     
     const checks = [
-      { name: 'adventureInitiative', label: '小G冒险主动性', fn: this.checkAdventureInitiative },
+      { name: 'adventureInitiative', label: 'AgentX冒险主动性', fn: this.checkAdventureInitiative },
       { name: 'beastUniqueness', label: '异兽独特性', fn: this.checkBeastUniqueness },
       { name: 'emotionalResonance', label: '情感共鸣度', fn: this.checkEmotionalResonance },
       { name: 'growthTransformation', label: '成长转变', fn: this.checkGrowthTransformation },
@@ -75,8 +75,8 @@ class FiveElementInspector {
   // ====== 五要素检查实现 ======
 
   /**
-   * 要素1：小G冒险主动性
-   * 检查小G是否是行动发起者，而非被动旁观者
+   * 要素1：AgentX冒险主动性
+   * 检查AgentX是否是行动发起者，而非被动旁观者
    */
   checkAdventureInitiative(storyboard, options) {
     const shots = storyboard.shots || [];
@@ -136,7 +136,7 @@ class FiveElementInspector {
       }
     }
     
-    // 开场镜头特殊加分：小G主动行动开场
+    // 开场镜头特殊加分：AgentX主动行动开场
     if (shots.length > 0) {
       const openingText = (shots[0].prompt || '') + (shots[0].action || '');
       if (initiativeKeywords.some(kw => openingText.includes(kw))) {
@@ -152,8 +152,8 @@ class FiveElementInspector {
       score: initiativeScore,
       evidence: evidence.slice(0, 8), // 最多8条证据
       suggestion: initiativeScore < this.config.thresholds.adventureInitiative 
-        ? '小G目前偏被动，建议在关键镜头加入：主动接近异兽、主动做出选择、主动伸出手等动作。避免「旁观」「注视」「后退」等被动描述。'
-        : '小G冒险主动性良好',
+        ? 'AgentX目前偏被动，建议在关键镜头加入：主动接近异兽、主动做出选择、主动伸出手等动作。避免「旁观」「注视」「后退」等被动描述。'
+        : 'AgentX冒险主动性良好',
       details: {
         activeActions: xiaoGActions.length,
         totalShots: shots.length,
@@ -355,7 +355,7 @@ class FiveElementInspector {
 
   /**
    * 要素4：成长转变
-   * 检查小G是否有从X到Y的转变弧光
+   * 检查AgentX是否有从X到Y的转变弧光
    */
   checkGrowthTransformation(storyboard, options) {
     const shots = storyboard.shots || [];

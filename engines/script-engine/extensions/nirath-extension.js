@@ -105,10 +105,10 @@ const NIRATH_WORLD = {
     ]
   },
   
-  // 主角设定（小G）
+  // 主角设定（AgentX）
   protagonist: {
     character_id: 'xiaoG',
-    name: '小G',
+    name: 'AgentX',
     role: 'Nirath探索者',
     
     visual_anchor: {

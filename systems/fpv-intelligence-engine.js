@@ -315,7 +315,7 @@ if (require.main === module) {
     id: 'S06',
     type: 'climax',
     mood: '温暖→神圣',
-    prompt: '烛龙竖直双目爆发金色光芒，小G获得火之眼，永夜裂谷照如白昼',
+    prompt: '烛龙竖直双目爆发金色光芒，AgentX获得火之眼，永夜裂谷照如白昼',
     index: 6,
     duration: 12
   };

@@ -360,7 +360,7 @@ class TitlePresentationAgent {
         name: '燃尽重生式显现',
         originality: 88,
         surpriseElements: ['标题先被烧毁，再重生', '灰烬是标题的一部分', '毁灭与创造同时发生'],
-        full: (ctx) => `主标题"${ctx.episodeTitle}"并非从虚空中生成，而是**从画面的"死亡"中诞生**。前一帧的画面内容（${ctx.beastName}的幻影或小G的背影）突然被8000K高温等离子体点燃，在0.4秒内化为灰烬——但灰烬并未散去，而是在Nirath低重力中悬浮，重新排列组合为标题的笔画。这是**凤凰涅槃的微观版本**：毁灭即创造，死亡即诞生。标题的每一个字都带有"燃烧记忆"——笔画边缘有碳化纹理，内部有暗红色余烬脉动。观众先经历"画面被毁"的震惊，再经历"灰烬重生"的惊叹。`,
+        full: (ctx) => `主标题"${ctx.episodeTitle}"并非从虚空中生成，而是**从画面的"死亡"中诞生**。前一帧的画面内容（${ctx.beastName}的幻影或AgentX的背影）突然被8000K高温等离子体点燃，在0.4秒内化为灰烬——但灰烬并未散去，而是在Nirath低重力中悬浮，重新排列组合为标题的笔画。这是**凤凰涅槃的微观版本**：毁灭即创造，死亡即诞生。标题的每一个字都带有"燃烧记忆"——笔画边缘有碳化纹理，内部有暗红色余烬脉动。观众先经历"画面被毁"的震惊，再经历"灰烬重生"的惊叹。`,
         short: (ctx) => `主标题"${ctx.episodeTitle}"从画面灰烬中重生，前一帧内容被8000K等离子体点燃，灰烬在Nirath低重力中悬浮重组为标题，笔画带有碳化纹理和暗红余烬脉动`
       },
 
@@ -546,7 +546,7 @@ if (require.main === module) {
       params: {
         episodeTitle: '九尾狐·迷局',
         featuredBeastId: 'jiu-wei-hu',
-        episodeSummary: '小G初到青丘群岛，被九尾狐幻术迷惑，两者建立信任签订真相契约。',
+        episodeSummary: 'AgentX初到青丘群岛，被九尾狐幻术迷惑，两者建立信任签订真相契约。',
         mood: 'mysterious',
         titlePhaseDuration: 1.2
       }
@@ -556,7 +556,7 @@ if (require.main === module) {
       params: {
         episodeTitle: '烛龙·永夜',
         featuredBeastId: 'zhu-long',
-        episodeSummary: '小G在永夜裂谷遭遇烛龙，以烛龙之火照亮黑暗，签订守护契约。',
+        episodeSummary: 'AgentX在永夜裂谷遭遇烛龙，以烛龙之火照亮黑暗，签订守护契约。',
         mood: 'epic',
         titlePhaseDuration: 1.5
       }

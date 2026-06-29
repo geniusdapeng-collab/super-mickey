@@ -356,10 +356,10 @@ if (require.main === module) {
   
   const beats = [
     { id: 'B1', emotionTarget: { emotion: 'curious' }, narrationTemplate: '饕餮的日常', visualPromptTemplate: '钩吾山荒原，饕餮在过滤孢子' },
-    { id: 'B2', emotionTarget: { emotion: 'tension' }, narrationTemplate: '小G闯入', visualPromptTemplate: '小G出现，饕餮警觉' },
+    { id: 'B2', emotionTarget: { emotion: 'tension' }, narrationTemplate: 'AgentX闯入', visualPromptTemplate: 'AgentX出现，饕餮警觉' },
     { id: 'B3', emotionTarget: { emotion: 'confusion' }, narrationTemplate: '饕餮不是攻击，而是在播种', visualPromptTemplate: '饕餮巨口插入地面，吐出发光种子' },
     { id: 'B4', emotionTarget: { emotion: 'awe' }, narrationTemplate: '原来饕餮是园丁，吞噬黑暗吐出光明', visualPromptTemplate: '饕餮站在花海中，环境剧变' },
-    { id: 'B5', emotionTarget: { emotion: 'relief' }, narrationTemplate: '理解比征服更有力量', visualPromptTemplate: '小G和饕餮同框，花海绽放' }
+    { id: 'B5', emotionTarget: { emotion: 'relief' }, narrationTemplate: '理解比征服更有力量', visualPromptTemplate: 'AgentX和饕餮同框，花海绽放' }
   ];
   
   const beastProfile = {

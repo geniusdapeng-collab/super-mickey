@@ -285,7 +285,7 @@ if (require.main === module) {
   // 测试角色增强
   const testCharacter = {
     id: "xiaoG",
-    name: "小G",
+    name: "AgentX",
     age: 8,
     nirathScene: "青丘灵原"
   };

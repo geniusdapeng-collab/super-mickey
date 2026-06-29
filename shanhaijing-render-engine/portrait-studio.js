@@ -1,7 +1,7 @@
 // ========== Nirath定妆照工作室 — Portrait Studio v13.1-Peng
 // 
 // 世界观：Nirath = 地球前身 = 2147年科技文明归元产物
-// 《山海经：异兽志》是8岁男孩小G在Nirath上的真实记录
+// 《山海经：异兽志》是8岁男孩AgentX在Nirath上的真实记录
 // 
 // 职责：
 // - 主角定妆（多角度 + 表情 + 服装细节）
@@ -37,7 +37,7 @@ const SHANHAIJING_BESTIARY = NIRATH_CREATURES;
 // ========== 主角定妆配置 ==========
 const CHARACTER_PORTRAIT_CONFIG = {
   xiaog: {
-    name: '小G',
+    name: 'AgentX',
     angles: [
       {
         type: '正面全身',

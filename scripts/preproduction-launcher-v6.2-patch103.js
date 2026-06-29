@@ -40,7 +40,7 @@ async function main() {
       { id: 'S05', name: '终章归墟之噬', type: 'resolution', duration: 8 }
     ],
     characters: {
-      xiaoG: { id: 'xiaoG', name: '小G', role: 'protagonist' },
+      xiaoG: { id: 'xiaoG', name: 'AgentX', role: 'protagonist' },
       taotie: { id: 'taotie', name: '饕餮', role: 'beast' }
     }
   };

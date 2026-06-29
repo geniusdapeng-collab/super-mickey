@@ -12,7 +12,7 @@ const API_URL = 'https://ark.cn-beijing.volces.com/api/v3/contents/generations/t
 
 // 角色别名映射
 const CHARACTER_ALIASES = {
-  'xiaoG': ['xiaoG', '小G', '小 g', '小季', 'xiaog'],
+  'xiaoG': ['xiaoG', 'AgentX', '小 g', '小季', 'xiaog'],
   'tao-tie': ['tao-tie', 'taotie', '饕餮', 'tāo tiè']
 };
 

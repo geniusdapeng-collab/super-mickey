@@ -6,7 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 
-// 人类角色参考高度（米） - 小G为8岁男孩，身高1.2米
+// 人类角色参考高度（米） - AgentX为8岁男孩，身高1.2米
 const HUMAN_HEIGHT = 1.2;
 
 /**
@@ -70,19 +70,19 @@ function generateSizeDescription(beastId, shotSize, beastHeight) {
   
   const descriptions = {
     wide: [
-      `【巨物感】${beastName}身长达${beastHeight}米，小G在其脚下如昆虫般渺小，`,
-      `【尺度对比】20层楼房高的${beastName}全貌，小G站在其脚趾旁仰望，`,
-      `【全景震撼】${beastName}占据画面80%，小G仅在画面边缘如黑点般存在，`
+      `【巨物感】${beastName}身长达${beastHeight}米，AgentX在其脚下如昆虫般渺小，`,
+      `【尺度对比】20层楼房高的${beastName}全貌，AgentX站在其脚趾旁仰望，`,
+      `【全景震撼】${beastName}占据画面80%，AgentX仅在画面边缘如黑点般存在，`
     ],
     medium: [
-      `【局部特写】${beastName}一只琥珀色眼睛占据画面40%，瞳孔中倒映着小G的身影（如人眼中的蚂蚁），`,
-      `【中景对比】${beastName}的前爪特写，爪垫纹理清晰如岩石，小G站在爪尖旁（仅爪尖的1/5大小），`,
-      `【半身震撼】${beastName}上半身特写，银色毛发如瀑布般垂落，小G在毛发间穿行（如人在森林中），`
+      `【局部特写】${beastName}一只琥珀色眼睛占据画面40%，瞳孔中倒映着AgentX的身影（如人眼中的蚂蚁），`,
+      `【中景对比】${beastName}的前爪特写，爪垫纹理清晰如岩石，AgentX站在爪尖旁（仅爪尖的1/5大小），`,
+      `【半身震撼】${beastName}上半身特写，银色毛发如瀑布般垂落，AgentX在毛发间穿行（如人在森林中），`
     ],
     closeup: [
-      `【人物主导】小G面部坚毅表情特写，背景虚化中${beastName}的巨大尾巴如山脉般横亘，`,
-      `【渺小感】小G半身特写，身后${beastName}的脚趾如山丘般巨大（仅展示脚趾局部），`,
-      `【压迫感】小G面部汗水特写，背景中${beastName}的一只眼睛缓缓睁开（占背景60%），`
+      `【人物主导】AgentX面部坚毅表情特写，背景虚化中${beastName}的巨大尾巴如山脉般横亘，`,
+      `【渺小感】AgentX半身特写，身后${beastName}的脚趾如山丘般巨大（仅展示脚趾局部），`,
+      `【压迫感】AgentX面部汗水特写，背景中${beastName}的一只眼睛缓缓睁开（占背景60%），`
     ]
   };
   

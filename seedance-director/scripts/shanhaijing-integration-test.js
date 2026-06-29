@@ -18,7 +18,7 @@ const SHANHAIJING_TEST = {
     region: '中央荒原-无何有之乡',
     beast: '帝江',
     xiaoG: {
-      name: '小G',
+      name: 'AgentX',
       age: 8,
       traits: ['好奇心', '善良', '怕黑', '勇敢']
     }
@@ -26,10 +26,10 @@ const SHANHAIJING_TEST = {
   story: {
     theme: '惊奇70% + 悲伤20% + 希望10%',
     scenes: [
-      { id: 'S1', desc: '小G在迷雾中醒来，帝江发光出现', emotion: '惊奇' },
-      { id: 'S2', desc: '帝江教小G"无"字诀', emotion: '温暖' },
-      { id: 'S3', desc: '混沌风暴来袭，帝江用身体保护小G', emotion: '悲伤' },
-      { id: 'S4', desc: '小G学会"无"，帝江第一次展开光翼', emotion: '希望' }
+      { id: 'S1', desc: 'AgentX在迷雾中醒来，帝江发光出现', emotion: '惊奇' },
+      { id: 'S2', desc: '帝江教AgentX"无"字诀', emotion: '温暖' },
+      { id: 'S3', desc: '混沌风暴来袭，帝江用身体保护AgentX', emotion: '悲伤' },
+      { id: 'S4', desc: 'AgentX学会"无"，帝江第一次展开光翼', emotion: '希望' }
     ]
   },
   visual: {
@@ -166,7 +166,7 @@ async function runShanhaijingIntegrationTest() {
       {
         title: SHANHAIJING_TEST.title,
         style: 'shanhaijing',
-        characters: ['帝江', '小G']
+        characters: ['帝江', 'AgentX']
       }
     );
 
@@ -206,7 +206,7 @@ async function runShanhaijingIntegrationTest() {
     // 模拟用户创建山海经短片
     const r1 = await im.process('做一个山海经帝江的短片');
     const r2 = await im.process('60秒');
-    const r3 = await im.process('主角是8岁的小G和帝江');
+    const r3 = await im.process('主角是8岁的AgentX和帝江');
 
     console.log(`   对话: 3轮`);
     console.log(`   状态: ${im.state}`);

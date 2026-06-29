@@ -15,7 +15,7 @@ class CharacterPresenceValidator {
   constructor(options = {}) {
     // 【v2.1.4-fix10-P25-fix8-P0D】角色映射表可注入，且从 characters 目录动态加载
     this.characterNameMap = options.characterNameMap || {
-      '小G': 'xiaoG', '小纪': 'xiaoG', '主角': 'xiaoG', '少年': 'xiaoG',
+      'AgentX': 'xiaoG', '小纪': 'xiaoG', '主角': 'xiaoG', '少年': 'xiaoG',
       '饕餮': 'tao-tie', 'taotie': 'tao-tie',
       '烛龙': 'zhu-long', 'zhulong': 'zhu-long',
       '九尾': 'jiu-wei', '九尾狐': 'jiu-wei', 'jiuweihu': 'jiu-wei',

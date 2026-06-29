@@ -139,7 +139,7 @@ const BEAST_MOTION_TEMPLATES = {
       { name: '预言冲击', description: '白瞳中映出未来画面，对手被幻象震慑' }
     ],
     idle: [
-      { name: '授课姿态', description: '静立于小G面前，白毛微光，等待提问' },
+      { name: '授课姿态', description: '静立于AgentX面前，白毛微光，等待提问' },
       { name: '沉思', description: '白瞳半闭，白毛无风自动，与天地光脉能量共鸣' }
     ],
     signature: {
@@ -167,7 +167,7 @@ const BEAST_MOTION_TEMPLATES = {
     ],
     idle: [
       { name: '导航', description: '静止漂浮，背甲地图纹路发光，为周围生物指引方向' },
-      { name: '背负', description: '静止于水面，背甲成为平台，承载小G或其他生物' },
+      { name: '背负', description: '静止于水面，背甲成为平台，承载AgentX或其他生物' },
       { name: '沉默守护', description: '长时间静止不动，只有背甲微弱发光证明生命存在' }
     ],
     signature: {
@@ -201,7 +201,7 @@ const BEAST_MOTION_TEMPLATES = {
     idle: [
       { name: '梳理', description: '九尾轮流卷曲展开，如多臂舞蹈' },
       { name: '尾语', description: '九尾独立运动，每条尾巴表达不同情绪' },
-      { name: '围坐', description: '九尾如屏风般围成圆，保护中间的小G' }
+      { name: '围坐', description: '九尾如屏风般围成圆，保护中间的AgentX' }
     ],
     signature: {
       name: '九尾独立运动系统',

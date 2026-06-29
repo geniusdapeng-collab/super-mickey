@@ -23,7 +23,7 @@
 | 角色 | 音色 | voice ID | 备注 |
 |------|------|----------|------|
 | 小陈/陈女士 | 女声 | zh-CN-XiaoxiaoNeural | 科普主持人 |
-| 小G | 童声 | zh-CN-XiaoyiNeural | 互动角色 |
+| AgentX | 童声 | zh-CN-XiaoyiNeural | 互动角色 |
 | 其他角色 | 动态匹配 | 角色档案voice字段 | 按配置自动选择 |
 
 ---

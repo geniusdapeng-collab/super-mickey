@@ -428,7 +428,7 @@ class RenderSubmitterCore {
     // 从Prompt文本提取（兜底）
     const prompt = (shot.prompt || shot.visualPrompt || '').toLowerCase();
     const aliases = {
-      'xiaoG': ['xiaog', '小g', '小季', '小G'],
+      'xiaoG': ['xiaog', 'AgentX', '小季', 'AgentX'],
       'tao-tie': ['taotie', '饕餮'],
       'jiu-wei-hu': ['jiuweihu', '九尾狐'],
       'nuan-nuan': ['nuannuan', '暖暖'],

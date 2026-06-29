@@ -120,7 +120,7 @@ class UniversalRenderPipeline {
       const characterIds = shot.characters || [];
       const refTags = refImages.map((_, i) => {
         const charId = characterIds[i] || '角色';
-        const charName = charId === 'xiaoG' ? '小G' : 
+        const charName = charId === 'xiaoG' ? 'AgentX' : 
                         charId === 'taotie' ? '饕餮' : 
                         charId === 'chen-nurse' ? '陈护士' : charId;
         return `@image${i+1} 作为${charName}角色形象参考`;

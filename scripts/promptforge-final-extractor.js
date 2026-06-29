@@ -22,7 +22,7 @@ function scoreCandidate(text) {
   if (len >= 250) score += 20;
   if (len <= 1200) score += 10;
   if (/cinematic|camera|lighting|atmosphere|shot|hyperreal/i.test(text)) score += 20;
-  if (/Nirath|小G|白泽|饕餮|forest|mountain|ocean|plain/i.test(text)) score += 15;
+  if (/Nirath|AgentX|白泽|饕餮|forest|mountain|ocean|plain/i.test(text)) score += 15;
   if (/让我构思|分析|建议\d|用户要求|检查是否包含/i.test(text)) score -= 50;
 
   return score;

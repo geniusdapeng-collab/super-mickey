@@ -1,5 +1,5 @@
 // encounter-dynamics.js — StoryCraft Engine v1.0
-// 相遇动力学引擎：控制异兽和小G的5阶段互动模型
+// 相遇动力学引擎：控制异兽和AgentX的5阶段互动模型
 
 class EncounterDynamics {
   constructor(options = {}) {
@@ -113,7 +113,7 @@ class EncounterDynamics {
       // v2.0新增：节拍堆叠
       beatStacking,
       
-      // 人类（小G）行为
+      // 人类（AgentX）行为
       human: {
         action: stage.humanAction,
         emotionalState: this.getHumanEmotion(stage.id),
@@ -206,7 +206,7 @@ class EncounterDynamics {
         end: (index + 1) * this.stageDuration
       },
       
-      // 人类（小G）行为
+      // 人类（AgentX）行为
       human: {
         action: stage.humanAction,
         emotionalState: this.getHumanEmotion(stage.id),
@@ -389,9 +389,9 @@ class EncounterDynamics {
   // 获取观众感知
   getAudiencePerception(stageId) {
     const perceptions = {
-      alert: '异兽是威胁，小G在危险中',
-      probe: '异兽在逼近，小G处境危险',
-      conflict: '异兽要攻击了！小G快逃！',
+      alert: '异兽是威胁，AgentX在危险中',
+      probe: '异兽在逼近，AgentX处境危险',
+      conflict: '异兽要攻击了！AgentX快逃！',
       pause: '等等……异兽没有攻击？它在等什么？',
       reconcile: '原来异兽不是敌人！它在守护！'
     };

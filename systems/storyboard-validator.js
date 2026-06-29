@@ -307,7 +307,7 @@ class StoryboardValidator {
   }
 
   generateCharacterFix(character, shots) {
-    const charNameMap = { 'chen-nurse': '陈女士（护士）', 'xiaoG': '小G（8岁男孩）', 'coach-li': '李明教练' };
+    const charNameMap = { 'chen-nurse': '陈女士（护士）', 'xiaoG': 'AgentX（8岁男孩）', 'coach-li': '李明教练' };
     const charName = charNameMap[character] || character;
     const interactionShots = shots.filter(s => s.type === 'interaction' || s.type === 'summary');
     const explanationShots = shots.filter(s => s.type === 'explanation' || s.type === 'symptom');
@@ -438,7 +438,7 @@ class StoryboardValidator {
 
   /**
    * v3.6升级：五要素检查（山海经系列专属）
-   * 检查小G冒险主动性、异兽独特性、情感共鸣度、成长转变、Nirath世界观一致性
+   * 检查AgentX冒险主动性、异兽独特性、情感共鸣度、成长转变、Nirath世界观一致性
    */
   validateFiveElements(storyboard) {
     const mode = storyboard.mode || storyboard.projectConfig?.mode || 'generic';

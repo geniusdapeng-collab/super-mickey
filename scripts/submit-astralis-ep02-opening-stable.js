@@ -20,7 +20,7 @@ console.log('');
 const config = {
   episodeTitle: '九尾狐·迷局',
   episodeTheme: 'mysterious',
-  episodeSummary: '小G初到青丘群岛，被九尾狐幻术迷惑，九尾狐测试小G分辨力，两者建立信任签订真相契约。',
+  episodeSummary: 'AgentX初到青丘群岛，被九尾狐幻术迷惑，九尾狐测试AgentX分辨力，两者建立信任签订真相契约。',
   protagonistId: 'xiaoG',
   featuredBeastId: 'jiu-wei-hu',
   duration: 9,
@@ -100,7 +100,7 @@ fs.writeFileSync(
 );
 
 console.log('\n=== 角色定妆照绑定 ===');
-console.log(`  ✅ 主角(小G): ${check.portraits.protagonist}`);
+console.log(`  ✅ 主角(AgentX): ${check.portraits.protagonist}`);
 console.log(`  ✅ 异兽(九尾狐): ${check.portraits.beast}`);
 
 // 提交渲染

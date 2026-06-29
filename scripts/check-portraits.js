@@ -5,7 +5,7 @@
  * 
  * 示例：
  *   node scripts/check-portraits.js          # 检查所有角色
- *   node scripts/check-portraits.js xiaoG    # 检查小G
+ *   node scripts/check-portraits.js xiaoG    # 检查AgentX
  *   node scripts/check-portraits.js nuanNuan # 检查暖暖
  */
 

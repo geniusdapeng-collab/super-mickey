@@ -13,7 +13,7 @@ const VERSION = {
   // 发布日期
   releaseDate: '2026-06-04',
   // 发布人
-  releaseBy: '小G',
+  releaseBy: 'AgentX',
   // 包含的主要模块
   modules: [
     'PromptForge 技术修复（9项）',

@@ -3,7 +3,7 @@
  *
  * v6.0-patch39升级(系统级,所有集数受益):
  * 1. 神兽出场Agent:独立设计每只异兽的震撼出场,通用化(非硬编码)
- * 2. 小G活泼动作系统:从"嘴动"升级为"全身自然动作",8岁男孩真实感
+ * 2. AgentX活泼动作系统:从"嘴动"升级为"全身自然动作",8岁男孩真实感
  * 3. 标题字体Agent化:去硬编码20-25%,Title Agent动态计算字体规格
  * 4. Title想象力保留:空间充裕时自动展开完整创意描述
  *
@@ -12,8 +12,8 @@
  * 2. Title Presentation Agent输出修复:使用完整description(含情绪节奏+镜头语言+物理法则交互+惊喜元素),替代之前被截断的shortDescription
  * 3. 出品人字体放大:8-10% → 20-25%高度,视觉权重=标题80%
  * 4. 异兽出场震撼感增强:添加地裂/磁场爆发/孢子风暴等震撼元素
- * 5. 角色数量约束:明确约束"仅一个小G和一个饕餮",防止AI生成重复角色
- * 6. 口播动作注入:强制小G嘴部微张说话,自然动作,不是旁白
+ * 5. 角色数量约束:明确约束"仅一个AgentX和一个饕餮",防止AI生成重复角色
+ * 6. 口播动作注入:强制AgentX嘴部微张说话,自然动作,不是旁白
  *
  * v2.2-fix 升级(v6.0-patch37发布):
  * 1. 神兽人声签名注入:开场第一帧同步出现神兽声音作为钩子
@@ -67,7 +67,7 @@ const { BeastOpeningLineAgent } = require('./beast-opening-line-agent');
 // ===== v6.0-patch38新增:全局负面提示词注入器 =====
 const { globalNegativePromptInjector } = require('./global-negative-prompts');
 
-// ===== v6.0-patch39新增:神兽出场Agent + 小G活泼动作系统 =====
+// ===== v6.0-patch39新增:神兽出场Agent + AgentX活泼动作系统 =====
 const { beastEntranceAgent } = require('./beast-entrance-agent');
 const { xiaoGLivelyActionSystem } = require('./xiaog-lively-action-system');
 
@@ -336,7 +336,7 @@ function generateCharacterDescription(characterId, role = 'protagonist') {
   if (role === 'protagonist') {
     narrativeRole = '主角,故事的观察者与改变者';
   } else if (role === 'featuredBeast') {
-    narrativeRole = '本集异兽主角,与小G产生关键互动';
+    narrativeRole = '本集异兽主角,与AgentX产生关键互动';
   }
 
   return {
@@ -540,7 +540,7 @@ function generateAct2_Development({ startTime, duration, protagonist, beast, epi
   // 动态生成异兽描述:从角色档案提取,而非硬编码九尾狐特征
   const beastDesc = beast?.description?.substring(0, 40) || '';
   const beastName = beast?.name || '异兽';
-  const protagonistName = protagonist?.name || '小G';
+  const protagonistName = protagonist?.name || 'AgentX';
 
   // v6.0-patch39: 使用神兽出场Agent(通用化,非硬编码)
   const entrancePlan = beastEntranceAgent.generatePromptString({
@@ -553,7 +553,7 @@ function generateAct2_Development({ startTime, duration, protagonist, beast, epi
   });
   const beastEntrance = entrancePlan.narrative;
 
-  // v6.0-patch39: 使用小G活泼动作系统(全身动作,非仅嘴动)
+  // v6.0-patch39: 使用AgentX活泼动作系统(全身动作,非仅嘴动)
   const xiaoGAction = xiaoGLivelyActionSystem.generate({
     phase: 'development',
     mood,
@@ -704,11 +704,11 @@ function generateAct3_Climax({ startTime, duration, episodeTitle, protagonist, b
   // v6.0-patch39: 注入待机感--定格不是"摆姿势",而是"正在经历的瞬间"
   // 公式:人物 + 正在做的小事 + 下意识反应 + 情绪落点
   const beastName = beast?.name || '异兽';
-  const protagonistName = protagonist?.name || '小G';
+  const protagonistName = protagonist?.name || 'AgentX';
   const beastPose = beast?.visualPrompt || `${beastName}姿态威严`;
   const finalPose = `${protagonistName}与${beastName}同框,${protagonistName}侧脸仰望,${beastPose}`;
 
-  // 待机感增强:定格时刻的小G"正在做的小事"(精简版,不占Prompt空间时省略)
+  // 待机感增强:定格时刻的AgentX"正在做的小事"(精简版,不占Prompt空间时省略)
   const idleAction = `${protagonistName}手抓背包带,手指绞了三圈又松开。一只孢子落在他肩头,他眼角余光捕捉到,头微微侧了一下。`;
 
   const cameraPlan = [
@@ -811,7 +811,7 @@ function combineActs(act1, act2, act3, config) {
   // 风格锁死(精简版)
   const styleLock = '【ASTRALIS风格锁死】Nirath原生视觉语言,禁止:地球标准光照/卡通动漫/二次元/蓝天绿草/无来源发光/无介质光线/模板化空泛描述/暗黑压抑。必须:双恒星真实明亮感+磁场可见光独特性+低重力飘浮感+生物荧光温度+量子相干性神秘感。这是Nirath不是地球。';
 
-  // v6.0-patch39: 使用小G活泼动作系统(全身动作,非仅嘴动)
+  // v6.0-patch39: 使用AgentX活泼动作系统(全身动作,非仅嘴动)
   const xiaoGActionPlan = xiaoGLivelyActionSystem.generate({
     phase: 'development',
     mood: config.mood || 'mysterious',
@@ -822,7 +822,7 @@ function combineActs(act1, act2, act3, config) {
   const mouthAction = `【口播动作】${(xiaoGActionPlan.shortDescription || xiaoGActionPlan.mainAction || '嘴部微张说话').substring(0, 40)}`;
 
   // v6.0-patch38: 角色数量约束(防止AI生成多个相同角色)
-  const characterCountConstraint = '【角色约束】画面中仅出现一个小G和一个饕餮,禁止出现重复角色,禁止画面中出现多个小G或多个饕餮。每个角色只能出现一次。';
+  const characterCountConstraint = '【角色约束】画面中仅出现一个AgentX和一个饕餮,禁止出现重复角色,禁止画面中出现多个AgentX或多个饕餮。每个角色只能出现一次。';
 
   // v6.0-patch38: 全局负面提示词注入(P0级别核心约束 + 水晶禁用)
   const negativePromptResult = globalNegativePromptInjector.generate({
@@ -871,7 +871,7 @@ function combineActs(act1, act2, act3, config) {
         character: charId === 'tao-tie' ? 'taotie' : charId,
         angle: 'front'
       });
-      const charName = charId === 'xiaoG' ? '小G' : (charId === 'tao-tie' || charId === 'taotie' ? '饕餮' : charId);
+      const charName = charId === 'xiaoG' ? 'AgentX' : (charId === 'tao-tie' || charId === 'taotie' ? '饕餮' : charId);
       const coreDesc = charCoreDesc[charId] || ['核心特征'];
       const coreDescText = coreDesc.slice(0, 3).join('，');
       // v6.5.10-fix: 严格遵循 Seedance 官方格式 @ImageN（纯数字，无方括号字母）
@@ -974,7 +974,7 @@ function combineActs(act1, act2, act3, config) {
     
     // Stage 4: 压缩角色约束
     if (fullPrompt.length > MAX_LENGTH) {
-      const minimalCharacterCount = '【角色约束】仅一个小G和一个饕餮,禁止重复角色。';
+      const minimalCharacterCount = '【角色约束】仅一个AgentX和一个饕餮,禁止重复角色。';
       fullPrompt = fullPrompt.replace(characterCountConstraint, minimalCharacterCount);
       truncationApplied = true;
     }
@@ -1325,7 +1325,7 @@ if (require.main === module) {
     {
       episodeTitle: '九尾狐·迷局',
       episodeTheme: 'mysterious',
-      episodeSummary: '小G初到青丘群岛,被九尾狐幻术迷惑,九尾狐测试小G分辨力,两者建立信任签订真相契约。',
+      episodeSummary: 'AgentX初到青丘群岛,被九尾狐幻术迷惑,九尾狐测试AgentX分辨力,两者建立信任签订真相契约。',
       protagonistId: 'xiaoG',
       featuredBeastId: 'jiu-wei-hu',
       duration: 9,

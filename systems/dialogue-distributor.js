@@ -82,7 +82,7 @@ const NO_VOICEOVER = true;
    * 【v6.2-patch89-底层约束】强制全部转为角色台词
    * 所有 narration 文本必须转化为角色直接说出的台词
    * 策略：
-   * 1. 场景描述 → 角色内心独白（小G观察到的）
+   * 1. 场景描述 → 角色内心独白（AgentX观察到的）
    * 2. 神兽动作 → 心灵感应（TELEPATHY）
    * 3. 情感描述 → 角色独白（MONOLOGUE）
    * 4. 禁止任何第三人称旁白
@@ -183,12 +183,12 @@ const NO_VOICEOVER = true;
 
   /**
    * 将第三人称描述转化为第一人称内心独白
-   * 例："小G站在钩吾废墟边缘" → "我站在这片废墟边缘，感受到..."
+   * 例："AgentX站在钩吾废墟边缘" → "我站在这片废墟边缘，感受到..."
    */
   _convertToFirstPerson(text, speaker) {
     // 替换主语
     let converted = text
-      .replace(/小G/g, '我')
+      .replace(/AgentX/g, '我')
       .replace(/主角/g, '我')
       .replace(/少年/g, '我');
     
@@ -290,7 +290,7 @@ const NO_VOICEOVER = true;
     const characters = shot.characters || [];
     
     // 1. 句子主语检测
-    if (sentence.includes('小G') || sentence.includes('少年')) return 'xiaoG';
+    if (sentence.includes('AgentX') || sentence.includes('少年')) return 'xiaoG';
     if (sentence.includes('饕餮') || sentence.includes('tao-tie')) return 'tao-tie';
     
     // 2. 根据镜头角色推断
@@ -298,7 +298,7 @@ const NO_VOICEOVER = true;
     if (characters.length > 1) {
       // 多角色时，根据动作推断
       if (sentence.includes('注视') || sentence.includes('看') || sentence.includes('后退')) {
-        // 通常是小G在看/后退
+        // 通常是AgentX在看/后退
         return 'xiaoG';
       }
     }

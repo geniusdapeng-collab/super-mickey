@@ -373,7 +373,7 @@ Style: Default,Noto Sans SC,16,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-Dialogue: 0,0:00:01.00,0:00:03.50,Default,,0,0,0,,小G站在浮空晶簇山脉脚下，仰望断裂的天柱
+Dialogue: 0,0:00:01.00,0:00:03.50,Default,,0,0,0,,AgentX站在浮空晶簇山脉脚下，仰望断裂的天柱
 Dialogue: 0,0:00:04.00,0:00:06.50,Default,,0,0,0,,他掌心触摸着风化的远古祭器`;
     
     fss.writeFileSync('/tmp/test.ass', testAss);

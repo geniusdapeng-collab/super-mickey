@@ -403,7 +403,7 @@ class ConceptForge {
 
   // 生成一句话Pitch
   generateOneSentencePitch(theme, coreTwist, name, emotionalAnchor) {
-    return `当8岁男孩小G遇到${name}，他发现${coreTwist}——${emotionalAnchor}。`;
+    return `当8岁男孩AgentX遇到${name}，他发现${coreTwist}——${emotionalAnchor}。`;
   }
 
   // 选择最佳种子（供人工/系统选择）

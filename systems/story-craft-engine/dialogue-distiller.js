@@ -1,5 +1,5 @@
 // dialogue-distiller.js — StoryCraft Engine v1.0
-// 台词精炼炉：为异兽和小G生成精简、有画面感的台词
+// 台词精炼炉：为异兽和AgentX生成精简、有画面感的台词
 
 class DialogueDistiller {
   constructor(options = {}) {
@@ -20,7 +20,7 @@ class DialogueDistiller {
     
     const distilled = {
       beastLines: {},      // 异兽台词
-      humanLines: {},      // 小G台词
+      humanLines: {},      // AgentX台词
       nirathLines: {},     // Nirath语（如果启用）
       mouthActions: {},    // 嘴部动作同步
       subtexts: {},        // 潜台词
@@ -68,7 +68,7 @@ class DialogueDistiller {
         }
       }
       
-      // 生成小G台词（选择性）
+      // 生成AgentX台词（选择性）
       const humanLine = this.distillHumanLine(beat, psyche);
       if (humanLine) {
         distilled.humanLines[beatId] = humanLine;
@@ -192,9 +192,9 @@ class DialogueDistiller {
     return this.distillBeastLineV2(monologue, dialogue, beat, psyche, {});
   }
 
-  // 精炼小G台词
+  // 精炼AgentX台词
   distillHumanLine(beat, psyche) {
-    // 小G台词较少，只在关键节拍出现
+    // AgentX台词较少，只在关键节拍出现
     const keyBeats = ['B3', 'B4', 'B5']; // 裂缝、翻转、余韵
     if (!keyBeats.includes(beat.id)) return null;
 
@@ -461,7 +461,7 @@ if (require.main === module) {
   Object.entries(result.beastLines).forEach(([beat, line]) => {
     console.log(`  ${beat}: "${line.text}" (${line.tone})`);
   });
-  console.log('\n小G台词:');
+  console.log('\nAgentX台词:');
   Object.entries(result.humanLines).forEach(([beat, line]) => {
     console.log(`  ${beat}: "${line.text}" (${line.tone})`);
   });

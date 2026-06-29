@@ -64,7 +64,7 @@ class PromptQualityGate {
 
     // ✅ Tier-1 主体关键词也按类型扩展
     const subjectPatterns = {
-      shanhaijing: /(小G|饕餮|taotie|beast|character|explorer|boy|角色|人物|主体|女士|先生|医生|护士|警察)/i,
+      shanhaijing: /(AgentX|饕餮|taotie|beast|character|explorer|boy|角色|人物|主体|女士|先生|医生|护士|警察)/i,
       generic: /(character|person|woman|man|lady|gentleman|角色|人物|主体|女士|先生|医生|护士|警察)/i
     };
     this.subjectPattern = subjectPatterns[projectType] || subjectPatterns.generic;
@@ -164,7 +164,7 @@ class PromptQualityGate {
     const tier1 = promptData.tiers?.tier1?.text || '';
     
     const checks = {
-      hasSubject: /(小G|饕餮|taotie|xiaoG|beast|character|explorer|boy|角色|人物|主体)/i.test(tier1),
+      hasSubject: /(AgentX|饕餮|taotie|xiaoG|beast|character|explorer|boy|角色|人物|主体)/i.test(tier1),
       hasAction: /(站|走|跑|伸|推|蹲|看|踏|移动|行动|动作|交互|触碰|抬头|转身|前进|后退|爬|跃|飞|游)/i.test(tier1),
       hasScene: /(Mountain|Lake|Forest|Plains|Nirath|山|海|森林|平原|湖|丘|原|域|环境|场景|钩吾|不周|归墟|青丘|钟山|建木|昆仑|幽都|流沙|银色湖泊)/i.test(tier1),
       hasCamera: /(shot|wide|close|medium|tracking|push|pull|pan|镜头|运镜|推|拉|摇|移|跟|升|降|环绕|俯视|仰视|特写|中景|远景|全景|近景)/i.test(tier1)

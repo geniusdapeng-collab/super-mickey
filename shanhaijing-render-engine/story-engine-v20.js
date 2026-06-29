@@ -119,7 +119,7 @@ class StoryValidator {
       if (shot.characters && shot.characters.includes('xiaog')) {
         for (const pattern of fantasticalPatterns) {
           if (shot.action && pattern.test(shot.action.toLowerCase())) {
-            issues.push(`S${i+1}: 小G做了奇幻行为（${pattern.source}）`);
+            issues.push(`S${i+1}: AgentX做了奇幻行为（${pattern.source}）`);
           }
         }
       }
@@ -242,7 +242,7 @@ function getActionForEmotion(emotion, intensity = 'medium') {
 // ========== 角色能力边界定义 ==========
 const CHARACTER_CAPABILITIES = {
   xiaog: {
-    name: '小G',
+    name: 'AgentX',
     type: 'human_child',
     age: 8,
     canDo: [

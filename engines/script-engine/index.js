@@ -134,7 +134,7 @@ class ScriptEngine {
         characters: [
           {
             character_id: 'xiaoG',
-            name: '小G',
+            name: 'AgentX',
             role: 'protagonist',
             visual_anchor: {
               core_features: ['银灰装甲', '东亚面孔短发', '年轻男性'],

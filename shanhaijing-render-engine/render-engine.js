@@ -2,7 +2,7 @@
  * Nirath渲染合成引擎 — Nirath Render Engine v13.1-Peng
  * 
  * 世界观：Nirath = 地球前身 = 2147年科技文明归元产物
- * 《山海经：异兽志》是8岁男孩小G在Nirath上的真实记录
+ * 《山海经：异兽志》是8岁男孩AgentX在Nirath上的真实记录
  * 
  * 集成火山引擎Seedance API，负责:
  * - 单镜头视频生成
@@ -512,7 +512,7 @@ class ShanhaiRenderEngine {
     // v11.7-Peng: 构建潜叙事元素（提升画面信息密度）
     const subnarrative = this._buildSubnarrativeElements(shot);
     
-    // v11.7-Peng: 构建舞蹈动作（小G是快乐boy，喜欢跳舞）
+    // v11.7-Peng: 构建舞蹈动作（AgentX是快乐boy，喜欢跳舞）
     const danceAction = this._buildDanceAction(shot);
     
     // v11.9-Peng: 调整拼接顺序 — description优先，潜叙事后置
@@ -659,13 +659,13 @@ class ShanhaiRenderEngine {
   }
 
   /**
-   * v11.7-Peng: 舞蹈动作构建 — 小G是快乐boy，喜欢跳舞
+   * v11.7-Peng: 舞蹈动作构建 — AgentX是快乐boy，喜欢跳舞
    * 根据情绪和场景自动匹配合适的舞蹈动作
    */
   _buildDanceAction(shot) {
     const { emotion, act, characters = [] } = shot;
     
-    // 只给小G添加舞蹈动作
+    // 只给AgentX添加舞蹈动作
     const hasXiaog = characters.some(c => c.id === 'char_xiaog');
     if (!hasXiaog) return '';
     
