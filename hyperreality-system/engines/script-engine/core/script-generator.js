@@ -27,7 +27,7 @@ class ScriptGenerator {
       apiKey: options.apiKey || process.env.VOLCENGINE_ARK_API_KEY,
       // 【v2.1.4-fix13-审计修复】从环境变量读取，消除硬编码
       model: model,
-      maxTokens: options.maxTokens || 8192,
+      maxTokens: options.maxTokens || 16000, // 【v2.1.6-fix16】增加默认maxTokens，防止JSON被截断
       temperature: options.temperature || 1,
       promptTemplateDir: options.promptTemplateDir || path.join(__dirname, '../prompts'),
       templateDir: options.templateDir || path.join(__dirname, '../templates'),
@@ -160,127 +160,24 @@ ${meta.world_setting === '示例世界' ? `
 `}
 
 ## 输出格式要求
-你必须输出一个严格的 JSON 对象，符合以下 Schema：
+你必须输出一个严格的 JSON 对象，包含以下顶级字段：
+- meta: {title, narrative_mode, target_duration, acts_count, scenes_count}
+- structure: {acts: [...], scenes: [...]}
+- character_system: {characters: [...]}
+- voice_system: {global_voice_policy, voice_profiles: [...]}
+- world_setting: {world_id, world_name, era, core_rules, environment_tags}
 
-\`\`\`json
-{
-  "meta": {
-    "title": "标题",
-    "narrative_mode": "dramatic",
-    "target_duration": ${meta.target_duration},
-    "acts_count": 3,
-    "scenes_count": 场景数量
-  },
-  "structure": {
-    "acts": [
-      {
-        "act_id": "ACT-1",
-        "act_name": "幕名称",
-        "act_function": "establish|confront|resolve",
-        "start_time": 0,
-        "end_time": 幕结束秒数,
-        "beats": [
-          {
-            "beat_id": "B-1.1",
-            "beat_type": "hook|setup|rising|climax|resolution",
-            "description": "节拍描述",
-            "target_emotion": "wonder|tension|joy|sadness|awe"
-          }
-        ]
-      }
-    ],
-    "scenes": [
-      {
-        "scene_id": "SC00",
-        "scene_name": "场景名称",
-        "scene_type": "opening|establishing|conflict|emotional_climax|resolution",
-        "scene_function": "establish|advance|conflict|climax|resolve",
-        "act_id": "ACT-1",
-        "timing": {
-          "start": 开始秒数,
-          "duration": 持续秒数,
-          "end": 结束秒数
-        },
-        "characters": ["角色ID"],
-        "setting": "具体写实场景描述（50-80字）：墙面材质、灯光类型（真实光源）、家具/设备、地面材质。例如：白色乳胶漆墙面，嵌入式LED灯带柔和照明，深色实木办公桌摆放笔记本电脑，地面浅灰色地毯",
-        "dialogue": {
-          "has_dialogue": true,
-          "lines": [
-            {
-              "speaker": "角色ID",
-              "text": "台词内容（口语化，不超过30字）",
-              "emotion": "情绪标签"
-            }
-          ],
-          "blocks": [
-            {
-              "speaker": "角色ID",
-              "line": "台词内容（口语化，不超过30字）",
-              "emotion": "情绪副词（如 confidently, hesitates, gently）",
-              "trigger": "动作触发（如 looks at camera, pauses then smiles）",
-              "manner": "说话方式（如 quietly, with a smile, direct-address）",
-              "type": "monologue|dialogue|reaction"
-            }
-          ]
-        },
-        "visual_notes": "视觉指导备注",
-        "emotional_target": {
-          "valence": 0.8,
-          "arousal": 0.6,
-          "dominance": 0.5
-        }
-      }
-    ]
-  },
-  "character_system": {
-    "characters": [
-      {
-        "character_id": "example-role",
-        "name": "示例角色",
-        "role": "protagonist",
-        "voice_profile": {
-          "persona": "角色人设描述",
-          "tone": "语气标签",
-          "speaking_style": "说话风格"
-        },
-        "visual_anchor": {
-          "core_features": ["核心特征1", "核心特征2", "核心特征3"],
-          "reference_images": ["定妆照路径"]
-        }
-      }
-    ]
-  },
-  "voice_system": {
-    "global_voice_policy": "dialogue_only_no_voiceover",
-    "voice_profiles": [
-      {
-        "voice_id": "V-角色ID",
-        "character_id": "角色ID",
-        "role": "角色定位",
-        "tone": "语气",
-        "pace": "语速",
-        "constraints": {
-          "forbidden_words": ["禁用词"],
-          "max_line_length": 30
-        }
-      }
-    ]
-  },
-  "world_setting": {
-    "world_id": "nirath",
-    "world_name": "示例世界星球",
-    "era": "上古纪元",
-    "core_rules": ["规则1", "规则2"],
-    "environment_tags": ["环境标签1", "环境标签2"]
-  }
-}
-\`\`\`
+每个场景(scenes)必须包含：scene_id, scene_name, scene_type, scene_function, act_id, timing(start/duration/end), characters, setting, dialogue(lines+blocks), visual_notes, emotional_target(valence/arousal/dominance)
+
+dialogue.blocks 每个元素包含：speaker, line, emotion(副词), trigger(动作), manner(说话方式), type(monologue/dialogue/reaction)
 
 ## 关键要求
-1. 场景数量建议 5-7 个，总时长严格等于 ${meta.target_duration} 秒
-2. 每个场景的台词必须包含在场景中（不能旁白）
-3. 场景时长分配需严格计算，总和必须精确等于${meta.target_duration}秒，例如：${Math.round(meta.target_duration/5)}秒×5场景
-4. 角色视觉锚点必须保持一致（定妆照引用）
+1. 只输出纯JSON，不要markdown代码块，不要解释文字
+2. 使用最紧凑格式（减少换行和缩进）
+3. 场景数量建议 5-7 个，总时长严格等于 ${meta.target_duration} 秒
+4. 每个场景的台词必须包含在场景中（不能旁白）
+5. 场景时长分配需严格计算，总和必须精确等于${meta.target_duration}秒
+6. 角色视觉锚点必须保持一致（定妆照引用）
 ${meta.characters?.length > 0 ? `
 ## 角色信息（必须严格使用，禁止自创角色）
 ${meta.characters.map(c => `- ${c.name} (ID: ${c.id || c.name}): ${c.description || '主讲人'}`).join('\n')}
@@ -352,10 +249,10 @@ ${meta._directorStyle}` : ''}
         
         // 调用LLM（恢复systemPrompt参数）
         // 【P1-11 修复】统一超时阈值与 maxTokens，不再硬编码
-        // 【修复】禁用 forceJson，让模型自由输出，避免JSON模式返回空content
+        // 【v2.1.6-fix16】增加maxTokens到16000，解决JSON输出被截断问题
         const llmPromise = this.llmEngine.generate(prompt, {
           systemPrompt: systemInstruction,
-          maxTokens: this.config.maxTokens || 8192,
+          maxTokens: this.config.maxTokens || 16000,
           timeoutMs: timeoutMs, // 与外层 race 同一阈值
           forceJson: false,
           allowReasoningFallback: true
@@ -420,6 +317,20 @@ ${meta._directorStyle}` : ''}
           // content 不完整，尝试从 reasoning 提取
           if (result.reasoning_content && result.reasoning_content.trim()) {
             console.warn('[ScriptGenerator] ⚠️ content 不完整，尝试从 reasoning 提取完整 JSON...');
+            // DEBUG: 保存reasoning内容到文件以便分析
+            const debugPath = path.join(process.cwd(), 'debug_reasoning.json');
+            try {
+              fs.writeFileSync(debugPath, JSON.stringify({
+                content_length: content.length,
+                reasoning_length: result.reasoning_content.length,
+                reasoning_preview: result.reasoning_content.substring(0, 500),
+                reasoning_last_500: result.reasoning_content.substring(result.reasoning_content.length - 500),
+                timestamp: new Date().toISOString()
+              }, null, 2));
+              console.log(`[ScriptGenerator] DEBUG: 保存reasoning到 ${debugPath}`);
+            } catch (e) {
+              console.warn(`[ScriptGenerator] DEBUG保存失败: ${e.message}`);
+            }
             extractedJson = this._extractJsonFromText(result.reasoning_content);
             if (extractedJson) {
               try {
@@ -748,6 +659,19 @@ ${meta._directorStyle}` : ''}
   _extractValidJson(str) {
     if (!str || typeof str !== 'string') return null;
 
+    // 先使用增强的文本提取获取JSON字符串
+    const jsonStr = this._extractJsonFromText(str);
+    if (jsonStr) {
+      try {
+        const parsed = JSON.parse(jsonStr);
+        if (parsed.meta && parsed.structure) {
+          console.log(`[ScriptGenerator] _extractValidJson: 通过_extractJsonFromText提取成功, ${jsonStr.length}/${str.length} 字符`);
+          return parsed;
+        }
+      } catch (e) { /* 继续尝试其他方法 */ }
+    }
+
+    // 兜底：使用原有逻辑（逐步截断等）
     // 先找到最外层的大括号范围
     let start = str.indexOf('{');
     if (start === -1) return null;
@@ -843,6 +767,7 @@ ${meta._directorStyle}` : ''}
   }
 
   // 【v2.1.6-fix14】增强JSON提取：从文本中智能提取JSON（支持markdown代码块、括号匹配等）
+  // 【v2.1.6-fix15】增强JSON提取：支持markdown代码块、括号匹配、字符串截断补全、键值对清理
   _extractJsonFromText(text) {
     if (!text || typeof text !== 'string') return null;
 
@@ -895,16 +820,64 @@ ${meta._directorStyle}` : ''}
     }
 
     // 5. 尝试补全不闭合的JSON（处理截断）
-    const lastBrace = text.lastIndexOf('}');
-    const firstBrace = text.indexOf('{');
-    if (firstBrace >= 0) {
-      let candidate = text.substring(firstBrace, lastBrace >= firstBrace ? lastBrace + 1 : undefined);
-      let open = 0, close = 0;
-      for (const ch of candidate) { if (ch === '{') open++; else if (ch === '}') close++; }
-      candidate += '}'.repeat(Math.max(0, open - close));
-      candidate = candidate.replace(/,\s*"[^"]*"?\s*:\s*"[^"]*$/, '');
-      candidate = candidate.replace(/,\s*"[^"]*"?\s*:\s*$/, '');
-      try { JSON.parse(candidate); return candidate; } catch (_) {}
+    // 先检测字符串是否未闭合
+    let stringOpen = false;
+    let escapeState = false;
+    let lastNonStringBrace = 0;
+    let braceStack = 0;
+    
+    for (let i = start; i < text.length; i++) {
+      const ch = text[i];
+      if (stringOpen) {
+        if (escapeState) { escapeState = false; }
+        else if (ch === '\\') { escapeState = true; }
+        else if (ch === '"') { stringOpen = false; }
+      } else {
+        if (ch === '"') { stringOpen = true; }
+        else if (ch === '{') { braceStack++; }
+        else if (ch === '}') { braceStack--; }
+      }
+    }
+    
+    let candidate = text.substring(start);
+    // 如果字符串未闭合，先补全引号
+    if (stringOpen) {
+      candidate += '"';
+    }
+    // 补全括号
+    let open = 0, close = 0, bracketOpen = 0, bracketClose = 0;
+    let inStr = false, esc = false;
+    for (const ch of candidate) {
+      if (inStr) {
+        if (esc) { esc = false; }
+        else if (ch === '\\') { esc = true; }
+        else if (ch === '"') { inStr = false; }
+      } else {
+        if (ch === '"') { inStr = true; }
+        else if (ch === '{') { open++; }
+        else if (ch === '}') { close++; }
+        else if (ch === '[') { bracketOpen++; }
+        else if (ch === ']') { bracketClose++; }
+      }
+    }
+    
+    // 先补全括号（由内到外）
+    candidate += ']'.repeat(Math.max(0, bracketOpen - bracketClose));
+    candidate += '}'.repeat(Math.max(0, open - close));
+    
+    // 清理末尾不完整的键值对
+    candidate = candidate.replace(/,\s*"[^"]*"?\s*:\s*"[^"]*$/, '');
+    candidate = candidate.replace(/,\s*"[^"]*"?\s*:\s*$/, '');
+    candidate = candidate.replace(/,\s*"[^"]*"?\s*$/, '');
+    candidate = candidate.replace(/,\s*$/, '');
+    
+    try { JSON.parse(candidate); return candidate; } catch (_) {}
+
+    // 6. 最终尝试：从最后一个完整键值对之后截断
+    const lastCompletePair = candidate.lastIndexOf('",');
+    if (lastCompletePair > 0) {
+      const truncated = candidate.substring(0, lastCompletePair + 2) + '}';
+      try { JSON.parse(truncated); return truncated; } catch (_) {}
     }
 
     return null;

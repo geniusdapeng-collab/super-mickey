@@ -7,7 +7,7 @@ const { normalizeLLMOutput } = require('./llm-output-normalizer');
 class LLMEngine {
   constructor(options = {}) {
     this.model = options.model || 'kimi-k2p6';
-    this.maxTokens = options.maxTokens || 8192; // 【v2.1.4-fix10-P25-fix3】提到8192，防25字段×详细描述被截断
+    this.maxTokens = options.maxTokens || 16000; // 【v2.1.6-fix16】增加默认maxTokens，防止JSON被截断
     this.timeoutMs = options.timeoutMs || 600000;
     this.temperature = 1;
     this.topP = 0.95;

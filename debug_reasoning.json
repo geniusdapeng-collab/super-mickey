@@ -1,0 +1,7 @@
+{
+  "content_length": 7156,
+  "reasoning_length": 13139,
+  "reasoning_preview": "用户要求我作为AI视频编剧，创作一个关于\"孙悟空大战二郎神\"的30秒短视频剧本，输出严格格式的JSON。\n\n关键约束：\n1. 只输出严格JSON，不要markdown代码块，不要解释，不要思考过程\n2. 使用最紧凑的JSON格式（不要换行和缩进）\n3. 禁止旁白，只保留角色对话\n4. 每个场景必须有角色对话\n5. 每句台词不超过30字，口语化\n6. 台词必须生成blocks字段，包含speaker/line/emotion/trigger/manner/type\n7. emotion必须是副词（如confidently/hesitates/gently）\n8. trigger必须是物理动作触发（如looks at camera/pauses then smiles）\n9. 总时长严格等于30秒\n10. 场景数量5-7个\n11. 采用三幕式结构\n12. 角色只能是孙悟空(sun-wukong)和二郎神(erlang-shen)\n13. 世界观default\n14. 创意指数0.5（中等创意）\n\n我需要设计5-6个场景，总时长30秒。平均每个场景5-6秒。\n\n三幕式结构：\nACT-1 (0",
+  "reasoning_last_500": "ess|awe\"\n   }\n ]\n ```\n 所以只有这4个字段。\n\n scenes里的dialogue：\n has_dialogue, lines, blocks。\n lines里有speaker, text, emotion。\n blocks里有speaker, line, emotion, trigger, manner, type。\n\n characters里的role：protagonist, antagonist。\n 孙悟空是protagonist，二郎神是antagonist？用户说主角是default。在这个故事里，两个都是主角？或者孙悟空更主角。我就设孙悟空protagonist，二郎神antagonist。\n\n visual_anchor：\n core_features: [...]\n reference_images: [...]\n\n emotional_target：valence, arousal, dominance。\n\n所有设置看起来都没问题。现在生成单行JSON。\n\n由于JSON很长且不能有换行，我需要非常仔细地构建。\n\n我将直接在这里写出最终JSON。",
+  "timestamp": "2026-06-29T15:48:51.038Z"
+}

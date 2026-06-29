@@ -230,6 +230,7 @@ class NirathMasterPipeline {
     this.mode = options.mode || 'nirath'; // 'generic' | 'nirath'
     this.projectConfig = options.projectConfig || {};
     this.useLLM = options.useLLM !== false; // v6.2-patch71-fix: 默认启用LLM
+    this.llmEngine = options.llmEngine || null; // v6.6.5-fix: 初始化LLM引擎引用
     this._modules = null; // 🔥 v6.2-patch75: 惰性加载,首次访问时初始化
     this.statusReporter = options.statusReporter || null; // 【v6.2-patch84】状态报告器
     this.outputDir = options.outputDir || '/tmp'; // v6.2-patch111-fix: 确保outputDir有默认值
@@ -972,7 +973,7 @@ class NirathMasterPipeline {
           this.log('PIPELINE', `🎬 PromptForge 子进程启动 | 内存限制: 2048MB | 输入: ${inputFile}`);
           
           const worker = spawn('node', [
-            '--max-old-space-size=8192', // v6.5.59-fix: 恢复为8192（OOM修复）
+            '--max-old-space-size=5120', // v6.5.59-fix: 调整为5120MB，避免6GB系统OOM
             workerPath,
             inputFile,
             outputFile
@@ -989,7 +990,10 @@ class NirathMasterPipeline {
           
           // 等待完成
           // 【v2.1.4-fix10-P25-fix8-P1C】子进程超时对齐父进程生命周期，防止孤儿进程
-          const CHILD_TIMEOUT_MS = 300000; // 5分钟（原1800s远超11分钟SIGTERM）
+          // 动态计算超时：每镜头约2分钟 + 基础2分钟
+          const estimatedShots = projectConfig?.shots?.length || 6;
+          const CHILD_TIMEOUT_MS = Math.max(600000, estimatedShots * 120000 + 120000); // 至少10分钟，每镜头2分钟+2分钟基础
+          this.log('PIPELINE', `⏱️ PromptForge 子进程超时设置: ${CHILD_TIMEOUT_MS/1000}s (基于${estimatedShots}个镜头)`);
           const exitCode = await new Promise((resolve, reject) => {
             const timeout = setTimeout(() => {
               worker.kill('SIGKILL');
@@ -1023,26 +1027,49 @@ class NirathMasterPipeline {
             throw new Error(`Worker exited with code ${exitCode}`);
           }
           
-          // 读取输出
-          if (!fss.existsSync(outputFile)) {
-            throw new Error('Worker 未生成输出文件');
+          // 读取输出（带防护）
+          let outputData;
+          let forgeResult;
+          const tempFiles = [inputFile, outputFile];
+          try {
+            if (!fss.existsSync(outputFile)) {
+              throw new Error('Worker 未生成输出文件');
+            }
+            
+            const outputRaw = fss.readFileSync(outputFile, 'utf8');
+            try {
+              outputData = JSON.parse(outputRaw);
+            } catch (parseErr) {
+              this.log('PIPELINE', `⚠️ Worker输出JSON解析失败: ${parseErr.message} | 原始内容前500字符: ${outputRaw.slice(0, 500)}`);
+              throw new Error(`Worker输出JSON解析失败: ${parseErr.message}`);
+            }
+            
+            if (!outputData.success) {
+              throw new Error(outputData.error || 'Worker 返回失败');
+            }
+            
+            forgeResult = {
+              shots: outputData.shots.map(s => ({
+                id: s.id,
+                finalPrompt: s.finalPrompt
+              })),
+              qualityReport: outputData.qualityReport
+            };
+            
+            this.log('PIPELINE', `✅ PromptForge 子进程完成 | 质量分: ${forgeResult.qualityReport?.overallScore} | 通过: ${forgeResult.qualityReport?.overallPassed}`);
+          } finally {
+            // 清理临时文件
+            for (const tempFile of tempFiles) {
+              try {
+                if (fss.existsSync(tempFile)) {
+                  fss.unlinkSync(tempFile);
+                  this.log('PIPELINE', `🧹 清理临时文件: ${tempFile}`);
+                }
+              } catch (cleanupErr) {
+                this.log('PIPELINE', `⚠️ 清理临时文件失败: ${tempFile} | ${cleanupErr.message}`);
+              }
+            }
           }
-          
-          const outputData = JSON.parse(fss.readFileSync(outputFile, 'utf8'));
-          
-          if (!outputData.success) {
-            throw new Error(outputData.error || 'Worker 返回失败');
-          }
-          
-          const forgeResult = {
-            shots: outputData.shots.map(s => ({
-              id: s.id,
-              finalPrompt: s.finalPrompt
-            })),
-            qualityReport: outputData.qualityReport
-          };
-          
-          this.log('PIPELINE', `✅ PromptForge 子进程完成 | 质量分: ${forgeResult.qualityReport?.overallScore} | 通过: ${forgeResult.qualityReport?.overallPassed}`);
             
             // 恢复 render 数据
             result.stages.render = originalRenderBackup;
