@@ -611,7 +611,8 @@ class LLMChecker {
         timeoutPromise
       ]).finally(() => clearTimeout(timer));
 
-      const data = JSON.parse(response);
+      // 【v2.1.6-fix20】reason() 可能返回已解析的对象，无需再 JSON.parse
+      const data = (typeof response === 'string') ? JSON.parse(response) : (response || {issues: []});
       return (data.issues || []).map(item => new Issue({
         fieldEn: item.field_en || '',
         fieldCn: item.field_cn || '',

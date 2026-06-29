@@ -308,7 +308,8 @@ class LLMRepairer {
         timeoutPromise
       ]).finally(() => clearTimeout(timer));
 
-      const data = JSON.parse(response);
+      // 【v2.1.6-fix20】reason() 可能返回已解析的对象，无需再 JSON.parse
+      const data = (typeof response === 'string') ? JSON.parse(response) : (response || {});
       const repairedFields = data.repaired_fields || data || {}; // 【v2.1.4-fix13】兼容两种返回格式
 
       const repairedShot = JSON.parse(JSON.stringify(shot));
