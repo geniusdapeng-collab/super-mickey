@@ -55,16 +55,22 @@ class CrossEpisodeValidator {
   async validate({ script, contract, episodeIndex, totalEpisodes, overrideReason }) {
     console.log(`[CrossEpisodeValidator] 开始校验第${episodeIndex}集/共${totalEpisodes}集...`);
 
-    // 如果提供了覆盖原因，直接通过
+    // 【v2.1.6-fix-bug51】安全验证：override需要满足最小长度和格式要求
     if (overrideReason) {
-      console.log(`[CrossEpisodeValidator] 收到override: ${overrideReason}`);
-      return {
-        passed: true,
-        override: true,
-        overrideReason,
-        violations: [],
-        summary: '校验已覆盖（人工确认）'
-      };
+      const trimmed = overrideReason.trim();
+      if (trimmed.length < 10) {
+        console.warn(`[CrossEpisodeValidator] override原因过短(${trimmed.length}字符)，拒绝，继续正常校验`);
+        // 继续正常校验，不跳过
+      } else {
+        console.log(`[CrossEpisodeValidator] 收到有效override: ${trimmed.substring(0, 50)}...`);
+        return {
+          passed: true,
+          override: true,
+          overrideReason: trimmed,
+          violations: [],
+          summary: '校验已覆盖（人工确认）'
+        };
+      }
     }
 
     const violations = [];

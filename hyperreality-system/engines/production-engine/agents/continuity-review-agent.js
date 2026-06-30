@@ -53,16 +53,10 @@ class ContinuityReviewAgent extends BaseAgent {
     }
   }
 
-  // 【P0-1 修复】总体超时包装，确保即使 _callLLM 内部异常挂起，process 也能在固定时间返回
+  // 【P0-1 修复】总体超时包装
   _totalTimeout(promise, ms, label) {
-    let timer;
-    promise.catch(() => {}); // 【v2.1.6-fix】防止悬空 rejection
-    return Promise.race([
-      promise,
-      new Promise((_, reject) => {
-        timer = setTimeout(() => reject(new Error(`${label}总体超时(${ms}ms)`)), ms);
-      })
-    ]).finally(() => clearTimeout(timer));
+    const { SafePromise } = require('../../utils/safe-promise');
+    return SafePromise.withTimeout(promise, ms, label);
   }
 
   async process(shots, blueprint, options = {}) {
@@ -192,7 +186,7 @@ ${shotsInfo}
     const durations = shots.map(s => s.duration || 0);
     const total = durations.reduce((a, b) => a + b, 0);
     if (total > 0) {
-      const avg = total / shots.length;
+      const avg = shots.length > 0 ? total / shots.length : 0; // 【v2.1.6-fix-bug59】防止除零
       for (let i = 0; i < shots.length; i++) {
         if (durations[i] > avg * 3) {
           issues.push({

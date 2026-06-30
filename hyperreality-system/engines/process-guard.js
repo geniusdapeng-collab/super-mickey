@@ -1,44 +1,64 @@
 'use strict';
 /**
- * 全局进程防护 v1.0
- * 作用：捕获 unhandledRejection / uncaughtException，防止 LLM 超时悬空 promise 直接杀死进程
- * 用法：在 index.js / run.js / run-preproduction.js 等入口第一行 require('./engines/process-guard')
+ * 全局进程防护 v1.1
+ * 【v2.1.6-fix-bug50】分类处理错误，可配置吸收/退出策略
+ * 作用：捕获 unhandledRejection / uncaughtException，防止静默数据损坏
  */
 let installed = false;
-function install() {
-  if (installed) return;
+const installedFor = new Set(); // 【v2.1.6-fix-bug58】按实例追踪，避免多实例共享状态
+function install(instanceId = 'default', options = {}) {
+  if (installedFor.has(instanceId)) return;
+  installedFor.add(instanceId);
+  if (installed) return; // 全局事件只注册一次
   installed = true;
 
+  // 🆕 可配置：哪些错误类型被吸收，哪些导致退出
+  const absorbTimeouts = options.absorbTimeouts !== false;
+  const absorbNetworkErrors = options.absorbNetworkErrors !== false;
+  const exitOnUnexpected = options.exitOnUnexpected !== false;
+
   process.on('unhandledRejection', (reason, promise) => {
-    // 只记录，不退出进程。LLM 超时产生的悬空 rejection 会被这里吸收
     const msg = reason instanceof Error ? reason.message : String(reason);
+
+    // 分类处理
     if (msg.includes('超时') || msg.includes('timeout') || msg.includes('Timeout')) {
-      console.warn(`[ProcessGuard] 吸收LLM超时悬空rejection: ${msg}`);
+      if (absorbTimeouts) {
+        console.warn(`[ProcessGuard] 吸收LLM超时: ${msg}`);
+        return;
+      }
+    }
+
+    if (msg.includes('ECONNREFUSED') || msg.includes('ETIMEDOUT') || msg.includes('network')) {
+      if (absorbNetworkErrors) {
+        console.warn(`[ProcessGuard] 吸收网络错误: ${msg}`);
+        return;
+      }
+    }
+
+    // 其他错误：根据配置决定
+    if (exitOnUnexpected) {
+      console.error(`[ProcessGuard] 未预期错误，进程退出: ${msg}`);
+      process.exit(1);
     } else {
-      console.error(`[ProcessGuard] 未处理Rejection(已吸收，进程继续): ${msg}`);
+      console.error(`[ProcessGuard] 未预期错误(已吸收): ${msg}`);
     }
   });
 
   process.on('uncaughtException', (err) => {
-    // 【P1-5 修复】区分致命错误和可恢复错误
     const FATAL_PATTERNS = [
-      /out of memory/i,
-      /heap out of memory/i,
-      /ENOMEM/i,
-      /allocation failed/i,
-      /segfault/i,
-      /SIGSEGV/i,
-      /SIGABRT/i
+      /out of memory/i, /heap out of memory/i, /ENOMEM/i,
+      /allocation failed/i, /segfault/i, /SIGSEGV/i, /SIGABRT/i
     ];
     const isFatal = FATAL_PATTERNS.some(p => p.test(err.message));
-    
+
     if (isFatal) {
-      console.error(`[ProcessGuard] 💀 致命错误(进程退出): ${err.message}`);
-      console.error(err.stack);
-      process.exit(1); // 致命错误必须退出，防止僵尸进程
+      console.error(`[ProcessGuard] 致命错误: ${err.message}`);
+      process.exit(1);
+    } else if (exitOnUnexpected) {
+      console.error(`[ProcessGuard] 未捕获异常，进程退出: ${err.message}`);
+      process.exit(1);
     } else {
-      console.error(`[ProcessGuard] 未捕获异常(已吸收，进程继续): ${err.message}`);
-      // 非致命错误继续运行
+      console.error(`[ProcessGuard] 未捕获异常(已吸收): ${err.message}`);
     }
   });
 }
