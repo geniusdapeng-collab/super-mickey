@@ -4,6 +4,7 @@
 // 版本: v1.0.0 | 日期: 2026-06-18
 
 const { IntentParser } = require('./intent-parser');
+const ThemeConfig = require('../../config/theme-config');
 
 // v2.0.2-fix: 安全数值解析工具，防止NaN污染后续计算
 function safeParseInt(str, defaultValue = 0) {
@@ -72,15 +73,25 @@ const StyleEncoder = {
  */
 const ParserRules = {
   videoTypeRules: [
+    // 核心7大类型
     { keywords: ['科普', '讲解', '知识', '教学', '课程', '教育', '健康科普'], type: 'EDU', name: '教育科普' },
-    { keywords: ['短剧', '剧情', '故事', '角色', '集', '微电影'], type: 'DRAMA', name: '短剧/微电影' },
-    { keywords: ['广告', '宣传', '推广', '品牌', '产品', '宣传片'], type: 'ADV', name: '商业广告' },
     { keywords: ['纪录片', '记录', '纪实', '真实'], type: 'DOC', name: '纪录片' },
-    { keywords: ['vlog', '日常', '记录生活', '跟我'], type: 'VLOG', name: 'Vlog/记录' },
-    { keywords: ['抖音', '快手', '小红书', 'viral', '短视频'], type: 'SOC', name: '社媒短视频' },
-    { keywords: ['企业', '公司', '工厂', '实力'], type: 'COR', name: '企业宣传' },
-    { keywords: ['活动', '现场', '会议', '庆典'], type: 'EVT', name: '活动记录' },
-    { keywords: ['mv', '音乐', '歌曲'], type: 'MV', name: '音乐视频' }
+    { keywords: ['家庭', '聚会', '亲子', '家族', '团圆'], type: 'FAMILY', name: '家庭聚会' },
+    { keywords: ['广告', '宣传', '推广', '品牌', '产品', '宣传片', '营销'], type: 'MARKETING', name: '商业营销' },
+    { keywords: ['短剧', '剧情', '故事', '角色', '集', '微电影', '电影级'], type: 'CINE', name: '电影级叙事' },
+    { keywords: ['艺术', '实验', '前卫', '独特', '抽象'], type: 'ART', name: '艺术级表达' },
+    { keywords: ['特效', '震撼', '视觉', '大片感', '极致'], type: 'VFX', name: '极致特效' },
+    // 扩展类型
+    { keywords: ['旅行', '旅游', '游记', '风景'], type: 'TRAVEL', name: '旅行vlog' },
+    { keywords: ['美食', '料理', '烹饪', '吃', '探店'], type: 'FOOD', name: '美食' },
+    { keywords: ['健身', '运动', '训练', '瑜伽'], type: 'FITNESS', name: '健身运动' },
+    { keywords: ['儿童', '宝宝', '亲子', '童话'], type: 'KIDS', name: '儿童亲子' },
+    // 兼容旧类型
+    { keywords: ['vlog', '日常', '记录生活', '跟我'], type: 'TRAVEL', name: '旅行vlog' },
+    { keywords: ['抖音', '快手', '小红书', 'viral', '短视频'], type: 'MARKETING', name: '商业营销' },
+    { keywords: ['企业', '公司', '工厂', '实力'], type: 'MARKETING', name: '商业营销' },
+    { keywords: ['活动', '现场', '会议', '庆典'], type: 'DOC', name: '纪录片' },
+    { keywords: ['mv', '音乐', '歌曲'], type: 'ART', name: '艺术级表达' }
   ],
 
   styleRules: [
@@ -117,17 +128,7 @@ const ParserRules = {
     { keywords: ['大屏', '户外'], platform: '户外大屏', defaultRatio: '16:9' }
   ],
 
-  durationDefaults: {
-    'EDU': { default: 90, range: [60, 120] },
-    'SOC': { default: 30, range: [15, 60] },
-    'ADV': { default: 30, range: [15, 60] },
-    'DOC': { default: 150, range: [60, 180] },
-    'DRAMA': { default: 150, range: [60, 180] },
-    'COR': { default: 90, range: [60, 120] },
-    'EVT': { default: 120, range: [60, 180] },
-    'VLOG': { default: 90, range: [60, 120] },
-    'MV': { default: 150, range: [60, 180] }
-  },
+  durationDefaults: {}, // Migrated to config/theme-config.js - use ThemeConfig.getDurationRange()
 
   constraints: {
     maxSingleDuration: 180,
@@ -554,33 +555,44 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
     // 补全视频类型(默认EDU)
     if (!completed.videoType) {
       completed.videoType = 'EDU';
-      completed.videoTypeName = '教育科普';
+      completed.videoTypeName = ThemeConfig.getTypeName('EDU');
       completed.videoTypeInferred = true;
     }
+    
+    // 补全类型名称（如果只有类型ID）
+    if (completed.videoType && !completed.videoTypeName) {
+      completed.videoTypeName = ThemeConfig.getTypeName(completed.videoType);
+    }
 
-    // 补全时长
+    // 补全时长 - 使用 ThemeConfig
     if (!completed.duration) {
-      const defaults = this.rules.durationDefaults[completed.videoType];
-      if (defaults) {
-        completed.duration = defaults.default;
-        completed.durationRange = defaults.range;
+      const themeConfig = ThemeConfig.getType(completed.videoType);
+      if (themeConfig) {
+        completed.duration = themeConfig.defaultDuration;
+        completed.durationRange = themeConfig.durationRange;
+        completed.durationInferred = true;
+      } else {
+        // 兜底
+        completed.duration = 90;
+        completed.durationRange = [60, 120];
         completed.durationInferred = true;
       }
     }
 
     // 补全时长范围
     if (!completed.durationRange && completed.duration) {
-      completed.durationRange = [Math.max(15, completed.duration - 10), Math.min(180, completed.duration + 10)];
+      const themeConfig = ThemeConfig.getType(completed.videoType);
+      if (themeConfig) {
+        completed.durationRange = themeConfig.durationRange;
+      } else {
+        completed.durationRange = [Math.max(15, completed.duration - 10), Math.min(300, completed.duration + 10)];
+      }
     }
 
-    // 补全风格(强制根据视频类型设置默认风格,覆盖LLM的错误推断)
-    const typeToStyle = {
-      'EDU': 'REAL', 'DOC': 'REAL', 'VLOG': 'REAL',
-      'DRAMA': 'CINE', 'MV': 'ART',
-      'ADV': 'POL', 'COR': 'POL',
-      'SOC': 'STREET', 'EVT': 'REAL'
-    };
-    const defaultStyle = typeToStyle[completed.videoType] || 'REAL';
+    // 补全风格 - 使用 ThemeConfig (强制根据视频类型设置默认风格)
+    const themeConfig = ThemeConfig.getType(completed.videoType);
+    const defaultStyle = themeConfig ? themeConfig.defaultStyle : 'REAL';
+    
     // 如果当前风格与默认不符,且是推断的,强制覆盖
     if (completed.style?.primary !== defaultStyle) {
       console.log(`[RequirementListBuilder] 风格强制修正: ${completed.style?.primary} → ${defaultStyle} (视频类型: ${completed.videoType})`);

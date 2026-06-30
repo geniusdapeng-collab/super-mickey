@@ -1,6 +1,9 @@
 // engines/script-engine/core/script-validator.js
 // Script Validator - 剧本校验与质量评估
-// 版本：v1.0 | 日期：2026-06-07
+// 版本：v1.1 | 日期：2026-06-30
+
+const { DialogueTimingCalculator } = require('../../../utils/dialogue-timing-calculator');
+const ThemeConfig = require('../../../config/theme-config');
 
 class ScriptValidator {
   constructor(options = {}) {
@@ -18,6 +21,10 @@ class ScriptValidator {
       maxLineLength: 50, // 字（v6.37标准：单句台词≤50字）
       minScenesWithDialogue: 1,
       
+      // 台词-时长映射约束
+      enableDialogueTimingCheck: true,  // 启用台词时长检查
+      maxDialogueRatio: 0.8,            // 台词占镜头时长最大比例
+      
       // 质量阈值
       qualityThresholds: {
         structural_integrity: 70,
@@ -33,6 +40,12 @@ class ScriptValidator {
       
       ...options
     };
+    
+    // 初始化台词时长计算器
+    this.timingCalculator = new DialogueTimingCalculator({
+      maxDialogueRatio: this.config.maxDialogueRatio,
+      autoAdjust: false  // 校验器只检查，不自动调整
+    });
   }
 
   /**
@@ -59,7 +72,13 @@ class ScriptValidator {
     const characterChecks = this._checkCharacters(blueprint);
     checks.push(...characterChecks);
     
-    // 5. Nirath 世界观检查（如果是 Nirath 世界观）
+    // 5. 台词时长映射检查
+    if (this.config.enableDialogueTimingCheck) {
+      const timingChecks = this._checkDialogueTiming(blueprint);
+      checks.push(...timingChecks);
+    }
+    
+    // 6. Nirath 世界观检查（如果是 Nirath 世界观）
     if (blueprint.world_setting?.world_id === 'nirath') {
       const nirathChecks = this._checkNirathWorld(blueprint);
       checks.push(...nirathChecks);
@@ -275,6 +294,74 @@ class ScriptValidator {
       message: hasVoiceover ? '检测到旁白（禁止）' : '无旁白，合规',
       suggestion: '全局禁止旁白，只保留角色对话'
     });
+    
+    return checks;
+  }
+
+  /**
+   * 台词-镜头时长映射检查
+   * 验证台词朗读时长是否与镜头时长匹配
+   */
+  _checkDialogueTiming(blueprint) {
+    const checks = [];
+    const scenes = blueprint.structure.scenes || [];
+    
+    let overflowCount = 0;
+    let highRatioCount = 0;
+    
+    for (const scene of scenes) {
+      if (!scene.dialogue?.has_dialogue || !scene.timing?.duration) continue;
+      
+      const result = this.timingCalculator.validateShot({
+        duration: scene.timing.duration,
+        emotion: scene.emotion || scene.mood,
+        dialogue: scene.dialogue
+      });
+      
+      if (result.severity === 'critical') {
+        overflowCount++;
+        checks.push({
+          category: 'dialogue_timing',
+          name: `scene_${scene.scene_id}_dialogue_overflow`,
+          passed: false,
+          severity: 'critical',
+          message: `场景 ${scene.scene_id}: ${result.issue}`,
+          suggestion: result.suggestion,
+          details: {
+            dialogueDuration: result.dialogueDuration,
+            shotDuration: result.shotDuration,
+            overflow: result.overflow
+          }
+        });
+      } else if (result.severity === 'warning') {
+        highRatioCount++;
+        checks.push({
+          category: 'dialogue_timing',
+          name: `scene_${scene.scene_id}_dialogue_high_ratio`,
+          passed: true,
+          severity: 'warning',
+          message: `场景 ${scene.scene_id}: ${result.issue}`,
+          suggestion: result.suggestion,
+          details: {
+            dialogueDuration: result.dialogueDuration,
+            shotDuration: result.shotDuration,
+            ratio: result.ratio
+          }
+        });
+      }
+    }
+    
+    // 汇总检查
+    if (overflowCount === 0 && highRatioCount === 0) {
+      checks.push({
+        category: 'dialogue_timing',
+        name: 'dialogue_timing_summary',
+        passed: true,
+        severity: 'ok',
+        message: '所有镜头台词时长校验通过',
+        suggestion: null
+      });
+    }
     
     return checks;
   }
