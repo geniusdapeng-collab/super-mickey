@@ -803,17 +803,22 @@ ${missing.map(f => `- ${f}：${FIELD_DESCS[f]}`).join('\n')}
       return undefined;
     };
 
-    // 【导演指令】⭐ v2.1.7: 从blueprint动态生成，不再硬编码
+    // ⭐ v2.1.7 P3: 导演意图合并输出
+    // 将 director_instruction + constraint + baseline 合并为一个流畅段落
+    // 保持数据结构独立（兼容性），但输出更自然
     const directorInstruction = getField('director_instruction', 'directorInstruction') 
       || this._generateDirectorInstruction(shot.blueprint || {}, fields.mood);
-    if (directorInstruction) parts.push(`【导演指令】${directorInstruction}`);
-
-    // 【约束】：必须包含画幅比例、分辨率、格式、帧率
-    parts.push(`【约束】${fields.constraint || `Aspect ratio: ${ratio}, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no caption, no watermark, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background`}`);
-
-    // 【基础】⭐ v2.1.7: 从style和duration动态生成
+    const constraint = fields.constraint || `Aspect ratio: ${ratio}, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no caption, no watermark, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background`;
     const duration = shot.duration || 10;
-    parts.push(`【基础】${fields.baseline || this._generateBaseline(shot.blueprint || {}, duration)}`);
+    const baseline = fields.baseline || this._generateBaseline(shot.blueprint || {}, duration);
+    
+    // 合并为自然流畅的导演意图段落
+    const directorIntentParts = [];
+    if (directorInstruction) directorIntentParts.push(directorInstruction);
+    directorIntentParts.push(baseline);
+    directorIntentParts.push(constraint);
+    
+    parts.push(`【导演意图】${directorIntentParts.join('。')}`);
 
     // 【场景】
     // 【v2.1.4-fix9-P5】场景强制写实：禁止科幻/抽象词汇
@@ -834,9 +839,18 @@ ${missing.map(f => `- ${f}：${FIELD_DESCS[f]}`).join('\n')}
     }
     if (sceneDesc) parts.push(`【场景】${sceneDesc}`);
 
-    // 【灯光/照明】⭐ 新增：专业灯光设计
+    // 【灯光/照明】⭐ v2.1.7 P3: 灯光设计统一输出
+    // 将 lighting + bright_constraint 合并为统一的【灯光设计】段落
     const lightingField = getField('lighting');
-    if (lightingField) parts.push(`【灯光/照明】${lightingField}`);
+    const brightConstraint = getField('bright_constraint', 'brightConstraint') 
+      || this._generateBrightConstraint(fields.lighting, fields.mood);
+    
+    if (lightingField || brightConstraint) {
+      const lightingParts = [];
+      if (lightingField) lightingParts.push(lightingField);
+      if (brightConstraint) lightingParts.push(`[亮度要求] ${brightConstraint}`);
+      parts.push(`【灯光设计】${lightingParts.join('；')}`);
+    }
 
     // 【构图】⭐ 新增：景别+画面比例+主体位置+线条引导
     const compositionField = getField('composition');
@@ -976,11 +990,6 @@ ${missing.map(f => `- ${f}：${FIELD_DESCS[f]}`).join('\n')}
         : 'no cartoon style, no flat lighting, no text anywhere in frame';
       parts.push(`【负面约束】${baseNegative}; ${styleNegative}`);
     }
-
-    // 【明亮约束】⭐ v2.1.7: 从lighting动态推导，不再硬编码
-    const brightConstraint = getField('bright_constraint', 'brightConstraint') 
-      || this._generateBrightConstraint(fields.lighting, fields.mood);
-    if (brightConstraint) parts.push(`【明亮约束】${brightConstraint}`);
 
     // 【角色约束】⭐ 新增：防止多角色/分身
     const characterConstraint = getField('character_constraint', 'characterConstraint');
