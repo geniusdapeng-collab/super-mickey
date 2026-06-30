@@ -288,6 +288,12 @@ class ScriptBlueprintAdapter {
     const fs = require('fs');
     const path = require('path');
     const paths = {};
+
+    // 【v2.1.7-fix】防御性检查：characterId 必须有效
+    if (!characterId || typeof characterId !== 'string') {
+      console.warn(`[Adapter._resolvePortraitPaths] characterId 无效 (${characterId})，跳过定妆照解析`);
+      return paths;
+    }
     
     if (referenceImages && referenceImages.length > 0) {
       for (const imgPath of referenceImages) {

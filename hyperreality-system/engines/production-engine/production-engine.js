@@ -992,7 +992,7 @@ class ProductionEngine {
     const _metadata = adaptedBlueprint.config?._metadata || adaptedBlueprint._metadata || {};
     const isSeriesNonFirst = _metadata.isSeries && _metadata.episodeNumber > 1;
 
-    let shots = scenes.map((scene, index) => {
+    let shots = Array.isArray(scenes) ? scenes.map((scene, index) => {
       // v1.2.5: 非第一集将opening类型改为establishing
       let sceneType = scene.scene_type || 'establishing';
       if (isSeriesNonFirst && sceneType === 'opening') {
@@ -1001,13 +1001,17 @@ class ProductionEngine {
       }
 
       // 构建角色描述(v6.37-P1+: 强制极简锚点,3-5关键词)
-      const characterAnchors = (scene.characters || []).map(cid => {
+      const characterAnchors = Array.isArray(scene.characters) ? scene.characters.map(cid => {
         return this._buildMinimalAnchor(cid, characters);
-      });
+      }) : [];
 
       // 构建对话(v6.37-P0: 统一格式 SPEAKER|TYPE|EMOTION|TEXT|LIP_SYNC:YES)
       // 【v2.1.5-fix-C】优先使用 blocks 字段，回退到 lines
-      const dialogueSource = scene.dialogue?.blocks || scene.dialogue?.lines || [];
+      const dialogueSource = (scene.dialogue?.blocks && Array.isArray(scene.dialogue.blocks))
+        ? scene.dialogue.blocks
+        : (scene.dialogue?.lines && Array.isArray(scene.dialogue.lines))
+          ? scene.dialogue.lines
+          : [];
       const dialogueLines = dialogueSource.map(line => {
         const speaker = line.speaker || '角色';
         const type = line.type || (line.manner ? line.manner : '独白');
@@ -1064,7 +1068,7 @@ class ProductionEngine {
         characters: scene.characters || [],
         // 【v2.1.4-patch5】将 | 改为逗号,避免Seedance渲染乱码
         characterDescs: characterAnchors.join(', '),
-        dialogueText: (scene.dialogue?.lines || []).map(l => l.text).join(';'),
+        dialogueText: (scene.dialogue?.lines && Array.isArray(scene.dialogue.lines)) ? scene.dialogue.lines.map(l => l.text).join(';') : '',
 
         // 情感
         emotionalTarget: scene.emotional_target || { valence: 0, arousal: 0.5 },
@@ -1084,7 +1088,7 @@ class ProductionEngine {
         // 状态
         status: 'pending'
       };
-    });
+    }) : [];
 
     // v1.2.5: 时长归一化--确保总时长严格等于目标时长
     const targetDuration = adaptedBlueprint.config?.target_duration || adaptedBlueprint.meta?.target_duration || 120;

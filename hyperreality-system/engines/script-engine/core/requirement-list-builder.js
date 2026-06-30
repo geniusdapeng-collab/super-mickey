@@ -73,6 +73,12 @@ const StyleEncoder = {
  */
 const ParserRules = {
   videoTypeRules: [
+    // 【v2.1.7-fix】新增：神话/史诗/战斗类内容（高优先级，避免被误分为EDU）
+    { keywords: ['神话', '史诗', '传奇', '神仙', '天庭', '奥林匹斯', '诸神'], type: 'CINE', name: '电影级叙事' },
+    { keywords: ['战斗', '大战', '对决', '战争', '战场', '武力', '兵器', '神器'], type: 'CINE', name: '电影级叙事' },
+    { keywords: ['武侠', '功夫', '江湖', '门派', '剑客', '大侠'], type: 'CINE', name: '电影级叙事' },
+    { keywords: ['魔幻', '奇幻', '魔法', '魔兽', '精灵', '龙'], type: 'CINE', name: '电影级叙事' },
+    { keywords: ['西游', '封神', '山海经', '聊斋', '孙悟空', '哪吒', '二郎神'], type: 'CINE', name: '电影级叙事' },
     // 核心7大类型（按优先级排序，更具体的类型在前）
     { keywords: ['科普', '讲解', '知识', '教学', '课程', '教育', '健康科普'], type: 'EDU', name: '教育科普' },
     { keywords: ['家庭聚会', '家族聚会', '团圆饭'], type: 'FAMILY', name: '家庭聚会' },
@@ -588,12 +594,23 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
     }
 
     // 补全时长范围
+    // 【v2.1.7-fix】当用户已明确指定时长时，时长范围应围绕该时长，而非从themeConfig取默认值
     if (!completed.durationRange && completed.duration) {
-      const themeConfig = ThemeConfig.getType(completed.videoType);
-      if (themeConfig) {
-        completed.durationRange = themeConfig.durationRange;
-      } else {
-        completed.durationRange = [Math.max(15, completed.duration - 10), Math.min(300, completed.duration + 10)];
+      // 用户指定了时长但未指定范围：以该时长为中心生成合理范围
+      const target = completed.duration;
+      const min = Math.max(15, Math.round(target * 0.8));
+      const max = Math.min(300, Math.round(target * 1.2));
+      completed.durationRange = [min, max];
+    } else if (completed.durationRange && completed.duration) {
+      // 如果已有范围但和时长严重不匹配（时长不在范围内），调整范围
+      const [rangeMin, rangeMax] = completed.durationRange;
+      if (completed.duration < rangeMin || completed.duration > rangeMax) {
+        const target = completed.duration;
+        completed.durationRange = [
+          Math.max(15, Math.round(target * 0.8)),
+          Math.min(300, Math.round(target * 1.2))
+        ];
+        console.log(`[RequirementListBuilder] 时长范围自动修正: [${rangeMin},${rangeMax}] → [${completed.durationRange[0]},${completed.durationRange[1]}] (目标时长: ${target}s)`);
       }
     }
 

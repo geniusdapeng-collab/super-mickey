@@ -286,10 +286,10 @@ class DialogueTimingCalculator {
     if (!dialogue) return '';
     if (typeof dialogue === 'string') return dialogue;
     if (dialogue.text) return dialogue.text;
-    if (dialogue.lines && dialogue.lines.length > 0) {
+    if (dialogue.lines && Array.isArray(dialogue.lines) && dialogue.lines.length > 0) {
       return dialogue.lines.map(l => l.text || l).join('');
     }
-    if (dialogue.blocks && dialogue.blocks.length > 0) {
+    if (dialogue.blocks && Array.isArray(dialogue.blocks) && dialogue.blocks.length > 0) {
       return dialogue.blocks.map(b => b.line || b.text || '').join('');
     }
     return '';
