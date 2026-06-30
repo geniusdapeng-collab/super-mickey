@@ -25,13 +25,24 @@ class StoryCraftIntegration {
     this.encounterDynamics = new EncounterDynamics(options.encounter);
     
     // v6.2-patch70: LLM 推理引擎
+    // v6.7.0-fix1: timeoutMs 300000 (5分钟) — 32k token输出量大，120s频繁超时
     this.llmEngine = new LLMEngine({
       model: options.llmModel || 'kimi-k2p6',
       mode: 'production',
       maxRetries: 3,
+      timeoutMs: 300000, // 5分钟：32k token剧本创作需要充足时间
       // v6.2-patch80: 剧本创作需要大量LLM输出（场景描述/角色对话/世界观），提升maxTokens
       maxTokens: 32000
     });
+    
+    // v6.7.0-fix1: LLM调用统计（成功率追踪）
+    this.llmStats = {
+      totalCalls: 0,
+      successCalls: 0,
+      failCalls: 0,
+      avgResponseTime: 0,
+      totalResponseTime: 0
+    };
   }
 
   // 核心方法：完整的 StoryCraft 流程（v6.2-patch70: LLM 推理版）
@@ -165,7 +176,7 @@ class StoryCraftIntegration {
       selected: { id: "", theme: "", twist: "", emotionalAnchor: "", twistStrength: 0 }
     };
 
-    const result = await this.llmEngine.reasonStructured(prompt, schema);
+    const result = await this._trackedReason(prompt, schema, {}, "conceptSeed");
     
     if (result.success) {
       return result.data;
@@ -206,7 +217,7 @@ class StoryCraftIntegration {
       voiceSignature: { style: "", pace: "", tics: [] }
     };
 
-    const result = await this.llmEngine.reasonStructured(prompt, schema);
+    const result = await this._trackedReason(prompt, schema, {}, "psyche");
     
     if (result.success) {
       return result.data;
@@ -251,7 +262,7 @@ validation: { isValid: true/false, errors: [] }
       validation: { isValid: true, errors: [] }
     };
 
-    const result = await this.llmEngine.reasonStructured(prompt, schema);
+    const result = await this._trackedReason(prompt, schema, {}, "beatSheet");
     
     if (result.success) {
       return result.data;
@@ -276,7 +287,7 @@ validation: { isValid: true/false, errors: [] }
 
 要求：
 1. 每个节拍最多 1 句异兽台词（beastLines）
-2. 每个节拍最多 1 句AgentX台词（humanLines）
+2. 每个节拍最多 1 句小G台词（humanLines）
 3. 旁白（nirathLines）用于叙事推进
 4. 嘴部动作（mouthActions）与台词匹配
 5. 钻石台词（最核心台词）不超过 3 句
@@ -291,7 +302,7 @@ validation: { isValid: true/false, errors: [] }
       metadata: { diamondQuotaTotal: 3, diamondQuotaUsed: 0 }
     };
 
-    const result = await this.llmEngine.reasonStructured(prompt, schema);
+    const result = await this._trackedReason(prompt, schema, {}, "dialogue");
     
     if (result.success) {
       return result.data;
@@ -334,7 +345,7 @@ validation: { isValid: true/false, errors: [] }
       recommendation: ""
     };
 
-    const result = await this.llmEngine.reasonStructured(prompt, schema);
+    const result = await this._trackedReason(prompt, schema, {}, "twist");
     
     if (result.success) {
       return result.data;
@@ -352,7 +363,7 @@ validation: { isValid: true/false, errors: [] }
       return this.encounterDynamics.generateDynamics(beatResult, psycheResult, dialogueResult);
     }
 
-    const prompt = `请生成异兽与AgentX的相遇动力学描述。
+    const prompt = `请生成异兽与小G的相遇动力学描述。
 
 节拍：${JSON.stringify(beatResult.beats.map(b => ({ id: b.id, name: b.name })), null, 2)}
 心理：${JSON.stringify(psycheResult.psyche?.desireCore || {}, null, 2)}
@@ -360,8 +371,8 @@ validation: { isValid: true/false, errors: [] }
 要求输出每个节拍的动力学阶段：
 - stage.beast.bodyLanguage: 异兽肢体语言
 - stage.beast.emotionalState: 异兽情绪状态
-- stage.human.bodyLanguage: AgentX肢体语言
-- stage.human.emotionalState: AgentX情绪状态
+- stage.human.bodyLanguage: 小G肢体语言
+- stage.human.emotionalState: 小G情绪状态
 - stage.interaction.type: 互动类型
 - stage.interaction.spatialRelationship: 空间关系
 - stage.audience.perceives: 观众感知
@@ -381,7 +392,7 @@ validation: { isValid: true/false, errors: [] }
       ]
     };
 
-    const result = await this.llmEngine.reasonStructured(prompt, schema);
+    const result = await this._trackedReason(prompt, schema, {}, "dynamics");
     
     if (result.success) {
       return result.data;
@@ -522,9 +533,9 @@ validation: { isValid: true/false, errors: [] }
       parts.push(`（${beastLine.text}）`);
     }
     
-    // AgentX台词（如果有）
+    // 小G台词（如果有）
     if (humanLine) {
-      parts.push(`AgentX："${humanLine.text}"`);
+      parts.push(`小G："${humanLine.text}"`);
     }
     
     return parts.join(' ');
@@ -575,7 +586,7 @@ validation: { isValid: true/false, errors: [] }
         enrichments.push(`【动态】异兽${stage.beast.bodyLanguage}，动作充满力量感，肌肉线条在光照下清晰可见`);
       }
       if (stage?.human?.bodyLanguage) {
-        enrichments.push(`【人物】AgentX${stage.human.bodyLanguage}，姿态传达出${stage.human?.emotionalState || '复杂情绪'}`);
+        enrichments.push(`【人物】小G${stage.human.bodyLanguage}，姿态传达出${stage.human?.emotionalState || '复杂情绪'}`);
       }
       
       // 5. Nirath 环境特征
@@ -586,7 +597,7 @@ validation: { isValid: true/false, errors: [] }
     
     // 互动动力学（肢体语言）
     if (stage) {
-      parts.push(`【动作】异兽：${stage.beast.bodyLanguage} | AgentX：${stage.human.bodyLanguage} | 空间：${stage.interaction.spatialRelationship}`);
+      parts.push(`【动作】异兽：${stage.beast.bodyLanguage} | 小G：${stage.human.bodyLanguage} | 空间：${stage.interaction.spatialRelationship}`);
     }
     
     // 嘴部动作
@@ -606,6 +617,42 @@ validation: { isValid: true/false, errors: [] }
       fallback: true,
       reason: 'StoryCraft failed, using legacy story generation',
       logs: ['[StoryCraft] 回退到原有剧本生成']
+    };
+  }
+  // v6.7.0-fix1: LLM调用包装器（带统计追踪）
+  async _trackedReason(prompt, schema, options = {}, label = 'unknown') {
+    const startTime = Date.now();
+    this.llmStats.totalCalls++;
+    try {
+      const result = await this.llmEngine.reasonStructured(prompt, schema, options);
+      const elapsed = Date.now() - startTime;
+      this.llmStats.totalResponseTime += elapsed;
+      this.llmStats.avgResponseTime = Math.round(this.llmStats.totalResponseTime / this.llmStats.totalCalls);
+      if (result.success) {
+        this.llmStats.successCalls++;
+        console.log(`[StoryCraft] ✅ LLM[${label}] 成功 | 耗时:${elapsed}ms | 成功率:${Math.round(this.llmStats.successCalls/this.llmStats.totalCalls*100)}%`);
+      } else {
+        this.llmStats.failCalls++;
+        console.log(`[StoryCraft] ⚠️ LLM[${label}] 失败 | 耗时:${elapsed}ms | 原因:${result.error || 'unknown'}`);
+      }
+      return result;
+    } catch (error) {
+      const elapsed = Date.now() - startTime;
+      this.llmStats.failCalls++;
+      this.llmStats.totalResponseTime += elapsed;
+      this.llmStats.avgResponseTime = Math.round(this.llmStats.totalResponseTime / this.llmStats.totalCalls);
+      console.log(`[StoryCraft] ❌ LLM[${label}] 异常 | 耗时:${elapsed}ms | ${error.message}`);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // v6.7.0-fix1: 获取LLM统计
+  getLLMStats() {
+    const total = this.llmStats.totalCalls;
+    return {
+      ...this.llmStats,
+      successRate: total > 0 ? Math.round(this.llmStats.successCalls / total * 100) : 0,
+      failRate: total > 0 ? Math.round(this.llmStats.failCalls / total * 100) : 0
     };
   }
 }

@@ -5,7 +5,7 @@
  * P1-5: 按情绪阶段动态生成微表情，替换静态模板
  * 
  * @version v1.0
- * @author Core Team
+ * @author 小G
  */
 
 class TechSpecsAndEmotionMapper {

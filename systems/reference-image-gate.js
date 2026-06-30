@@ -3,7 +3,7 @@
  * 
  * 最严格的硬拦截机制 + 多角色全角度支持：
  * - 含角色的镜头，不传对应角色的全部定妆照 → 完全无法提交渲染
- * - 支持任意数量角色同框（AgentX+N神兽 / N神兽 / 任意组合）
+ * - 支持任意数量角色同框（小G+N神兽 / N神兽 / 任意组合）
  * - 每个角色必须传全部4角度（front, threeQuarter, closeup, side）
  * - 三层防护：预生产预警 → 渲染前置硬拦截 → API最终防线
  */
@@ -96,9 +96,21 @@ class ReferenceImageGate {
       };
     }
     
-    // 3. 检查 content 数组
+    // 3. 检查 content 数组 + 绑定定妆照字段（v6.6.3-fix: 支持中文标准字段）
     const content = shot.content || shot.prompt?.content || [];
-    const referenceImages = this.extractReferenceImages(content);
+    let referenceImages = this.extractReferenceImages(content);
+    
+    // 补充从 绑定定妆照 字段提取（Stage 16 标准化输出格式）
+    if (Array.isArray(shot.绑定定妆照) && shot.绑定定妆照.length > 0) {
+      const fromBind = shot.绑定定妆照.map(item => ({
+        role: 'reference_image',
+        image_url: { url: item.路径 || item.path || item.url || '' },
+        characterId: item.角色ID || item.characterId || item.character || '',
+        angle: item.角度 || item.angle || '',
+        valid: !!(item.路径 || item.path || item.url)
+      }));
+      referenceImages = referenceImages.concat(fromBind);
+    }
     
     // 4. 逐角色检查
     for (const charId of charactersInShot) {
@@ -139,6 +151,17 @@ class ReferenceImageGate {
   }
 
   /**
+   * 角色ID归一化：处理脚本生成阶段与角色系统阶段的ID不一致问题
+   * 例如：taotie → tao-tie
+   */
+  normalizeCharId(id) {
+    if (!id) return id;
+    const idLower = String(id).toLowerCase();
+    const map = { 'taotie': 'tao-tie' };
+    return map[idLower] || idLower;
+  }
+
+  /**
    * 从镜头中提取角色ID
    */
   extractCharacters(shot) {
@@ -164,7 +187,8 @@ class ReferenceImageGate {
       });
     }
     
-    return Array.from(characters);
+    // v6.7.0-fix: 归一化角色ID，消除脚本阶段与角色系统阶段的不一致
+    return Array.from(characters).map(c => this.normalizeCharId(c));
   }
 
   /**
@@ -199,8 +223,9 @@ class ReferenceImageGate {
     const promptText = this.getPromptText(shot) || '';
     
     // 1. 检查是否有该角色的 reference_image
+    const normalizedCharId = this.normalizeCharId(charId);
     const charRefs = referenceImages.filter(ref => 
-      ref.characterId === charId || ref.characterId === this.camelToKebab(charId)
+      this.normalizeCharId(ref.characterId) === normalizedCharId
     );
     
     if (charRefs.length === 0) {
@@ -278,97 +303,117 @@ class ReferenceImageGate {
   checkAngleExists(charId, angle) {
     const portraitDir = path.join(this.charactersDir, charId, 'portraits');
     
-    // 1. 精确匹配旧格式
-    const exactNames = [
-      `${charId}-${angle}.png`,
-      `${charId}-${angle}.jpg`,
-      `${this.camelToKebab(charId)}-${angle}.png`,
-      `${this.camelToKebab(charId)}-${angle}.jpg`
-    ];
-    
-    for (const name of exactNames) {
-      if (fs.existsSync(path.join(portraitDir, name))) {
-        return true;
-      }
-    }
-    
-    // 2. 新8角度格式（带-portrait-前缀）
-    const v3PortraitNames = [
-      `${charId}-portrait-${angle}.png`,
-      `${charId}-portrait-${angle}.jpg`,
-      `${this.camelToKebab(charId)}-portrait-${angle}.png`,
-      `${this.camelToKebab(charId)}-portrait-${angle}.jpg`
-    ];
-    
-    for (const name of v3PortraitNames) {
-      if (fs.existsSync(path.join(portraitDir, name))) {
-        return true;
-      }
-    }
-    
-    // 3. 新8角度格式（无前缀）
-    const v3Names = [
-      `${charId}-${angle}_fullbody.png`,
-      `${charId}-${angle}_profile.png`,
-      `${charId}-${angle}_closeup.png`,
-      `${charId}-${angle}_running.png`,
-      `${charId}-${angle}_sitting.png`,
-      `${charId}-${angle}_detail.png`,
-      `${this.camelToKebab(charId)}-${angle}_fullbody.png`,
-      `${this.camelToKebab(charId)}-${angle}_profile.png`,
-      `${this.camelToKebab(charId)}-${angle}_closeup.png`,
-      `${this.camelToKebab(charId)}-${angle}_running.png`,
-      `${this.camelToKebab(charId)}-${angle}_sitting.png`,
-      `${this.camelToKebab(charId)}-${angle}_detail.png`
-    ];
-    
-    for (const name of v3Names) {
-      if (fs.existsSync(path.join(portraitDir, name))) {
-        return true;
-      }
-    }
-    
-    // 4. 模糊匹配：任何包含角度关键词的文件
-    try {
-      const files = fs.readdirSync(portraitDir);
-      
-      // 旧格式模糊匹配
-      const pattern = new RegExp(`${charId}.*-${angle}\.(png|jpg|jpeg)`, 'i');
-      const kebabPattern = new RegExp(`${this.camelToKebab(charId)}.*-${angle}\.(png|jpg|jpeg)`, 'i');
-      
-      // 新格式模糊匹配（支持 -portrait- 前缀）
-      const v3Patterns = [
-        new RegExp(`${charId}.*-portrait-${angle}\.(png|jpg|jpeg)`, 'i'),
-        new RegExp(`${charId}.*-${angle}_fullbody\.(png|jpg|jpeg)`, 'i'),
-        new RegExp(`${charId}.*-${angle}_quarter\.(png|jpg|jpeg)`, 'i'),
-        new RegExp(`${charId}.*-${angle}_closeup\.(png|jpg|jpeg)`, 'i'),
-        new RegExp(`${charId}.*-${angle}_profile\.(png|jpg|jpeg)`, 'i'),
-        new RegExp(`${charId}.*-${angle}_running\.(png|jpg|jpeg)`, 'i'),
-        new RegExp(`${charId}.*-${angle}_sitting\.(png|jpg|jpeg)`, 'i'),
-        new RegExp(`${charId}.*-${angle}_detail\.(png|jpg|jpeg)`, 'i'),
-        new RegExp(`${this.camelToKebab(charId)}.*-portrait-${angle}\.(png|jpg|jpeg)`, 'i'),
-        new RegExp(`${this.camelToKebab(charId)}.*-${angle}_fullbody\.(png|jpg|jpeg)`, 'i'),
-        new RegExp(`${this.camelToKebab(charId)}.*-${angle}_quarter\.(png|jpg|jpeg)`, 'i'),
-        new RegExp(`${this.camelToKebab(charId)}.*-${angle}_closeup\.(png|jpg|jpeg)`, 'i'),
-        new RegExp(`${this.camelToKebab(charId)}.*-${angle}_profile\.(png|jpg|jpeg)`, 'i'),
-        new RegExp(`${this.camelToKebab(charId)}.*-${angle}_running\.(png|jpg|jpeg)`, 'i'),
-        new RegExp(`${this.camelToKebab(charId)}.*-${angle}_sitting\.(png|jpg|jpeg)`, 'i'),
-        new RegExp(`${this.camelToKebab(charId)}.*-${angle}_detail\.(png|jpg|jpeg)`, 'i')
+    // v6.6.3-fix: 递归检查子目录（uniform/casual等风格子目录）
+    const checkDir = (dir) => {
+      // 1. 精确匹配旧格式
+      const exactNames = [
+        `${charId}-${angle}.png`,
+        `${charId}-${angle}.jpg`,
+        `${this.camelToKebab(charId)}-${angle}.png`,
+        `${this.camelToKebab(charId)}-${angle}.jpg`
       ];
       
-      for (const file of files) {
-        if (pattern.test(file) || kebabPattern.test(file)) {
+      for (const name of exactNames) {
+        if (fs.existsSync(path.join(dir, name))) {
           return true;
         }
-        for (const v3Pattern of v3Patterns) {
-          if (v3Pattern.test(file)) {
+      }
+      
+      // 2. 新8角度格式（带-portrait-前缀）
+      const v3PortraitNames = [
+        `${charId}-portrait-${angle}.png`,
+        `${charId}-portrait-${angle}.jpg`,
+        `${this.camelToKebab(charId)}-portrait-${angle}.png`,
+        `${this.camelToKebab(charId)}-portrait-${angle}.jpg`
+      ];
+      
+      for (const name of v3PortraitNames) {
+        if (fs.existsSync(path.join(dir, name))) {
+          return true;
+        }
+      }
+      
+      // 3. 新8角度格式（无前缀）
+      const v3Names = [
+        `${charId}-${angle}_fullbody.png`,
+        `${charId}-${angle}_profile.png`,
+        `${charId}-${angle}_closeup.png`,
+        `${charId}-${angle}_running.png`,
+        `${charId}-${angle}_sitting.png`,
+        `${charId}-${angle}_detail.png`,
+        `${this.camelToKebab(charId)}-${angle}_fullbody.png`,
+        `${this.camelToKebab(charId)}-${angle}_profile.png`,
+        `${this.camelToKebab(charId)}-${angle}_closeup.png`,
+        `${this.camelToKebab(charId)}-${angle}_running.png`,
+        `${this.camelToKebab(charId)}-${angle}_sitting.png`,
+        `${this.camelToKebab(charId)}-${angle}_detail.png`
+      ];
+      
+      for (const name of v3Names) {
+        if (fs.existsSync(path.join(dir, name))) {
+          return true;
+        }
+      }
+      
+      // 4. 模糊匹配：任何包含角度关键词的文件
+      try {
+        const files = fs.readdirSync(dir);
+        
+        // 旧格式模糊匹配
+        const pattern = new RegExp(`${charId}.*-${angle}\.(png|jpg|jpeg)`, 'i');
+        const kebabPattern = new RegExp(`${this.camelToKebab(charId)}.*-${angle}\.(png|jpg|jpeg)`, 'i');
+        
+        // 新格式模糊匹配（支持 -portrait- 前缀）
+        const v3Patterns = [
+          new RegExp(`${charId}.*-portrait-${angle}\.(png|jpg|jpeg)`, 'i'),
+          new RegExp(`${charId}.*-${angle}_fullbody\.(png|jpg|jpeg)`, 'i'),
+          new RegExp(`${charId}.*-${angle}_quarter\.(png|jpg|jpeg)`, 'i'),
+          new RegExp(`${charId}.*-${angle}_closeup\.(png|jpg|jpeg)`, 'i'),
+          new RegExp(`${charId}.*-${angle}_profile\.(png|jpg|jpeg)`, 'i'),
+          new RegExp(`${charId}.*-${angle}_running\.(png|jpg|jpeg)`, 'i'),
+          new RegExp(`${charId}.*-${angle}_sitting\.(png|jpg|jpeg)`, 'i'),
+          new RegExp(`${charId}.*-${angle}_detail\.(png|jpg|jpeg)`, 'i'),
+          new RegExp(`${this.camelToKebab(charId)}.*-portrait-${angle}\.(png|jpg|jpeg)`, 'i'),
+          new RegExp(`${this.camelToKebab(charId)}.*-${angle}_fullbody\.(png|jpg|jpeg)`, 'i'),
+          new RegExp(`${this.camelToKebab(charId)}.*-${angle}_quarter\.(png|jpg|jpeg)`, 'i'),
+          new RegExp(`${this.camelToKebab(charId)}.*-${angle}_closeup\.(png|jpg|jpeg)`, 'i'),
+          new RegExp(`${this.camelToKebab(charId)}.*-${angle}_profile\.(png|jpg|jpeg)`, 'i'),
+          new RegExp(`${this.camelToKebab(charId)}.*-${angle}_running\.(png|jpg|jpeg)`, 'i'),
+          new RegExp(`${this.camelToKebab(charId)}.*-${angle}_sitting\.(png|jpg|jpeg)`, 'i'),
+          new RegExp(`${this.camelToKebab(charId)}.*-${angle}_detail\.(png|jpg|jpeg)`, 'i')
+        ];
+        
+        for (const file of files) {
+          if (pattern.test(file) || kebabPattern.test(file)) {
             return true;
           }
+          for (const v3Pattern of v3Patterns) {
+            if (v3Pattern.test(file)) {
+              return true;
+            }
+          }
+        }
+      } catch (e) {
+        // 目录不存在或无法读取
+      }
+      
+      return false;
+    };
+    
+    // 先检查主目录
+    if (checkDir(portraitDir)) return true;
+    
+    // v6.6.3-fix: 递归检查子目录（uniform/casual等）
+    try {
+      const entries = fs.readdirSync(portraitDir, { withFileTypes: true });
+      for (const entry of entries) {
+        if (entry.isDirectory()) {
+          const subDir = path.join(portraitDir, entry.name);
+          if (checkDir(subDir)) return true;
         }
       }
     } catch (e) {
-      // 目录不存在，返回 false
-      return false;
+      // 目录不存在
     }
     
     return false;
@@ -411,9 +456,10 @@ class ReferenceImageGate {
    */
   extractReferenceImageAngles(charId, referenceImages) {
     const angles = [];
+    const normalizedCharId = this.normalizeCharId(charId);
     for (const ref of referenceImages) {
-      const refCharId = ref.characterId || this.extractCharacterIdFromUrl(ref.url);
-      if (refCharId === charId || refCharId === this.camelToKebab(charId)) {
+      const refCharId = this.normalizeCharId(ref.characterId || this.extractCharacterIdFromUrl(ref.url));
+      if (refCharId === normalizedCharId) {
         // 🔥 优先使用显式声明的 angle 字段
         if (ref.angle) {
           angles.push(ref.angle);
@@ -505,7 +551,7 @@ class ReferenceImageGate {
 
 Seedance 2.0 绑定规范:
    在 Prompt 中显式使用 @image 格式引用角色：
-   @image1 作为AgentX角色形象参考
+   @image1 作为小G角色形象参考
    @image2 作为饕餮角色形象参考
    
    content 数组中必须包含：

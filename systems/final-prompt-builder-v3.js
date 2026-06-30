@@ -1,14 +1,14 @@
-const { ConfigUnifier } = require('./deprecated/config-unifier-v1');
-const { FieldMapper } = require('./deprecated/field-mapper-v1');
-const { ShotSchemaValidator } = require('./deprecated/shot-schema-validator-v1');
-const { SubsystemOrchestratorV2 } = require('./deprecated/subsystem-orchestrator-v2');
-const { CreativeLLMRouter } = require('./deprecated/creative-llm-router-v1');
-const { NegativeFieldBuilder } = require('./deprecated/negative-field-builder-v1');
+const { ConfigUnifier } = require('./config-unifier-v1');
+const { FieldMapper } = require('./field-mapper-v1');
+const { ShotSchemaValidator } = require('./shot-schema-validator-v1');
+const { SubsystemOrchestratorV2 } = require('./subsystem-orchestrator-v2');
+const { CreativeLLMRouter } = require('./creative-llm-router-v1');
+const { NegativeFieldBuilder } = require('./negative-field-builder-v1');
 const { ClosingShotEmotionalBoosterV2 } = require('./closing-shot-emotional-booster-v2');
-const { PromptNormalizer } = require('./deprecated/prompt-normalizer-v1');
-const { PromptTrimmer } = require('./deprecated/prompt-trimmer-v1');
-const { PromptValidator } = require('./deprecated/prompt-validator-v1');
-const { ShotDebugRecorder } = require('./deprecated/shot-debug-recorder-v1');
+const { PromptNormalizer } = require('./prompt-normalizer-v1');
+const { PromptTrimmer } = require('./prompt-trimmer-v1');
+const { PromptValidator } = require('./prompt-validator-v1');
+const { ShotDebugRecorder } = require('./shot-debug-recorder-v1');
 
 class FinalPromptBuilderV3 {
   constructor(options = {}) {
@@ -157,44 +157,17 @@ class FinalPromptBuilderV3 {
   }
 
   _mergeFields(subsystemFields, llmFields, shot) {
-    // 【v2.1.4-fix10-P25-fix5】25 字段全集：LLM 优先 → 子系统 → shot 原始数据 → 默认
-    const pick = (key, ...fallbackPaths) => {
-      if (llmFields[key]) return llmFields[key];
-      if (subsystemFields[key]) return subsystemFields[key];
-      for (const p of fallbackPaths) {
-        const v = p.split('.').reduce((o, k) => o?.[k], shot);
-        if (v) return v;
-      }
-      return '';
-    };
-
     return {
-      // 旧 10 维度（保持兼容）
-      CHARACTER: pick('CHARACTER', 'characters', 'character.name'),
-      ACTION: pick('ACTION', 'action', 'narration'),
-      SCENE: pick('SCENE', 'scene', 'visualPrompt'),
-      MOOD: pick('MOOD', 'emotionPhase', 'mood'),
-      CAMERA: pick('CAMERA', 'camera', 'cameraMovement'),
-      LIGHTING: pick('LIGHTING', 'lighting'),
-      NEGATIVE: subsystemFields.NEGATIVE || llmFields.NEGATIVE || '',
-      AUDIO: pick('AUDIO', 'audio'),
-      RENDER: pick('RENDER', 'renderStyle') || '电影级、超写实、细节丰富',
-      DIRECTOR: pick('DIRECTOR'),
-      // 🆕 新增 15 字段（与 PromptFusion 25 字段对齐）
-      DIALOGUE: pick('DIALOGUE', 'dialogue', 'dialogue.lines'),
-      TIMELINE: pick('TIMELINE', 'timeline'),
-      COSTUME: pick('COSTUME', 'costume'),
-      MAKEUP: pick('MAKEUP', 'makeup'),
-      PROPS: pick('PROPS', 'props'),
-      PORTRAITS: pick('PORTRAITS', 'portraits', 'characterRef'),
-      DEPTH_OF_FIELD: pick('DEPTH_OF_FIELD', 'depth_of_field'),
-      COLOR_PALETTE: pick('COLOR_PALETTE', 'color_palette'),
-      PACING: pick('PACING', 'pacing'),
-      TRANSITION: pick('TRANSITION', 'transition'),
-      BRIGHT_CONSTRAINT: pick('BRIGHT_CONSTRAINT', 'bright_constraint') || '保持画面明亮清晰',
-      CHARACTER_CONSTRAINT: pick('CHARACTER_CONSTRAINT', 'character_constraint') || '保持角色跨镜头一致',
-      CONSISTENCY: pick('CONSISTENCY', 'consistency') || '与前后镜头保持连续',
-      DIRECTOR_INSTRUCTION: pick('DIRECTOR_INSTRUCTION', 'director_instruction') || pick('DIRECTOR')
+      CHARACTER: subsystemFields.CHARACTER || llmFields.CHARACTER || (shot.characters || []).join('，'),
+      ACTION: subsystemFields.ACTION || llmFields.ACTION || shot.narration || shot.action || '',
+      SCENE: subsystemFields.SCENE || llmFields.SCENE || shot.scene || shot.visualPrompt || '',
+      MOOD: subsystemFields.MOOD || llmFields.MOOD || shot.emotionPhase || '',
+      CAMERA: subsystemFields.CAMERA || llmFields.CAMERA || shot.camera || '',
+      LIGHTING: subsystemFields.LIGHTING || llmFields.LIGHTING || '',
+      NEGATIVE: subsystemFields.NEGATIVE || '',
+      AUDIO: subsystemFields.AUDIO || llmFields.AUDIO || shot.audio || '',
+      RENDER: subsystemFields.RENDER || shot.renderStyle || '电影级、超写实、细节丰富',
+      DIRECTOR: subsystemFields.DIRECTOR || llmFields.DIRECTOR || ''
     };
   }
 }

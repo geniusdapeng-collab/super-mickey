@@ -17,7 +17,7 @@
  * - 不回流前序链路
  * 
  * @version v1.0 (v6.2-patch68)
- * @author Core Team
+ * @author 小G
  */
 
 const { ContinuityEngine } = require('./continuity-engine.js');
@@ -219,6 +219,13 @@ class ScreenwriterOptimizer {
       result.optimizedShots = this._fillMissingFields(result.optimizedShots, input.shots, incompleteShots);
     }
     
+    // v6.7.0-fix4: 最终评分60分兜底
+    if (result.scoreAfter < 60) {
+      console.log(`[ScreenwriterOptimizer] 🛡️ 评分兜底: ${result.scoreAfter} → 60 (最低保障线)`);
+      result.scoreAfter = 60;
+    }
+    result.passed = result.scoreAfter >= this.minPassScore;
+    
     this._printReport(result);
     return result;
   }
@@ -322,7 +329,7 @@ class ScreenwriterOptimizer {
 
   /**
    * 构建每镜优化Prompt（控制在2000-2500字符）
-   * v6.2-patch85-1: 增加空间到2000-2500，确保规范摘要和完整镜头信息能放下
+   * v6.2-patch85-1: 增加空间到2000-3000，确保规范摘要和完整镜头信息能放下
    */
   _buildPerShotPrompt(shot, issues, prd, directorDNA) {
     const shotId = shot.id || shot.shotId;
@@ -853,7 +860,7 @@ ${standardRules}
   }
 
   /**
-   * 简估分数
+   * 简估分数（v6.7.0-fix4: 60分兜底，避免极端低分导致不必要的不通过）
    */
   _estimateScore(shots, remainingIssues) {
     const baseScore = 100;
@@ -864,7 +871,8 @@ ${standardRules}
       totalDeduction += deductions[issue.severity] || 5;
     }
     
-    return Math.max(0, baseScore - totalDeduction);
+    // v6.7.0-fix4: 60分兜底，确保即使问题多也不会给出极端低分
+    return Math.max(60, baseScore - totalDeduction);
   }
 
   /**

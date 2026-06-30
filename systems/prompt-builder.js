@@ -9,7 +9,7 @@
  * - Nirath风格注入
  * 
  * @version v1.0
- * @author Core Team
+ * @author 小G
  */
 
 class PromptBuilder {
@@ -211,7 +211,7 @@ class PromptBuilder {
     // 提取关键词并转化为视觉元素
     const visualElements = [];
     
-    if (script.includes('AgentX') || script.includes('主角')) {
+    if (script.includes('小G') || script.includes('主角')) {
       visualElements.push('protagonist in frame');
     }
     if (script.includes('烛龙') || script.includes('神兽')) {
@@ -260,26 +260,26 @@ class PromptBuilder {
       switch (dialogueType) {
         case 'DIALOGUE':
           // 对话：角色间对话，必须对嘴
-          dialoguePrompt = `【台词/Dialogue】${speaker}（${emotion}）："${text}"。角色直接对话，必须对嘴，口型动作与台词情绪匹配。`;
+          dialoguePrompt = `【对话指令/Dialogue】${speaker}（${emotion}）："${text}"。角色直接对话，必须对嘴，口型动作与台词情绪匹配。`;
           break;
         case 'MONOLOGUE':
           // 独白：角色自言自语，对嘴
-          dialoguePrompt = `【台词/Monologue】${speaker}（${emotion}，内心独白）："${text}"。角色自言自语，对嘴，口型动作自然流畅。`;
+          dialoguePrompt = `【对话指令/Monologue】${speaker}（${emotion}，内心独白）："${text}"。角色自言自语，对嘴，口型动作自然流畅。`;
           break;
         case 'WHISPER':
           // 低语：对嘴但幅度小
-          dialoguePrompt = `【台词/Whisper】${speaker}（${emotion}，低语）："${text}"。角色低声说话，对嘴但口型幅度小，配气息音。`;
+          dialoguePrompt = `【对话指令/Whisper】${speaker}（${emotion}，低语）："${text}"。角色低声说话，对嘴但口型幅度小，配气息音。`;
           break;
         case 'TELEPATHY':
           // 心灵感应：不对嘴，用眼神+音效
-          dialoguePrompt = `【台词/Telepathy】${speaker}（${emotion}，心灵感应）："${text}"。非语言交流，不对嘴，眼神光效+低频磁场震颤音效表现。`;
+          dialoguePrompt = `【对话指令/Telepathy】${speaker}（${emotion}，心灵感应）："${text}"。非语言交流，不对嘴，眼神光效+低频磁场震颤音效表现。`;
           break;
         case 'NARRATION':
           // 旁白：不对嘴
           dialoguePrompt = `【旁白/Narration】${speaker}："${text}"。画外音旁白，不对嘴。`;
           break;
         default:
-          dialoguePrompt = `【台词】${speaker}（${emotion}）："${text}"。`;
+          dialoguePrompt = `【对话指令】${speaker}（${emotion}）："${text}"。`;
       }
       
       parts.push(dialoguePrompt);
@@ -495,7 +495,7 @@ if (require.main === module) {
   
   const result = builder.build({
     sceneName: '永夜裂谷',
-    script: '我是AgentX，今天带大家来到永夜裂谷',
+    script: '我是小G，今天带大家来到永夜裂谷',
     characters: ['xiaoG'],
     type: 'opening',
     emotionPhase: 'establishing',

@@ -18,7 +18,7 @@ class UniversalRenderPipeline {
     
     // API配置
     this.apiKey = process.env.VOLCENGINE_ARK_API_KEY;
-    this.modelId = projectConfig.modelId || '003cENDPOINT_STD003e';
+    this.modelId = projectConfig.modelId || process.env.SEEDANCE_ENDPOINT || 'YOUR_SEEDANCE_ENDPOINT_ID';
     this.baseUrl = 'https://ark.cn-beijing.volces.com';
     
     // 输出配置
@@ -120,7 +120,7 @@ class UniversalRenderPipeline {
       const characterIds = shot.characters || [];
       const refTags = refImages.map((_, i) => {
         const charId = characterIds[i] || '角色';
-        const charName = charId === 'xiaoG' ? 'AgentX' : 
+        const charName = charId === 'xiaoG' ? '小G' : 
                         charId === 'taotie' ? '饕餮' : 
                         charId === 'chen-nurse' ? '陈护士' : charId;
         return `@image${i+1} 作为${charName}角色形象参考`;

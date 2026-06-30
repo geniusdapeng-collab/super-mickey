@@ -683,7 +683,7 @@ class CameraMovementSystemV3 extends CameraMovementSystem {
     });
     
     return adventureSystem.enhanceShots(shots, {
-      protagonistName: options.protagonistName || 'AgentX',
+      protagonistName: options.protagonistName || '小G',
       beastName: options.beastName,
       habitat: options.habitat,
       ability: options.ability,

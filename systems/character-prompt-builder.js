@@ -120,39 +120,32 @@ class CharacterPromptBuilder {
         name: '服装',
         build: (character, angle, sceneType) => {
           const parts = [];
-          const vi = character.visualIdentity || {};
+          const vi = character.visualIdentity;
           
+          // v6.5.31-fix: 优先从角色档案提取服装信息
           const baseId = character.baseIdentity || character.identity || {};
           const role = baseId.role || character.role || '';
           const gender = baseId.gender || character.gender || vi?.gender || 'unknown';
           const age = baseId.age ?? character.age ?? vi?.age ?? null;
+          const isChild = age !== null && age < 14;
           
-          // ===== v6.6.5-fix: 显式服装字段优先于 role 推断 =====
-          const explicitOutfit =
-            vi?.appearance?.clothing?.promptFragment ||
-            vi?.outfit ||
-            character?.visual?.outfit ||
-            character?.outfit ||
-            character?.appearance?.outfit ||
-            '';
-
-          if (explicitOutfit) {
-            if (/^(穿|穿着)/.test(explicitOutfit)) {
-              parts.push(explicitOutfit);
-            } else {
-              parts.push(`穿着${explicitOutfit}`);
-            }
+          // 1. 从 appearance 提取服装
+          const clothing = vi?.appearance?.clothing;
+          if (clothing?.promptFragment) {
+            parts.push(clothing.promptFragment);
           } else {
+            // 2. 根据角色身份推断默认服装
             const defaultClothing = this._getDefaultClothing(role, gender, age, character.name);
             if (defaultClothing) {
               parts.push(`穿${defaultClothing}`);
             }
           }
           
+          // 场景特定服装变化（如需要）
           if (sceneType === 'formal' && character.alternativeOutfits?.formal) {
-            parts.push(`正式场合穿着${character.alternativeOutfits.formal}`);
+            parts.push(`穿着${character.alternativeOutfits.formal}`);
           } else if (sceneType === 'action' && character.alternativeOutfits?.action) {
-            parts.push(`行动场景穿着${character.alternativeOutfits.action}`);
+            parts.push(`穿着${character.alternativeOutfits.action}`);
           }
           
           return parts.join('，');
@@ -334,7 +327,7 @@ class CharacterPromptBuilder {
     if (name.includes('教练') || name.includes('coach')) return '教练';
     if (name.includes('护士') || name.includes('nurse')) return '护士';
     if (name.includes('医生') || name.includes('doctor')) return '医生';
-    if (name.includes('小') && name.includes('G')) return '男孩'; // AgentX
+    if (name.includes('小') && name.includes('G')) return '男孩'; // 小G
     
     // 从 role 推断
     const lowerRole = (role || '').toLowerCase();

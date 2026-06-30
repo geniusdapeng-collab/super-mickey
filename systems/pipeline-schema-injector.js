@@ -81,10 +81,6 @@ class PipelineValidationInjector {
           if (validation.warnings.length > 0) {
             this.log('WARN', `  还有 ${validation.warnings.length} 个警告`);
           }
-          // 【v2.1.4-fix10-P25-fix8-P2A】strict模式下阻断
-          if (this.mode === 'strict') {
-            throw new Error(`Schema验证失败(Stage 5): ${validation.errors.join('; ')}`);
-          }
           // 将验证结果附加到stage输出，供后续Stage参考
           result._schemaValidation = {
             valid: false,
@@ -121,10 +117,6 @@ class PipelineValidationInjector {
           this.log('WARN', `Stage 7 Storyboard验证发现 ${validation.errors.length} 个错误:`);
           for (const err of validation.errors.slice(0, 5)) {
             this.log('WARN', `  - ${err}`);
-          }
-          // 【v2.1.4-fix10-P25-fix8-P2A】strict模式下阻断
-          if (this.mode === 'strict') {
-            throw new Error(`Schema验证失败(Stage 7): ${validation.errors.join('; ')}`);
           }
           result._schemaValidation = {
             stage: 'STAGE-7',

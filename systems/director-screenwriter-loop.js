@@ -14,7 +14,7 @@
  * - 导演风格库（Phase 2）暂不挂载
  * 
  * @version v1.0 (v6.2-patch68)
- * @author Core Team
+ * @author 小G
  */
 
 const { DirectorFinalReview } = require('./director-final-review.js');
@@ -111,22 +111,11 @@ class DirectorScreenwriterLoop {
         directorPlan: input.directorPlan
       };
 
-      // 【v2.1.4-fix10-P25-fix8-P1J】加空值守卫 + try/catch，防止 Stage17 整段崩溃
-      let currentShots;
-      try {
-        const optimizeResult = await this.screenwriter.optimize(optimizeInput);
-        currentShots = optimizeResult?.optimizedShots;
-        if (!Array.isArray(currentShots) || currentShots.length === 0) {
-          console.warn(`[DirectorLoop] screenwriter.optimize 未返回有效 shots，保留上一轮结果`);
-          currentShots = optimizeInput.shots; // 回退到本轮输入
-        } else {
-          finalOptimizeResult = optimizeResult;
-          console.log(`[Stage17] ✅ 编剧优化完成 | 修复: ${optimizeResult.issuesFixed?.length || 0} | 遗留: ${optimizeResult.issuesRemaining?.length || 0}`);
-        }
-      } catch (err) {
-        console.error(`[DirectorLoop] screenwriter.optimize 失败: ${err.message}，保留上一轮结果`);
-        currentShots = optimizeInput.shots; // 回退，不中断
-      }
+      const optimizeResult = await this.screenwriter.optimize(optimizeInput);
+      currentShots = optimizeResult.optimizedShots;
+      finalOptimizeResult = optimizeResult;
+
+      console.log(`[Stage17] ✅ 编剧优化完成 | 修复: ${optimizeResult.issuesFixed.length} | 遗留: ${optimizeResult.issuesRemaining.length}`);
 
       // Step 2: 重新评估（导演优化 + 连贯性 + 台词）
       console.log(`[Stage17] 📊 重新评估优化后方案...`);

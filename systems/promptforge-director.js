@@ -699,7 +699,7 @@ class ShotCompositor {
 
 【风格锁】双恒星+磁场可见+低重力飘浮。这是Nirath。
 
-【角色约束】仅一个AgentX和一个${beastId}。
+【角色约束】仅一个小G和一个${beastId}。
 
 【技术规格】超写实数字渲染,影视级构图,体积光,空气透视,微距摄影级细节,外星繁茂植被。`;
   }
@@ -723,9 +723,11 @@ class ShotCompositor {
       ? `【情绪强化】\n${shot.emotionReinforcement}\n`
       : '';
     
-    // 【v6.3-patch8-fix】Stage 2a 编剧产出
-    const dialogueSection = shot.dialogue
-      ? `【台词】\n${shot.dialogue}\n`
+    // v6.7.0-dialogue-patch: 优先使用 dialogueBlock 生成【对话指令】
+    const dialogueBlock = shot.dialogueBlock || {};
+    const dialogueText = dialogueBlock.text || shot.dialogue || '';
+    const dialogueSection = dialogueText
+      ? `【对话指令】\n${dialogueText}\n`
       : '';
     
     // 【v6.3-patch10-fix】动态计算系统模板长度，确保目标总长度准确

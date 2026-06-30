@@ -135,7 +135,7 @@ const BEAST_REGISTRY = {
       face: '无面目 — 浑敦无面目，没有任何五官，光滑能量曲面，身体正中央悬浮金色太阳核心，山海经"无面目"严格还原',
       legs: '六足 — 六条光带从能量体底部自然下垂，呈三排排列（每排2条），绝非腿部足肢，山海经"六足"=Nirath能量流',
       wings: '四翼 — 四片半透明能量翼膜呈十字交叉排列，翼脉如金色叶脉发光，绝非羽毛，山海经"四翼"=Nirath散热鳍片',
-      special: '情绪共鸣者，身体温度恒定如旧世界供暖系统，能包裹住AgentX给予温暖，山海经"是识歌舞"=Nirath情绪共振频率',
+      special: '情绪共鸣者，身体温度恒定如旧世界供暖系统，能包裹住小G给予温暖，山海经"是识歌舞"=Nirath情绪共振频率',
       colors: '暖黄色为主（如黄囊），情绪波动时赤如丹火转橙红，金色太阳光芒四射，山海经"赤如丹火"=Nirath过热警报色'
     },
     visualSignature: {
@@ -147,7 +147,7 @@ const BEAST_REGISTRY = {
     promptTemplate: 'Nirath原创异兽帝江暖暖，融合《山海经》黄囊赤如丹火六足四翼浑敦无面目特征与2147年科技恒温系统美学，暖黄色发光能量体如呼吸暖云，无面目光滑能量曲面，六条光带底部下垂三排排列，四片透明能量翼膜十字交叉翼脉金色发光，身体中央金色太阳核心，情绪共鸣温度恒定，超写实CG渲染，{scene}',
     negativePrompt: 'monster with face, creature with eyes, beast with mouth, animal face, sheep, turtle, cartoon cloud, western creature, Earth creature, cute, fluffy',
     lore: {
-      summary: '情绪共鸣者，旧世界温暖的最后残留。能感知并回应AgentX的情绪。',
+      summary: '情绪共鸣者，旧世界温暖的最后残留。能感知并回应小G的情绪。',
       abilities: ['情绪共鸣', '温度恒定', '能量包裹', '情绪共振频率'],
       temperament: 'benevolent',
       associatedElements: ['火', '能量', '温暖'],
@@ -180,19 +180,19 @@ const BEAST_REGISTRY = {
       head: '山羊头 — 头部如山羊，两角弯曲如旧世界天线，角上刻有数据流光纹路',
       mane: '狮鬃 — 颈部环绕浓密雪白鬃毛，如光纤束般发光，每一根都承载记忆片段',
       eyes: '双瞳重明 — 能看穿物质表象直达本质，瞳孔中偶尔闪过数据流光，如两个微型全息投影屏',
-      special: '能说人话教AgentX万物有灵与记录的方法，人类文明记忆雾凝聚体，通万物之情',
+      special: '能说人话教小G万物有灵与记录的方法，人类文明记忆雾凝聚体，通万物之情',
       colors: '通体雪白，鬃毛边缘散发银蓝光晕，双瞳中数据流光呈淡金色'
     },
     visualSignature: {
-      description: 'Nirath原创异兽白泽老师，融合《山海经》通万物之情能说人话智慧特征与人类文明记忆雾凝聚体，鹿身优雅雪白如月光，山羊头双角弯曲如天线带数据纹路，狮鬃雪白如光纤束发光，双瞳重明瞳孔闪过数据流光如全息屏，教导AgentX万物有灵，通体雪白银蓝光晕',
+      description: 'Nirath原创异兽白泽老师，融合《山海经》通万物之情能说人话智慧特征与人类文明记忆雾凝聚体，鹿身优雅雪白如月光，山羊头双角弯曲如天线带数据纹路，狮鬃雪白如光纤束发光，双瞳重明瞳孔闪过数据流光如全息屏，教导小G万物有灵，通体雪白银蓝光晕',
       keyFeatures: ['鹿身', '山羊头', '狮鬃', '双瞳重明', '数据流光', '记忆雾'],
       colorPalette: ['雪白', '银蓝', '淡金', '月光白'],
       negativePrompt: 'normal deer, normal goat, normal lion, cartoon creature, Earth animal, western unicorn, western creature, anime, cute pet'
     },
-    promptTemplate: 'Nirath原创异兽白泽老师，融合《山海经》通万物之情能说人话智慧特征与人类文明记忆雾凝聚体，鹿身优雅雪白如月光，山羊头双角弯曲如天线带数据纹路，狮鬃雪白如光纤束发光，双瞳重明瞳孔闪过数据流光如全息屏，教导AgentX万物有灵，通体雪白银蓝光晕，超写实CG渲染，{scene}',
+    promptTemplate: 'Nirath原创异兽白泽老师，融合《山海经》通万物之情能说人话智慧特征与人类文明记忆雾凝聚体，鹿身优雅雪白如月光，山羊头双角弯曲如天线带数据纹路，狮鬃雪白如光纤束发光，双瞳重明瞳孔闪过数据流光如全息屏，教导小G万物有灵，通体雪白银蓝光晕，超写实CG渲染，{scene}',
     negativePrompt: 'normal deer, normal goat, normal lion, cartoon creature, Earth animal, western unicorn, western creature, anime, cute pet',
     lore: {
-      summary: '人类文明记忆雾凝聚体，教导AgentX万物有灵与记录的方法。',
+      summary: '人类文明记忆雾凝聚体，教导小G万物有灵与记录的方法。',
       abilities: ['通万物之情', '记忆读取', '数据流光通讯', '知识传授'],
       temperament: 'benevolent',
       associatedElements: ['光', '记忆', '智慧'],
@@ -224,7 +224,7 @@ const BEAST_REGISTRY = {
       body: '狐身 — 优雅狐形身体，毛发如发光丝线般柔顺，绝非地球狐狸，山海经狐身+Nirath基因改造',
       head: '狐首 — 尖耳竖立，面部有发光的智慧纹路如电路板图腾，双瞳呈现数据流金色，山海经狐首+Nirath智慧标记',
       tails: '九尾 — 九条尾巴蓬松如发光植物藤蔓，三条已变银白色记载着古老记忆，每条尾巴都有独特光纹，山海经"九尾"=Nirath基因表达',
-      special: '最古老智慧种族长老，用尾巴为AgentX编织光环宣布他为山海之民，山海经"其音如婴儿"=Nirath频率共鸣的空灵声波',
+      special: '最古老智慧种族长老，用尾巴为小G编织光环宣布他为山海之民，山海经"其音如婴儿"=Nirath频率共鸣的空灵声波',
       colors: '银白与深红交织，尾巴如发光藤蔓，老年三条银白尾散发月白光晕'
     },
     visualSignature: {
@@ -236,7 +236,7 @@ const BEAST_REGISTRY = {
     promptTemplate: 'Nirath原创异兽九尾狐长老奶奶，融合《山海经》狐身九尾其音如婴儿特征与基因库样本植物融合生命，狐身优雅毛发如发光丝线，尖耳竖立面部发光智慧纹路如电路板图腾，九尾蓬松如发光藤蔓三条已变银白记载古老记忆，古老智慧种族长老，银白深红交织月白光晕，超写实CG渲染，{scene}',
     negativePrompt: 'normal fox, cartoon fox, Earth fox, western kitsune, anime fox, cute furry, pet animal',
     lore: {
-      summary: '最古老智慧种族长老，用尾巴为AgentX编织光环宣布他为山海之民。',
+      summary: '最古老智慧种族长老，用尾巴为小G编织光环宣布他为山海之民。',
       abilities: ['九尾编织光环', '基因记忆读取', '频率共鸣', '智慧传承'],
       temperament: 'benevolent',
       associatedElements: ['木', '基因', '记忆'],

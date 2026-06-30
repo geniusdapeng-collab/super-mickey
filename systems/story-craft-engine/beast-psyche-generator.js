@@ -446,13 +446,13 @@ class BeastPsycheGenerator {
     
     return {
       B2: {
-        trigger: 'AgentX出现',
+        trigger: '小G出现',
         line: "又有人类。逃吧，像以前一样。",
         tone: '低沉，自言自语',
         subtext: '不是威胁，是疲惫的预判'
       },
       B3: {
-        trigger: 'AgentX递种子',
+        trigger: '小G递种子',
         line: "他的心跳很快...但没有跑。300年了。第一个不逃的。",
         tone: '停顿，困惑',
         subtext: '惊讶——这个人类不一样'
@@ -478,7 +478,7 @@ class BeastPsycheGenerator {
     // 1. 基于磁场共振频率的"声音"——低沉、共鸣、非人类声带
     // 2. 视觉呈现：发光的磁丝文字，环绕说话者
     // 3. 语法：意念驱动，一个词包含多层含义
-    // 4. 翻译层：AgentX的"通语者"能力将其转化为人类语言
+    // 4. 翻译层：小G的"通语者"能力将其转化为人类语言
 
     return {
       languageName: 'Nirath语（磁丝语）',

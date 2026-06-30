@@ -7,7 +7,7 @@
  * - 为编剧优化Agent提供数据支撑
  * 
  * @version v1.0 (v6.2-patch68)
- * @author Core Team
+ * @author 小G
  */
 
 class DialogueConsistencyEngine {

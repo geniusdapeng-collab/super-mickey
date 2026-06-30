@@ -623,6 +623,9 @@ ${missing.map(f => `- ${f}：${FIELD_DESCS[f]}`).join('\n')}
   _assembleStandardPrompt(shot, fields, ratio) {
     const parts = [];
     
+    // 【语言约束】⭐ 新增：强制中文输出
+    parts.push('【语言约束】全部字段必须使用中文输出，禁止出现英文单词、英文短语、英文描述。');
+
     // 辅助函数：获取字段值（支持驼峰和下划线命名）
     const getField = (...names) => {
       for (const name of names) {

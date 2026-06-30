@@ -12,7 +12,7 @@
  * 提取原则：吸收精华，不照搬全部，结合Nirath世界观定制
  * 
  * @version v1.0 (v6.2-patch69)
- * @author Core Team
+ * @author 小G
  */
 
 class DirectorStyleLibrary {
@@ -127,6 +127,52 @@ class DirectorStyleLibrary {
         composition: ['creature_scale_drama', 'ornate_baroque_detail', 'symmetrical_monster_frames'],
         mood: ['dark_fairy_tale', 'romantic_monstrosity', 'melancholic_wonder'],
         nirathRelevance: 4 // ★★★★☆
+      },
+      
+      // v6.6.4-root-fix: 新增纪录片/教育片导演风格
+      herzog: {
+        name: '沃纳·赫尔佐格 (Werner Herzog)',
+        films: ['灰熊人', '在世界尽头相遇', '洞穴中被遗忘的梦'],
+        coreTags: [
+          { tag: 'contemplative_observation', desc: '沉思式观察+诗意旁白', weight: 1.0 },
+          { tag: 'landscape_as_character', desc: '风景即角色+自然力量', weight: 0.9 },
+          { tag: 'existential_gaze', desc: '存在主义凝视+人类渺小', weight: 0.8 }
+        ],
+        colorPalette: ['cold_arctic_blue', 'volcanic_amber', 'misty_gray', 'deep_forest_green'],
+        lighting: ['natural_available_light', 'dramatic_contrast', 'golden_hour_contemplation'],
+        composition: ['vast_landscape_tiny_figure', 'static_contemplation', 'intense_close_up'],
+        mood: ['existential_wonder', 'nature_indifference', 'poetic_melancholy'],
+        nirathRelevance: 4 // ★★★★☆
+      },
+      
+      burns: {
+        name: '肯·伯恩斯 (Ken Burns)',
+        films: ['南北战争', '爵士', '越南战争'],
+        coreTags: [
+          { tag: 'archival_immersion', desc: '档案影像沉浸+历史质感', weight: 1.0 },
+          { tag: 'slow_zoom_pan', desc: '缓慢缩放平移+照片活化', weight: 0.9 },
+          { tag: 'narrative_archaeology', desc: '叙事考古+多层时间线', weight: 0.8 }
+        ],
+        colorPalette: ['sepia_warmth', 'archival_brown', 'faded_color', 'monochrome_dignity'],
+        lighting: ['soft_diffused_historical', 'natural_window_light', 'candle_warmth'],
+        composition: ['photograph_within_frame', 'intimate_portrait', 'documentary_detail'],
+        mood: ['historical_gravity', 'nostalgic_reverence', 'quiet_authority'],
+        nirathRelevance: 3 // ★★★☆☆
+      },
+      
+      morris: {
+        name: '埃罗尔·莫里斯 (Errol Morris)',
+        films: ['细蓝线', '战争之雾', '标准作业程序'],
+        coreTags: [
+          { tag: 'direct_address', desc: '直视镜头+访谈者直面观众', weight: 1.0 },
+          { tag: 'interrotron', desc: 'Interrotron设备+眼神接触', weight: 0.9 },
+          { tag: 'reconstruction_drama', desc: '重构戏剧+事实与记忆交织', weight: 0.8 }
+        ],
+        colorPalette: ['clinical_white', 'deep_shadow', 'neutral_gray', 'accent_blue'],
+        lighting: ['dramatic_side_light', 'high_contrast_interview', 'theatrical_spotlight'],
+        composition: ['direct_to_camera', 'extreme_close_up', 'isolated_subject'],
+        mood: ['intellectual_intensity', 'truth_seeking', 'psychological_exposure'],
+        nirathRelevance: 3 // ★★★☆☆
       }
     };
   }
@@ -178,6 +224,32 @@ class DirectorStyleLibrary {
         secondary: 'spielberg',
         tertiary: 'jackson',
         tags: ['monumental_scale', 'creature_reveal_ritual', 'fantasy_world_building']
+      },
+      
+      // v6.6.4-root-fix: 新增教育/纪录片场景类型
+      'educational_explanation': {  // 教育讲解/知识传授
+        primary: 'herzog',
+        secondary: 'burns',
+        tertiary: 'morris',
+        tags: ['contemplative_observation', 'archival_immersion', 'direct_address']
+      },
+      'medical_interview': {        // 医疗访谈/专业对话
+        primary: 'morris',
+        secondary: 'herzog',
+        tertiary: 'spielberg',
+        tags: ['direct_address', 'intellectual_intensity', 'emotional_priority']
+      },
+      'health_demonstration': {     // 健康演示/实操展示
+        primary: 'burns',
+        secondary: 'herzog',
+        tertiary: 'villeneuve',
+        tags: ['slow_zoom_pan', 'contemplative_observation', 'minimalist_composition']
+      },
+      'documentary_narration': {    // 纪录片旁白/叙事
+        primary: 'herzog',
+        secondary: 'burns',
+        tertiary: 'villeneuve',
+        tags: ['landscape_as_character', 'narrative_archaeology', 'monumental_scale']
       }
     };
   }
@@ -449,8 +521,32 @@ ${topMood.join(' + ')} atmosphere,
     const shotType = shot.shotType || '';
     const emotionPhase = shot.emotionPhase || '';
     
+    // v6.6.4-root-fix: 新增教育/纪录片场景类型检测
     // 基于 shotType 和 emotionPhase 推断
     if (shot.isOpening || shot.shotId === 'S00') return 'opening_hook';
+    
+    // 教育/医疗/健康类内容检测
+    if (prompt.includes('科普') || prompt.includes('讲解') || prompt.includes('知识') || 
+        prompt.includes('健康') || prompt.includes('医疗') || prompt.includes('教育') ||
+        prompt.includes('护士') || prompt.includes('医生') || prompt.includes('患者') ||
+        prompt.includes('医院') || prompt.includes('病症') || prompt.includes('治疗') ||
+        prompt.includes('预防') || prompt.includes('介绍') || prompt.includes('说明')) {
+      return 'educational_explanation';
+    }
+    
+    // 访谈/对话类检测
+    if (prompt.includes('访谈') || prompt.includes('对话') || prompt.includes('采访') ||
+        prompt.includes('交流') || prompt.includes('咨询') || prompt.includes('问诊')) {
+      return 'medical_interview';
+    }
+    
+    // 演示/展示类检测
+    if (prompt.includes('演示') || prompt.includes('展示') || prompt.includes('操作') ||
+        prompt.includes('示范') || prompt.includes('实验') || prompt.includes('检查')) {
+      return 'health_demonstration';
+    }
+    
+    // Nirath 原有场景类型检测
     if (emotionPhase === 'climax' || prompt.includes('高潮') || prompt.includes('爆发')) return 'emotional_climax';
     if (emotionPhase === 'building' || prompt.includes('冲突') || prompt.includes('对抗')) return 'action_confrontation';
     if (prompt.includes('登场') || prompt.includes('现身') || prompt.includes('出场') || prompt.includes('出现')) return 'creature_first_encounter';
@@ -458,8 +554,8 @@ ${topMood.join(' + ')} atmosphere,
     if (prompt.includes('全景') || prompt.includes('远景') || prompt.includes('地貌') || prompt.includes('山脉')) return 'epic_landscape';
     if (emotionPhase === 'rising' || prompt.includes('发现') || prompt.includes('探索') || prompt.includes('神秘')) return 'mystery_discovery';
     
-    // 默认
-    return 'alien_ecosystem';
+    // 默认：如果是纪录片类型，返回纪录片旁白类型
+    return 'documentary_narration';
   }
 
   /**

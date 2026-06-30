@@ -134,9 +134,10 @@ const DEFAULT_CONFIG = {
   // 渲染引擎配置
   render: {
     engine: 'Seedance-2.0',
-    endpoint: '003cENDPOINT_STD003e',
-    fastEndpoint: '003cENDPOINT_FAST003e',
-    imageEndpoint: '003cENDPOINT_IMG003e',
+    // v6.6.6: 安全占位符 - 请从 config/seedance.json 或环境变量配置实际 endpoint
+    endpoint: process.env.SEEDANCE_ENDPOINT || 'YOUR_SEEDANCE_ENDPOINT_ID',
+    fastEndpoint: process.env.SEEDANCE_FAST_ENDPOINT || 'YOUR_SEEDANCE_FAST_ENDPOINT_ID',
+    imageEndpoint: process.env.SEEDREAM_ENDPOINT || 'YOUR_SEEDREAM_ENDPOINT_ID',
     maxConcurrent: 3,
     safetyGate: {
       tripleLockEnabled: true,
@@ -166,20 +167,21 @@ const DEFAULT_CONFIG = {
   },
 
   // 项目级约束（P0级）
-  // 【v2.1.4-fix10-P25-fix5】默认不禁止旁白，由项目配置决定
   constraints: {
-    forbiddenVoiceover: false, // ✅ 默认不禁止，神兽系列在项目配置中覆盖
+    // 【P0】禁止旁白/独白/innerMonologue — 仅保留Dialogue（对嘴）
+    forbiddenVoiceover: true,
+    // 【P0】全局明亮风格
     forbidDarkStyle: true,
-    forbidMetalSheen: false, // ✅ 默认不禁止（神兽系列才禁止）
-    forbidUnnaturalEyeColor: false, // ✅ 默认不禁止
+    // 【P0】禁止金属光泽
+    forbidMetalSheen: true,
+    // 【P0】禁止非自然眼睛颜色（仅黑色眼圈+倒影）
+    forbidUnnaturalEyeColor: true,
     // 全局负面提示词（自动注入）
     globalNegativePrompts: [
-      'no deformed hands', 'no extra limbs', 'no text watermark'
+      'no dark style', 'no night scene', 'no metallic sheen', 'no metal texture',
+      'no glowing eyes', 'no unnatural eye color', 'no voiceover', 'no narration text'
     ]
   },
-  
-  // 神兽系列项目覆盖配置（在 config/nirath.json 中使用）
-  // "constraints": { "forbiddenVoiceover": true, "forbidMetalSheen": true, ... }
 
   // 审片工作流
   review: {
@@ -421,9 +423,8 @@ class ConfigCenter {
     
     // 验证Prompt长度约束
     const maxLen = this.getPromptMaxLength();
-    // 【v2.1.4-fix10-P25-fix5】放宽上限到3000
-    if (maxLen > 3000 || maxLen < 100) {
-      errors.push(`prompt.maxLength ${maxLen} 超出合理范围 [100, 3000]`);
+    if (maxLen > 1200 || maxLen < 100) {
+      errors.push(`prompt.maxLength ${maxLen} 超出合理范围 [100, 1200]`);
     }
     
     // 验证时长约束

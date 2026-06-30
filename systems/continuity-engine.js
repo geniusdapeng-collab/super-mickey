@@ -9,7 +9,7 @@
  * 4. 转场类型建议 — 基于相邻镜头参数推荐合法转场类型
  * 
  * @version v1.0
- * @author Core Team
+ * @author 小G
  */
 
 class ContinuityEngine {
@@ -379,14 +379,13 @@ class ContinuityEngine {
     const prompt = shot.prompt || '';
     
     // 从prompt中提取景别关键词
-    // 【v2.1.4-fix10-P25-fix8-P1H】长词优先匹配：大远景 > 远景，大特写 > 特写
-    if (prompt.includes('大远景') || prompt.includes('extreme_long') || prompt.includes('ELS')) return 'ELS';
-    if (prompt.includes('远景') || prompt.includes('long_shot')) return 'LS';
-    if (prompt.includes('大特写') || prompt.includes('extreme_close') || prompt.includes('ECU')) return 'ECU';
+    if (prompt.includes('大特写') || prompt.includes('extreme_close')) return 'ECU';
     if (prompt.includes('特写') || prompt.includes('closeup') || prompt.includes('close-up')) return 'CU';
-    if (prompt.includes('近景') || prompt.includes('medium_close') || prompt.includes('MCU')) return 'MCU';
-    if (prompt.includes('中景') || prompt.includes('medium_shot') || prompt.includes('MS')) return 'MS';
-    if (prompt.includes('全景') || prompt.includes('full_shot') || prompt.includes('FS')) return 'FS';
+    if (prompt.includes('近景') || prompt.includes('medium_close')) return 'MCU';
+    if (prompt.includes('中景') || prompt.includes('medium_shot')) return 'MS';
+    if (prompt.includes('全景') || prompt.includes('full_shot')) return 'FS';
+    if (prompt.includes('远景') || prompt.includes('long_shot')) return 'LS';
+    if (prompt.includes('大远景') || prompt.includes('extreme_long')) return 'ELS';
     
     // 从cameraMovement中提取
     const scale = shot.cameraMovement?.scale || shot.scale || '';

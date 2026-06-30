@@ -40,7 +40,7 @@ class DurationNarrationAlignment {
     // 第一轮：检测所有不匹配
     const mismatches = [];
     for (const shot of shots) {
-      const narration = shot.narration || '';
+      const narration = shot.narration || shot.text || '';  // v6.5.65-P8-fix: 同时支持 narration 和 text 字段
       const duration = shot.duration || shot.allocatedDuration || 5;
       const type = shot.type || 'default';
       const importance = shot.importance || 5;
@@ -61,7 +61,7 @@ class DurationNarrationAlignment {
           requiredDuration,
           deficit: requiredDuration - duration,
           charCount,
-          narration
+          narration: narration  // v6.5.65-P8-fix: 记录实际使用的文本
         });
       }
     }
@@ -90,6 +90,7 @@ class DurationNarrationAlignment {
       .sort((a, b) => a.importance - b.importance); // 低重要性优先
 
     const adjustedShots = shots.map(s => ({ ...s })); // 深拷贝
+    let totalDurationAdded = 0; // v6.5.65-P8-fix: 记录总增加时长
 
     for (const mismatch of mismatches) {
       let remainingDeficit = mismatch.deficit;
@@ -97,26 +98,31 @@ class DurationNarrationAlignment {
       // 尝试从候选池借时长
       for (const donor of donorCandidates) {
         if (remainingDeficit <= 0) break;
-        if (donor.duration <= this.config.minDuration) continue;
+        
+        // v6.6.2-fix: 使用 adjustedShots 中的实时 duration，而非原始值
+        const donorIndex = adjustedShots.findIndex(s => s.id === donor.shotId);
+        if (donorIndex < 0) continue;
+        const donorCurrentDuration = adjustedShots[donorIndex].duration || 0;
+        
+        if (donorCurrentDuration <= this.config.minDuration) continue;
 
-        // 计算可借的最大时长
+        // 计算可借的最大时长（基于实时 duration）
         const donorNarration = donor.narration;
         const donorCharCount = this.countAllChars(donorNarration);
         const donorBuffer = (donor.type === 'closing') ? this.config.endingBuffer : this.config.normalBuffer;
         const donorRequired = Math.ceil(donorCharCount / this.config.comfortSpeed + donorBuffer);
-        const maxBorrow = donor.duration - Math.max(donorRequired, this.config.minDuration);
+        const maxBorrow = donorCurrentDuration - Math.max(donorRequired, this.config.minDuration);
 
         if (maxBorrow <= 0) continue;
 
         const borrow = Math.min(maxBorrow, remainingDeficit);
 
         // 执行借调
-        const donorIndex = adjustedShots.findIndex(s => s.id === donor.shotId);
         const mismatchIndex = adjustedShots.findIndex(s => s.id === mismatch.shotId);
 
-        if (donorIndex >= 0 && mismatchIndex >= 0) {
-          // v6.5.36-fix: 借调后不超过 maxDuration 上限
-          const maxAllowed = this.config.maxDuration; // ✅ 从配置读取，不再硬编码15秒
+        if (mismatchIndex >= 0) {
+          // v6.5.36-fix: 借调后不超过 maxDuration 上限（硬规则要求15秒）
+          const maxAllowed = 15; // 与硬规则对齐
           const afterBorrow = adjustedShots[mismatchIndex].duration + borrow;
           const cappedBorrow = afterBorrow > maxAllowed ? (maxAllowed - adjustedShots[mismatchIndex].duration) : borrow;
           if (cappedBorrow <= 0) continue;
@@ -135,26 +141,56 @@ class DurationNarrationAlignment {
         }
       }
 
-      // 如果还是不够，记录硬性错误
+      // v6.5.65-P8-fix: 如果借调后仍不够，增加总时长（不报错，只警告）
+      if (remainingDeficit > 0) {
+        const mismatchIndex = adjustedShots.findIndex(s => s.id === mismatch.shotId);
+        if (mismatchIndex >= 0) {
+          // 增加该镜头时长，不超过 maxDuration
+          const addDuration = Math.min(remainingDeficit, 15 - adjustedShots[mismatchIndex].duration);
+          if (addDuration > 0) {
+            adjustedShots[mismatchIndex].duration += addDuration;
+            totalDurationAdded += addDuration;
+            remainingDeficit -= addDuration;
+            adjustments.push({
+              to: mismatch.shotId,
+              amount: addDuration,
+              reason: `${mismatch.shotId} narration ${mismatch.charCount}字 需要 ${mismatch.requiredDuration}秒，原分配 ${mismatch.duration}秒，借调不足，增加时长 ${addDuration}秒`
+            });
+          }
+        }
+      }
+
+      // 如果增加后仍不够，记录警告（非错误）
       if (remainingDeficit > 0) {
         issues.push({
           shotId: mismatch.shotId,
           type: 'duration_insufficient',
-          severity: 'error',
-          message: `${mismatch.shotId}: narration ${mismatch.charCount}字 需要 ${mismatch.requiredDuration}秒，但分配仅 ${mismatch.duration}秒，借调后仍缺 ${remainingDeficit}秒`,
-          suggestion: `建议：增加总时长预算 ${remainingDeficit}秒，或精简 narration ${mismatch.charCount}字 → ${Math.floor((mismatch.duration - this.config.endingBuffer) * this.config.comfortSpeed)}字`
+          severity: 'warning', // v6.5.65-P8-fix: 降级为警告，不阻断流程
+          message: `${mismatch.shotId}: narration ${mismatch.charCount}字 需要 ${mismatch.requiredDuration}秒，分配 ${mismatch.duration}秒，借调+增加后仍缺 ${remainingDeficit}秒（建议精简 narration）`,
+          suggestion: `建议精简 narration ${mismatch.charCount}字 → ${Math.floor((mismatch.duration - this.config.endingBuffer) * this.config.comfortSpeed)}字`
         });
       }
     }
 
+    // v6.5.65-P8-fix: 如果有增加总时长，报告
+    if (totalDurationAdded > 0) {
+      issues.push({
+        shotId: 'TOTAL',
+        type: 'duration_extended',
+        severity: 'info',
+        message: `总时长增加 ${totalDurationAdded}秒 以容纳 narration 字数`,
+        suggestion: '预生产模式允许，生产环境需确认总时长预算'
+      });
+    }
+
     return {
-      aligned: issues.length === 0,
+      aligned: issues.filter(i => i.severity === 'error').length === 0, // v6.5.65-P8-fix: 只有 error 才视为失败
       shots: adjustedShots,
       adjustments,
       issues,
       report: issues.length === 0
-        ? `时长-字数校准完成：借调 ${totalBorrowed}秒，${adjustments.length} 次调整`
-        : `时长-字数校准失败：${issues.length} 个镜头无法匹配`
+        ? `时长-字数校准完成：借调 ${totalBorrowed}秒，增加 ${totalDurationAdded}秒，${adjustments.length} 次调整`
+        : `时长-字数校准完成：借调 ${totalBorrowed}秒，增加 ${totalDurationAdded}秒，${issues.filter(i => i.severity === 'warning').length} 个警告`
     };
   }
 

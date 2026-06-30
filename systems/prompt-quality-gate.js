@@ -8,7 +8,7 @@
  * - 评分维度: Tier完整性/视觉纯度/利用率/技术有效性/情绪一致性/约束完整性
  *
  * @version v1.0
- * @author Core Team
+ * @author 小G
  */
 
 class PromptQualityGate {
@@ -46,28 +46,12 @@ class PromptQualityGate {
       'opening': ['awe', 'wonder', 'grand', 'majestic', '敬畏', '惊叹', '壮观', '宏大', '震撼', '仰望']
     };
     
-    // 【v2.1.4-fix10-P25-fix5】按项目类型选择约束集
-    const projectType = options.projectType || 'generic';
-    const negativeSets = {
-      shanhaijing: [
-        'no metallic shine', 'no traditional Chinese symbols', 'natural eye colors only'
-      ],
-      realistic: [ // 写实/科普类
-        'no anime', 'no illustration', 'no 3D render look',
-        'no deformed hands', 'no extra limbs', 'no text watermark'
-      ],
-      generic: [
-        'no text watermark', 'no deformed hands', 'no extra limbs'
-      ]
-    };
-    this.requiredNegatives = options.requiredNegatives || negativeSets[projectType] || negativeSets.generic;
-
-    // ✅ Tier-1 主体关键词也按类型扩展
-    const subjectPatterns = {
-      shanhaijing: /(AgentX|饕餮|taotie|beast|character|explorer|boy|角色|人物|主体|女士|先生|医生|护士|警察)/i,
-      generic: /(character|person|woman|man|lady|gentleman|角色|人物|主体|女士|先生|医生|护士|警察)/i
-    };
-    this.subjectPattern = subjectPatterns[projectType] || subjectPatterns.generic;
+    // 必需负面约束（P0-3与全局负面提示词共享）
+    this.requiredNegatives = [
+      'no metallic shine',
+      'no traditional Chinese symbols',
+      'natural eye colors only'
+    ];
   }
 
   /**
@@ -164,7 +148,7 @@ class PromptQualityGate {
     const tier1 = promptData.tiers?.tier1?.text || '';
     
     const checks = {
-      hasSubject: /(AgentX|饕餮|taotie|xiaoG|beast|character|explorer|boy|角色|人物|主体)/i.test(tier1),
+      hasSubject: /(小G|饕餮|taotie|xiaoG|beast|character|explorer|boy|角色|人物|主体)/i.test(tier1),
       hasAction: /(站|走|跑|伸|推|蹲|看|踏|移动|行动|动作|交互|触碰|抬头|转身|前进|后退|爬|跃|飞|游)/i.test(tier1),
       hasScene: /(Mountain|Lake|Forest|Plains|Nirath|山|海|森林|平原|湖|丘|原|域|环境|场景|钩吾|不周|归墟|青丘|钟山|建木|昆仑|幽都|流沙|银色湖泊)/i.test(tier1),
       hasCamera: /(shot|wide|close|medium|tracking|push|pull|pan|镜头|运镜|推|拉|摇|移|跟|升|降|环绕|俯视|仰视|特写|中景|远景|全景|近景)/i.test(tier1)
@@ -233,29 +217,27 @@ class PromptQualityGate {
   _evaluateUtilization(promptData) {
     const prompt = promptData.prompt || '';
     const length = prompt.length;
-    const MAX = this.config?.maxPromptLength || 2500; // 【v2.1.4-fix10-P25-fix5】统一2500
-    const OPTIMAL = Math.floor(MAX * 0.95); // 2375
-
+    
     let score;
-    if (length >= OPTIMAL && length <= MAX) { // 2375-2500 满分
+    if (length >= 1470 && length <= 1500) {
       score = 100;
-    } else if (length >= MAX * 0.8 && length < OPTIMAL) { // 2000-2375
-      score = 85 + Math.round((length - MAX * 0.8) / (OPTIMAL - MAX * 0.8) * 15);
-    } else if (length >= MAX * 0.6 && length < MAX * 0.8) { // 1500-2000
-      score = 60 + Math.round((length - MAX * 0.6) / (MAX * 0.2) * 25);
-    } else if (length > MAX) { // 超标
-      score = 40;
-    } else { // <1500 严重不足
-      score = Math.max(0, Math.round(length / MAX * 60));
+    } else if (length >= 850 && length < 1470) {
+      score = 85 + Math.round((length - 850) / 10);
+    } else if (length >= 750 && length < 850) {
+      score = 60 + Math.round((length - 750) / 5);
+    } else if (length > 1500) {
+      score = 50; // 超标
+    } else {
+      score = Math.max(0, length / 10);
     }
-
+    
     return {
       dimension: '字符利用率',
       score,
       weight: this.weights.utilization,
       length,
-      maxLength: MAX,
-      utilization: Math.round((length / MAX) * 100),
+      maxLength: 1500,
+      utilization: Math.round((length / 1500) * 100),
       comment: score >= 85 ? '利用率良好' : score >= 60 ? '利用率偏低' : '严重不足'
     };
   }

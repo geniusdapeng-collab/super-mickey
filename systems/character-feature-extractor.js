@@ -274,7 +274,7 @@ class CharacterFeatureExtractor {
     for (const filePath of possiblePaths) {
       try {
         if (fss.existsSync(filePath)) {
-          const data = JSON.parse(await fs.readFile(filePath, 'utf-8'));
+          const data = JSON.parse(await fs.promises.readFile(filePath, 'utf-8'));
           // 深拷贝并存入缓存
           const profile = JSON.parse(JSON.stringify(data));
           this.knowledgeBaseCache.set(cacheKey, profile);

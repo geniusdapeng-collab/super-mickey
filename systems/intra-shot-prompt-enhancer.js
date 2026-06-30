@@ -958,9 +958,7 @@ function enhanceShotPrompt(shot, options = {}) {
     // v6.5.35: 新增人物鲜活度参数
     characterAge = 'adult',
     emotionPhase = 'neutral',
-    emotionIntensity = 'L2',
-    // 【v2.1.4-fix10-P25-fix8-P1F】长度预算控制
-    maxPromptLength = 2500
+    emotionIntensity = 'L2'
   } = options;
 
   const originalPrompt = shot.prompt || shot.description || '';
@@ -993,53 +991,37 @@ function enhanceShotPrompt(shot, options = {}) {
   // 4. 构建时间轴Prompt
   const timelinePrompt = buildTimelinePrompt(segments, shot);
   
-  // 【v2.1.4-fix10-P25-fix8-P1F】长度预算：如果原始 prompt 已接近上限，只追加时间轴
-  const originalLen = originalPrompt.length;
-  const remainingBudget = maxPromptLength - originalLen;
+  // v6.5.35: 注入人物鲜活度（皮肤纹理 + 生理反应 + 动作细节）
+  const vividnessText = injectVividness(shot, {
+    characterAge: characterAge || shot.characterAge || 'adult',
+    emotionPhase: emotionPhase || shot.emotionPhase || shot.emotion || 'neutral',
+    intensity: emotionIntensity || shot.emotionIntensity || 'L2'
+  });
   
-  let appendParts = [timelinePrompt];
+  // 5. 合并原始Prompt + 时间轴 + 鲜活度 + 四大指令集（v6.5.36批次3）
+  const fourCommands = buildFourCommands(shot);
+  const enhancedPrompt = mergePrompts(originalPrompt, timelinePrompt + ' | 【人物鲜活度】' + vividnessText + ' | 【顶级指令】' + fourCommands);
   
-  // ✅ 只有预算充足时才追加鲜活度/指令/音频，且跳过已含字段
-  if (remainingBudget > 800 && !originalPrompt.includes('【人物鲜活度】')) {
-    const vividnessText = injectVividness(shot, {
-      characterAge: characterAge || shot.characterAge || 'adult',
-      emotionPhase: emotionPhase || shot.emotionPhase || shot.emotion || 'neutral',
-      intensity: emotionIntensity || shot.emotionIntensity || 'L2'
-    });
-    appendParts.push('【人物鲜活度】' + vividnessText);
-  }
+  // 6. 注入音频描述（v2.0-B+: 极致视听融合）
+  // v6.6.8-fix: 精简音频描述，只保留与镜头主题强相关的1-2个音效点
+  const audioDescription = buildAudioDescription(shot, segments);
   
-  if (remainingBudget > 1100 && !originalPrompt.includes('【顶级指令】')) {
-    const fourCommands = buildFourCommands(shot);
-    appendParts.push('【顶级指令】' + fourCommands);
-  }
-  
-  if (remainingBudget > 1300 && !originalPrompt.includes('【音频】')) {
-    const audioDescription = buildAudioDescription(shot, segments);
-    appendParts.push('【音频】' + audioDescription);
-  }
-  
-  const enhancedPrompt = mergePrompts(originalPrompt, appendParts.join(' | '));
-  
-  // ✅ 最终超长保护：如果仍超上限，保留原始Prompt（不截断丢字段）
-  let finalPrompt = enhancedPrompt;
-  if (enhancedPrompt.length > maxPromptLength) {
-    console.warn(`[IntraShotEnhancer] ${shot.id || 'unknown'} 增强后超上限(${enhancedPrompt.length}/${maxPromptLength})，仅保留时间轴`);
-    finalPrompt = mergePrompts(originalPrompt, timelinePrompt);
-  }
+  // 6.1 将音频描述合并到 enhancedPrompt
+  // v6.6.8-fix: 不再追加通用模板音频，只保留 buildAudioDescription 生成的精简版
+  const enhancedPromptWithAudio = enhancedPrompt;
 
   // 7. 记录增强信息
   return {
     ...shot,
-    prompt: finalPrompt,
+    prompt: enhancedPromptWithAudio,
     _intraShotEnhanced: true,
     _enhancementVersion: INTRA_SHOT_VERSION,
     segments: segments,  // 标准字段
     _segments: segments,  // 兼容旧字段
     _comboType: detectedCombo,
     _originalPrompt: originalPrompt,
-    // v2.0-B+: 音频层（仅当实际注入时）
-    _audioInjected: appendParts.some(p => p.includes('【音频】')),
+    // v2.0-B+: 音频层
+    audioDescription: audioDescription,
     sceneType: detectedCombo,
     timeOfDay: shot.timeOfDay || shot.lighting?.timeOfDay || 'golden hour'
   };
@@ -1793,91 +1775,53 @@ function appendGenericAudioLayer(prompt) {
 
 /**
  * 🔊 v2.0-Audio: 构建音频描述（极致视听融合）
- * 四层音效纵深体系：L1环境音 + L2动作音 + L3情绪音 + L4音乐线索
- * 基于《极致视听融合方案》v2.0 Audio专用版
+ * v6.6.8-fix: 精简为只保留与镜头主题强相关的1-2个音效点
  */
 function buildAudioDescription(shot, segments) {
   const sceneName = (shot.scene || '').toLowerCase();
   const emotion = (shot.emotionPhase || shot.emotion || 'neutral').toLowerCase();
-  const timeOfDay = (shot.timeOfDay || shot.lighting?.timeOfDay || 'golden hour').toLowerCase();
 
-  // 匹配场景音频模板
-  let sceneKey = null;
-  const sceneKeys = Object.keys(SCENE_AUDIO_MAP);
-  for (const key of sceneKeys) {
-    if (sceneName.includes(key)) {
-      sceneKey = key;
-      break;
+  // v6.6.8-fix: 优先使用 GenericAudioDesigner 生成场景特定音效
+  try {
+    const { GenericAudioDesigner } = require('./generic-audio-designer.js');
+    const designer = new GenericAudioDesigner();
+    const audioDesc = designer.generateForShot({ scene: shot.scene || '', emotionPhase: emotion });
+    if (audioDesc && audioDesc !== '伴随白天环境音,动作产生自然动作声,氛围弥漫明亮日常氛围,声画精准同步，嘴型与发音对齐') {
+      // 解析 GenericAudioDesigner 返回的音频描述，只取L1（环境音）和与镜头主题相关的L2（动作音）
+      const lines = audioDesc.split('\n').filter(l => l.trim());
+      const ambient = lines.find(l => l.includes('L1:')) || '';
+      const action = lines.find(l => l.includes('L2:')) || '';
+      
+      // 精简为1-2个核心音效点
+      const parts = [];
+      if (ambient) parts.push(ambient.trim());
+      if (action) parts.push(action.trim());
+      
+      if (parts.length > 0) {
+        return parts.join(' | ');
+      }
     }
+  } catch (e) {
+    // 回退到原有逻辑
   }
 
-  // 回退：基于时间或通用默认
-  let template = sceneKey ? SCENE_AUDIO_MAP[sceneKey].tier : null;
-  if (!template) {
-    if (timeOfDay.includes('night') || timeOfDay.includes('dusk')) {
-      template = {
-        ambient: '夜晚虫鸣，远处低语，-24LUFS',
-        action: '轻柔脚步声',
-        emotion: '神秘宁静的夜晚氛围，心跳60BPM',
-        musical: '极简背景音，无显著音乐线索'
-      };
-    } else {
-      template = {
-        ambient: '白天环境音，自然 ambient，-22LUFS',
-        action: '自然动作声',
-        emotion: '明亮日常氛围，心率平稳72BPM',
-        musical: '极简背景音'
-      };
-    }
+  // 回退：基于场景类型推断核心音效
+  let coreSound = '';
+  
+  // 根据场景内容推断核心音效
+  if (sceneName.includes('症状') || sceneName.includes('肌肉')) {
+    coreSound = '肌肉收缩细微声，心跳监测仪滴答声';
+  } else if (sceneName.includes('检查') || sceneName.includes('实验室')) {
+    coreSound = '采血设备声，试管放置声，仪器分析运作声';
+  } else if (sceneName.includes('开场') || sceneName.includes('intro')) {
+    coreSound = '警徽金属质感敲击声，庄重背景音乐渐强';
+  } else if (sceneName.includes('结尾') || sceneName.includes('ending')) {
+    coreSound = '环境音渐弱，温暖收尾氛围';
+  } else {
+    coreSound = '自然动作声';
   }
 
-  // 获取情绪音频映射
-  const emotionAudio = EMOTION_AUDIO_MAP[emotion] || EMOTION_AUDIO_MAP['neutral'];
-
-  // 构建四层音频描述（紧凑格式，适合Seedance Prompt）
-  const parts = [];
-
-  // L1 环境音（Ambient Layer）- 建立声学指纹
-  parts.push(`L1:${template.ambient}`);
-
-  // L2 动作音（Action/Foley Layer）- 主体动作反馈
-  let actionDesc = template.action;
-  if (segments && segments.length > 0) {
-    const actionSounds = segments.map((seg) => {
-      const cam = seg.camera || '';
-      if (cam.includes('push')) return '推进空气流动声';
-      if (cam.includes('pull')) return '拉远环境展开声';
-      if (cam.includes('pan')) return '横摇空间切换声';
-      if (cam.includes('orbit')) return '环绕环绕感';
-      if (cam.includes('handheld')) return '手持轻微晃动声';
-      return `${seg.name || '动作'}反馈声`;
-    }).filter((v, i, a) => a.indexOf(v) === i);
-
-    if (actionSounds.length > 0) {
-      actionDesc = actionSounds.join('，');
-    }
-  }
-  parts.push(`L2:${actionDesc}`);
-
-  // L3 情绪音（Emotional Layer）- 心理氛围渲染
-  parts.push(`L3:${emotionAudio.texture}，${emotionAudio.bpm}，${emotionAudio.frequency}`);
-
-  // L4 音乐线索（Musical Cue Layer）- 情绪基调与叙事
-  if (shot.musicCue) {
-    parts.push(`L4:${shot.musicCue}`);
-  } else if (template.musical && template.musical !== '极简背景音，无显著音乐线索') {
-    parts.push(`L4:${template.musical}`);
-  }
-
-  // 频率避让规则（压缩格式）
-  parts.push('避让:L4避1-4kHz|L2侧重2-8kHz|L3侧重<500Hz');
-
-  // 声画同步标记
-  if (shot.mouthAction || shot.hasDialogue) {
-    parts.push('同步:嘴型与发音对齐，环境音自动避让');
-  }
-
-  return parts.join(' | ');
+  return `【音频】${coreSound}`;
 }
 
 /**

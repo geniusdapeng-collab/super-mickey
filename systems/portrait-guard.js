@@ -333,15 +333,12 @@ class PortraitGuard {
 
   /**
    * 检查图片URL是否有效
-   * 【v2.1.4-fix10-P25-fix5】支持三种格式：base64、image://协议、文件路径
    */
   isValidImageUrl(url) {
-    if (!url || typeof url !== 'string') return false;
-    if (url.startsWith('image://')) return true;
-    if (url.startsWith('data:image/') || url.includes('base64')) return url.length > 100;
-    if (url.startsWith('http://') || url.startsWith('https://')) return true;
-    if (url.endsWith('.png') || url.endsWith('.jpg') || url.endsWith('.jpeg') || url.endsWith('.webp')) return true;
-    return false;
+    if (!url) return false;
+    if (url.length < 100) return false;
+    if (!url.includes('base64')) return false;
+    return true;
   }
 
   /**

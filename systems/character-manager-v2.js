@@ -1,13 +1,3 @@
-const fs = require('fs').promises;
-const fss = require('fs');
-const path = require('path');
-const { CharacterComplianceChecker } = require('./character-compliance-checker.js');
-const { CharacterPromptBuilder } = require('./character-prompt-builder.js');
-const { CharacterEraGuide } = require('./character-era-guide.js');
-const { GrowthTraceSystem } = require('./growth-trace-system.js');
-
-const CHARACTERS_DIR = path.join(__dirname, '..', 'characters');
-
 /**
  * 【角色管理系统 v2】Character Manager v2.0
  * 
@@ -27,37 +17,66 @@ const CHARACTERS_DIR = path.join(__dirname, '..', 'characters');
  * - D6 能力维度：技能树、专长等级
  * - D7 叙事功能维度：在故事中的角色、功能、弧线
  */
-class CharacterManager {
+
+const fs = require('fs').promises;
+const fss = require('fs');
+const path = require('path');
+const { CharacterComplianceChecker } = require('./character-compliance-checker.js');
+const { CharacterPromptBuilder } = require('./character-prompt-builder.js');
+const { CharacterEraGuide } = require('./character-era-guide.js');
+const { GrowthTraceSystem } = require('./growth-trace-system.js');
+
+const CHARACTERS_DIR = path.join(__dirname, '..', 'characters');
+
+class CharacterManagerV2 {
   constructor(config = {}) {
-    this.config = { ...config };
-    this.compliance = new CharacterComplianceChecker(config);
-    this.promptBuilder = new CharacterPromptBuilder(config);
-    this.eraGuide = new CharacterEraGuide(config);
-    this.growthTrace = new GrowthTraceSystem(config);
+    this.config = {
+      strictMode: config.strictMode ?? true,
+      autoCheckCompliance: config.autoCheckCompliance ?? true,
+      maxChineseChars: config.maxChineseChars ?? 1500,  // 统一为980英文字符上限
+      ...config
+    };
+    
+    // 初始化子系统
+    this.compliance = new CharacterComplianceChecker({
+      strictMode: this.config.strictMode
+    });
+    this.promptBuilder = new CharacterPromptBuilder({
+      maxChineseChars: this.config.maxChineseChars
+    });
+    this.eraGuide = new CharacterEraGuide();
+    
+    // v2.1升级：成长痕迹系统（山海经系列角色弧光追踪）
+    this.growthTrace = new GrowthTraceSystem({
+      protagonistId: this.config.protagonistId || 'xiaoG',
+      traceDir: path.join(__dirname, '..', 'growth-traces')
+    });
     
     this.ensureDirectory();
   }
-
+  
   ensureDirectory() {
     if (!fss.existsSync(CHARACTERS_DIR)) {
       fss.mkdirSync(CHARACTERS_DIR, { recursive: true });
     }
   }
-
+  
+  // ====== v1兼容API ======
+  
   getCharacterDir(characterId) {
     return path.join(CHARACTERS_DIR, characterId);
   }
-
+  
   getCharacterCardPath(characterId) {
     return path.join(this.getCharacterDir(characterId), 'character-card.json');
   }
-
+  
   getPortraitDir(characterId) {
     const dir = path.join(this.getCharacterDir(characterId), 'portraits');
     if (!fss.existsSync(dir)) fss.mkdirSync(dir, { recursive: true });
     return dir;
   }
-
+  
   characterExists(characterId) {
     return fss.existsSync(this.getCharacterCardPath(characterId));
   }
@@ -65,162 +84,66 @@ class CharacterManager {
   async loadCharacter(characterId) {
     const cardPath = this.getCharacterCardPath(characterId);
     try {
-      // 【v2.1.4-fix10-P25-fix5】fs 已是 promises，不要 .promises
       const data = await fs.readFile(cardPath, 'utf8');
       return JSON.parse(data);
-    } catch (e) {
-      // 【v2.1.4-fix10-P25-fix5】不要静默吞错，至少打印日志
-      console.warn(`[CharacterManager] 加载角色失败 ${characterId}: ${e.message}`);
+    } catch {
       return null;
     }
   }
   
   async saveCharacter(characterId, characterCard) {
-    // 【v2.1.4-fix10-P25-fix5】类型保护，防止把 Promise/非对象写入磁盘
-    if (!characterCard || typeof characterCard !== 'object' || Array.isArray(characterCard)) {
-      console.error(`[CharacterManager] 拒绝保存非对象数据到 ${characterId}`);
-      return;
-    }
     characterCard.updatedAt = new Date().toISOString();
     characterCard.version = characterCard.version || '2.0';
     const cardPath = this.getCharacterCardPath(characterId);
     await fs.writeFile(cardPath, JSON.stringify(characterCard, null, 2));
   }
-
-  // v6.6.5-fix: 标准化角色数据，统一提取 outfit 等字段
-  _normalizeCharacterData(characterId, characterData = {}) {
-    const baseIdentity = characterData.baseIdentity || {};
-    const visual = characterData.visual || {};
-    const visualIdentity = characterData.visualIdentity || {};
-
-    const mergedVisualIdentity = {
-      age: visualIdentity.age ?? visual.age ?? characterData.age ?? baseIdentity.age ?? null,
-      gender: visualIdentity.gender ?? visual.gender ?? characterData.gender ?? baseIdentity.gender ?? 'unknown',
-      build: visualIdentity.build ?? visual.build ?? characterData.build ?? '',
-      height: visualIdentity.height ?? visual.height ?? characterData.height ?? '',
-      skinTone: visualIdentity.skinTone ?? visual.skinTone ?? characterData.skinTone ?? '',
-      hair: visualIdentity.hair ?? visual.hair ?? characterData.hair ?? '',
-      eyes: visualIdentity.eyes ?? visual.eyes ?? characterData.eyes ?? '',
-      facialFeatures: visualIdentity.facialFeatures ?? visual.facialFeatures ?? characterData.facialFeatures ?? '',
-      distinguishingMarks: visualIdentity.distinguishingMarks ?? visual.distinguishingMarks ?? characterData.distinguishingMarks ?? '',
-      outfit: visualIdentity.outfit ?? visual.outfit ?? characterData.outfit ?? '',
-      appearance: {
-        ...(visualIdentity.appearance || {})
-      }
-    };
-
-    if (mergedVisualIdentity.outfit && !mergedVisualIdentity.appearance.clothing) {
-      mergedVisualIdentity.appearance.clothing = {
-        promptFragment: mergedVisualIdentity.outfit,
-        consistency: 'strict'
-      };
-    }
-
-    return {
-      ...characterData,
-      id: characterId,
-      name: characterData.name || baseIdentity.name || characterId,
-      baseIdentity: {
-        name: baseIdentity.name || characterData.name || characterId,
-        age: baseIdentity.age ?? characterData.age ?? visual.age ?? visualIdentity.age ?? null,
-        gender: baseIdentity.gender || characterData.gender || visual.gender || visualIdentity.gender || 'unknown',
-        species: baseIdentity.species || characterData.species || characterData.race || 'human',
-        role: baseIdentity.role || characterData.role || characterData.occupation || '',
-        origin: baseIdentity.origin || characterData.origin || 'Earth'
-      },
-      visualIdentity: mergedVisualIdentity
-    };
-  }
-
-  mergeRuntimeCharacterData(characterCard = {}, runtimeData = {}) {
-    const normalizedRuntime = this._normalizeCharacterData(characterCard.id || runtimeData.id || 'unknown', runtimeData);
-
-    const merged = {
-      ...characterCard,
-      ...normalizedRuntime,
-      baseIdentity: {
-        ...(characterCard.baseIdentity || {}),
-        ...(normalizedRuntime.baseIdentity || {})
-      },
-      visualIdentity: {
-        ...(characterCard.visualIdentity || {}),
-        ...(normalizedRuntime.visualIdentity || {}),
-        appearance: {
-          ...((characterCard.visualIdentity || {}).appearance || {}),
-          ...((normalizedRuntime.visualIdentity || {}).appearance || {})
-        }
-      }
-    };
-
-    merged.v2Metadata = {
-      ...(characterCard.v2Metadata || {}),
-      minimalAnchor: this._buildMinimalAnchor(merged),
-      portraitPaths: this._buildPortraitPaths(merged.id, merged)
-    };
-
-    return merged;
-  }
-
+  
   createCharacter(characterId, characterData) {
     const characterDir = this.getCharacterDir(characterId);
     if (!fss.existsSync(characterDir)) {
       fss.mkdirSync(characterDir, { recursive: true });
     }
-
+    
+    // v6.5.62-P1: 生成极简锚点（character字段）
+    const minimalAnchor = this._buildMinimalAnchor(characterData);
+    
+    // v6.5.62-P1: 生成定妆照路径（characterRef字段）
+    const portraitPaths = this._buildPortraitPaths(characterId, characterData);
+    
     const characterCard = {
       ...characterData,
-      id: characterId,
+      id: characterId, // 强制使用传入的ID，覆盖characterData中的id
       createdAt: new Date().toISOString(),
-      version: '2.0'
+      updatedAt: new Date().toISOString(),
+      version: '2.0',
+      generatedAssets: {
+        portraits: portraitPaths, // v6.5.62: 注入定妆照路径
+        referenceImages: []
+      },
+      appearances: [],
+      v2Metadata: {
+        analyzedDimensions: [],
+        lastComplianceCheck: null,
+        promptTemplates: {},
+        minimalAnchor: minimalAnchor, // v6.5.62: 注入极简锚点
+        portraitPaths: portraitPaths // v6.5.62: 注入定妆照路径
+      }
     };
-
-    const cardPath = this.getCharacterCardPath(characterId);
-    fss.writeFileSync(cardPath, JSON.stringify(characterCard, null, 2));
-
+    
+    this.saveCharacter(characterId, characterCard);
     return characterCard;
   }
-
-  updateCharacter(characterId, updates) {
-    const cardPath = this.getCharacterCardPath(characterId);
-    if (!fss.existsSync(cardPath)) {
-      return { error: '角色不存在' };
-    }
-
-    const current = JSON.parse(fss.readFileSync(cardPath, 'utf8'));
-    const updated = { ...current, ...updates, updatedAt: new Date().toISOString() };
-    fss.writeFileSync(cardPath, JSON.stringify(updated, null, 2));
-
-    return updated;
-  }
-
-  deleteCharacter(characterId) {
-    const characterDir = this.getCharacterDir(characterId);
-    if (fss.existsSync(characterDir)) {
-      fss.rmSync(characterDir, { recursive: true, force: true });
-      return { success: true };
-    }
-    return { error: '角色不存在' };
-  }
-
-  listCharacters() {
-    if (!fss.existsSync(CHARACTERS_DIR)) return [];
-    return fss.readdirSync(CHARACTERS_DIR, { withFileTypes: true })
-      .filter(d => d.isDirectory())
-      .map(d => d.name);
-  }
-
+  
   // ====== v2新功能：7维分析 ======
-
+  
   /**
    * 7维角色分析
    * @param {string} characterId - 角色ID
    * @returns {Object} 7维分析报告
    */
-  async analyzeDimensions(characterId) {
-    const character = await this.loadCharacter(characterId);
-    if (!character || typeof character !== 'object' || Array.isArray(character)) {
-      return { error: '角色不存在或数据损坏' };
-    }
+  analyzeDimensions(characterId) {
+    const character = this.loadCharacter(characterId);
+    if (!character) return { error: '角色不存在' };
     
     const report = {
       characterId,
@@ -229,116 +152,123 @@ class CharacterManager {
       dimensions: {},
       overall: {
         completeness: 0,
-        consistency: 0,
-        quality: 0
+        strength: '',
+        weakness: '',
+        suggestions: []
       }
     };
-
-    // D1: 身份维度
-    report.dimensions.identity = this._analyzeIdentity(character);
-    // D2: 外观维度
-    report.dimensions.appearance = this._analyzeAppearance(character);
-    // D3: 性格维度
-    report.dimensions.personality = this._analyzePersonality(character);
-    // D4: 关系维度
-    report.dimensions.relationships = this._analyzeRelationships(character);
-    // D5: 背景维度
-    report.dimensions.background = this._analyzeBackground(character);
-    // D6: 能力维度
-    report.dimensions.abilities = this._analyzeAbilities(character);
-    // D7: 叙事功能维度
-    report.dimensions.narrative = this._analyzeNarrative(character);
-
-    // 综合评分
-    const dimensionScores = Object.values(report.dimensions).map(d => d.score || 0);
-    report.overall.completeness = Math.round(dimensionScores.reduce((a, b) => a + b, 0) / dimensionScores.length);
-    report.overall.consistency = this._checkConsistency(character);
-    report.overall.quality = Math.round((report.overall.completeness + report.overall.consistency) / 2);
-
-    // 保存分析结果
-    if (character && typeof character === 'object' && !Array.isArray(character)) {
-      await this.saveCharacter(characterId, character);
-    }
-    return report;
-  }
-
-  // ====== v2新功能：合规检查 ======
-
-  /**
-   * 检查角色合规性
-   * @param {string} characterId - 角色ID
-   * @returns {Object} 合规报告
-   */
-  async checkCompliance(characterId) {
-    const character = await this.loadCharacter(characterId);
-    if (!character || typeof character !== 'object' || Array.isArray(character)) {
-      return { error: '角色不存在或数据损坏' };
-    }
-
-    const characterPrompt = this.promptBuilder.build(character);
-    const compliance = this.compliance.scan(characterPrompt.prompt);
     
-    const report = {
-      characterId,
-      characterName: character.name,
-      timestamp: new Date().toISOString(),
-      compliance,
-      violations: compliance.violations || [],
-      recommendations: compliance.recommendations || []
-    };
-
-    if (character && typeof character === 'object' && !Array.isArray(character)) {
-      await this.saveCharacter(characterId, character);
-    }
+    // D1: 身份维度
+    report.dimensions.D1_Identity = this._analyzeIdentity(character);
+    
+    // D2: 外观维度
+    report.dimensions.D2_Appearance = this._analyzeAppearance(character);
+    
+    // D3: 性格维度
+    report.dimensions.D3_Personality = this._analyzePersonality(character);
+    
+    // D4: 关系维度
+    report.dimensions.D4_Relationships = this._analyzeRelationships(character);
+    
+    // D5: 背景维度
+    report.dimensions.D5_Backstory = this._analyzeBackstory(character);
+    
+    // D6: 能力维度
+    report.dimensions.D6_Skills = this._analyzeSkills(character);
+    
+    // D7: 叙事功能维度
+    report.dimensions.D7_Narrative = this._analyzeNarrative(character);
+    
+    // 综合评估
+    const scores = Object.values(report.dimensions).map(d => d.score);
+    report.overall.completeness = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+    
+    const strengths = Object.values(report.dimensions).filter(d => d.score >= 80);
+    const weaknesses = Object.values(report.dimensions).filter(d => d.score < 50);
+    
+    report.overall.strength = strengths.length > 0 
+      ? `最强维度：${strengths[0].name}（${strengths[0].score}分）` 
+      : '暂无突出维度';
+    report.overall.weakness = weaknesses.length > 0
+      ? `待完善：${weaknesses[0].name}（${weaknesses[0].score}分）`
+      : '各维度基础完善';
+    
+    // 生成建议
+    report.overall.suggestions = this._generateDimensionSuggestions(report.dimensions);
+    
+    // 更新角色元数据
+    character.v2Metadata = character.v2Metadata || {};
+    character.v2Metadata.analyzedDimensions = Object.keys(report.dimensions);
+    character.v2Metadata.lastDimensionAnalysis = report.timestamp;
+    this.saveCharacter(characterId, character);
+    
     return report;
   }
-
-  // ====== v2新功能：提示词清理 ======
-
+  
+  // ====== v2新功能：合规集成 ======
+  
   /**
-   * 清理角色提示词
-   * @param {string} characterId - 角色ID
-   * @returns {Object} 清理报告
+   * 检查角色合规性（自动+手动）
    */
-  async sanitizeCharacterPrompts(characterId) {
-    const character = await this.loadCharacter(characterId);
-    if (!character || typeof character !== 'object' || Array.isArray(character)) {
-      return { error: '角色不存在或数据损坏' };
-    }
-
+  checkCompliance(characterId) {
+    const character = this.loadCharacter(characterId);
+    if (!character) return { error: '角色不存在' };
+    
+    const report = this.compliance.scanCharacterCard(character);
+    
+    // 更新角色元数据
+    character.v2Metadata = character.v2Metadata || {};
+    character.v2Metadata.lastComplianceCheck = {
+      timestamp: new Date().toISOString(),
+      passed: report.overallPassed,
+      blockingCount: report.blockingViolations?.length || 0,
+      warningCount: report.warningViolations?.length || 0
+    };
+    this.saveCharacter(characterId, character);
+    
+    return report;
+  }
+  
+  /**
+   * 自动清理角色prompt中的违规内容
+   */
+  sanitizeCharacterPrompts(characterId) {
+    const character = this.loadCharacter(characterId);
+    if (!character) return { error: '角色不存在' };
+    
     const changes = [];
     
-    // 清理视觉风格提示词
+    // 清理visualIdentity.style
     if (character.visualIdentity?.style) {
-      const result = this.promptBuilder.sanitizeStyle(character.visualIdentity.style);
+      const result = this.compliance.sanitize(character.visualIdentity.style);
       if (result.changed) {
-        character.visualIdentity.style = result.text;
-        changes.push({ field: 'visualIdentity.style', reason: result.reason });
+        changes.push({ field: 'visualIdentity.style', before: character.visualIdentity.style, after: result.prompt });
+        character.visualIdentity.style = result.prompt;
       }
     }
     
-    // 清理外观描述
+    // 清理appearance各元素
     if (character.visualIdentity?.appearance) {
       for (const [key, data] of Object.entries(character.visualIdentity.appearance)) {
         if (data.promptFragment) {
-          const result = this.promptBuilder.sanitizeFragment(data.promptFragment);
+          const result = this.compliance.sanitize(data.promptFragment);
           if (result.changed) {
-            data.promptFragment = result.text;
-            changes.push({ field: `appearance.${key}`, reason: result.reason });
+            changes.push({ field: `appearance.${key}.promptFragment`, before: data.promptFragment, after: result.prompt });
+            data.promptFragment = result.prompt;
           }
         }
         if (data.description) {
-          const result = this.promptBuilder.sanitizeDescription(data.description);
+          const result = this.compliance.sanitize(data.description);
           if (result.changed) {
-            data.description = result.text;
-            changes.push({ field: `description.${key}`, reason: result.reason });
+            changes.push({ field: `appearance.${key}.description`, before: data.description, after: result.prompt });
+            data.description = result.prompt;
           }
         }
       }
     }
     
     if (changes.length > 0) {
-      await this.saveCharacter(characterId, character);
+      this.saveCharacter(characterId, character);
     }
     
     return {
@@ -348,17 +278,15 @@ class CharacterManager {
       changes
     };
   }
-
+  
   // ====== v2新功能：智能Prompt构建 ======
-
+  
   /**
    * 构建角色渲染Prompt（使用6层结构）
    */
-  async buildRenderPrompt(characterId, options = {}) {
-    const character = await this.loadCharacter(characterId);
-    if (!character || typeof character !== 'object' || Array.isArray(character)) {
-      return { error: '角色不存在或数据损坏' };
-    }
+  buildRenderPrompt(characterId, options = {}) {
+    const character = this.loadCharacter(characterId);
+    if (!character) return { error: '角色不存在' };
     
     // 如果使用年代服装
     if (options.era) {
@@ -395,17 +323,15 @@ class CharacterManager {
     
     return result;
   }
-
+  
   /**
    * 生成定妆照Prompt（v2增强版）
    */
-  async generatePortraitPromptV2(characterId, angle = 'front', options = {}) {
-    const character = await this.loadCharacter(characterId);
-    if (!character || typeof character !== 'object' || Array.isArray(character)) {
-      return null;
-    }
+  generatePortraitPromptV2(characterId, angle = 'front', options = {}) {
+    const character = this.loadCharacter(characterId);
+    if (!character) return null;
     
-    const basePrompt = await this.buildRenderPrompt(characterId, {
+    const basePrompt = this.buildRenderPrompt(characterId, {
       angle,
       sceneType: 'portrait',
       enabledLayers: ['subject', 'clothing', 'accessories', 'expression', 'technical'],
@@ -428,17 +354,15 @@ class CharacterManager {
       }
     };
   }
-
+  
   // ====== v2新功能：年代服装 ======
-
+  
   /**
    * 为角色应用年代服装
    */
-  async applyEraClothing(characterId, eraId, options = {}) {
-    const character = await this.loadCharacter(characterId);
-    if (!character || typeof character !== 'object' || Array.isArray(character)) {
-      return { error: '角色不存在或数据损坏' };
-    }
+  applyEraClothing(characterId, eraId, options = {}) {
+    const character = this.loadCharacter(characterId);
+    if (!character) return { error: '角色不存在' };
     
     const eraResult = this.eraGuide.generateClothingPrompt(
       eraId,
@@ -448,173 +372,438 @@ class CharacterManager {
     
     if (eraResult.error) return eraResult;
     
-    character.visualIdentity = character.visualIdentity || {};
-    character.visualIdentity.appearance = character.visualIdentity.appearance || {};
-    character.visualIdentity.appearance.clothing = {
-      description: eraResult.prompt,
-      consistency: 'strict',
-      promptFragment: eraResult.prompt
+    // 保存年代服装到角色档案
+    character.eraOutfits = character.eraOutfits || {};
+    character.eraOutfits[eraId] = {
+      appliedAt: new Date().toISOString(),
+      prompt: eraResult.prompt,
+      details: eraResult.details,
+      colors: eraResult.colors,
+      materials: eraResult.materials
     };
     
-    await this.saveCharacter(characterId, character);
-    return { success: true, character };
-  }
-
-  // ====== 角色管理与档案 ======
-
-  getCharacterArchive(characterId) {
-    const characterDir = this.getCharacterDir(characterId);
-    if (!fss.existsSync(characterDir)) {
-      return { error: '角色不存在' };
-    }
+    this.saveCharacter(characterId, character);
     
-    const archive = {
+    return {
+      success: true,
       characterId,
-      card: null,
-      portraits: [],
-      generations: [],
-      logs: []
+      eraId,
+      eraName: eraResult.eraName,
+      prompt: eraResult.prompt,
+      appliedAt: character.eraOutfits[eraId].appliedAt
     };
+  }
+  
+  /**
+   * 列出角色可用的年代服装
+   */
+  listEraOutfits(characterId) {
+    const character = this.loadCharacter(characterId);
+    if (!character) return { error: '角色不存在' };
     
-    // 读取角色卡
-    const cardPath = path.join(characterDir, 'character-card.json');
-    if (fss.existsSync(cardPath)) {
-      archive.card = JSON.parse(fss.readFileSync(cardPath, 'utf8'));
+    const outfits = character.eraOutfits || {};
+    return Object.entries(outfits).map(([eraId, data]) => ({
+      eraId,
+      eraName: this.eraGuide.getEra(eraId)?.name || eraId,
+      appliedAt: data.appliedAt,
+      preview: data.prompt.substring(0, 50) + '...'
+    }));
+  }
+  
+  // ====== v1兼容：原有方法 ======
+  
+  generateMandatoryPrompt(characterId, angle = 'threeQuarter') {
+    const result = this.buildRenderPrompt(characterId, { angle, sceneType: 'interaction' });
+    return result.error ? '' : result.prompt;
+  }
+  
+  validatePrompt(characterId, promptText, strictOnly = true) {
+    const character = this.loadCharacter(characterId);
+    if (!character) return { valid: false, error: '角色不存在' };
+    
+    const { appearance } = character.visualIdentity || {};
+    const missing = [];
+    const found = [];
+    
+    if (appearance) {
+      Object.entries(appearance).forEach(([key, data]) => {
+        if (strictOnly && data.consistency !== 'strict') return;
+        
+        const fragment = data.promptFragment || data.description || '';
+        const keywords = fragment.split(/[，、]/).filter(Boolean);
+        const hasKeyword = keywords.some(kw => promptText.includes(kw.trim()));
+        
+        if (!hasKeyword) {
+          missing.push({ key, fragment });
+        } else {
+          found.push(key);
+        }
+      });
     }
     
-    // 读取定妆照
-    const portraitDir = path.join(characterDir, 'portraits');
-    if (fss.existsSync(portraitDir)) {
-      archive.portraits = fss.readdirSync(portraitDir)
-        .filter(f => f.endsWith('.png') || f.endsWith('.jpg'))
-        .map(f => path.join(portraitDir, f));
+    return {
+      valid: missing.length === 0,
+      characterId,
+      characterName: character.name,
+      found,
+      missing,
+      foundCount: found.length,
+      totalCount: Object.keys(appearance || {}).length
+    };
+  }
+  
+  getReferenceImages(characterId, preferredAngles = ['front', 'threeQuarter']) {
+    const character = this.loadCharacter(characterId);
+    if (!character) return [];
+    
+    const portraits = character.generatedAssets?.portraits || [];
+    const workspaceDir = path.resolve(CHARACTERS_DIR, '..');
+    
+    const paths = [];
+    for (const angle of preferredAngles) {
+      const found = portraits.filter(p => p.angle === angle && p.localPath);
+      for (const p of found) {
+        const fullPath = path.join(workspaceDir, p.localPath);
+        if (fss.existsSync(fullPath)) paths.push(fullPath);
+      }
     }
     
-    return archive;
+    return paths;
   }
-
-  // ====== 辅助方法 ======
-
-  _inferGender(character) {
-    return character.visualIdentity?.gender || 'unknown';
+  
+  listCharacters() {
+    if (!fss.existsSync(CHARACTERS_DIR)) return [];
+    
+    return fss.readdirSync(CHARACTERS_DIR)
+      .filter(dir => fss.statSync(path.join(CHARACTERS_DIR, dir)).isDirectory())
+      .map(dir => {
+        const card = this.loadCharacter(dir);
+        return card ? {
+          id: card.id,
+          name: card.name,
+          type: card.type,
+          appearances: card.appearances || [],
+          portraitCount: card.generatedAssets?.portraits?.length || 0,
+          version: card.version,
+          v2Enabled: !!card.v2Metadata
+        } : null;
+      })
+      .filter(Boolean);
   }
-
-  _buildMinimalAnchor(character) {
-    return {
-      name: character.name,
-      coreTraits: (character.visualIdentity?.coreTraits || []).slice(0, 3),
-      outfitSignature: character.visualIdentity?.appearance?.clothing?.promptFragment || '',
-      facialSignature: character.visualIdentity?.facialFeatures || ''
-    };
+  
+  recordAppearance(characterId, storyId) {
+    const character = this.loadCharacter(characterId);
+    if (!character) return;
+    
+    if (!character.appearances.includes(storyId)) {
+      character.appearances.push(storyId);
+      this.saveCharacter(characterId, character);
+    }
   }
-
-  _buildPortraitPaths(characterId, character) {
-    const portraitDir = this.getPortraitDir(characterId);
-    return {
-      front: path.join(portraitDir, 'portrait-front.png'),
-      side: path.join(portraitDir, 'portrait-side.png'),
-      back: path.join(portraitDir, 'portrait-back.png')
-    };
-  }
-
+  
+  // ====== 7维分析内部方法 ======
+  
   _analyzeIdentity(character) {
-    const identity = character.baseIdentity || {};
-    const fields = ['name', 'age', 'gender', 'species', 'role', 'origin'];
-    const present = fields.filter(f => identity[f]).length;
+    const hasName = !!character.name;
+    const hasAge = !!(character.visualIdentity?.age || character.age);
+    const hasOrigin = !!(character.visualIdentity?.origin || character.origin);
+    const hasSpecies = !!(character.visualIdentity?.species || character.species);
+    const hasType = !!character.type;
+    
+    const score = [hasName, hasAge, hasOrigin, hasSpecies, hasType].filter(Boolean).length * 20;
+    
     return {
-      score: Math.round((present / fields.length) * 100),
-      fields: present,
-      total: fields.length,
-      details: identity
+      name: '身份维度',
+      score: Math.min(score, 100),
+      fields: { hasName, hasAge, hasOrigin, hasSpecies, hasType },
+      suggestion: !hasAge ? '建议添加年龄信息' : !hasOrigin ? '建议添加起源地信息' : null
     };
   }
-
+  
   _analyzeAppearance(character) {
-    const visual = character.visualIdentity || {};
-    const fields = ['build', 'height', 'skinTone', 'hair', 'eyes', 'facialFeatures', 'distinguishingMarks'];
-    const present = fields.filter(f => visual[f]).length;
+    const vi = character.visualIdentity || {};
+    const appearance = vi.appearance || {};
+    const angles = vi.angles || {};
+    const hasStyle = !!vi.style;
+    const hasPortraitConfig = !!character.portraitConfig;
+    
+    const featureCount = Object.keys(appearance).length;
+    const angleCount = Object.keys(angles).length;
+    const strictCount = Object.values(appearance).filter(d => d.consistency === 'strict').length;
+    
+    let score = 0;
+    score += Math.min(featureCount * 10, 40); // 最多40分
+    score += Math.min(angleCount * 10, 30); // 最多30分
+    score += hasStyle ? 10 : 0;
+    score += hasPortraitConfig ? 10 : 0;
+    score += strictCount >= 3 ? 10 : (strictCount > 0 ? 5 : 0);
+    
     return {
-      score: Math.round((present / fields.length) * 100),
-      fields: present,
-      total: fields.length,
-      details: visual
+      name: '外观维度',
+      score: Math.min(score, 100),
+      fields: { featureCount, angleCount, hasStyle, hasPortraitConfig, strictCount },
+      suggestion: featureCount < 4 ? '建议补充更多外观特征（建议≥5项）' : angleCount < 2 ? '建议添加多角度描述' : null
     };
   }
-
+  
   _analyzePersonality(character) {
-    const personality = character.personality || {};
-    const fields = ['mbti', 'coreTraits', 'motivation', 'fears', 'growthArc'];
-    const present = fields.filter(f => personality[f]).length;
+    const p = character.personality || {};
+    const hasCore = !!p.core;
+    const hasTraits = Array.isArray(p.traits) && p.traits.length > 0;
+    const hasArchetype = !!p.archetype;
+    const hasMBTI = !!p.MBTI;
+    const hasGrowth = !!p.growthArc;
+    
+    const traitCount = p.traits?.length || 0;
+    
+    let score = 0;
+    score += hasCore ? 25 : 0;
+    score += hasTraits ? Math.min(traitCount * 5, 25) : 0;
+    score += hasArchetype ? 15 : 0;
+    score += hasMBTI ? 10 : 0;
+    score += hasGrowth ? 25 : 0;
+    
     return {
-      score: Math.round((present / fields.length) * 100),
-      fields: present,
-      total: fields.length,
-      details: personality
+      name: '性格维度',
+      score: Math.min(score, 100),
+      fields: { hasCore, hasTraits, traitCount, hasArchetype, hasMBTI, hasGrowth },
+      suggestion: !hasCore ? '建议添加核心性格描述' : !hasGrowth ? '建议添加成长弧线' : null
     };
   }
-
+  
   _analyzeRelationships(character) {
-    const relationships = character.relationships || [];
+    const r = character.relationships || {};
+    const keys = Object.keys(r);
+    const hasRelationships = keys.length > 0;
+    const detailedCount = keys.filter(k => r[k].bond || r[k].status).length;
+    
+    let score = 0;
+    score += hasRelationships ? 30 : 0;
+    score += Math.min(keys.length * 10, 40);
+    score += Math.min(detailedCount * 5, 30);
+    
     return {
-      score: Math.min(100, relationships.length * 20),
-      count: relationships.length,
-      details: relationships
+      name: '关系维度',
+      score: Math.min(score, 100),
+      fields: { hasRelationships, relationshipCount: keys.length, detailedCount },
+      suggestion: !hasRelationships ? '建议添加至少1-2个关键关系' : keys.length < 2 ? '建议丰富人际网络' : null
     };
   }
-
-  _analyzeBackground(character) {
-    const background = character.background || {};
-    const fields = ['originStory', 'triggerEvent', 'centralConflict', 'worldSetting'];
-    const present = fields.filter(f => background[f]).length;
+  
+  _analyzeBackstory(character) {
+    const b = character.backstory || {};
+    const hasOrigin = !!b.origin;
+    const hasTrigger = !!b.trigger;
+    const hasJourney = !!b.journey;
+    const hasConflict = !!b.conflict;
+    const hasGrowth = !!b.growth;
+    
+    const score = [hasOrigin, hasTrigger, hasJourney, hasConflict, hasGrowth].filter(Boolean).length * 20;
+    
     return {
-      score: Math.round((present / fields.length) * 100),
-      fields: present,
-      total: fields.length,
-      details: background
+      name: '背景维度',
+      score: Math.min(score, 100),
+      fields: { hasOrigin, hasTrigger, hasJourney, hasConflict, hasGrowth },
+      suggestion: !hasOrigin ? '建议添加起源背景' : !hasConflict ? '建议添加核心冲突' : null
     };
   }
-
-  _analyzeAbilities(character) {
-    const abilities = character.abilities || [];
+  
+  _analyzeSkills(character) {
+    const s = character.skills || {};
+    const keys = Object.keys(s);
+    const hasSkills = keys.length > 0;
+    const expertCount = keys.filter(k => s[k].level === 'expert').length;
+    const advancedCount = keys.filter(k => s[k].level === 'advanced').length;
+    
+    let score = 0;
+    score += hasSkills ? 20 : 0;
+    score += Math.min(keys.length * 10, 40);
+    score += expertCount * 10;
+    score += advancedCount * 5;
+    
     return {
-      score: Math.min(100, abilities.length * 25),
-      count: abilities.length,
-      details: abilities
+      name: '能力维度',
+      score: Math.min(score, 100),
+      fields: { hasSkills, skillCount: keys.length, expertCount, advancedCount },
+      suggestion: !hasSkills ? '建议添加技能树' : keys.length < 2 ? '建议丰富技能体系（建议≥3项）' : null
     };
   }
-
+  
   _analyzeNarrative(character) {
-    const narrative = character.narrative || {};
-    const fields = ['role', 'function', 'arc', 'transformation'];
-    const present = fields.filter(f => narrative[f]).length;
+    const r = character.roleInStory || {};
+    const hasFunction = !!r.function;
+    const hasArchetypal = !!r.archetypalRole;
+    const hasArc = !!r.characterArc;
+    const hasFirstAppearance = !!character.firstAppearance;
+    const hasUniverses = Array.isArray(character.universes) && character.universes.length > 0;
+    
+    const score = [hasFunction, hasArchetypal, hasArc, hasFirstAppearance, hasUniverses].filter(Boolean).length * 20;
+    
     return {
-      score: Math.round((present / fields.length) * 100),
-      fields: present,
-      total: fields.length,
-      details: narrative
+      name: '叙事功能维度',
+      score: Math.min(score, 100),
+      fields: { hasFunction, hasArchetypal, hasArc, hasFirstAppearance, hasUniverses },
+      suggestion: !hasFunction ? '建议添加角色叙事功能' : !hasArc ? '建议添加角色弧线' : null
     };
   }
+  
+  _generateDimensionSuggestions(dimensions) {
+    const suggestions = [];
+    for (const [key, dim] of Object.entries(dimensions)) {
+      if (dim.suggestion) {
+        suggestions.push(`${dim.name}：${dim.suggestion}`);
+      }
+    }
+    return suggestions;
+  }
+  
+  _inferGender(character) {
+    // 简单推断：根据外观描述中的关键词
+    const text = JSON.stringify(character);
+    if (/女孩|女人|女性| heroine | princess /i.test(text)) return 'female';
+    if (/男孩|男人|男性| hero | prince /i.test(text)) return 'male';
+    return 'female'; // 默认
+  }
 
-  _checkConsistency(character) {
-    let score = 100;
-    const issues = [];
+  // ====== v2.1升级：成长痕迹系统API（山海经系列） ======
+
+  /**
+   * 为当前集创建角色成长轨迹
+   * @param {string} episodeId - 集数ID
+   * @param {Object} initialState - 初始状态
+   * @returns {Object} 轨迹对象
+   */
+  createGrowthTrace(episodeId, initialState = {}) {
+    return this.growthTrace.createTrace(episodeId, {
+      protagonistId: this.config.protagonistId || 'xiaoG',
+      ...initialState
+    });
+  }
+
+  /**
+   * 从故事板自动提取成长转变
+   * @param {string} episodeId - 集数ID
+   * @param {Object} storyboard - 故事板对象
+   */
+  extractGrowthFromStoryboard(episodeId, storyboard) {
+    return this.growthTrace.extractFromStoryboard(episodeId, storyboard);
+  }
+
+  /**
+   * 设置集数最终成长状态
+   * @param {string} episodeId - 集数ID
+   * @param {Object} finalState - 最终状态
+   */
+  setGrowthFinalState(episodeId, finalState) {
+    return this.growthTrace.setFinalState(episodeId, finalState);
+  }
+
+  /**
+   * 从故事板自动推断最终状态
+   * @param {string} episodeId - 集数ID
+   * @param {Object} storyboard - 故事板对象
+   */
+  inferGrowthFinalState(episodeId, storyboard) {
+    return this.growthTrace.inferFinalState(episodeId, storyboard);
+  }
+
+  /**
+   * 设置跨集连续性
+   * @param {string} currentEpisode - 当前集
+   * @param {string} nextEpisode - 下集
+   */
+  setGrowthContinuity(currentEpisode, nextEpisode) {
+    return this.growthTrace.setContinuity(currentEpisode, nextEpisode);
+  }
+
+  /**
+   * 验证跨集连续性
+   * @param {string} prevEpisode - 上集
+   * @param {string} currentEpisode - 当前集
+   */
+  validateGrowthContinuity(prevEpisode, currentEpisode) {
+    return this.growthTrace.validateContinuity(prevEpisode, currentEpisode);
+  }
+
+  /**
+   * 生成角色成长弧光报告
+   * @param {string} episodeId - 集数ID
+   */
+  generateGrowthArcReport(episodeId) {
+    return this.growthTrace.generateArcReport(episodeId);
+  }
+
+  /**
+   * 获取角色跨集成长档案
+   * @param {string} characterId - 角色ID（默认小G）
+   */
+  getCharacterGrowthProfile(characterId) {
+    return this.growthTrace.getCharacterGrowthProfile(characterId || this.config.protagonistId || 'xiaoG');
+  }
+
+  /**
+   * 保存成长轨迹到文件
+   * @param {string} episodeId - 集数ID
+   * @param {string} filepath - 文件路径
+   */
+  saveGrowthTrace(episodeId, filepath) {
+    return this.growthTrace.saveTrace(episodeId, filepath);
+  }
+
+  /**
+   * 加载成长轨迹
+   * @param {string} filepath - 文件路径
+   */
+  loadGrowthTrace(filepath) {
+    return this.growthTrace.loadTrace(filepath);
+  }
+
+  /**
+   * v6.5.62-P1: 构建极简锚点（character字段）
+   * 格式：角色名: 种族, 3-5核心视觉关键词
+   */
+  _buildMinimalAnchor(characterData) {
+    const charName = characterData.name || characterData.id || '未知角色';
+    const race = characterData.race || characterData.species || 'Nirath异兽';
     
-    if (character.baseIdentity?.age && character.visualIdentity?.age) {
-      if (character.baseIdentity.age !== character.visualIdentity.age) {
-        score -= 10;
-        issues.push('基础年龄与视觉年龄不一致');
-      }
+    // 提取3-5个核心视觉关键词
+    const keywords = [];
+    if (characterData.signatureFeatures) {
+      keywords.push(...characterData.signatureFeatures.slice(0, 3));
+    }
+    if (characterData.coreVisualTraits) {
+      keywords.push(...characterData.coreVisualTraits.slice(0, 2));
+    }
+    if (characterData.appearance) {
+      const appearanceKeywords = characterData.appearance.split(/[,，]/)
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+      keywords.push(...appearanceKeywords.slice(0, 2));
     }
     
-    if (character.baseIdentity?.gender && character.visualIdentity?.gender) {
-      if (character.baseIdentity.gender !== character.visualIdentity.gender) {
-        score -= 10;
-        issues.push('基础性别与视觉性别不一致');
-      }
+    // 去重并限制3-5个
+    const uniqueKeywords = [...new Set(keywords)].slice(0, 5);
+    if (uniqueKeywords.length < 3) {
+      uniqueKeywords.push('Nirath原生特征', '双恒星光照反射');
     }
     
-    return Math.max(0, score);
+    return `${charName}: ${race}, ${uniqueKeywords.join(', ')}`;
+  }
+  
+  /**
+   * v6.5.62-P1: 构建定妆照路径（characterRef字段）
+   * 格式：image://bestiary/角色名-角度.png
+   */
+  _buildPortraitPaths(characterId, characterData) {
+    const paths = [];
+    const angles = ['front', 'threeQuarter', 'closeup', 'side', 'back', 'action', 'detail'];
+    
+    for (const angle of angles) {
+      paths.push(`image://bestiary/${characterId}-${angle}.png`);
+    }
+    
+    return paths.slice(0, 9); // 限制最多9张
   }
 }
 
-module.exports = { CharacterManager };
+module.exports = { CharacterManagerV2 };

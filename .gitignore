@@ -179,3 +179,15 @@ products/
 projects/
 .openclaw/config/volcengine.json
 preproduction/
+
+# 过程数据（不应提交到 git）
+systems-backup-*/
+hyperreality-system/*.log
+hyperreality-system/test-*.js
+hyperreality-system/debug_*.json
+hyperreality-system/analyze-*.js
+hyperreality-system/debug_llm/
+hyperreality-system/checkpoints/*.json
+hyperreality-system/output/preproduction/*
+hyperreality-system/output/confirmations/*
+hyperreality-system/_deprecated_scripts/

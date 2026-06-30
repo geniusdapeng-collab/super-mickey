@@ -90,18 +90,11 @@ class DurationCalculator {
       const narration = shot.narration || shot.line || '';
       const calc = this.calculate(narration, shot.type);
       
-      // 【v2.1.4-fix10-P25-fix8-P1I】不覆盖已有时长，只在缺失或偏差大时告警
-      const existingDuration = shot.duration;
-      if (!existingDuration || existingDuration <= 0) {
-        shot.duration = calc.duration; // 缺失才赋值
-      } else if (Math.abs(existingDuration - calc.duration) > calc.duration * 0.5) {
-        console.warn(`[DurationCalc] ${shot.id} 规划时长 ${existingDuration}s 与计算值 ${calc.duration}s 偏差大，保留规划值`);
-      }
-      shot._suggestedDuration = calc.duration;
-      shot._durationReason = calc.reason || (narration ? 'narration时长' : '默认最小时长');
+      // 更新故事板
+      shot.duration = calc.duration;
       shot._durationCalc = calc; // 内部计算详情
       
-      totalDuration += shot.duration;
+      totalDuration += calc.duration;
       if (!calc.isValid) overflowCount++;
       
       results.push({
@@ -129,17 +122,12 @@ class DurationCalculator {
   }
 
   /**
-   * 统计字符数（中文+英文）
-   * 【v2.1.4-fix10-P25-fix8-P2D】同时计算中文字符和英文单词
+   * 统计中文字符数（不含标点）
    */
   countChineseChars(text) {
     if (!text) return 0;
     const chineseMatches = text.match(/[\u4e00-\u9fff]/g);
-    const chineseCount = chineseMatches ? chineseMatches.length : 0;
-    // 英文单词数（排除纯中文文本中的英文标点）
-    const englishWords = text.match(/[a-zA-Z]+/g);
-    const englishCount = englishWords ? englishWords.length : 0;
-    return chineseCount + englishCount;
+    return chineseMatches ? chineseMatches.length : 0;
   }
 
   /**

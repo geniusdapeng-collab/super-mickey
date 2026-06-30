@@ -3,7 +3,7 @@
  *
  * v6.0-patch39升级(系统级,所有集数受益):
  * 1. 神兽出场Agent:独立设计每只异兽的震撼出场,通用化(非硬编码)
- * 2. AgentX活泼动作系统:从"嘴动"升级为"全身自然动作",8岁男孩真实感
+ * 2. 小G活泼动作系统:从"嘴动"升级为"全身自然动作",8岁男孩真实感
  * 3. 标题字体Agent化:去硬编码20-25%,Title Agent动态计算字体规格
  * 4. Title想象力保留:空间充裕时自动展开完整创意描述
  *
@@ -12,8 +12,8 @@
  * 2. Title Presentation Agent输出修复:使用完整description(含情绪节奏+镜头语言+物理法则交互+惊喜元素),替代之前被截断的shortDescription
  * 3. 出品人字体放大:8-10% → 20-25%高度,视觉权重=标题80%
  * 4. 异兽出场震撼感增强:添加地裂/磁场爆发/孢子风暴等震撼元素
- * 5. 角色数量约束:明确约束"仅一个AgentX和一个饕餮",防止AI生成重复角色
- * 6. 口播动作注入:强制AgentX嘴部微张说话,自然动作,不是旁白
+ * 5. 角色数量约束:明确约束"仅一个小G和一个饕餮",防止AI生成重复角色
+ * 6. 口播动作注入:强制小G嘴部微张说话,自然动作,不是旁白
  *
  * v2.2-fix 升级(v6.0-patch37发布):
  * 1. 神兽人声签名注入:开场第一帧同步出现神兽声音作为钩子
@@ -67,7 +67,7 @@ const { BeastOpeningLineAgent } = require('./beast-opening-line-agent');
 // ===== v6.0-patch38新增:全局负面提示词注入器 =====
 const { globalNegativePromptInjector } = require('./global-negative-prompts');
 
-// ===== v6.0-patch39新增:神兽出场Agent + AgentX活泼动作系统 =====
+// ===== v6.0-patch39新增:神兽出场Agent + 小G活泼动作系统 =====
 const { beastEntranceAgent } = require('./beast-entrance-agent');
 const { xiaoGLivelyActionSystem } = require('./xiaog-lively-action-system');
 
@@ -336,7 +336,7 @@ function generateCharacterDescription(characterId, role = 'protagonist') {
   if (role === 'protagonist') {
     narrativeRole = '主角,故事的观察者与改变者';
   } else if (role === 'featuredBeast') {
-    narrativeRole = '本集异兽主角,与AgentX产生关键互动';
+    narrativeRole = '本集异兽主角,与小G产生关键互动';
   }
 
   return {
@@ -430,13 +430,7 @@ function generateThreeActOpening(config) {
     ].filter(Boolean),
     cameraPlan: fullPrompt.cameraPlan,
     complianceCheck: fullPrompt.complianceCheck,
-    truncationApplied: fullPrompt.truncationApplied,
-    // 【v2.1.4-fix10-P25-fix8-P0B】透传 combineActs 产出的全部字段
-    title: fullPrompt.title || null, // 主标题/副标题对象
-    referenceImages: fullPrompt.referenceImages || [], // 定妆照引用
-    content: fullPrompt.content || [], // 三幕内容数组
-    postProduction: fullPrompt.postProduction || {}, // 后期包装指令
-    isOpening: fullPrompt.isOpening !== false // 片头标记
+    truncationApplied: fullPrompt.truncationApplied
   };
 }
 
@@ -540,7 +534,7 @@ function generateAct2_Development({ startTime, duration, protagonist, beast, epi
   // 动态生成异兽描述:从角色档案提取,而非硬编码九尾狐特征
   const beastDesc = beast?.description?.substring(0, 40) || '';
   const beastName = beast?.name || '异兽';
-  const protagonistName = protagonist?.name || 'AgentX';
+  const protagonistName = protagonist?.name || '小G';
 
   // v6.0-patch39: 使用神兽出场Agent(通用化,非硬编码)
   const entrancePlan = beastEntranceAgent.generatePromptString({
@@ -553,7 +547,7 @@ function generateAct2_Development({ startTime, duration, protagonist, beast, epi
   });
   const beastEntrance = entrancePlan.narrative;
 
-  // v6.0-patch39: 使用AgentX活泼动作系统(全身动作,非仅嘴动)
+  // v6.0-patch39: 使用小G活泼动作系统(全身动作,非仅嘴动)
   const xiaoGAction = xiaoGLivelyActionSystem.generate({
     phase: 'development',
     mood,
@@ -704,11 +698,11 @@ function generateAct3_Climax({ startTime, duration, episodeTitle, protagonist, b
   // v6.0-patch39: 注入待机感--定格不是"摆姿势",而是"正在经历的瞬间"
   // 公式:人物 + 正在做的小事 + 下意识反应 + 情绪落点
   const beastName = beast?.name || '异兽';
-  const protagonistName = protagonist?.name || 'AgentX';
+  const protagonistName = protagonist?.name || '小G';
   const beastPose = beast?.visualPrompt || `${beastName}姿态威严`;
   const finalPose = `${protagonistName}与${beastName}同框,${protagonistName}侧脸仰望,${beastPose}`;
 
-  // 待机感增强:定格时刻的AgentX"正在做的小事"(精简版,不占Prompt空间时省略)
+  // 待机感增强:定格时刻的小G"正在做的小事"(精简版,不占Prompt空间时省略)
   const idleAction = `${protagonistName}手抓背包带,手指绞了三圈又松开。一只孢子落在他肩头,他眼角余光捕捉到,头微微侧了一下。`;
 
   const cameraPlan = [
@@ -811,7 +805,7 @@ function combineActs(act1, act2, act3, config) {
   // 风格锁死(精简版)
   const styleLock = '【ASTRALIS风格锁死】Nirath原生视觉语言,禁止:地球标准光照/卡通动漫/二次元/蓝天绿草/无来源发光/无介质光线/模板化空泛描述/暗黑压抑。必须:双恒星真实明亮感+磁场可见光独特性+低重力飘浮感+生物荧光温度+量子相干性神秘感。这是Nirath不是地球。';
 
-  // v6.0-patch39: 使用AgentX活泼动作系统(全身动作,非仅嘴动)
+  // v6.0-patch39: 使用小G活泼动作系统(全身动作,非仅嘴动)
   const xiaoGActionPlan = xiaoGLivelyActionSystem.generate({
     phase: 'development',
     mood: config.mood || 'mysterious',
@@ -822,7 +816,7 @@ function combineActs(act1, act2, act3, config) {
   const mouthAction = `【口播动作】${(xiaoGActionPlan.shortDescription || xiaoGActionPlan.mainAction || '嘴部微张说话').substring(0, 40)}`;
 
   // v6.0-patch38: 角色数量约束(防止AI生成多个相同角色)
-  const characterCountConstraint = '【角色约束】画面中仅出现一个AgentX和一个饕餮,禁止出现重复角色,禁止画面中出现多个AgentX或多个饕餮。每个角色只能出现一次。';
+  const characterCountConstraint = '【角色约束】画面中仅出现一个小G和一个饕餮,禁止出现重复角色,禁止画面中出现多个小G或多个饕餮。每个角色只能出现一次。';
 
   // v6.0-patch38: 全局负面提示词注入(P0级别核心约束 + 水晶禁用)
   const negativePromptResult = globalNegativePromptInjector.generate({
@@ -871,7 +865,7 @@ function combineActs(act1, act2, act3, config) {
         character: charId === 'tao-tie' ? 'taotie' : charId,
         angle: 'front'
       });
-      const charName = charId === 'xiaoG' ? 'AgentX' : (charId === 'tao-tie' || charId === 'taotie' ? '饕餮' : charId);
+      const charName = charId === 'xiaoG' ? '小G' : (charId === 'tao-tie' || charId === 'taotie' ? '饕餮' : charId);
       const coreDesc = charCoreDesc[charId] || ['核心特征'];
       const coreDescText = coreDesc.slice(0, 3).join('，');
       // v6.5.10-fix: 严格遵循 Seedance 官方格式 @ImageN（纯数字，无方括号字母）
@@ -974,7 +968,7 @@ function combineActs(act1, act2, act3, config) {
     
     // Stage 4: 压缩角色约束
     if (fullPrompt.length > MAX_LENGTH) {
-      const minimalCharacterCount = '【角色约束】仅一个AgentX和一个饕餮,禁止重复角色。';
+      const minimalCharacterCount = '【角色约束】仅一个小G和一个饕餮,禁止重复角色。';
       fullPrompt = fullPrompt.replace(characterCountConstraint, minimalCharacterCount);
       truncationApplied = true;
     }
@@ -1097,18 +1091,6 @@ function extractCameraKeywords(cameraPlans) {
 
 // ===== 主入口 =====
 function generateOpeningV3(config) {
-  // v6.5.64-fix: Generic模式检测，非Nirath视频生成干净专业片头
-  const isNirath = config.seriesTitle?.includes('山海经') ||
-                   config.episodeTitle?.includes('山海经') ||
-                   config.featuredBeastId ||
-                   config.protagonistId === 'xiaoG' ||
-                   (config.mood && ['mysterious', 'epic', 'tender', 'tense'].includes(config.mood));
-
-  if (!isNirath) {
-    console.log('🎬 [opening-system-v3] Generic模式检测：生成非Nirath片头');
-    return generateGenericOpening(config);
-  }
-
   return generateThreeActOpening(config);
 }
 
@@ -1165,150 +1147,6 @@ function extractHookFromSummary(summary) {
   return shortSummary.substring(0, 50) + '...';
 }
 
-// ===== v6.5.64-fix2: Generic片头生成器（非Nirath视频专用）=====
-// 优化：主标题/副标题提炼 + 好莱坞/皮克斯风格出场动效
-function generateGenericOpening(config) {
-  const {
-    episodeTitle = '未命名视频',
-    seriesTitle = '',
-    duration = 9,
-    mood = 'professional',
-    characters = {},
-    portraits = {}
-  } = config;
-
-  // 提取主讲人/角色
-  const charIds = Object.keys(characters);
-  const presenterId = charIds.length > 0 ? charIds[0] : 'presenter';
-  const presenter = characters[presenterId] || { name: '主讲人' };
-  const presenterName = presenter.name || presenterId;
-
-  // v6.5.64-fix2: 智能提炼主标题和副标题
-  const { mainTitle, subTitle } = extractTitles(episodeTitle);
-
-  // 三幕结构：钩子→展开→定格
-  const act1End = duration * 0.25;
-  const act2End = duration * 0.75;
-  const act3End = duration;
-
-  // v6.5.64-fix2: 好莱坞/皮克斯风格出场动效
-  const hollywoodOpeningFX = `
-【出场动效-好莱坞级】
-标题以3D金属质感字母从画面深处缓缓推近，每个字母带有微妙的光泽反射和边缘光晕。
-字体设计：现代无衬线粗体，字母表面有细腻磨砂金属质感，边缘有0.5px的暖金色描边。
-动画时序：
-- 0.3秒内，主标题首字母从虚焦到实焦，伴随轻微镜头景深变化（bokeh光斑散开）
-- 随后字母依次从左到右以0.08秒间隔逐个清晰化，像钢琴键般有节奏感
-- 副标题在主标题完全展现后0.5秒，以淡入+轻微上滑（translateY: 15px→0）的方式优雅出现
-- 整体动画带有电影级运动模糊（motion blur），符合24fps电影质感
-- 背景有极微弱的镜头呼吸感（subtle breathing），模拟手持摄影机的人文温度
-参考风格：皮克斯电影开场（Pixar lamp跳上字母的灵动）+ 漫威电影标题（金属质感+纵深推进）`;
-
-  const act1 = {
-    phase: '钩子',
-    timeRange: `0-${act1End.toFixed(1)}s`,
-    content: `【0-${act1End.toFixed(1)}s 钩子】超写实纪录片风格，画面从柔和渐变中亮起，展现明亮整洁的健康科普演播室或医疗教育环境，柔和自然光从侧方洒入，画面干净真实，专业医疗质感。`,
-    cameraPlan: [{ time: `0-${act1End.toFixed(1)}s`, movement: 'fade_in from soft gradient to bright studio' }]
-  };
-
-  const act2 = {
-    phase: '展开',
-    timeRange: `${act1End.toFixed(1)}-${act2End.toFixed(1)}s`,
-    content: `【${act1End.toFixed(1)}-${act2End.toFixed(1)}s 展开】主讲人${presenterName}身穿专业医护工作服，位于画面中央偏左位置，姿态端正自然，面向镜头。画面采用中近景构图，背景为干净明亮的医疗科普环境，可见健康宣传海报或人体示意图，柔和专业布光，肤色真实细腻。`,
-    cameraPlan: [{ time: `${act1End.toFixed(1)}-${act2End.toFixed(1)}s`, movement: 'slow_push_in to medium close-up' }]
-  };
-
-  const act3 = {
-    phase: '定格',
-    timeRange: `${act2End.toFixed(1)}-${act3End.toFixed(1)}s`,
-    content: `【${act2End.toFixed(1)}-${act3End.toFixed(1)}s 定格】画面定格，主讲人微笑自然，双手自然交叠或轻做手势。主标题【${mainTitle}】${subTitle ? `副标题【${subTitle}】` : ''}浮现。整体呈现权威、可信、温暖的医学科普开场质感。`,
-    cameraPlan: [{ time: `${act2End.toFixed(1)}-${act3End.toFixed(1)}s`, movement: 'hold on title card with cinematic depth' }]
-  };
-
-  const fullPrompt = `16:9宽屏电影级镜头。【渲染】16:9 cinematic, no text, no subtitle, no caption, no watermark, 24fps cinematic, hyperrealistic, ultra-detailed, high dynamic range, film grain, 35mm texture, cinematic film | 【空间】明亮整洁的健康科普演播室/医疗教育环境，柔和自然光，干净真实 | 【视觉】${presenterName}，身穿专业医护工作服，亲切温和，专业可信，面向镜头，自然微笑 | 【动态】${act1.content} ${act2.content} ${act3.content} | 【出场动效】${hollywoodOpeningFX} | 【风格】color palette: natural earth tones + daylight highlights + medical white accents, professional documentary aesthetic | 【负面约束】blurry, low resolution, cartoon, anime, 3D render, CGI, plastic look, overexposed, crushed blacks, distorted face, extra fingers, waxy skin | 【明亮约束】自然光或柔和室内照明，画面真实干净，禁止暗黑/灰暗 | 【角色约束】画面中仅出现${presenterName}，禁止重复角色`;
-
-  return {
-    duration,
-    acts: { act1, act2, act3 },
-    prompt: fullPrompt,
-    promptLength: fullPrompt.length,
-    characters: { protagonist: presenter, beast: null },
-    portraits,
-    portraitPaths: [],
-    cameraPlan: [act1.cameraPlan, act2.cameraPlan, act3.cameraPlan],
-    title: { main: mainTitle, sub: subTitle }, // v6.5.64-fix2: 返回提炼后的标题
-    complianceCheck: { allChecksPass: true },
-    truncationApplied: false
-  };
-}
-
-// ===== v6.5.64-fix2: 智能标题提炼器 =====
-function extractTitles(episodeTitle) {
-  if (!episodeTitle || episodeTitle.trim().length === 0) {
-    return { mainTitle: '未命名视频', subTitle: '' };
-  }
-
-  // 清理标题
-  let cleanTitle = episodeTitle.trim();
-  
-  // 去除常见前缀（如项目名）
-  cleanTitle = cleanTitle.replace(/^health-edu-ep\d+-/i, '');
-  cleanTitle = cleanTitle.replace(/^ep\d+-/i, '');
-  cleanTitle = cleanTitle.replace(/^v\d+\./i, '');
-  
-  // 定义核心关键词映射（健康科普领域）
-  const keywordMap = {
-    '横纹肌溶解': { main: '横纹肌溶解', sub: '症状与检查' },
-    '高血压': { main: '高血压', sub: '预防与控制' },
-    '糖尿病': { main: '糖尿病', sub: '认识与管理' },
-    '心梗': { main: '心肌梗死', sub: '急救与预防' }
-  };
-  
-  // 尝试关键词匹配
-  for (const [keyword, titles] of Object.entries(keywordMap)) {
-    if (cleanTitle.includes(keyword)) {
-      return { mainTitle: titles.main, subTitle: titles.sub };
-    }
-  }
-  
-  // 尝试用常见分隔符拆分主标题和副标题
-  const separators = ['——', '--', ' - ', '：', ':', ' | ', '·'];
-  
-  for (const sep of separators) {
-    const idx = cleanTitle.indexOf(sep);
-    if (idx > 0 && idx < cleanTitle.length - 1) {
-      let main = cleanTitle.substring(0, idx).trim();
-      let sub = cleanTitle.substring(idx + sep.length).trim();
-      
-      // 主标题不超过8字，副标题不超过12字
-      if (main.length > 8) main = main.substring(0, 8);
-      if (sub.length > 12) sub = sub.substring(0, 12);
-      
-      return { mainTitle: main, subTitle: sub };
-    }
-  }
-  
-  // 无分隔符：智能提取前6-8字作为主标题
-  if (cleanTitle.length > 10) {
-    // 找前8字内最后一个完整词语
-    let splitIdx = Math.min(8, cleanTitle.length);
-    const punctuation = ['，', ',', ' ', '、', '的', '与', '及'];
-    for (let i = 8; i >= 4; i--) {
-      if (i < cleanTitle.length && punctuation.includes(cleanTitle[i])) {
-        splitIdx = i;
-        break;
-      }
-    }
-    return {
-      mainTitle: cleanTitle.substring(0, splitIdx).trim(),
-      subTitle: cleanTitle.substring(splitIdx + 1).substring(0, 12).trim()
-    };
-  }
-  
-  // 短标题：全部作为主标题
-  return { mainTitle: cleanTitle, subTitle: '' };
-}
-
 module.exports = {
   generateOpeningV3,
   preProductionCheck,
@@ -1325,7 +1163,7 @@ if (require.main === module) {
     {
       episodeTitle: '九尾狐·迷局',
       episodeTheme: 'mysterious',
-      episodeSummary: 'AgentX初到青丘群岛,被九尾狐幻术迷惑,九尾狐测试AgentX分辨力,两者建立信任签订真相契约。',
+      episodeSummary: '小G初到青丘群岛,被九尾狐幻术迷惑,九尾狐测试小G分辨力,两者建立信任签订真相契约。',
       protagonistId: 'xiaoG',
       featuredBeastId: 'jiu-wei-hu',
       duration: 9,

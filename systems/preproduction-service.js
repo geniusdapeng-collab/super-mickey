@@ -1,7 +1,7 @@
 'use strict';
 
 const path = require('path');
-const { NirathMasterPipeline } = require('../systems/nirath-master-pipeline.js');
+const { NirathMasterPipeline } = require('../zhuoyue-system/core/nirath-master-pipeline.js');
 const { StatusReporter } = require('../systems/status-reporter.js');
 const { cleanOutputFiles } = require('./output-cleaner');
 const { writeJsonReport, writeMarkdownReport } = require('./report-writer');
@@ -28,23 +28,15 @@ async function runPreproduction(input, options = {}) {
   });
   reporter.init();
 
-  // 【v2.1.4-fix10-P25-fix8-P2B】用 process.once 防止监听器累积，且提供卸载方法
-  const sigtermHandler = () => {
+  process.on('SIGTERM', () => {
     reporter.killed('SIGTERM', reporter.currentStage);
     process.exit(143);
-  };
-  const sigintHandler = () => {
+  });
+
+  process.on('SIGINT', () => {
     reporter.killed('SIGINT', reporter.currentStage);
     process.exit(130);
-  };
-  process.once('SIGTERM', sigtermHandler);
-  process.once('SIGINT', sigintHandler);
-  
-  // 提供卸载方法供库化复用
-  const cleanupListeners = () => {
-    process.removeListener('SIGTERM', sigtermHandler);
-    process.removeListener('SIGINT', sigintHandler);
-  };
+  });
 
   const removed = cleanOutputFiles(outputDir, { keyword: outputKeyword });
   reporter.message(`🧹 清理旧输出 ${removed.length} 个文件`, true);

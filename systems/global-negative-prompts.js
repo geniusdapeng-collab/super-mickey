@@ -78,15 +78,19 @@ class GlobalNegativePromptInjector {
         ]
       },
 
-      // L1.4: 画面文字 — v6.6.10-fix2: 全面禁止文字（精简版，覆盖不变）
+      // L1.4: 画面文字
       textAndUI: {
         priority: 'L1',
-        description: '画面文字全面禁止（除片头主标题/副标题外）',
+        description: '画面文字禁忌',
         constraints: [
-          // 核心铁律（1条覆盖全部场景）
-          '禁止画面内出现任何文字（片头主副标题除外），含墙面/物品/文件/屏幕/服饰上的中英文、字母、数字、标点、商标、标签、招牌、路牌等一切可读内容',
-          // 兜底强化
-          '禁止一切印刷体、手写体、电子屏文字、发光字、字幕、水印'
+          '禁止小字清晰可辨、印刷工整、字迹清晰',
+          '禁止详细文字说明、大量文字、文字密集',
+          '禁止画面中出现具体可读的文字内容（标题除外）',
+          // v6.6.8-patch4-fix: 科普视频全局文字禁令
+          '禁止任何文字、字母、数字、符号出现在画面任何位置',
+          '禁止屏幕、海报、纸张、标牌、书籍、文件上出现文字',
+          '禁止信息图表中出现可读文字，仅允许纯图形图示',
+          '禁止标签、铭牌、标语、指示牌上的文字内容'
         ]
       }
     };
@@ -245,33 +249,9 @@ class GlobalNegativePromptInjector {
     }
 
     if (negativePrompt.length > maxLength) {
-      // 【v2.1.4-fix10-P25-fix8-P0C】只保留L1中的铁律约束（文字禁令等），不简单的slice(0,3)
-      const ironRules = [
-        ...this.l1Constraints.textAndUI.constraints, // 文字铁律永远保留
-        ...this.l1Constraints.characterConsistency.constraints // 角色一致性也保留
-      ];
-      const materialRules = this.l1Constraints.materialAndStyle.constraints;
-      const lightingRules = this.l1Constraints.lightingAndAtmosphere.constraints;
-      
-      // 先加铁律
-      let finalConstraints = [...ironRules];
-      let currentLen = finalConstraints.join('；').length + 6; // 6 for "【负面约束】"
-      
-      // 再加材质约束（有空间时）
-      for (const c of materialRules) {
-        if (currentLen + c.length + 1 > maxLength) break;
-        finalConstraints.push(c);
-        currentLen += c.length + 1;
-      }
-      
-      // 再加光照约束（有空间时）
-      for (const c of lightingRules) {
-        if (currentLen + c.length + 1 > maxLength) break;
-        finalConstraints.push(c);
-        currentLen += c.length + 1;
-      }
-      
-      negativePrompt = '【负面约束】' + finalConstraints.join('；');
+      // 只保留L1中的核心约束（角色一致性前3条）
+      const coreConstraints = this.l1Constraints.characterConsistency.constraints.slice(0, 3);
+      negativePrompt = '【负面约束】' + coreConstraints.join('；');
     }
 
     return negativePrompt;
@@ -379,12 +359,10 @@ class GlobalNegativePromptInjector {
         'no cartoon', 'no anime', 'no illustration', 'no 3D render look', 'no CGI appearance',
         'no plastic look', 'no artificial', 'no synthetic', 'no digital art', 'no painting'
       ] : [],
-      // L3: 结构排除层 — v6.6.10-fix2: 强化文字禁止（精简版）
+      // L3: 结构排除层
       structureExclusion: [
         'no distorted perspective', 'no impossible geometry', 'no floating objects',
-        'no inconsistent scale', 'no duplicate elements', 'no watermark', 'no logo',
-        // 文字全面禁止（1条覆盖全部）
-        'no text anywhere, no letters words numbers labels logos signs trademarks, no readable content on walls objects documents screens clothing packaging'
+        'no inconsistent scale', 'no duplicate elements', 'no watermark', 'no text', 'no logo'
       ],
       // L4: 光影排除层
       lightingExclusion: [
@@ -440,70 +418,11 @@ class GlobalNegativePromptInjector {
     }
 
     if (result.length > maxLength) {
-      // 极端情况：只保留最核心的（含强化文字禁止）
-      result = 'no blurry, no cartoon, no deformed hands, no extra fingers, no watermark, no text, no letters, no words, no labels, no readable text';
+      // 极端情况：只保留最核心的
+      result = 'no blurry, no cartoon, no deformed hands, no extra fingers, no watermark, no text';
     }
 
     return `【负面约束】${result}`;
-  }
-
-  /**
-   * v6.6.10-fix: 片头镜头专用负面提示词
-   * 允许主标题和副标题，禁止其他一切文字
-   * @param {Object} options
-   * @param {number} options.maxLength - 最大长度
-   * @returns {string}
-   */
-  generateForOpeningShot(options = {}) {
-    const { maxLength = 300 } = options;
-
-    // 片头镜头：允许主标题/副标题，其他位置全面禁止文字（精简版）
-    const constraints = [
-      '画面中仅允许主标题和副标题，其他位置禁止任何文字',
-      '禁止墙面/桌面/手持物/物品/屏幕/服饰上出现中英文、字母、数字、商标、标签、招牌等一切可读内容',
-      'no text except main title and subtitle, no letters words numbers labels logos signs trademarks anywhere else'
-    ];
-
-    let result = '【负面约束】' + constraints.join('；');
-
-    if (result.length > maxLength) {
-      result = '【负面约束】仅允许主副标题；其他位置禁止一切文字（含中英文数字商标标签招牌等）；no text except title';
-    }
-
-    return result;
-  }
-
-  /**
-   * v6.6.10-fix: 内容镜头专用负面提示词（全面禁止文字）
-   * 适用于所有非片头镜头
-   * @param {Object} options
-   * @param {number} options.maxLength - 最大长度
-   * @returns {string}
-   */
-  generateForContentShot(options = {}) {
-    const { maxLength = 350 } = options;
-
-    // 内容镜头：全面禁止文字（精简版，2条覆盖全部）
-    const constraints = [
-      '禁止画面内出现任何文字，含墙面/物品/文件/屏幕/服饰上的中英文、字母、数字、标点、商标、标签、招牌、路牌等一切可读内容',
-      '禁止一切印刷体、手写体、电子屏文字、发光字、字幕、水印',
-      'no text anywhere, no letters words numbers labels logos signs trademarks, no readable content on walls objects documents screens clothing packaging'
-    ];
-
-    // 叠加核心角色/材质/光照约束（精简版）
-    const coreConstraints = [
-      '禁止红眼蓝瞳金瞳绿眼紫眼荧光眼',
-      '禁止水晶/强烈金属光泽/卡通动漫风格',
-      '禁止纯黑死黑/暗黑压抑/哥特阴郁/灰暗沉闷'
-    ];
-
-    let result = '【负面约束】' + [...constraints, ...coreConstraints].join('；');
-
-    if (result.length > maxLength) {
-      result = '【负面约束】禁止画面内一切文字（含中英文数字商标标签等）；no text anywhere；禁止红眼/水晶/金属光泽/卡通/暗黑';
-    }
-
-    return result;
   }
 
   /**
@@ -522,9 +441,30 @@ class GlobalNegativePromptInjector {
     
     return this.generate({ level, maxLength, includeCharacterCount });
   }
+
+  /**
+   * v6.6.10-fix: 生成片头镜头专用负面提示词
+   * @param {Object} options
+   * @param {number} options.maxLength - 最大长度
+   * @returns {string} 负面提示词
+   */
+  generateForOpeningShot(options = {}) {
+    const { maxLength = 250 } = options;
+    // 片头镜头使用L1全局约束 + 更严格的画面文字约束
+    return this.generate({ level: 'L1', maxLength, includeCharacterCount: true });
+  }
+
+  /**
+   * v6.6.10-fix: 生成内容镜头专用负面提示词
+   * @param {Object} options
+   * @param {number} options.maxLength - 最大长度
+   * @returns {string} 负面提示词
+   */
+  generateForContentShot(options = {}) {
+    const { maxLength = 300 } = options;
+    // 内容镜头使用完整L1约束
+    return this.generate({ level: 'L1', maxLength, includeCharacterCount: true });
+  }
 }
 
-module.exports = GlobalNegativePromptInjector;
-
-// v6.2-patch61-fix: 兼容解构导入
-module.exports.globalNegativePromptInjector = new GlobalNegativePromptInjector();
+module.exports = { GlobalNegativePromptInjector, globalNegativePromptInjector: new GlobalNegativePromptInjector() };

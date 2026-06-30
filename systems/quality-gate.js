@@ -130,18 +130,6 @@ class QualityGate {
 
     const score = Math.round(total / shots.length);
 
-    // v6.5.33: generic 模式提示词质量保底
-    if (score < 60 && shots.length > 0) {
-      // 如果所有镜头都有内容且长度合理，保底60
-      const allHaveContent = shots.every(s => {
-        const t = s.render_prompt || s.renderPrompt || s.prompt || s.visualPrompt || '';
-        return t.trim().length > 50;
-      });
-      if (allHaveContent) {
-        return { score: Math.max(score, 60), detail: `共${shots.length}镜(保底)` };
-      }
-    }
-
     if (score < qualityConfig.dimensions.promptQuality.warnScore) {
       issues.push({
         type: 'prompt-quality',
