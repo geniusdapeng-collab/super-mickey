@@ -43,7 +43,8 @@ class DirectorOptimizationAgent {
 
     console.log('\n🎬 [DirectorOptimizationAgent] 导演优化...');
 
-    let currentShots = [...shots];
+    const { deepClone } = require('../../utils/safe-clone');
+    let currentShots = deepClone(shots); // 【v2.1.6-fix-bug43】深拷贝，防止修改原始 shots
     let currentScore = this._score(currentShots, metadata);
     let iterations = 0;
     let improved = false;
@@ -150,7 +151,7 @@ class DirectorOptimizationAgent {
       const curr = shots[i];
 
       // 检查是否有过渡（支持 transition / _transitionType / pacing）
-      if (curr.transition || curr._transitionType || curr.pacing || curr.transition) {
+      if (curr.transition || curr._transitionType || curr.pacing || curr._transitionDirection) { // 【v2.1.6-fix-bug48】修复冗余逻辑：curr.transition 重复 → 改为 _transitionDirection
         continuityCount++;
       }
       // 检查情绪是否连贯

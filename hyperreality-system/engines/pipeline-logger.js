@@ -187,14 +187,8 @@ class PipelineLogger {
    * 清理结果对象（移除循环引用和大对象）
    */
   _sanitizeResult(result) {
-    return JSON.parse(JSON.stringify(result, (key, value) => {
-      if (typeof value === 'function') return undefined;
-      if (value instanceof Buffer) return '<Buffer>';
-      if (typeof value === 'string' && value.length > 5000) {
-        return value.substring(0, 5000) + '... [truncated]';
-      }
-      return value;
-    }));
+    const { safeStringify } = require('../../utils/safe-clone');
+    return JSON.parse(safeStringify(result)); // 【v2.1.6-fix-bug45】安全序列化，处理循环引用
   }
 
   async _writeJSON(filePath, data) {

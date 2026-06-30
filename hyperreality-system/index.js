@@ -539,9 +539,9 @@ class HyperrealitySystem {
               },
               context: {
                 project_id: metadata.projectId || 'default',
-                upstream_deliverable: metadata._pandaSkillHints?.skills?.[0]?.deliverable_type
+                upstream_deliverable: (metadata._pandaSkillHints?.skills || [])[0]?.deliverable_type
               },
-              query_text: `${metadata._pandaSkillHints?.skills?.[0]?.name || '剧本结构'} 叙事设计`,
+              query_text: `${(metadata._pandaSkillHints?.skills || [])[0]?.name || '剧本结构'} 叙事设计`,
               recall_mode: 'fast',
               topk: 2
             });
@@ -725,7 +725,7 @@ class HyperrealitySystem {
               caller_agent: 'VisualLanguage',
               upstream_deliverable: 'beat_sheet_v1'
             },
-            query_text: `${metadata._pandaScriptSkills?.skills?.[0]?.name || '镜头语言'} 分镜设计 运镜`,
+            query_text: `${(metadata._pandaScriptSkills?.skills || [])[0]?.name || '镜头语言'} 分镜设计 运镜`,
             recall_mode: 'fast',
             topk: 2
           });
@@ -1214,7 +1214,7 @@ class HyperrealitySystem {
                   caller_agent: 'VisualLanguage',
                   upstream_deliverable: 'shotlist_v1'
                 },
-                query_text: `${metadata._pandaVisualSkills?.skills?.[0]?.name || '导演技巧'} 视觉设计 镜头语言`,
+                query_text: `${(metadata._pandaVisualSkills?.skills || [])[0]?.name || '导演技巧'} 视觉设计 镜头语言`,
                 recall_mode: 'fast',
                 topk: 2
               });
@@ -1506,7 +1506,7 @@ class HyperrealitySystem {
               caller_agent: 'AudioDesign',
               upstream_deliverable: 'shotlist_v1'
             },
-            query_text: `${metadata._pandaVisualSkills?.skills?.[0]?.name || '后期制作'} 调色 混音 剪辑`,
+            query_text: `${(metadata._pandaVisualSkills?.skills || [])[0]?.name || '后期制作'} 调色 混音 剪辑`,
             recall_mode: 'fast',
             topk: 2
           });
@@ -1837,13 +1837,13 @@ class HyperrealitySystem {
         
         // 对本次注入的技能进行反馈回传
         const skillsToFeedback = [
-          metadata._pandaSkillHints?.skills?.[0]?.skill_id,
-          metadata._pandaScriptSkills?.skills?.[0]?.skill_id,
-          metadata._pandaVisualSkills?.skills?.[0]?.skill_id,
-          metadata._pandaPostSkills?.skills?.[0]?.skill_id,
-          metadata._pandaDirectorSkills?.skills?.[0]?.skill_id,
-          metadata._pandaEmotionSkills?.skills?.[0]?.skill_id,
-          metadata._pandaVerticalSkills?.skills?.[0]?.skill_id,
+          (metadata._pandaSkillHints?.skills || [])[0]?.skill_id,
+          (metadata._pandaScriptSkills?.skills || [])[0]?.skill_id,
+          (metadata._pandaVisualSkills?.skills || [])[0]?.skill_id,
+          (metadata._pandaPostSkills?.skills || [])[0]?.skill_id,
+          (metadata._pandaDirectorSkills?.skills || [])[0]?.skill_id,
+          (metadata._pandaEmotionSkills?.skills || [])[0]?.skill_id,
+          (metadata._pandaVerticalSkills?.skills || [])[0]?.skill_id,
         ].filter(Boolean);
 
         if (skillsToFeedback.length > 0) {

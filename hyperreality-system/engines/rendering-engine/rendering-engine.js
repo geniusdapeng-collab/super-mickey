@@ -150,11 +150,12 @@ class RenderingEngine {
           bindingManifestPath: manifestPath,
           skipValidation: options.skipValidation
         });
-        submitPromise.catch(() => {}); // 【v2.1.6-fix】防止悬空 rejection
-        const submitResult = await Promise.race([
+        const { SafePromise } = require('../../utils/safe-promise');
+        const submitResult = await SafePromise.withTimeout(
           submitPromise,
-          new Promise((_, reject) => setTimeout(() => reject(new Error('渲染提交超时(2分钟)')), SUBMIT_TIMEOUT))
-        ]);
+          SUBMIT_TIMEOUT,
+          'RenderSubmit'
+        ); // 【v2.1.6-fix-bug44+49】SafePromise 安全包装，防止悬空 rejection 和同步异常
 
         result.results = submitResult.results;
         result.submitted = submitResult.results.filter(r => r.success).length;
