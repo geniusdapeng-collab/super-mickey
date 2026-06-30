@@ -55,7 +55,7 @@ class ContinuityReviewAgent extends BaseAgent {
 
   // 【P0-1 修复】总体超时包装
   _totalTimeout(promise, ms, label) {
-    const { SafePromise } = require('../../utils/safe-promise');
+    const { SafePromise } = require('../../../utils/safe-promise');
     return SafePromise.withTimeout(promise, ms, label);
   }
 
