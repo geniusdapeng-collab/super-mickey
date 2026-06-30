@@ -21,6 +21,9 @@ const { FieldGuard } = require('./engines/field-guard');
 const ErrorCodes = require('./config/error-codes');
 const { StabilityShield } = require('./shields/stability-shield');
 
+// ⭐ v2.1.7: 创意主题生成器（全链路最开头）
+const { CreativeThemeGenerator } = require('./skills/creative-theme-generator');
+
 // ===== Phase 1: 基础设施层注入 =====
 const { PromptGuardian } = require('./engines/prompt-guardian');
 const { RenderPipelineGuard } = require('./engines/render-pipeline-guard');
@@ -256,6 +259,11 @@ class HyperrealitySystem {
       enabled: options.identityPersistence?.enabled !== false
     });
 
+    // ⭐ v2.1.7: 创意主题生成器（全链路最开头）
+    this.creativeThemeGenerator = new CreativeThemeGenerator({
+      eventBus: this.eventBus
+    });
+
     this.version = '2.0.0';
     this._shutdownRequested = false; // 【v2.1.6-fix】优雅关闭标志
     this._confirmationAbortController = null; // 【v2.1.6-fix】确认轮询中断控制器
@@ -324,7 +332,7 @@ class HyperrealitySystem {
     console.log(`\n🔥 [HyperrealitySystem v${this.version}] 开始创作`);
     console.log(`   意图: ${intent}`);
     console.log(`   项目: ${metadata.title || '未命名'}`);
-    console.log(`   流程: 需求确认 → ${options.skipPromptReview ? '跳过' : '含'}提示词审核 → ${options.skipRender ? '跳过' : '含'}渲染 → ${options.skipPostProduction ? '跳过' : '含'}后期`);
+    console.log(`   流程: 创意主题 → 需求确认 → ${options.skipPromptReview ? '跳过' : '含'}提示词审核 → ${options.skipRender ? '跳过' : '含'}渲染 → ${options.skipPostProduction ? '跳过' : '含'}后期`);
     console.log('');
 
     const result = {
@@ -341,8 +349,59 @@ class HyperrealitySystem {
     let productionResult = null;
 
     try {
-      // 【v2.1.6-fix】系统级修复:整个创作过程启用长时间任务模式,避免HealthMonitor误判
+      // v2.1.7: 系统级修复:整个创作过程启用长时间任务模式,避免HealthMonitor误判
       this.stabilityShield.setLongTaskMode('ProductionEngine', true, 1200000); // 20分钟
+
+      // ========== 🆕 Layer -1: 创意主题生成与确认 ==========
+      if (!options.skipCreativeTheme) {
+        console.log('🎨 [Layer -1] 创意主题生成 - 解析用户意图...');
+        const stageNeg1Start = Date.now();
+
+        try {
+          const themeResult = await this.creativeThemeGenerator.generate(intent);
+          
+          result.stages.creativeTheme = {
+            data: themeResult,
+            timing: Date.now() - stageNeg1Start
+          };
+
+          console.log(`   ✅ 创意主题生成完成 (${result.stages.creativeTheme.timing}ms)`);
+          console.log(`      类型: ${themeResult.tasks[0].type} | 主题: ${themeResult.tasks[0].theme}`);
+          console.log(`      时长: ${themeResult.tasks[0].duration_sec}秒 | 难度: ${themeResult.tasks[0].difficulty}`);
+
+          // 生成确认摘要
+          const summary = this.creativeThemeGenerator.generateConfirmationSummary(themeResult);
+          console.log(summary);
+
+          // 等待用户确认
+          const themeConfirmation = await this._confirmCreativeTheme(themeResult);
+          result.confirmations.creativeTheme = themeConfirmation;
+
+          if (!themeConfirmation.approved) {
+            console.log('   ❌ 创意主题未确认,流程中止');
+            result.success = false;
+            result.stages.creativeTheme.status = 'rejected';
+            result.stages.creativeTheme.reason = themeConfirmation.reason || '用户未确认创意主题';
+            return result;
+          }
+
+          console.log('   ✅ 创意主题已确认,继续创作');
+
+          // 将创意主题注入到 metadata 中，供后续链路使用
+          metadata._creativeTheme = themeResult.tasks[0];
+          
+          // 如果用户有调整，应用调整
+          if (themeConfirmation.adjustments) {
+            const adjusted = this.creativeThemeGenerator.adjustTask(themeResult, themeConfirmation.adjustments);
+            metadata._creativeTheme = adjusted.tasks[0];
+            console.log('   🔄 已应用用户调整');
+          }
+
+        } catch (err) {
+          console.warn(`   ⚠️ 创意主题生成失败: ${err.message}，继续原有链路`);
+          result.errors.push({ stage: 'CreativeThemeGenerator', message: err.message });
+        }
+      }
 
       // ========== 🆕 Layer 0: 需求清单生成确认 ==========
       if (!options.skipRequirementList) {
@@ -1868,6 +1927,37 @@ class HyperrealitySystem {
     }
 
     return result;
+  }
+
+  /**
+   * ⭐ v2.1.7: 创意主题确认环节(Layer -1)
+   * 类似需求清单确认，但针对创意主题
+   */
+  async _confirmCreativeTheme(themeResult) {
+    console.log('\n--- 🎨 创意主题确认 ---');
+    
+    const task = themeResult.tasks[0];
+    const summary = this.creativeThemeGenerator.generateConfirmationSummary(themeResult);
+    console.log(summary);
+    console.log('\n---');
+
+    // 写入文件并等待外部确认
+    const confirmPath = await this._waitForExternalConfirmation('creative-theme', summary);
+
+    if (confirmPath.approved) {
+      console.log('   ✅ 创意主题已确认');
+    } else {
+      console.log('   ❌ 创意主题被拒绝:', confirmPath.reason);
+    }
+
+    return {
+      approved: confirmPath.approved,
+      reviewedAt: new Date().toISOString(),
+      theme: task,
+      reason: confirmPath.reason,
+      suggestions: confirmPath.suggestions,
+      adjustments: confirmPath.adjustments
+    };
   }
 
   /**
