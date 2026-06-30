@@ -58,7 +58,7 @@ const FIELD_DESCS = {
   props: 'string，道具',
   portraits: 'string，定妆照引用 image://...',
   dialogue: 'string，台词/旁白原文',
-  timeline: 'string，≥200字符，0-Xs 分镜时间轴',
+  timeline: 'string或object，分镜时间轴。支持两种格式：\n1. 纯文本: T00:00 - 描述；T00:XX - 描述（≥3段）\n2. 结构化: {"totalDuration":10,"beats":[{"time":0,"label":"开场","description":"...","cameraHint":"..."},{"time":3,"label":"推进","description":"...","cameraHint":"..."}],"sync":{"cameraMovement":"...","audio":"..."}}',
   mood: 'string，情绪基调',
   pacing: 'string，节奏',
   transition: 'string，转场方式',
@@ -632,8 +632,27 @@ ${ctx}
   }
 
   /**
+   * ⭐ v2.1.7: 渲染结构化时间轴对象为文本
+   */
+  _renderStructuredTimeline(timelineObj) {
+    if (!timelineObj || !timelineObj.beats || !Array.isArray(timelineObj.beats)) {
+      return '';
+    }
+    const beats = timelineObj.beats;
+    const duration = timelineObj.totalDuration || 10;
+    
+    return beats.map(b => {
+      const timeStr = `T00:${String(b.time || 0).padStart(2, '0')}`;
+      const label = b.label || '';
+      const desc = b.description || '';
+      const cameraHint = b.cameraHint ? ` [运镜:${b.cameraHint}]` : '';
+      return `${timeStr} - ${label}${desc ? '，' + desc : ''}${cameraHint}`;
+    }).join('；');
+  }
+
+  /**
    * ⭐ v2.1.7: 按镜头时长动态生成时间轴节拍
-   * 5秒→3节拍, 10秒→5节拍, 15秒→6节拍
+   * 5秒→3节拍, 8秒→5节拍, 12秒→6节拍, 15秒+→7节拍
    */
   _generateTimelineBeats(duration) {
     const d = duration || 10;
@@ -910,10 +929,16 @@ ${missing.map(f => `- ${f}：${FIELD_DESCS[f]}`).join('\n')}
       }
     }
 
-    // 【时间轴】镜头内部微观导演调度（T00:XX相对时间戳格式）
+    // 【时间轴】镜头内部微观导演调度
     const timelineField = getField('timeline');
     if (timelineField) {
-      parts.push(`【时间轴】${timelineField}`);
+      // ⭐ v2.1.7: 支持结构化时间轴对象
+      if (typeof timelineField === 'object' && timelineField.beats) {
+        const rendered = this._renderStructuredTimeline(timelineField);
+        parts.push(`【时间轴】${rendered}`);
+      } else {
+        parts.push(`【时间轴】${timelineField}`);
+      }
     } else {
       // ⭐ v2.1.7: 按镜头时长动态生成时间轴节拍
       const duration = shot.duration || 10;

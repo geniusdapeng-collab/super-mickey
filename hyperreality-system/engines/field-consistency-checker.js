@@ -283,55 +283,85 @@ class FieldConsistencyChecker {
    * 4. 时间轴-运镜同步
    * timeline的每个节拍必须有对应的camera_movement
    */
+  /**
+   * 4. 时间轴-运镜同步 ⭐ v2.1.7增强版
+   * timeline的每个节拍必须与camera_movement同步
+   * 支持纯文本和结构化对象两种格式
+   */
   _checkTimelineCamera(fields) {
     const issues = [];
-    const timeline = String(fields.timeline || '');
+    const timeline = fields.timeline || '';
     const camera = String(fields.camera_movement || '');
 
     if (!timeline || !camera) return issues;
 
-    // 检查timeline是否包含高潮/爆发等强情绪节拍
-    const highEnergyMarkers = ['高潮', '爆发', '碰撞', '冲击', '加速', '激烈', '释放'];
-    const hasHighEnergy = highEnergyMarkers.some(m => timeline.includes(m));
-    
-    // 如果timeline有高潮，camera_movement必须有fast/push/handheld等
-    if (hasHighEnergy) {
-      const fastMarkers = ['fast', 'push', 'handheld', 'quick', 'whip', 'snap', 'shaky'];
-      const hasFast = fastMarkers.some(m => camera.toLowerCase().includes(m));
-      
-      if (!hasFast) {
-        issues.push({
-          severity: 'error',
-          fieldA: 'timeline',
-          fieldB: 'camera_movement',
-          message: 'timeline包含高潮/爆发节拍，但camera_movement没有快速/手持/推进运镜',
-          fixable: true,
-          fix: (f) => ({
-            camera_movement: `${f.camera_movement}; T00:高潮时刻快速推轨+手持晃动，强化冲击感`
-          })
-        });
-      }
-    }
+    // 解析时间轴（支持纯文本和结构化对象）
+    const beats = this._parseTimeline(timeline);
+    if (beats.length === 0) return issues;
 
-    // 检查timeline是否包含建立/平静等低情绪节拍
-    const lowEnergyMarkers = ['建立', '平静', '收尾', '定格', '展示', '引入'];
-    const hasLowEnergy = lowEnergyMarkers.some(m => timeline.includes(m));
-    
-    if (hasLowEnergy) {
-      const slowMarkers = ['slow', 'static', 'stable', 'smooth', 'gradual', 'gentle'];
-      const hasSlow = slowMarkers.some(m => camera.toLowerCase().includes(m));
-      
-      if (!hasSlow) {
-        issues.push({
-          severity: 'warning',
-          fieldA: 'timeline',
-          fieldB: 'camera_movement',
-          message: 'timeline包含建立/平静节拍，但camera_movement没有缓慢/稳定运镜',
-          fixable: true,
-          fix: (f) => ({
-            camera_movement: `T00:开场缓慢稳定构图; ${f.camera_movement}`
-          })
-        });
+    // 检查每个节拍与camera_movement的同步
+    for (const beat of beats) {
+      const label = (beat.label || '').toLowerCase();
+      const desc = (beat.description || '').toLowerCase();
+      const combined = label + ' ' + desc;
+
+      // 高潮/爆发节拍必须有快速运镜
+      const highEnergyMarkers = ['高潮', '爆发', '碰撞', '冲击', '加速', '激烈', '释放', '顶点'];
+      if (highEnergyMarkers.some(m => combined.includes(m))) {
+        const fastMarkers = ['fast', 'push', 'handheld', 'quick', 'whip', 'snap', 'shaky', '急速', '推轨'];
+        const hasFast = fastMarkers.some(m => camera.toLowerCase().includes(m));
+        if (!hasFast) {
+          issues.push({
+            severity: 'error',
+            fieldA: 'timeline',
+            fieldB: 'camera_movement',
+            message: `时间轴节拍"${beat.label || beat.time}"含高潮/爆发，但camera_movement无快速运镜`,
+            fixable: true,
+            fix: (f) => ({
+              camera_movement: `${f.camera_movement}; T00:${beat.time}快速推轨+手持晃动，强化冲击感`
+            })
+          });
+        }
+      }
+
+      // 建立/平静节拍必须有稳定运镜
+      const lowEnergyMarkers = ['建立', '平静', '收尾', '定格', '展示', '引入', '开场'];
+      if (lowEnergyMarkers.some(m => combined.includes(m))) {
+        const slowMarkers = ['slow', 'static', 'stable', 'smooth', 'gradual', 'gentle', '稳定', '缓慢'];
+        const hasSlow = slowMarkers.some(m => camera.toLowerCase().includes(m));
+        if (!hasSlow) {
+          issues.push({
+            severity: 'warning',
+            fieldA: 'timeline',
+            fieldB: 'camera_movement',
+            message: `时间轴节拍"${beat.label || beat.time}"含建立/平静，但camera_movement无稳定运镜`,
+            fixable: true,
+            fix: (f) => ({
+              camera_movement: `T00:${beat.time}缓慢稳定构图; ${f.camera_movement}`
+            })
+          });
+        }
+      }
+
+      // 检查cameraHint（结构化时间轴特有）
+      if (beat.cameraHint) {
+        const hint = beat.cameraHint.toLowerCase();
+        // cameraHint中的运镜必须在camera_movement中体现
+        const cameraKeywords = ['推轨', '拉远', '横移', '升降', '摇镜', '手持', '固定'];
+        for (const kw of cameraKeywords) {
+          if (hint.includes(kw) && !camera.toLowerCase().includes(kw)) {
+            issues.push({
+              severity: 'warning',
+              fieldA: 'timeline.cameraHint',
+              fieldB: 'camera_movement',
+              message: `时间轴cameraHint要求"${kw}"，但camera_movement未包含`,
+              fixable: true,
+              fix: (f) => ({
+                camera_movement: `${f.camera_movement}; ${kw}`
+              })
+            });
+          }
+        }
       }
     }
 
@@ -339,35 +369,70 @@ class FieldConsistencyChecker {
   }
 
   /**
-   * 5. 时间轴-动作同步
+   * 解析时间轴（支持纯文本和结构化对象）
+   */
+  _parseTimeline(timeline) {
+    // 如果是结构化对象
+    if (typeof timeline === 'object' && timeline.beats) {
+      return timeline.beats.map(b => ({
+        time: b.time || 0,
+        label: b.label || '',
+        description: b.description || '',
+        cameraHint: b.cameraHint || ''
+      }));
+    }
+
+    // 如果是纯文本，尝试解析T00:XX格式
+    const text = String(timeline);
+    const beats = [];
+    const regex = /T00:(\d+)\s*-\s*([^；]+)/g;
+    let match;
+    while ((match = regex.exec(text)) !== null) {
+      const time = parseInt(match[1], 10);
+      const desc = match[2].trim();
+      // 提取label（第一个逗号前的内容）
+      const labelEnd = desc.indexOf('，');
+      const label = labelEnd > 0 ? desc.substring(0, labelEnd) : desc;
+      const description = labelEnd > 0 ? desc.substring(labelEnd + 1) : '';
+      beats.push({ time, label, description, cameraHint: '' });
+    }
+
+    return beats;
+  }
+
+  /**
+   * 5. 时间轴-动作同步 ⭐ v2.1.7增强版
    * timeline的每个节拍必须有对应的action变化
    */
   _checkTimelineAction(fields) {
     const issues = [];
-    const timeline = String(fields.timeline || '');
+    const timeline = fields.timeline || '';
     const action = String(fields.action || '');
 
     if (!timeline || !action) return issues;
 
-    // 检查timeline是否描述动作变化
-    const actionMarkers = ['抬手', '挥手', '奔跑', '跳跃', '转身', '攻击', '防御'];
-    const timelineHasAction = actionMarkers.some(m => timeline.includes(m));
-    
-    // 如果timeline有动作描述，action字段必须包含对应动作
-    if (timelineHasAction) {
-      // 提取timeline中的动作词
-      const timelineActions = actionMarkers.filter(m => timeline.includes(m));
-      const actionContains = timelineActions.some(a => action.includes(a));
+    // 解析时间轴
+    const beats = this._parseTimeline(timeline);
+    if (beats.length === 0) return issues;
+
+    // 提取action中的动作词
+    const actionWords = ['抬手', '挥手', '奔跑', '跳跃', '转身', '攻击', '防御', '站立', '坐下', '行走', '推', '拉', '举'];
+    const actionHasWords = actionWords.filter(w => action.includes(w));
+
+    // 检查每个节拍是否有对应动作
+    for (const beat of beats) {
+      const combined = (beat.label || '') + ' ' + (beat.description || '');
+      const beatActions = actionWords.filter(w => combined.includes(w));
       
-      if (!actionContains) {
+      if (beatActions.length > 0 && !beatActions.some(a => action.includes(a))) {
         issues.push({
           severity: 'warning',
           fieldA: 'timeline',
           fieldB: 'action',
-          message: `timeline描述动作"${timelineActions[0]}"，但action字段未包含该动作`,
+          message: `时间轴节拍"${beat.label || beat.time}"描述动作"${beatActions[0]}"，但action字段未包含`,
           fixable: true,
           fix: (f) => ({
-            action: `${f.action}; ${timelineActions[0]}动作`
+            action: `${f.action}; T00:${beat.time}${beatActions[0]}`
           })
         });
       }
