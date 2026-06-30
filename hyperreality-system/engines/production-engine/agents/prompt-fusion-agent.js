@@ -827,6 +827,14 @@ ${missing.map(f => `- ${f}：${FIELD_DESCS[f]}`).join('\n')}
       fullPrompt = this._truncateStandardPrompt(fullPrompt);
     }
 
+    // 【v2.2.0】语言检查：检测英文输出并警告
+    const chineseCharCount = (fullPrompt.match(/[\u4e00-\u9fa5]/g) || []).length;
+    const totalCharCount = this._countChars(fullPrompt);
+    const chineseRatio = chineseCharCount / totalCharCount;
+    if (chineseRatio < 0.3 && totalCharCount > 500) {
+      console.warn(`[PromptFusionAgent] ⚠️ 镜头 ${shot.shotId} 中文占比过低(${(chineseRatio * 100).toFixed(1)}%)，可能为英文输出`);
+    }
+
     return fullPrompt;
   }
 
@@ -1035,8 +1043,9 @@ ${sufficiency}
 - 错误运镜：无人机穿越微观世界、时间操控慢动作、宏大比例展示
 
 要求：
-1. 按标准字段输出：【约束】【基础】【场景】【灯光/照明】【构图】【色彩/色调】【景深】【运镜】【角色】【服装】【化妆】【动作】【道具】【定妆照】【台词】【时间轴】【情绪】【节奏】【转场】【音频】【负面约束】【明亮约束】【角色约束】【导演指令】【角色一致性】
-2. 【台词】字段必须独立，角色直接对镜头说话，不要写"画外音""旁白"
+1. 【语言约束 - 强制】所有字段内容必须使用中文输出，禁止出现英文（技术参数如8K/MP4/24fps/5600K等除外）。mood字段可用英文单词（如tense/epic）。
+2. 按标准字段输出：【约束】【基础】【场景】【灯光/照明】【构图】【色彩/色调】【景深】【运镜】【角色】【服装】【化妆】【动作】【道具】【定妆照】【台词】【时间轴】【情绪】【节奏】【转场】【音频】【负面约束】【明亮约束】【角色约束】【导演指令】【角色一致性】
+3. 【台词】字段必须独立，角色直接对镜头说话，不要写"画外音""旁白"
 3. 场景要具体专业（门诊室、宣教室、检查室），不要写"社区健身区"。场景中不得出现含文字的物品：如"有文字的报告单"、"标牌上的文字"、"商标"、"有字的海报"等。可以描述"空白报告单"、"无文字标识牌"、"图形海报"等不含文字的物品
 4. 负面约束要完整，包含10+条排除项，必须包含全局禁止文字：no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls objects documents signs labels screens clothing packaging, no handwritten text, no printed text, no signage text, no text overlays, no UI elements with text
 5. 只输出JSON，不要解释
