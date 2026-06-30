@@ -108,7 +108,8 @@ class ScriptEngine {
    */
   _generateFromTemplate(userIntent) {
     const meta = userIntent.metadata;
-    const duration = meta.target_duration || 120;
+    const { SafeCast } = require('../../utils/safe-cast');
+    const duration = SafeCast.number(meta.target_duration, 120);
     const sceneCount = 5;
     const sceneDuration = Math.floor(duration / sceneCount);
 

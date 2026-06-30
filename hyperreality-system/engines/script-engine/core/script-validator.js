@@ -187,7 +187,7 @@ class ScriptValidator {
    */
   _checkDuration(blueprint) {
     const checks = [];
-    const targetDuration = blueprint.meta?.target_duration || 120;
+    const targetDuration = SafeCast.number(blueprint.meta?.target_duration, 120);
     const actualDuration = blueprint.getTotalDuration();
     
     checks.push({
@@ -237,7 +237,7 @@ class ScriptValidator {
     // 统计有台词的场景
     // 【P1-14 修复】同时检查 lines 和 blocks 两种格式
     const hasDialogueContent = (d) => (d?.lines?.length > 0) || (d?.blocks?.length > 0);
-    const scenesWithDialogue = scenes.filter(s => s.dialogue?.has_dialogue && hasDialogueContent(s.dialogue));
+    const scenesWithDialogue = scenes.filter(s => SafeCast.bool(s.dialogue?.has_dialogue, false) && hasDialogueContent(s.dialogue));
     
     checks.push({
       category: 'dialogue',

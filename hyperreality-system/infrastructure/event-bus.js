@@ -1,13 +1,13 @@
 /**
- * Event Bus — 全链路事件追踪与回放 (SuperMickey 适配版)
- * 
+ * Event Bus - 全链路事件追踪与回放 (SuperMickey 适配版)
+ *
  * 来源: 超短裙 short-video/infrastructure/event-bus.js
  * 适配: SuperMickey 四层架构
- * 
- * 核心能力：
+ *
+ * 核心能力:
  * - 发布/订阅事件
- * - Mutations追踪（状态变更的不可变记录）
- * - 事件回放（重现任意时刻的系统状态）
+ * - Mutations追踪(状态变更的不可变记录)
+ * - 事件回放(重现任意时刻的系统状态)
  * - 异步事件处理
  */
 
@@ -98,10 +98,49 @@ class EventBus extends EventEmitter {
     this.mutations = [];
     this.maxEvents = options.maxEvents || 10000;
     this.enabled = options.enabled !== false;
-    
+    this._sessionListeners = []; // 【v2.1.6-fix】会话监听器，便于批量清理
+
     // 【审计修复】自动清理定时器，防止 mutations 无限累积
     this.cleanupInterval = options.cleanupInterval || 60000; // 1分钟
     this._startAutoCleanup();
+  }
+
+  /**
+   * 【v2.1.6-fix】重写 on 方法，跟踪会话监听器
+   */
+  on(eventName, listener) {
+    super.on(eventName, listener);
+    this._sessionListeners.push({ eventName, listener });
+    return this;
+  }
+
+  /**
+   * 【v2.1.6-fix】重写 once 方法，跟踪会话监听器
+   */
+  once(eventName, listener) {
+    const wrapped = (...args) => {
+      listener(...args);
+      this._removeSessionListener(eventName, wrapped);
+    };
+    super.once(eventName, wrapped);
+    this._sessionListeners.push({ eventName, listener: wrapped });
+    return this;
+  }
+
+  /**
+   * 【v2.1.6-fix】清理当前会话的所有监听器
+   */
+  clearSessionListeners() {
+    for (const { eventName, listener } of this._sessionListeners) {
+      super.off(eventName, listener);
+    }
+    this._sessionListeners = [];
+  }
+
+  _removeSessionListener(eventName, listener) {
+    this._sessionListeners = this._sessionListeners.filter(
+      (sl) => !(sl.eventName === eventName && sl.listener === listener)
+    );
   }
 
   /**
@@ -119,7 +158,7 @@ class EventBus extends EventEmitter {
     };
 
     this.events.push(event);
-    
+
     // 限制事件数量
     if (this.events.length > this.maxEvents) {
       this.events = this.events.slice(-this.maxEvents);
@@ -130,7 +169,7 @@ class EventBus extends EventEmitter {
   }
 
   /**
-   * 记录数据变更（Mutation）
+   * 记录数据变更(Mutation)
    * @param {string} layerId - 层级ID
    * @param {string} field - 字段名
    * @param {*} oldValue - 旧值
@@ -148,12 +187,12 @@ class EventBus extends EventEmitter {
     };
 
     this.mutations.push(mutation);
-    
+
     this.emit('data.mutated', mutation);
   }
 
   /**
-   * 【审计修复】自动清理旧 mutations，防止内存泄漏
+   * 【审计修复】自动清理旧 mutations,防止内存泄漏
    */
   _startAutoCleanup() {
     if (this._cleanupTimer) return;
@@ -164,7 +203,7 @@ class EventBus extends EventEmitter {
       const before = this.mutations.length;
       this.mutations = this.mutations.filter(m => m.timestamp > cutoff);
       const after = this.mutations.length;
-      
+
       if (before !== after) {
         console.log(`[EventBus] 自动清理: ${before - after} 条旧 mutations 已移除`);
       }
@@ -172,7 +211,7 @@ class EventBus extends EventEmitter {
   }
 
   /**
-   * 【审计修复】销毁 EventBus，清理资源
+   * 【审计修复】销毁 EventBus,清理资源
    */
   destroy() {
     if (this._cleanupTimer) {
@@ -225,7 +264,7 @@ class EventBus extends EventEmitter {
   generateReport() {
     const layers = {};
     const stages = {};
-    
+
     for (const event of this.events) {
       if (event.payload.layerId) {
         layers[event.payload.layerId] = (layers[event.payload.layerId] || 0) + 1;
@@ -240,14 +279,14 @@ class EventBus extends EventEmitter {
       totalMutations: this.mutations.length,
       layers,
       stages,
-      duration: this.events.length > 0 
-        ? this.events[this.events.length - 1].timestamp - this.events[0].timestamp 
+      duration: this.events.length > 0
+        ? this.events[this.events.length - 1].timestamp - this.events[0].timestamp
         : 0
     };
   }
 
   /**
-   * 清空事件（谨慎使用）
+   * 清空事件(谨慎使用)
    */
   clear() {
     this.events = [];

@@ -108,6 +108,23 @@ class HyperrealitySystem {
       endpoint: options.pandaCineForge?.endpoint || 'http://127.0.0.1:8765',
       timeout: options.pandaCineForge?.timeout || 5000,
     });
+
+    // 【v2.1.6-fix】AsyncInitGuard: 防止 PandaAdapter 异步初始化竞态
+    const { AsyncInitGuard } = require('./utils/async-init-guard');
+    this._pandaInitGuard = new AsyncInitGuard({ initTimeout: 10000, retryAttempts: 2 });
+    // 包装 recall 方法，确保初始化完成后再调用
+    const originalRecall = this.pandaAdapter.recall.bind(this.pandaAdapter);
+    this.pandaAdapter.recall = async (...args) => {
+      await this._pandaInitGuard._waitForInit().catch(() => {}); // 未初始化时静默降级
+      return originalRecall(...args);
+    };
+    // 触发初始化（如果 adapter 有 async init）
+    if (this.pandaAdapter.init && typeof this.pandaAdapter.init === 'function') {
+      this._pandaInitGuard.initialize(() => this.pandaAdapter.init());
+    } else {
+      this._pandaInitGuard._initialized = true; // 无初始化需求，直接标记完成
+    }
+
     this.stabilityShield.initialize(this.productionEngine);
 
     // ===== Phase 1: 基础设施层初始化 =====
@@ -240,6 +257,8 @@ class HyperrealitySystem {
     });
 
     this.version = '2.0.0';
+    this._shutdownRequested = false; // 【v2.1.6-fix】优雅关闭标志
+    this._confirmationAbortController = null; // 【v2.1.6-fix】确认轮询中断控制器
 
     // 【审计修复】进程信号处理，优雅关闭
     this._setupSignalHandlers();
@@ -251,6 +270,7 @@ class HyperrealitySystem {
     for (const signal of signals) {
       process.on(signal, async () => {
         console.log(`\n[HyperrealitySystem] 收到 ${signal}，开始优雅关闭...`);
+        this._shutdownRequested = true; // 【v2.1.6-fix】标记关闭请求
         
         // 1. 关闭长时间任务模式
         if (this.stabilityShield) {
@@ -1720,6 +1740,10 @@ class HyperrealitySystem {
     } finally {
       // 【v2.1.6-fix】关闭长时间任务模式
       this.stabilityShield.setLongTaskMode('ProductionEngine', false);
+      // 【v2.1.6-fix】清理 EventBus 会话监听器，防止内存泄漏
+      if (this.eventBus && typeof this.eventBus.clearSessionListeners === 'function') {
+        this.eventBus.clearSessionListeners();
+      }
     }
 
     // 【v2.1.4-fix13-审计修复】将完整 shots/prompts/opening 挂到 result,供调用方获取完整数据
@@ -1815,7 +1839,9 @@ class HyperrealitySystem {
         if (skillsToFeedback.length > 0) {
           console.log(`\n🐼 [PandaCineForge] 反馈飞轮: ${skillsToFeedback.length} 个技能`);
           for (const skillId of skillsToFeedback) {
-            this.pandaAdapter.reportFeedback(skillId, outcome, qualityScore, failureReasons)
+            // 【v2.1.6-fix】包装为 Promise 防止同步抛出未被捕获
+            Promise.resolve()
+              .then(() => this.pandaAdapter.reportFeedback(skillId, outcome, qualityScore, failureReasons))
               .then(fb => {
                 if (fb.status === 'feedback_recorded') {
                   console.log(`   ✅ 技能反馈: ${skillId.substring(0, 20)}... | maturity: ${fb.maturity}`);
@@ -1926,6 +1952,12 @@ class HyperrealitySystem {
     const startTime = Date.now();
 
     while (Date.now() - startTime < maxWait) {
+      // 【v2.1.6-fix】收到关闭信号，立即中断轮询
+      if (this._shutdownRequested) {
+        console.log('   ⏰ 收到关闭信号，中断等待');
+        return { approved: false, reason: 'shutdown' };
+      }
+
       if (fs.existsSync(confirmPath)) {
         try {
           const confirmData = JSON.parse(fs.readFileSync(confirmPath, 'utf8'));
@@ -1982,7 +2014,9 @@ class HyperrealitySystem {
     const fields = [];
     const regex = /【([^】]+)】([^【]*)/g;
     let match;
-    while ((match = regex.exec(promptText)) !== null) {
+    const safeRegex = require('./utils/safe-regex');
+    const safeText = promptText.length > 10000 ? promptText.substring(0, 10000) : promptText;
+    while ((match = regex.exec(safeText)) !== null) {
       fields.push({ name: match[1], content: match[2].trim() });
     }
 

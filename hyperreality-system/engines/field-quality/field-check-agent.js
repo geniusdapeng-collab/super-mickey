@@ -675,12 +675,12 @@ class FieldCheckAgent extends BaseAgent {
 
   // 批量检查多个镜头
   async checkAll(shots) {
-    const reports = [];
-    for (const shot of shots) {
-      const report = await this.check(shot, shot.shotId || shot.shot_id || 'unknown');
-      reports.push(report);
-    }
-    return reports;
+    const { SafePromise } = require('../../utils/safe-promise');
+    return SafePromise.mapBatch(
+      shots,
+      (shot, index) => this.check(shot, shot.shotId || shot.shot_id || `shot_${index}`),
+      5
+    );
   }
 }
 

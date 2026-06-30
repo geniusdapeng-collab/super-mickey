@@ -106,7 +106,8 @@ class FPVModeEnhancer {
 
       // 注入 FPV 描述
       const fpvDesc = template;
-      const effect = this.fpvEffects[Math.floor(Math.random() * this.fpvEffects.length)];
+      const { SafeRandom } = require('../../utils/safe-random');
+      const effect = SafeRandom.randomChoice(this.fpvEffects);
       
       if (shot.camera) {
         shot.camera = `${shot.camera}, ${fpvDesc}`;

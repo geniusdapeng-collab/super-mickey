@@ -153,25 +153,32 @@ class FieldQualityPipeline {
    * @returns {object} { finalShots, allReports, allLogs, summary }
    */
   async runAll(shots) {
+    const { SafePromise } = require('../../utils/safe-promise');
+
+    const results = await SafePromise.mapBatch(
+      shots,
+      (shot, i) => {
+        const shotId = shot.shotId || shot.shot_id || `shot_${i}`;
+        console.log(`\n${'='.repeat(60)}`);
+        console.log(`[FieldQualityPipeline] 处理镜头 ${i + 1}/${shots.length}: ${shotId}`);
+        console.log('='.repeat(60));
+        return this.run(shot, shotId).then((res) => ({ ...res, shotId, index: i }));
+      },
+      3 // 质量检查谨慎一点，3个并发
+    );
+
     const finalShots = [];
     const allReports = [];
     const allLogs = [];
     let totalPassed = 0;
     let totalFailed = 0;
 
-    for (let i = 0; i < shots.length; i++) {
-      const shot = shots[i];
-      const shotId = shot.shotId || shot.shot_id || `shot_${i}`;
-      console.log(`\n${'='.repeat(60)}`);
-      console.log(`[FieldQualityPipeline] 处理镜头 ${i + 1}/${shots.length}: ${shotId}`);
-      console.log('='.repeat(60));
+    for (const result of results) {
+      finalShots.push(result.finalShot);
+      allReports.push(...result.reports);
+      allLogs.push(...result.logs);
 
-      const { finalShot, reports, logs } = await this.run(shot, shotId);
-      finalShots.push(finalShot);
-      allReports.push(...reports);
-      allLogs.push(...logs);
-
-      const lastReport = reports[reports.length - 1];
+      const lastReport = result.reports[result.reports.length - 1];
       if (lastReport.passed) {
         totalPassed++;
       } else {

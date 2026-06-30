@@ -12,6 +12,7 @@
  *   _recheckRemaining() - 规则修复后识别剩余问题，只传给LLM
  */
 const { BaseAgent } = require('../production-engine/agents/base-agent');
+const { deepClone } = require('../../utils/safe-clone');
 const { SPEC_MAP, Priority, Severity, IssueType, MAX_TOTAL_CHARS } = require('./field-check-agent');
 
 // ============================================================
@@ -117,7 +118,7 @@ class PRD {
 
 class RuleRepairer {
   repair(shot, report, prd = null) {
-    const repaired = JSON.parse(JSON.stringify(shot));
+    const repaired = deepClone(shot);
     const actions = [];
 
     for (const issue of report.issues) {
@@ -314,7 +315,7 @@ class LLMRepairer {
       const data = (typeof response === 'string') ? JSON.parse(response) : (response || {});
       const repairedFields = data.repaired_fields || data || {}; // 【v2.1.4-fix13】兼容两种返回格式
 
-      const repairedShot = JSON.parse(JSON.stringify(shot));
+      const repairedShot = deepClone(shot);
       const actions = [];
 
       // 【v2.1.4-fix13】构建字段名映射表，支持 snake_case ↔ camelCase
@@ -420,7 +421,7 @@ class FieldRepairAgent extends BaseAgent {
     console.log(`[FieldRepairAgent] 开始修复 ${shotId}...`);
     const log = new RepairLog(shotId);
     log.prdReferenced = !!this.prd;
-    let repaired = JSON.parse(JSON.stringify(shot));
+    let repaired = deepClone(shot);
 
     // 第一层：规则自动修复
     const { repaired: ruleRepaired, actions: ruleActions } = this.ruleRepairer.repair(repaired, report, this.prd);
@@ -441,6 +442,12 @@ class FieldRepairAgent extends BaseAgent {
     }
 
     console.log(`[FieldRepairAgent] 修复完成：共 ${log.actions.length} 项修复动作`);
+
+    // 【v2.1.6-fix】Prompt 长度同步：修复后重新计算 promptCharCount
+    const { PromptSync } = require('../../utils/prompt-sync');
+    const promptSync = new PromptSync();
+    promptSync.sync(repaired, 'FieldRepairAgent');
+
     return { repaired, log };
   }
 

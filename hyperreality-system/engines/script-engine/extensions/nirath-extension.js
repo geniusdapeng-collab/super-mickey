@@ -303,7 +303,10 @@ class 示例世界Extension {
     ];
     
     // 随机选择 2-3 个环境元素
-    const selected = this._shuffleArray(elements).slice(0, 2 + Math.floor(Math.random() * 2));
+    const { SafeRandom } = require('../../utils/safe-random');
+    const shuffled = SafeRandom.shuffle(elements);
+    const count = 2 + SafeRandom.randomInt(2);
+    const selected = shuffled.slice(0, count);
     
     return `${baseSetting}，${selected.join('，')}`;
   }
@@ -329,7 +332,7 @@ class 示例世界Extension {
   _shuffleArray(array) {
     const newArray = [...array];
     for (let i = newArray.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
+      const j = SafeRandom.randomInt(i + 1);
       [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
     }
     return newArray;
