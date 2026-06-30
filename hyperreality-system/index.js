@@ -2018,7 +2018,8 @@ class HyperrealitySystem {
    * 将内容写入文件,轮询等待确认文件
    */
   async _waitForExternalConfirmation(type, content) {
-    const outputDir = './output/confirmations';
+    // 【v2.1.7-fix】使用绝对路径，避免工作目录不同导致确认文件位置错乱
+    const outputDir = path.join(__dirname, 'output', 'confirmations');
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
