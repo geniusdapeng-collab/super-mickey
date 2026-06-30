@@ -21,12 +21,23 @@ class Phase3PromptFusion extends PhaseExecutor {
     const shotCount = shots.length;
 
     // 动态预算计算
-    // 【v2.1.6】调整预算：实测每镜头约60-90s，按90s预估
-    const PHASE3_PER_SHOT_MS = 90000; // 每镜头90秒（原180s过于保守）
-    const PHASE3_BUFFER_MS = 30000;   // 30秒缓冲
-    const needMs = shotCount * PHASE3_PER_SHOT_MS + PHASE3_BUFFER_MS;
+    // 【P0-4 修复】支持 fastMode：预算不足时自动切换
+    const PHASE3_PER_SHOT_MS = 90000;   // 标准模式：每镜头90秒
+    const PHASE3_FAST_PER_SHOT_MS = 45000; // fastMode：每镜头45秒
+    const PHASE3_BUFFER_MS = 30000;     // 30秒缓冲
+    
+    // 判断是否需要启用 fastMode
+    const standardNeedMs = shotCount * PHASE3_PER_SHOT_MS + PHASE3_BUFFER_MS;
+    const budgetRemaining = this.budgetRemaining ? this.budgetRemaining() : Infinity;
+    const useFastMode = budgetRemaining < standardNeedMs && budgetRemaining > shotCount * PHASE3_FAST_PER_SHOT_MS;
+    
+    const perShotMs = useFastMode ? PHASE3_FAST_PER_SHOT_MS : PHASE3_PER_SHOT_MS;
+    const needMs = shotCount * perShotMs + PHASE3_BUFFER_MS;
 
-    this.log('PHASE-3', `📊 动态预算: ${shotCount}镜头 × ${PHASE3_PER_SHOT_MS/1000}s + ${PHASE3_BUFFER_MS/1000}s缓冲 = 需${Math.round(needMs/1000)}s`);
+    this.log('PHASE-3', `📊 动态预算: ${shotCount}镜头 × ${perShotMs/1000}s${useFastMode ? '(fastMode)' : ''} + ${PHASE3_BUFFER_MS/1000}s缓冲 = 需${Math.round(needMs/1000)}s`);
+    if (useFastMode) {
+      this.log('PHASE-3', '⚡ fastMode 已启用：预算不足，缩短单镜头超时、禁用重试');
+    }
 
     // 预算检查
     // 【v2.1.6-fix】Phase 3 是核心环节，预算不足时告警但继续执行，不可跳过
@@ -45,7 +56,14 @@ class Phase3PromptFusion extends PhaseExecutor {
         console.log('[Phase3PromptFusion] ⚠️ healthMonitor 未设置，长时间任务模式未启用');
       }
 
-      this.log('PROMPT-FUSION-AGENT', `开始(串行模式,${shotCount}镜头,预计${Math.round(needMs/1000)}s)...`);
+      this.log('PROMPT-FUSION-AGENT', `开始(串行模式,${shotCount}镜头,${useFastMode ? 'fastMode,' : ''}预计${Math.round(needMs/1000)}s)...`);
+      
+      // 【P0-4 修复】fastMode 下调整 Agent 配置
+      if (useFastMode && this.agents.promptFusion) {
+        this.agents.promptFusion.llmTimeout = PHASE3_FAST_PER_SHOT_MS;
+        this.agents.promptFusion.llmMaxRetries = 0; // fastMode 禁用重试
+        this.log('PHASE-3', '⚡ fastMode 配置已下发：timeout=45s, retries=0');
+      }
       
       const pfResult = await this.agents.promptFusion.process(
         this.cloneShots(shots), 

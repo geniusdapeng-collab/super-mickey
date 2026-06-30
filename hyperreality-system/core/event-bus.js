@@ -7,7 +7,8 @@ class EventBus {
   constructor() {
     this.subscribers = new Map();
     this.eventHistory = []; // 事件溯源日志
-    this.maxHistory = 10000; // 最多保留10000条
+    this.maxHistory = 1000; // 【P0-2 修复】从10000降到1000，防止内存泄漏
+    this._cleanupBatch = 100; // 批量清理数量
   }
   
   /**
@@ -137,11 +138,13 @@ class EventBus {
   
   /**
    * 追加事件到历史日志
+   * 【P0-2 修复】批量清理，避免频繁shift
    */
   _appendHistory(event) {
     this.eventHistory.push(event);
-    if (this.eventHistory.length > this.maxHistory) {
-      this.eventHistory.shift(); // 移除最旧的
+    // 批量清理：超过阈值时一次性移除旧数据
+    if (this.eventHistory.length > this.maxHistory + this._cleanupBatch) {
+      this.eventHistory = this.eventHistory.slice(-this.maxHistory);
     }
   }
   

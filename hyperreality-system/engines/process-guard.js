@@ -20,8 +20,26 @@ function install() {
   });
 
   process.on('uncaughtException', (err) => {
-    console.error(`[ProcessGuard] 未捕获异常(已吸收，进程继续): ${err.message}`);
-    // 不 process.exit，让流程继续；真正致命的错误由各阶段 try/catch 处理
+    // 【P1-5 修复】区分致命错误和可恢复错误
+    const FATAL_PATTERNS = [
+      /out of memory/i,
+      /heap out of memory/i,
+      /ENOMEM/i,
+      /allocation failed/i,
+      /segfault/i,
+      /SIGSEGV/i,
+      /SIGABRT/i
+    ];
+    const isFatal = FATAL_PATTERNS.some(p => p.test(err.message));
+    
+    if (isFatal) {
+      console.error(`[ProcessGuard] 💀 致命错误(进程退出): ${err.message}`);
+      console.error(err.stack);
+      process.exit(1); // 致命错误必须退出，防止僵尸进程
+    } else {
+      console.error(`[ProcessGuard] 未捕获异常(已吸收，进程继续): ${err.message}`);
+      // 非致命错误继续运行
+    }
   });
 }
 

@@ -107,6 +107,7 @@ class HealthMonitor extends EventEmitter {
 
   /**
    * 设置Agent长时间任务模式（动态调整超时阈值）
+   * 【P0-1 修复】启用时自动启动保活定时器，无需Agent主动心跳
    * @param {string} agentId - Agent标识
    * @param {boolean} enabled - 是否启用
    * @param {number} timeoutMs - 自定义超时(ms)
@@ -119,7 +120,22 @@ class HealthMonitor extends EventEmitter {
     }
     agentInfo._longTaskMode = enabled;
     agentInfo._longTaskTimeout = timeoutMs;
-    console.log(`[HealthMonitor] ${enabled ? '⏱️ 启用' : '✅ 关闭'}长时间任务模式: ${agentId}, 超时: ${timeoutMs}ms, agents大小: ${this.agents.size}`);
+    
+    // 【P0-1 修复】自动保活：长时间任务期间每10秒更新心跳
+    if (enabled) {
+      if (agentInfo._keepAliveTimer) clearInterval(agentInfo._keepAliveTimer);
+      agentInfo._keepAliveTimer = setInterval(() => {
+        agentInfo.health.lastHeartbeat = Date.now();
+      }, 10000); // 每10秒保活
+      console.log(`[HealthMonitor] ⏱️ 长时间任务模式启用: ${agentId}, 自动保活已启动(10s间隔)`);
+    } else {
+      // 关闭时清理保活定时器
+      if (agentInfo._keepAliveTimer) {
+        clearInterval(agentInfo._keepAliveTimer);
+        agentInfo._keepAliveTimer = null;
+      }
+      console.log(`[HealthMonitor] ✅ 长时间任务模式关闭: ${agentId}, 自动保活已停止`);
+    }
   }
 
   /**
