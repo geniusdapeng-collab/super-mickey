@@ -28,27 +28,54 @@ console.error = (...args) => {
 // 清空日志文件
 fs.writeFileSync(logFile, '');
 function setupPreApprovals() {
-  const dirs = [
-    './output/confirmations',
-    '../output/confirmations',
-    '../../output/confirmations'
-  ];
+  const outputDir = path.join(__dirname, '../output/confirmations');
   
-  dirs.forEach(dir => {
-    try {
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      }
-      // 预置所有确认文件
-      fs.writeFileSync(path.join(dir, 'confirmation-creative-theme.json'), '{"approved": true, "reason": "pre-production-test"}');
-      fs.writeFileSync(path.join(dir, 'confirmation-requirement.json'), '{"approved": true, "reason": "pre-production-test"}');
-      fs.writeFileSync(path.join(dir, 'confirmation-prompt.json'), '{"approved": true, "reason": "pre-production-test"}');
-    } catch (e) {
-      // ignore
+  // 确保目录存在
+  if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
+  }
+  
+  // 清除旧的确认文件（确保测试从干净状态开始）
+  ['creative-theme', 'requirement', 'prompt'].forEach(type => {
+    const file = path.join(outputDir, `confirmation-${type}.json`);
+    if (fs.existsSync(file)) {
+      fs.unlinkSync(file);
     }
   });
   
-  console.log('✅ 预置确认文件完成');
+  console.log('⏳ 模拟用户确认模式已启用');
+  console.log('   系统将等待确认，测试脚本会自动在内容生成后创建确认文件');
+  console.log('');
+  
+  // 监控并自动确认（模拟用户延迟确认）
+  const checkInterval = setInterval(() => {
+    const types = ['creative-theme', 'requirement', 'prompt'];
+    types.forEach(type => {
+      const contentFile = path.join(outputDir, `confirmation-${type}.md`);
+      const confirmFile = path.join(outputDir, `confirmation-${type}.json`);
+      
+      // 如果内容文件存在但确认文件不存在，自动确认
+      if (fs.existsSync(contentFile) && !fs.existsSync(confirmFile)) {
+        console.log(`   🤖 [自动确认] 检测到 ${type} 待确认内容，3秒后自动确认...`);
+        setTimeout(() => {
+          fs.writeFileSync(confirmFile, JSON.stringify({
+            approved: true,
+            reason: 'automated-test-confirmation',
+            timestamp: new Date().toISOString()
+          }, null, 2));
+          console.log(`   ✅ [自动确认] ${type} 已确认`);
+        }, 3000);
+      }
+    });
+  }, 2000);
+  
+  // 10分钟后停止监控
+  setTimeout(() => {
+    clearInterval(checkInterval);
+    console.log('   🛑 自动确认监控已停止');
+  }, 10 * 60 * 1000);
+  
+  return checkInterval;
 }
 
 // 随机用户输入池
