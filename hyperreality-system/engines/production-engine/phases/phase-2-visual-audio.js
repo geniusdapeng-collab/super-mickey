@@ -86,7 +86,21 @@ class Phase2VisualAudio extends PhaseExecutor {
       return { success: true, shots: newShots, result, timing };
     } catch (e) {
       this.log('PHASE-2-FAIL', `❌ ${e.message}, Phase2 失败但继续`);
-      // Phase 2 失败不致命，用已有数据继续
+      // 【审计修复】Phase 2 降级：注入基础运镜/灯光保底，避免 PromptFusion 无数据可用
+      shots.forEach(shot => {
+        if (!shot.cameraString && !shot.cameraMovement && !shot.camera_movement) {
+          shot.cameraString = '固定机位，中景构图，主体位于画面黄金分割点';
+          this.log('PHASE-2-FALLBACK', `${shot.shotId} 注入基础运镜`);
+        }
+        if (!shot.lightingString && !shot.lighting) {
+          shot.lightingString = '自然光，5600K，三点布光，主光45度侧前方';
+          this.log('PHASE-2-FALLBACK', `${shot.shotId} 注入基础灯光`);
+        }
+        if (!shot.backgroundSoundString && !shot.audio) {
+          shot.backgroundSoundString = '环境底噪，无配乐，人声清晰';
+        }
+      });
+      // Phase 2 失败不致命，用已有数据（含保底）继续
       return { success: false, shots, result, timing: Date.now() - startTime, error: e.message };
     }
   }

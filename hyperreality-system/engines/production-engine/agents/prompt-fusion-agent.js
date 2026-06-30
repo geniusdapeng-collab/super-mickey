@@ -155,8 +155,18 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
     const results = new Array(shots.length);
     let failed = 0;
 
-    // 【v2.1.4-fix11】串行处理，避免并发导致API超时
+    // 【审计修复】串行处理，避免并发导致API超时
     for (let i = 0; i < shots.length; i++) {
+      // 每3个镜头检查一次内存，防止 OOM
+      if (i % 3 === 0) {
+        const mem = process.memoryUsage();
+        const heapMB = Math.round(mem.heapUsed / 1024 / 1024);
+        if (heapMB > 1500) {  // 1.5GB 阈值
+          console.warn(`[PromptFusionAgent] ⚠️ 内存告警: ${heapMB}MB，建议启用GC`);
+          if (global.gc) global.gc();
+        }
+      }
+      
       const shot = shots[i];
       console.log(`\n🎬 处理镜头 ${i + 1}/${shots.length}: ${shot.shotId}`);
       try {
@@ -332,13 +342,15 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
       try {
         console.log(`  🔄 补全尝试 ${attempt}/${maxRetries}...`);
         const completeness = await this._ensureFieldCompleteness(shot, fields, ratio, characters);
-        const filled = completeness.fields;
+        
+        // 【审计修复】更新 fields，让下次重试基于最新状态
+        Object.assign(fields, completeness.fields);
         
         // 检查是否还有空字段
-        const stillEmpty = REQUIRED_FIELDS.filter(f => !filled[f] || String(filled[f]).trim() === '');
+        const stillEmpty = REQUIRED_FIELDS.filter(f => !fields[f] || String(fields[f]).trim() === '');
         if (stillEmpty.length === 0) {
           console.log(`  ✅ 补全成功，所有字段已填充`);
-          return this._buildShotResult(shot, filled);
+          return this._buildShotResult(shot, fields);
         }
         console.log(`  ⚠️ 仍有 ${stillEmpty.length} 字段为空，继续重试...`);
       } catch (e) {
@@ -421,20 +433,40 @@ ${missing.map(f => `- ${f}：${FIELD_DESCS[f]}`).join('\n')}
     const result = {};
     if (!shot) return result;
     
-    // 提取已有数据
-    if (shot.scene) result.scene = shot.scene;
-    if (shot.mood) result.mood = shot.mood;
-    if (shot.action) result.action = shot.action;
-    if (shot.character) result.character = typeof shot.character === 'string' ? shot.character : shot.character?.name || '';
-    if (shot.cameraString) result.camera_movement = shot.cameraString;
-    if (shot.lightingString) result.lighting = shot.lightingString;
-    if (shot.backgroundSoundString) result.audio = shot.backgroundSoundString;
+    // 提取已有数据 - 使用多名字段映射，兼容不同阶段的字段命名
+    const scene = this._resolveField(shot, 'scene');
+    if (scene) result.scene = scene;
+    
+    const mood = this._resolveField(shot, 'mood');
+    if (mood) result.mood = mood;
+    
+    const action = this._resolveField(shot, 'action');
+    if (action) result.action = action;
+    
+    const character = this._resolveField(shot, 'character');
+    if (character) result.character = typeof character === 'string' ? character : character?.name || '';
+    
+    // 【审计修复】多名字段映射：cameraString/cameraMovement/camera → camera_movement
+    const cameraMovement = this._resolveField(shot, 'cameraString', 'cameraMovement', 'camera', 'camera_movement');
+    if (cameraMovement) result.camera_movement = cameraMovement;
+    
+    // 【审计修复】多名字段映射：lightingString → lighting
+    const lighting = this._resolveField(shot, 'lightingString', 'lighting');
+    if (lighting) result.lighting = lighting;
+    
+    // 【审计修复】多名字段映射：backgroundSoundString → audio
+    const audio = this._resolveField(shot, 'backgroundSoundString', 'backgroundSound', 'audio');
+    if (audio) result.audio = audio;
+    
     if (shot.dialogue) {
       const pureDialogue = shot.dialogueText || this._extractPureDialogue(shot.dialogue);
       if (pureDialogue) result.dialogue = `"${pureDialogue}"`;
     }
-    if (shot.emotionalTarget) {
-      const et = shot.emotionalTarget;
+    
+    // 【审计修复】多名字段映射：emotional_target/emotionalTarget → mood
+    const emotionalTarget = this._resolveField(shot, 'emotionalTarget', 'emotional_target');
+    if (emotionalTarget) {
+      const et = emotionalTarget;
       result.mood = `${et.valence > 0.5 ? 'positive' : 'neutral'}, ${et.arousal > 0.5 ? 'high energy' : 'calm'}`;
     }
     if (shot.duration) {
@@ -445,8 +477,6 @@ ${missing.map(f => `- ${f}：${FIELD_DESCS[f]}`).join('\n')}
     }
     if (shot.characterRef) result.portraits = shot.characterRef;
     
-    // 默认负面约束
-    result.negative = 'no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background';
     result.bright_constraint = 'bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination';
     result.character_constraint = `只出现${shot.character?.name || '角色'}一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆`;
     result.director_instruction = '好莱坞大导演质感，电影级画面，写实风格，无特效，无科幻元素';
@@ -935,6 +965,20 @@ ${sufficiency}
         fields: {}
       }))
     };
+  }
+
+  /**
+   * 【审计修复】多名字段解析：支持多种命名风格读取同一字段
+   * 解决 Phase 2 输出的 camera/cameraMovement/cameraString 等字段
+   * PromptFusion 只认 camera_movement 的问题
+   */
+  _resolveField(shot, ...names) {
+    for (const name of names) {
+      if (shot[name] !== undefined && shot[name] !== null && shot[name] !== '') {
+        return shot[name];
+      }
+    }
+    return undefined;
   }
 }
 

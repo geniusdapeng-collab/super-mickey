@@ -611,6 +611,21 @@ class ProductionEngine {
       });
       if (phase35Result.success) {
         currentShots = phase35Result.shots;
+      } else {
+        // 【审计修复】Phase 3.5 失败时，至少运行 field-guard 兜底
+        this.log('PHASE-3.5', '⚠️ 字段质量检查失败，运行 FieldGuard 兜底');
+        const { FieldGuard } = require('../field-guard');
+        const fg = new FieldGuard({ strict: false });
+        const check = fg.check(currentShots, 'Phase3.5-fallback');
+        if (!check.passed) {
+          this.log('PHASE-3.5', `⚠️ ${check.report.errors.length} 个字段问题未修复，已标记降级`);
+          currentShots = check.shots.map(s => {
+            if (check.report.details.find(d => d.shotId === s.shotId && !d.passed)) {
+              return { ...s, degraded: true, degradeReason: 'Phase3.5 字段检查失败' };
+            }
+            return s;
+          });
+        }
       }
 
       // ===== 内容边界后处理(最终防线)=====
@@ -813,6 +828,9 @@ class ProductionEngine {
         if (typeof v === 'number' && v === 0) continue;
         merged[f] = this._deepCloneValue(v);
       }
+      // 【审计修复】保留降级元数据字段（如果 updatedShots 中有）
+      if (u.degraded !== undefined) merged.degraded = u.degraded;
+      if (u.degradeReason !== undefined) merged.degradeReason = u.degradeReason;
       return merged;
     });
   }
