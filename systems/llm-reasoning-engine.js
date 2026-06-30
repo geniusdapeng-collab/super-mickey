@@ -462,17 +462,24 @@ class LLMEngine {
       }
 
       try {
-        if (!result.content || !result.content.trim()) {
-          const dump = this._dumpDebugFile('json_extract_fail_content', result.content || '');
-          throw new Error(`content为空，无法解析JSON${dump ? ` | dump=${dump}` : ''}`);
+        // 【修复】当 content 为空但 reasoning 有内容时，尝试从 reasoning 提取 JSON
+        let sourceContent = result.content;
+        if (!sourceContent || !sourceContent.trim()) {
+          if (result.reasoning_content && result.reasoning_content.trim()) {
+            console.log(`[LLMEngine] content为空，尝试从reasoning提取JSON...`);
+            sourceContent = result.reasoning_content;
+          } else {
+            const dump = this._dumpDebugFile('json_extract_fail_content', result.content || '');
+            throw new Error(`content为空，无法解析JSON${dump ? ` | dump=${dump}` : ''}`);
+          }
         }
-        const extracted = this._extractJsonObject(result.content);
+        const extracted = this._extractJsonObject(sourceContent);
         if (!extracted) {
-          const dump = this._dumpDebugFile('json_extract_fail_content', result.content);
+          const dump = this._dumpDebugFile('json_extract_fail_content', sourceContent);
           throw new Error(`无法从content提取合法JSON${dump ? ` | dump=${dump}` : ''}`);
         }
         const parsed = JSON.parse(extracted);
-        return { success: true, data: parsed, rawContent: result.content, reasoning_content: result.reasoning_content };
+        return { success: true, data: parsed, rawContent: sourceContent, reasoning_content: result.reasoning_content };
       } catch (parseError) {
         lastError = `JSON parse error: ${parseError.message}`;
         console.warn(`[LLMEngine] reasonStructured attempt ${attempt}/${maxRetries} 解析失败: ${lastError}`);

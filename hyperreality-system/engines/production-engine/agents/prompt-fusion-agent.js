@@ -315,11 +315,11 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
 
     try {
       // 【P1-2 修复】fill调用用小预算，不占用主调用时间
-      // 【修复】提升重试和超时，给补齐更多机会
+  // 【修复】提升重试和超时，给补齐更多机会
       const fillResult = await this._callLLM(fillPrompt, fillSchema, () => null, {
-        maxRetries: 3,
+        maxRetries: 2,
         maxTokens: 4096,
-        timeoutMs: 90000 // fill 从 45s 提升到 90s
+        timeoutMs: 60000 // fill 用 60s，不占用主预算
       });
       const fillFields = fillResult?.result?.fields || fillResult?.result?.[shot.shotId] || {};
       const normalized = normalizeFields(fillFields);
