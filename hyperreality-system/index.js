@@ -39,6 +39,14 @@ const { EmotionIntentParser } = require('./engines/emotion/emotion-intent-parser
 const { EmotionArcDesigner } = require('./engines/emotion/emotion-arc-designer');
 const { EmotionShotSyntaxInjector } = require('./engines/emotion/emotion-shot-syntax');
 
+// ===== 审计修复：新增功能模块 =====
+const { CharacterCostumePrompter } = require('./engines/character-system/character-costume-prompter');
+const { DurationConstraintManager } = require('./engines/duration-constraint/duration-constraint-manager');
+const { BehaviorAnchorSystem } = require('./engines/behavior-system/behavior-anchor-system');
+const { SmartImageReferencer } = require('./engines/smart-image-referencer');
+const { SceneNumberMapper } = require('./engines/scene-number-mapper');
+const { IdentityPersistenceSystem } = require('./engines/identity-persistence-system');
+
 // ===== Phase 4: 垂直场景层注入 =====
 const { CommercialModeEnhancer } = require('./engines/scenarios/commercial-mode-enhancer');
 const { FPVModeEnhancer } = require('./engines/scenarios/fpv-mode-enhancer');
@@ -185,6 +193,34 @@ class HyperrealitySystem {
     this.fpvModeEnhancer = new FPVModeEnhancer({
       enabled: options.fpvMode?.enabled === true, // 严格默认关闭,必须显式启用
       sportType: options.fpvMode?.sportType || 'auto'
+    });
+
+    // ===== 审计修复：初始化6个功能增强模块 =====
+    this.characterCostumePrompter = new CharacterCostumePrompter({
+      strictMode: options.characterCostume?.strictMode !== false,
+      enabled: options.characterCostume?.enabled !== false
+    });
+
+    this.durationConstraintManager = new DurationConstraintManager({
+      maxSingleShot: options.durationConstraint?.maxSingleShot || 15,
+      minSingleShot: options.durationConstraint?.minSingleShot || 5,
+      enabled: options.durationConstraint?.enabled !== false
+    });
+
+    this.behaviorAnchorSystem = new BehaviorAnchorSystem({
+      enabled: options.behaviorAnchor?.enabled !== false
+    });
+
+    this.smartImageReferencer = new SmartImageReferencer({
+      enabled: options.smartImageRef?.enabled !== false
+    });
+
+    this.sceneNumberMapper = new SceneNumberMapper({
+      enabled: options.sceneNumberMapper?.enabled !== false
+    });
+
+    this.identityPersistenceSystem = new IdentityPersistenceSystem({
+      enabled: options.identityPersistence?.enabled !== false
     });
 
     this.version = '2.0.0';
@@ -689,6 +725,110 @@ class HyperrealitySystem {
       console.log(`   ✅ 制作完成 (${result.stages.productionEngine.timing}ms)`);
       console.log(`      镜头: ${productionResult.shots.length} | Prompts: ${productionResult.prompts.length}`);
       console.log(`      质量门: ${productionResult.stages.qualityGate?.passed ? '通过' : '失败'}`);
+
+      // ========== 🆕 审计修复：6个功能增强模块注入 ==========
+      
+      // 1. 时长约束（必须在制作引擎后第一个执行，约束基础数据）
+      if (this.durationConstraintManager.enabled && scriptResult?.adapted?.scenes) {
+        console.log('\n⏱️ [DurationManager] 时长约束检查...');
+        try {
+          const rhythmType = metadata.rhythmType ||
+            (metadata.target_duration <= 30 ? 'fast' :
+             metadata.target_duration >= 120 ? 'slow' : 'standard');
+          
+          const constrainResult = this.durationConstraintManager.constrain(
+            scriptResult.adapted.scenes,
+            { targetDuration: metadata.target_duration, rhythmType, forceAdjust: true }
+          );
+          
+          if (constrainResult.adjustments.length > 0) {
+            console.log(`   ⚠️ 时长调整: ${constrainResult.adjustments.length} 处`);
+          } else {
+            console.log('   ✅ 时长约束通过');
+          }
+        } catch (err) {
+          console.warn(`   ⚠️ DurationManager 失败: ${err.message}`);
+        }
+      }
+
+      // 2. 场景编号映射（建立 shotId ↔ 内容映射表）
+      if (this.sceneNumberMapper.enabled && productionResult?.shots) {
+        console.log('\n🗺️ [SceneMapper] 场景编号映射...');
+        try {
+          const mapResult = this.sceneNumberMapper.map(
+            productionResult.shots,
+            scriptResult?.adapted?.scenes || [],
+            scriptResult?.adapted?.dialogues || []
+          );
+          result.stages.sceneNumberMap = mapResult.mappings;
+          console.log(`   ✅ 场景映射完成: ${mapResult.mappings.length} 条映射`);
+        } catch (err) {
+          console.warn(`   ⚠️ SceneMapper 失败: ${err.message}`);
+        }
+      }
+
+      // 3. 角色服装锁定（在情绪注入前，确保服装稳定）
+      if (this.characterCostumePrompter.enabled && metadata.characters?.length > 0 && productionResult?.shots) {
+        console.log('\n👔 [CharacterCostume] 角色服装锁定注入...');
+        try {
+          const enhancedShots = this.characterCostumePrompter.enhance(
+            productionResult.shots,
+            metadata.characters
+          );
+          productionResult.shots = enhancedShots;
+          for (const p of productionResult.prompts) {
+            const shot = enhancedShots.find(s => s.shotId === p.shotId);
+            if (shot) { p.prompt = shot.prompt; p.promptCharCount = shot.promptCharCount; }
+          }
+          console.log('   ✅ 角色服装锁定注入完成');
+        } catch (err) {
+          console.warn(`   ⚠️ CharacterCostume 失败: ${err.message}`);
+        }
+      }
+
+      // 4. 身份持续提示（确保角色身份跨镜头一致）
+      if (this.identityPersistenceSystem.enabled && metadata.characters?.length > 0 && productionResult?.shots) {
+        console.log('\n🆔 [IdentityPersist] 身份持续提示注入...');
+        try {
+          productionResult.shots = this.identityPersistenceSystem.persist(
+            productionResult.shots,
+            metadata.characters,
+            scriptResult?.adapted?.scenes || []
+          );
+          console.log('   ✅ 身份持续提示注入完成');
+        } catch (err) {
+          console.warn(`   ⚠️ IdentityPersist 失败: ${err.message}`);
+        }
+      }
+
+      // 5. 行为锚定（确保姿态自然过渡）
+      if (this.behaviorAnchorSystem.enabled && productionResult?.shots) {
+        console.log('\n🚶 [BehaviorAnchor] 行为锚定注入...');
+        try {
+          productionResult.shots = this.behaviorAnchorSystem.anchor(
+            productionResult.shots,
+            scriptResult?.adapted?.scenes || []
+          );
+          console.log('   ✅ 行为锚定注入完成');
+        } catch (err) {
+          console.warn(`   ⚠️ BehaviorAnchor 失败: ${err.message}`);
+        }
+      }
+
+      // 6. 智能引用（绑定场景引用图）
+      if (this.smartImageReferencer.enabled && productionResult?.shots) {
+        console.log('\n🖼️ [SmartImageRef] 智能引用绑定...');
+        try {
+          productionResult.shots = await this.smartImageReferencer.bind(
+            productionResult.shots,
+            scriptResult?.adapted?.scenes || [],
+            metadata.referenceImages || []
+          );
+          console.log('   ✅ 智能引用绑定完成');
+        } catch (err) {
+          console.warn(`   ⚠️ SmartImageRef 失败: ${err.message}`);
+        }
+      }
 
       // ========== P3-3: Emotion Shot Syntax Injection 情绪镜头语法注入 ==========
       if (this.emotionShotSyntaxInjector.enabled && metadata._emotionArc) {
