@@ -855,7 +855,17 @@ ${missing.map(f => `- ${f}：${FIELD_DESCS[f]}`).join('\n')}
       ' camera_movement ≥ 100 | timeline ≥ 200 | director_instruction ≥ 80',
       ' color_palette ≥ 80 | depth_of_field ≥ 80 | audio ≥ 100',
       ' 其余字段 ≥ 40 字符',
-      ' 全部 25 个字段必须全部输出，禁止省略任何一个。'
+      ' 全部 25 个字段必须全部输出，禁止省略任何一个。',
+      '',
+      '【字段内容规范 - 必须包含的子要素】',
+      ' director_instruction: 风格定位(电影/纪录片/广告风格) + 写实要求(真实感/无特效) + 情绪基调(冷静/紧张/温馨等)',
+      ' constraint: 画幅比例(16:9/9:16) + 分辨率(1920x1080/4K) + 格式(MP4/MOV) + 帧率(24fps/30fps)',
+      ' lighting: 主光描述(位置/方向) + 色温参数(5600K/3200K等) + 光质定义(柔光/硬光/漫射)',
+      ' camera_movement: 运动方式(推/拉/摇/移/跟) + 速度参数(慢速/快速) + 时间分布(0-3s/3-6s等)',
+      ' negative: 必须包含 "no text" 和 "no watermark" 两项基础排除',
+      ' composition: 景别等级(远景/全景/中景/近景/特写) + 主体位置(三分法/中心/对称)',
+      ' bright_constraint: 亮度要求 + 可见性 + 面部明亮(避免面部阴影)',
+      ' 每个字段内容必须体现上述子要素，缺失会被标记为不合格。'
     ].join('\n');
 
     return `${directorContext}
