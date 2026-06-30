@@ -188,6 +188,52 @@ class HyperrealitySystem {
     });
 
     this.version = '2.0.0';
+
+    // 【审计修复】进程信号处理，优雅关闭
+    this._setupSignalHandlers();
+  }
+
+  _setupSignalHandlers() {
+    const signals = ['SIGTERM', 'SIGINT', 'SIGHUP'];
+    
+    for (const signal of signals) {
+      process.on(signal, async () => {
+        console.log(`\n[HyperrealitySystem] 收到 ${signal}，开始优雅关闭...`);
+        
+        // 1. 关闭长时间任务模式
+        if (this.stabilityShield) {
+          this.stabilityShield.setLongTaskMode('ProductionEngine', false);
+        }
+        
+        // 2. 销毁 EventBus
+        if (this.eventBus) {
+          this.eventBus.destroy();
+        }
+        
+        console.log('[HyperrealitySystem] 清理完成，退出');
+        process.exit(0);
+      });
+    }
+    
+    // 未捕获异常处理
+    process.on('uncaughtException', (err) => {
+      console.error('[HyperrealitySystem] 未捕获异常:', err.message);
+      console.error(err.stack);
+      
+      if (this.eventBus) {
+        this.eventBus.emit('system.fatal', { error: err.message, stack: err.stack });
+      }
+      
+      setTimeout(() => process.exit(1), 1000);
+    });
+    
+    process.on('unhandledRejection', (reason, promise) => {
+      console.error('[HyperrealitySystem] 未处理 rejection:', reason);
+      
+      if (this.eventBus) {
+        this.eventBus.emit('system.unhandledRejection', { reason: String(reason) });
+      }
+    });
   }
 
   /**

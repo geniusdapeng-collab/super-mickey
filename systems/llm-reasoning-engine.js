@@ -48,12 +48,15 @@ class LLMEngine {
       // 响应体读取加独立超时，防止流半开挂死
       const textTimeoutMs = Math.max(10000, timeoutMs);
       console.log(`[LLMEngine._fetchWithTimeout] 开始读取响应体 | textTimeout=${textTimeoutMs}ms`);
+      // 修复: 防止 res.text() 超时后成为悬空 Promise
+      const textPromise = res.text();
+      textPromise.catch(() => {});
+      
       const text = await Promise.race([
-        res.text(),
+        textPromise,
         new Promise((_, reject) => {
           textTimer = setTimeout(() => {
             try { controller.abort(); } catch (_) {}
-            // 【健壮性修复】主动取消底层流，释放 socket，防止 res.text() 悬挂泄漏
             try { res.body && typeof res.body.cancel === 'function' && res.body.cancel(); } catch (_) {}
             reject(new Error(`res.text() 读取响应体超时(${textTimeoutMs}ms)`));
           }, textTimeoutMs);

@@ -98,6 +98,10 @@ class EventBus extends EventEmitter {
     this.mutations = [];
     this.maxEvents = options.maxEvents || 10000;
     this.enabled = options.enabled !== false;
+    
+    // 【审计修复】自动清理定时器，防止 mutations 无限累积
+    this.cleanupInterval = options.cleanupInterval || 60000; // 1分钟
+    this._startAutoCleanup();
   }
 
   /**
@@ -146,6 +150,38 @@ class EventBus extends EventEmitter {
     this.mutations.push(mutation);
     
     this.emit('data.mutated', mutation);
+  }
+
+  /**
+   * 【审计修复】自动清理旧 mutations，防止内存泄漏
+   */
+  _startAutoCleanup() {
+    if (this._cleanupTimer) return;
+
+    this._cleanupTimer = setInterval(() => {
+      // 清理5分钟前的 mutations
+      const cutoff = Date.now() - 300000;
+      const before = this.mutations.length;
+      this.mutations = this.mutations.filter(m => m.timestamp > cutoff);
+      const after = this.mutations.length;
+      
+      if (before !== after) {
+        console.log(`[EventBus] 自动清理: ${before - after} 条旧 mutations 已移除`);
+      }
+    }, this.cleanupInterval);
+  }
+
+  /**
+   * 【审计修复】销毁 EventBus，清理资源
+   */
+  destroy() {
+    if (this._cleanupTimer) {
+      clearInterval(this._cleanupTimer);
+      this._cleanupTimer = null;
+    }
+    this.events = [];
+    this.mutations = [];
+    this.removeAllListeners();
   }
 
   /**
