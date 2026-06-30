@@ -4,7 +4,7 @@
 // 版本: v1.0.0 | 日期: 2026-06-18
 
 const { IntentParser } = require('./intent-parser');
-const ThemeConfig = require('../../config/theme-config');
+const ThemeConfig = require('../../../config/theme-config');
 
 // v2.0.2-fix: 安全数值解析工具，防止NaN污染后续计算
 function safeParseInt(str, defaultValue = 0) {
@@ -73,20 +73,22 @@ const StyleEncoder = {
  */
 const ParserRules = {
   videoTypeRules: [
-    // 核心7大类型
+    // 核心7大类型（按优先级排序，更具体的类型在前）
     { keywords: ['科普', '讲解', '知识', '教学', '课程', '教育', '健康科普'], type: 'EDU', name: '教育科普' },
-    { keywords: ['纪录片', '记录', '纪实', '真实'], type: 'DOC', name: '纪录片' },
-    { keywords: ['家庭', '聚会', '亲子', '家族', '团圆'], type: 'FAMILY', name: '家庭聚会' },
-    { keywords: ['广告', '宣传', '推广', '品牌', '产品', '宣传片', '营销'], type: 'MARKETING', name: '商业营销' },
-    { keywords: ['短剧', '剧情', '故事', '角色', '集', '微电影', '电影级'], type: 'CINE', name: '电影级叙事' },
-    { keywords: ['艺术', '实验', '前卫', '独特', '抽象'], type: 'ART', name: '艺术级表达' },
-    { keywords: ['特效', '震撼', '视觉', '大片感', '极致'], type: 'VFX', name: '极致特效' },
-    // 扩展类型
-    { keywords: ['旅行', '旅游', '游记', '风景'], type: 'TRAVEL', name: '旅行vlog' },
+    { keywords: ['家庭聚会', '家族聚会', '团圆饭'], type: 'FAMILY', name: '家庭聚会' },
+    { keywords: ['儿童', '宝宝', '童话'], type: 'KIDS', name: '儿童亲子' },
     { keywords: ['美食', '料理', '烹饪', '吃', '探店'], type: 'FOOD', name: '美食' },
     { keywords: ['健身', '运动', '训练', '瑜伽'], type: 'FITNESS', name: '健身运动' },
-    { keywords: ['儿童', '宝宝', '亲子', '童话'], type: 'KIDS', name: '儿童亲子' },
-    // 兼容旧类型
+    { keywords: ['旅行', '旅游', '游记', '风景'], type: 'TRAVEL', name: '旅行vlog' },
+    { keywords: ['广告', '宣传', '推广', '品牌', '产品', '宣传片', '营销'], type: 'MARKETING', name: '商业营销' },
+    { keywords: ['艺术级', '艺术表达', '实验艺术'], type: 'ART', name: '艺术级表达' },
+    { keywords: ['特效', '震撼', '大片感', '极致特效'], type: 'VFX', name: '极致特效' },
+    { keywords: ['短剧', '剧情', '故事', '角色', '集', '微电影', '电影级'], type: 'CINE', name: '电影级叙事' },
+    { keywords: ['纪录片', '纪实', '真实'], type: 'DOC', name: '纪录片' },
+    // 扩展类型（兜底匹配）
+    { keywords: ['家庭', '聚会', '亲子', '家族', '团圆'], type: 'FAMILY', name: '家庭聚会' },
+    { keywords: ['艺术', '实验', '前卫', '独特', '抽象'], type: 'ART', name: '艺术级表达' },
+    { keywords: ['视觉', '特效'], type: 'VFX', name: '极致特效' },
     { keywords: ['vlog', '日常', '记录生活', '跟我'], type: 'TRAVEL', name: '旅行vlog' },
     { keywords: ['抖音', '快手', '小红书', 'viral', '短视频'], type: 'MARKETING', name: '商业营销' },
     { keywords: ['企业', '公司', '工厂', '实力'], type: 'MARKETING', name: '商业营销' },
