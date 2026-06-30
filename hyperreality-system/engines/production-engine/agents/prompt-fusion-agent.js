@@ -6,6 +6,7 @@
  */
 const { BaseAgent } = require('./base-agent');
 const { normalizeFields, makeGetter } = require('../../field-standardizer');
+const { FieldConsistencyChecker } = require('../../field-consistency-checker');
 
 // 【v2.1.4-fix10-P25-fix3】外部专家建议：填满 schema 解决 LLM 字段缺失问题
 // 25 个标准字段的 schema 模板：键名 + 类型提示
@@ -91,10 +92,10 @@ const PromptLengthConfig = require('../../../config/prompt-length.js');
 // ...
     // 【审计修复】从配置文件读取，不再硬编码
     this.maxPromptLength = options.maxPromptLength || PromptLengthConfig.HARD_MAX || 12000;
-    // 【P2-11 修复】删除 concurrency 死代码；llmTimeout 走 options，允许外部配置覆盖
-    // this.concurrency = options.concurrency || 2; // 死代码，process() 中从未使用
     this.llmTimeout = options.llmTimeout || this.llmTimeout || 300000;
     this.llmMaxRetries = options.llmMaxRetries || 2;
+    // v2.1.7: 新增跨字段一致性校验器
+    this.consistencyChecker = new FieldConsistencyChecker({ strict: true, logLevel: 'warn' });
   }
 
   _getSystemPrompt() {
@@ -276,8 +277,18 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
     // 【v2.1.4-fix9-P25-fix7】将 fields 中的关键字段展开到 shot 顶层
     const expandedFields = { ...fields };
     
-    // 组装标准格式Prompt
     const fullPrompt = this._assembleStandardPrompt(shot, fields, ratio);
+
+    // v2.1.7: 跨字段一致性校验 + 自动修复
+    const shotWithBlueprint = { ...shot, fields, blueprint: shot.blueprint || blueprint };
+    const checkResult = this.consistencyChecker.check(shotWithBlueprint);
+    if (!checkResult.valid || checkResult.warningCount > 0) {
+      console.log(`[PromptFusionAgent] ${shot.shotId} 字段一致性: ${checkResult.issues.length} issues, 自动修复中...`);
+      const fixed = this.consistencyChecker.autoFix(shotWithBlueprint);
+      if (fixed.fields) {
+        Object.assign(fields, fixed.fields);
+      }
+    }
 
     return {
       ...shot,
@@ -513,7 +524,114 @@ ${ctx}
     return value;
   }
 
-  // 补齐专用 prompt：只问缺失字段，附上已生成字段作为上下文
+  // ==================== v2.1.7: 动态字段生成 ====================
+
+  /**
+   * 从blueprint动态生成导演指令
+   */
+  _generateDirectorInstruction(blueprint, mood) {
+    const style = blueprint.style || blueprint.config?.style || 'cinematic';
+    const creativeIntensity = blueprint.creativeIntensity || blueprint.config?.creativeIntensity || 0.7;
+    const genre = blueprint.genre || blueprint.config?.genre || '';
+    
+    const styleTemplates = {
+      cinematic: {
+        low: '电影级写实风格，专业摄影布光，细腻质感，自然光效',
+        medium: '好莱坞电影级质感，写实风格，专业摄影布光，8K超高清， cinematic color grading',
+        high: '史诗电影级大制作，IMAX质感，专业电影摄影，极致细节，戏剧化布光，8K超高清'
+      },
+      documentary: {
+        low: '纪录片风格，自然光，真实记录，手持摄影质感',
+        medium: '纪实电影风格，自然光效，真实环境，专业纪录片摄影',
+        high: '沉浸式纪录片，电影级纪实摄影，环境光主导，真实质感'
+      },
+      animation: {
+        low: '柔和动画风格，温暖色调，简洁线条，清晰画面',
+        medium: '精品动画风格，丰富色彩，流畅动作，专业动画摄影',
+        high: '顶级动画电影风格，极致色彩表现，复杂场景，电影级动画摄影'
+      }
+    };
+
+    const intensity = creativeIntensity < 0.4 ? 'low' : creativeIntensity < 0.8 ? 'medium' : 'high';
+    const template = styleTemplates[style]?.[intensity] || styleTemplates.cinematic[intensity];
+    
+    // 根据情绪微调
+    const moodModifiers = {
+      tense: '，紧张氛围，高对比布光，强化戏剧张力',
+      sad: '，忧郁基调，低饱和色调，柔光处理',
+      epic: '，史诗气势，宏大构图，金色光线，戏剧化阴影',
+      warm: '，温馨氛围，暖色调，柔和光线',
+      calm: '，宁静基调，均匀布光，自然色调'
+    };
+
+    const moodStr = this._extractMoodFromString(mood);
+    const modifier = moodModifiers[moodStr] || '';
+    
+    return `${template}${modifier}`;
+  }
+
+  /**
+   * 从blueprint动态生成画质基础
+   */
+  _generateBaseline(blueprint, duration) {
+    const style = blueprint.style || blueprint.config?.style || 'cinematic';
+    const resolution = duration <= 30 ? '4K' : duration <= 60 ? '6K' : '8K';
+    
+    const styleWords = {
+      cinematic: 'cinematic quality, film grain, professional color grading',
+      documentary: 'documentary realism, natural textures, authentic lighting',
+      animation: 'vivid colors, smooth gradients, clean lines, vibrant animation'
+    };
+
+    return `${resolution} resolution, ${styleWords[style] || styleWords.cinematic}, highly detailed, photorealistic, sharp focus, ultra high definition, lifelike textures`;
+  }
+
+  /**
+   * 从lighting动态推导明亮约束
+   */
+  _generateBrightConstraint(lighting, mood) {
+    const lightingStr = String(lighting || '').toLowerCase();
+    const moodStr = this._extractMoodFromString(mood);
+    
+    // 夜晚场景
+    if (lightingStr.includes('night') || lightingStr.includes('moon') || lightingStr.includes('dark')) {
+      return 'atmospheric low-key lighting, moonlight or artificial light sources, visible through contrast rather than brightness, moody ambiance with clear visibility of key subjects';
+    }
+    
+    // 悲伤/忧郁情绪
+    if (moodStr === 'sad') {
+      return 'soft diffused lighting, gentle shadows, adequate visibility without harsh brightness, low-key moody atmosphere';
+    }
+    
+    // 史诗/宏大
+    if (moodStr === 'epic') {
+      return 'dramatic bright lighting with strong contrast, golden hour or strong directional light, clear visibility of grand scale';
+    }
+    
+    // 默认
+    return 'bright lighting, well-lit scene, clear visibility, natural illumination, avoid dark shadows on face, adequate illumination';
+  }
+
+  /**
+   * 提取情绪关键词
+   */
+  _extractMoodFromString(moodStr) {
+    if (!moodStr) return null;
+    const str = String(moodStr).toLowerCase();
+    const moodMap = {
+      tense: ['tense', '紧张', '紧迫', '悬疑', 'anxious', 'nervous'],
+      sad: ['sad', '悲伤', '忧郁', 'melancholy', 'sorrow', 'grief'],
+      epic: ['epic', '史诗', '宏大', '壮丽', 'grand', 'majestic'],
+      warm: ['warm', '温馨', '温暖', 'cozy', 'gentle', 'tender'],
+      calm: ['calm', '平静', '宁静', 'peaceful', 'serene', 'tranquil']
+    };
+    for (const [mood, markers] of Object.entries(moodMap)) {
+      if (markers.some(m => str.includes(m))) return mood;
+    }
+    return null;
+  }
+
+  // ==================== 原有方法 ====================
   _buildFillPrompt(shot, missing, existingFields, ratio, characters) {
     const ctx = Object.entries(existingFields)
       .filter(([k, v]) => v && String(v).trim())
@@ -636,15 +754,17 @@ ${missing.map(f => `- ${f}：${FIELD_DESCS[f]}`).join('\n')}
       return undefined;
     };
 
-    // 【导演指令】⭐ 新增：整体创作意图
-    const directorInstruction = getField('director_instruction', 'directorInstruction');
+    // 【导演指令】⭐ v2.1.7: 从blueprint动态生成，不再硬编码
+    const directorInstruction = getField('director_instruction', 'directorInstruction') 
+      || this._generateDirectorInstruction(shot.blueprint || {}, fields.mood);
     if (directorInstruction) parts.push(`【导演指令】${directorInstruction}`);
 
     // 【约束】：必须包含画幅比例、分辨率、格式、帧率
     parts.push(`【约束】${fields.constraint || `Aspect ratio: ${ratio}, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no caption, no watermark, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background`}`);
 
-    // 【基础】：三类基础词——分辨率锚定+风格质量+细节增强
-    parts.push(`【基础】${fields.baseline || '8K resolution, cinematic quality, highly detailed, photorealistic, intricate textures, sharp focus'}`);
+    // 【基础】⭐ v2.1.7: 从style和duration动态生成
+    const duration = shot.duration || 10;
+    parts.push(`【基础】${fields.baseline || this._generateBaseline(shot.blueprint || {}, duration)}`);
 
     // 【场景】
     // 【v2.1.4-fix9-P5】场景强制写实：禁止科幻/抽象词汇
@@ -788,25 +908,25 @@ ${missing.map(f => `- ${f}：${FIELD_DESCS[f]}`).join('\n')}
     const audioField = getField('audio');
     if (audioField) parts.push(`【音频】${audioField}`);
 
-    // 【负面约束】：通用负面词 + 场景特定负面词
+    // 【负面约束】⭐ v2.1.7: 从style动态选择负面约束
     const negativeField = getField('negative');
     if (negativeField) {
       parts.push(`【负面约束】${negativeField}`);
     } else {
-      // 兜底：通用负面词 + 教育/医疗场景特定负面词
-      parts.push(`【负面约束】no text, no watermark, no caption, no subtitle, no logo, no blurry, no low resolution, no pixelated, no distorted, no artifacts, no compression noise, no extra limbs, no deformed hands, no malformed fingers, no extra fingers, no fused fingers`);
-      parts.push(`no cartoon style, no flat lighting, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background`);
-      parts.push(`no brand logos with text, no text in medical charts, no text on posters, no text on billboards, no text on packaging, no handwritten text, no printed text, no signage text, no text overlays, no UI elements with text`);
+      const style = shot.blueprint?.style || shot.blueprint?.config?.style || 'cinematic';
+      const baseNegative = 'no text, no watermark, no caption, no subtitle, no logo, no blurry, no low resolution, no pixelated, no distorted, no artifacts, no compression noise, no extra limbs, no deformed hands, no malformed fingers, no extra fingers, no fused fingers';
+      const styleNegative = style === 'cinematic' 
+        ? 'no cartoon style, no flat lighting, no text anywhere in frame, no readable characters, no alphabets, no Chinese characters, no text on walls, no text on objects, no text on documents, no text on signs, no text on labels, no text on screens, no text on clothing, no text in background, no brand logos with text, no text on posters, no text on billboards, no text on packaging, no handwritten text, no printed text, no signage text, no text overlays, no UI elements with text'
+        : style === 'animation'
+        ? 'no photorealistic, no live-action, no realistic textures, no film grain'
+        : 'no cartoon style, no flat lighting, no text anywhere in frame';
+      parts.push(`【负面约束】${baseNegative}; ${styleNegative}`);
     }
 
-    // 【明亮约束】⭐ 新增：亮度/光照强制要求，防止暗场
-    const brightConstraint = getField('bright_constraint', 'brightConstraint');
-    if (brightConstraint) {
-      parts.push(`【明亮约束】${brightConstraint}`);
-    } else {
-      // 兜底：强制明亮
-      parts.push(`【明亮约束】bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination`);
-    }
+    // 【明亮约束】⭐ v2.1.7: 从lighting动态推导，不再硬编码
+    const brightConstraint = getField('bright_constraint', 'brightConstraint') 
+      || this._generateBrightConstraint(fields.lighting, fields.mood);
+    if (brightConstraint) parts.push(`【明亮约束】${brightConstraint}`);
 
     // 【角色约束】⭐ 新增：防止多角色/分身
     const characterConstraint = getField('character_constraint', 'characterConstraint');
