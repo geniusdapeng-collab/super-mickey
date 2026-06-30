@@ -9,6 +9,8 @@
  */
 
 const { PhaseExecutor } = require('./phase-executor');
+const { DialogueTimingCalculator } = require('../../../utils/dialogue-timing-calculator');
+const ThemeConfig = require('../../../config/theme-config');
 
 class Phase3PromptFusion extends PhaseExecutor {
   constructor(options) {
@@ -79,18 +81,21 @@ class Phase3PromptFusion extends PhaseExecutor {
         'audio', 'negative', 'bright_constraint', 'character_constraint', 'consistency'
       ]);
 
+      // 【v2.2.0-Phase3】台词-镜头时长映射检查
+      const timingCheckedShots = await this._checkDialogueTiming(newShots, adaptedBlueprint);
+
       result.llmStats.promptFusion = pfResult.timing;
       
       const timing = Date.now() - startTime;
       this.log('PROMPT-FUSION-AGENT', `完成 (${timing}ms)`);
 
       // 保存 checkpoint
-      await this.saveCheckpoint('phase3', newShots, {
+      await this.saveCheckpoint('phase3', timingCheckedShots, {
         opening: result.opening,
         llmStats: result.llmStats
       });
 
-      return { success: true, shots: newShots, result, timing };
+      return { success: true, shots: timingCheckedShots, result, timing };
     } catch (e) {
       this.log('PROMPT-FUSION-FAIL', `❌ ${e.message},部分镜头降级到规则 Prompt`);
       return { success: false, shots, result, timing: Date.now() - startTime, error: e.message };
@@ -100,6 +105,85 @@ class Phase3PromptFusion extends PhaseExecutor {
         this.healthMonitor.setLongTaskMode('ProductionEngine', false);
       }
     }
+  }
+  /**
+   * 【v2.2.0-Phase3】台词-镜头时长映射检查
+   * 在 PromptFusion 后、checkpoint 前执行
+   * - 检测台词溢出（台词时长 > 镜头时长）
+   * - 检测台词占比过高（>80%）
+   * - 根据类型自动选择调整策略
+   */
+  async _checkDialogueTiming(shots, blueprint) {
+    // 获取视频类型以确定调整策略
+    const videoType = blueprint?.config?.type || blueprint?.type || 'EDU';
+    const typeConfig = ThemeConfig.getType(videoType) || ThemeConfig.getType('EDU');
+    
+    // 根据类型选择策略：EDU/MARKETING/FAMILY 优先保台词（延长镜头），DRAMA/CINE/ART 优先保节奏（缩短台词）
+    const strategy = ['EDU', 'MARKETING', 'FAMILY', 'DOC'].includes(videoType) ? 'extend' : 'shorten';
+    
+    const calculator = new DialogueTimingCalculator({
+      autoAdjust: true,
+      adjustStrategy: strategy
+    });
+
+    this.log('DIALOGUE-TIMING', `开始检查 (${videoType} 类型, 策略:${strategy})...`);
+    
+    const checkResult = calculator.validateShots(shots);
+    
+    if (checkResult.criticalCount > 0) {
+      this.log('DIALOGUE-TIMING', `⚠️ 发现 ${checkResult.criticalCount} 个镜头台词溢出，自动调整中...`);
+    }
+    if (checkResult.warningCount > 0) {
+      this.log('DIALOGUE-TIMING', `⚡ 发现 ${checkResult.warningCount} 个镜头台词占比过高`);
+    }
+    
+    // 应用自动修复到 shots
+    const adjustedShots = shots.map((shot, index) => {
+      const result = checkResult.results[index];
+      if (!result || !result.hasDialogue) return shot;
+      
+      const metadata = {
+        dialogueTiming: {
+          checked: true,
+          dialogueDuration: result.dialogueDuration,
+          shotDuration: result.shotDuration,
+          ratio: result.ratio,
+          severity: result.severity,
+          issue: result.issue
+        }
+      };
+      
+      // 如果有 autoFix，应用修复
+      if (result.autoFix) {
+        metadata.dialogueTiming.autoFix = result.autoFix;
+        
+        if (result.autoFix.type === 'shorten_dialogue' && shot.dialogue) {
+          // 应用缩短后的台词
+          const suggestedText = result.autoFix.suggestedText;
+          if (suggestedText && shot.dialogue.lines) {
+            shot.dialogue.lines[0].text = suggestedText;
+            this.log('DIALOGUE-TIMING', `✂️ ${shot.shot_id || shot.shotId}: 台词已缩短 ${result.autoFix.originalChars}→${result.autoFix.targetChars} 字`);
+          }
+        } else if (result.autoFix.type === 'extend_shot') {
+          // 延长镜头时长
+          const newDuration = result.autoFix.suggestedDuration;
+          if (shot.duration !== undefined) {
+            shot.duration = newDuration;
+            this.log('DIALOGUE-TIMING', `⏱️ ${shot.shot_id || shot.shotId}: 镜头时长已延长 ${result.autoFix.originalDuration}→${newDuration}s`);
+          } else if (shot.timing) {
+            shot.timing.duration = newDuration;
+            this.log('DIALOGUE-TIMING', `⏱️ ${shot.shot_id || shot.shotId}: 镜头时长已延长 ${result.autoFix.originalDuration}→${newDuration}s`);
+          }
+        }
+      }
+      
+      // 合并 metadata 到 shot
+      return { ...shot, ...metadata };
+    });
+    
+    this.log('DIALOGUE-TIMING', `完成 | 总镜头:${checkResult.totalShots} | 含台词:${checkResult.shotsWithDialogue} | 严重:${checkResult.criticalCount} | 警告:${checkResult.warningCount}`);
+    
+    return adjustedShots;
   }
 }
 

@@ -31,8 +31,16 @@
 - **修复3**：`_assembleStandardPrompt` 增加中文占比检测（<30% 警告）
 - 提交：待提交
 
+## 2026-06-30 15:10 - Phase 3 完成：台词-镜头时长映射深度集成
+- Phase 3 PromptFusion 增加 `_checkDialogueTiming()` 方法
+- 集成 `DialogueTimingCalculator` 到 Production Engine
+- 自动调整策略：EDU/MARKETING/FAMILY/DOC → 延长镜头（保台词完整）
+- 自动调整策略：DRAMA/CINE/ART/其他 → 缩短台词（保镜头节奏）
+- 测试通过：EDU类型延长镜头 ✅，DRAMA类型缩短台词 ✅
+- 提交：待提交
+
 ## 实施计划
 - Phase 1: ✅ 主题类型配置化
 - Phase 2: ✅ 主题多样性测试引擎
-- Phase 3: 台词-镜头时长映射深度集成
-- Phase 4: 全链路验证
+- Phase 3: ✅ 台词-镜头时长映射深度集成
+- Phase 4: 全链路验证（11大类型各跑1个完整链路）
