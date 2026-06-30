@@ -300,11 +300,13 @@ class LLMRepairer {
     });
 
     try {
+      const repairPromise = this.llm.reason(userPrompt, { 
+        systemPrompt: LLM_REPAIRER_SYSTEM_PROMPT, 
+        temperature: 0.3 
+      });
+      repairPromise.catch(() => {}); // 【v2.1.6-fix】防止悬空 rejection
       const response = await Promise.race([
-        this.llm.reason(userPrompt, { 
-          systemPrompt: LLM_REPAIRER_SYSTEM_PROMPT, 
-          temperature: 0.3 
-        }),
+        repairPromise,
         timeoutPromise
       ]).finally(() => clearTimeout(timer));
 

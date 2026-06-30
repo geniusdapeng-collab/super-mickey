@@ -5,6 +5,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { GlobalNegativePromptInjector } = require('../systems/global-negative-prompts');
 
 // 复用现有系统的渲染提交核心
 const RENDER_CORE_PATH = path.join(__dirname, '../../../scripts/render-submitter-core.js');
@@ -31,6 +32,7 @@ class RenderingEngine {
     };
 
     this.logs = [];
+    this.negativePromptInjector = new GlobalNegativePromptInjector();
     this._initSubmitter();
   }
 
@@ -98,6 +100,19 @@ class RenderingEngine {
       // 构建渲染数据结构（兼容现有系统）
       const shots = validPrompts.map(p => this._convertToShotFormat(p));
 
+      // 🆕 【v2.1.6-fix】注入全局负面提示词
+      for (const shot of shots) {
+        const isOpening = shot.sceneType === 'opening' || shot.shotId?.match(/^(SC|S)00/);
+        const negativePrompt = isOpening
+          ? this.negativePromptInjector.generateForOpeningShot({ maxLength: 250 })
+          : this.negativePromptInjector.generateForContentShot({ maxLength: 300 });
+        shot.negativePrompt = negativePrompt;
+        if (shot.prompt && !shot.prompt.includes('【负面约束】')) {
+          shot.prompt = `${shot.prompt}\n${negativePrompt}`;
+        }
+      }
+      this.log('RENDER', `🛡️ 已注入全局负面提示词 (${shots.length} 镜头)`);
+
       if (options.dryRun) {
         // 模拟模式：只验证不提交
         this.log('RENDER', '⚠️ 模拟模式：验证数据但不提交 API');
@@ -135,6 +150,7 @@ class RenderingEngine {
           bindingManifestPath: manifestPath,
           skipValidation: options.skipValidation
         });
+        submitPromise.catch(() => {}); // 【v2.1.6-fix】防止悬空 rejection
         const submitResult = await Promise.race([
           submitPromise,
           new Promise((_, reject) => setTimeout(() => reject(new Error('渲染提交超时(2分钟)')), SUBMIT_TIMEOUT))

@@ -117,8 +117,10 @@ class SagaStage {
         });
         
         // 执行阶段
+        const handlerPromise = handler(context);
+        handlerPromise.catch(() => {}); // 【v2.1.6-fix】防止悬空 rejection
         const result = await Promise.race([
-          handler(context),
+          handlerPromise,
           timeoutPromise
         ]);
         

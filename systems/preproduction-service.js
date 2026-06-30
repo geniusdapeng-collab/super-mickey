@@ -67,8 +67,10 @@ async function runPreproduction(input, options = {}) {
       if (pendingTasks.length > 0) {
         reporter.stage('异步任务收尾', 85, `等待 ${pendingTasks.length} 个任务`);
         try {
+          const allSettledPromise = Promise.allSettled(pendingTasks);
+          allSettledPromise.catch(() => {}); // 【v2.1.6-fix】防止悬空 rejection
           await Promise.race([
-            Promise.allSettled(pendingTasks),
+            allSettledPromise,
             new Promise((_, reject) =>
               setTimeout(() => reject(new Error('异步任务等待超时')), 300000)
             )

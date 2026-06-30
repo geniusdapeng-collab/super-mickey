@@ -249,22 +249,26 @@ ${script.substring(0, 3000)}${script.length > 3000 ? '\n...（脚本截断，剩
 
       // 优先用 chat 方法（BaseAgent 引擎的标准接口）
       if (typeof this.config.llmEngine.chat === 'function') {
+        const chatPromise = this.config.llmEngine.chat(
+          '你是一位严格但公正的内容审查员。只输出JSON，不要解释。',
+          prompt,
+          0.2
+        );
+        chatPromise.catch(() => {}); // 【v2.1.6-fix】防止悬空 rejection
         responseText = await Promise.race([
-          this.config.llmEngine.chat(
-            '你是一位严格但公正的内容审查员。只输出JSON，不要解释。',
-            prompt,
-            0.2
-          ),
+          chatPromise,
           timeoutPromise
         ]).finally(() => clearTimeout(timer));
       }
       // 兼容 reasonStructured 方法
       else if (typeof this.config.llmEngine.reasonStructured === 'function') {
+        const reasonPromise = this.config.llmEngine.reasonStructured(prompt, null, {
+          maxTokens: 2000,
+          timeoutMs: this.config.timeout
+        });
+        reasonPromise.catch(() => {}); // 【v2.1.6-fix】防止悬空 rejection
         const result = await Promise.race([
-          this.config.llmEngine.reasonStructured(prompt, null, {
-            maxTokens: 2000,
-            timeoutMs: this.config.timeout
-          }),
+          reasonPromise,
           timeoutPromise
         ]).finally(() => clearTimeout(timer));
         // 【P1-13 修复】先检查 success，失败则明确返回空并告警
@@ -276,13 +280,15 @@ ${script.substring(0, 3000)}${script.length > 3000 ? '\n...（脚本截断，剩
       }
       // 兼容 generate 方法（如果引擎实现了的话）
       else if (typeof this.config.llmEngine.generate === 'function') {
+        const genPromise = this.config.llmEngine.generate(prompt, {
+          systemPrompt: '你是一位严格但公正的内容审查员。只输出JSON，不要解释。',
+          maxTokens: 2000,
+          timeoutMs: this.config.timeout,
+          forceJson: true
+        });
+        genPromise.catch(() => {}); // 【v2.1.6-fix】防止悬空 rejection
         const result = await Promise.race([
-          this.config.llmEngine.generate(prompt, {
-            systemPrompt: '你是一位严格但公正的内容审查员。只输出JSON，不要解释。',
-            maxTokens: 2000,
-            timeoutMs: this.config.timeout,
-            forceJson: true
-          }),
+          genPromise,
           timeoutPromise
         ]).finally(() => clearTimeout(timer));
         responseText = result?.content || '';

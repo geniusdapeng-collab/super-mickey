@@ -857,8 +857,11 @@ class ProductionEngine {
       timer = setTimeout(() => reject(new Error(`${label}并行阶段超时(${timeoutMs}ms)`)), timeoutMs);
     });
 
+    const allSettledPromise = Promise.allSettled(wrapped);
+    allSettledPromise.catch(() => {}); // 【v2.1.6-fix】防止悬空 rejection
+
     const settled = await Promise.race([
-      Promise.allSettled(wrapped),
+      allSettledPromise,
       timeoutPromise
     ]).finally(() => clearTimeout(timer));
 

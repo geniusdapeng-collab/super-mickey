@@ -603,11 +603,13 @@ class LLMChecker {
     });
 
     try {
+      const checkPromise = this.llm.reason(userPrompt, { 
+        systemPrompt: LLM_CHECKER_SYSTEM_PROMPT, 
+        temperature: 0.2 
+      });
+      checkPromise.catch(() => {}); // 【v2.1.6-fix】防止悬空 rejection
       const response = await Promise.race([
-        this.llm.reason(userPrompt, { 
-          systemPrompt: LLM_CHECKER_SYSTEM_PROMPT, 
-          temperature: 0.2 
-        }),
+        checkPromise,
         timeoutPromise
       ]).finally(() => clearTimeout(timer));
 

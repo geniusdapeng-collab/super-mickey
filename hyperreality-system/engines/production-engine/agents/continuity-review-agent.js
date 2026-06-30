@@ -56,6 +56,7 @@ class ContinuityReviewAgent extends BaseAgent {
   // 【P0-1 修复】总体超时包装，确保即使 _callLLM 内部异常挂起，process 也能在固定时间返回
   _totalTimeout(promise, ms, label) {
     let timer;
+    promise.catch(() => {}); // 【v2.1.6-fix】防止悬空 rejection
     return Promise.race([
       promise,
       new Promise((_, reject) => {

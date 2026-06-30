@@ -401,22 +401,28 @@ class RequirementListBuilder {
     try {
       if (typeof llmEngine.generate === 'function') {
         // 【P1-16 修复】统一调用契约 (prompt, options)，与 ScriptGenerator/CrossEpisodeValidator 一致
+        const genPromise = llmEngine.generate(prompt, { maxTokens: 2500, temperature: 1, timeoutMs });
+        genPromise.catch(() => {}); // 【v2.1.6-fix】防止悬空 rejection
         const response = await Promise.race([
-          llmEngine.generate(prompt, { maxTokens: 2500, temperature: 1, timeoutMs }),
+          genPromise,
           timeoutPromise
         ]).finally(() => clearTimeout(timer));
         responseText = response?.success ? (response.content || '') : '';
       } else if (typeof llmEngine.chat === 'function') {
         // 方式2: .chat(systemPrompt, userPrompt, temperature) - BaseAgent 标准接口
+        const chatPromise = llmEngine.chat('你是一位专业的视频需求分析师。只输出严格格式的JSON，不要markdown代码块。', prompt, 1);
+        chatPromise.catch(() => {}); // 【v2.1.6-fix】防止悬空 rejection
         const result = await Promise.race([
-          llmEngine.chat('你是一位专业的视频需求分析师。只输出严格格式的JSON，不要markdown代码块。', prompt, 1),
+          chatPromise,
           timeoutPromise
         ]).finally(() => clearTimeout(timer));
         responseText = result?.content || result?.data || '';
       } else if (typeof llmEngine.reasonStructured === 'function') {
         // 方式3: .reasonStructured(prompt, schema, options)
+        const reasonPromise = llmEngine.reasonStructured(prompt, null, { maxTokens: 2500, timeoutMs });
+        reasonPromise.catch(() => {}); // 【v2.1.6-fix】防止悬空 rejection
         const result = await Promise.race([
-          llmEngine.reasonStructured(prompt, null, { maxTokens: 2500, timeoutMs }),
+          reasonPromise,
           timeoutPromise
         ]).finally(() => clearTimeout(timer));
         responseText = result?.data ? JSON.stringify(result.data) : (result?.content || '');

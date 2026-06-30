@@ -70,7 +70,12 @@ function log(level, ...args) {
 
 class HyperrealitySystem {
   constructor(options = {}) {
-    this.requirementListBuilder = new RequirementListBuilder(options.requirementListBuilder);
+    // 【v2.1.6-fix】配置隔离：深拷贝配置防止多实例共享
+    const { ConfigIsolator } = require('./utils/config-isolator');
+    const isolatedOptions = ConfigIsolator.isolate(options);
+    this.options = isolatedOptions;
+
+    this.requirementListBuilder = new RequirementListBuilder(isolatedOptions.requirementListBuilder);
     this.creativeIntensityEngine = new CreativeIntensityEngine(options.creativeIntensityEngine);
     this.scriptEngine = new ScriptEngine({
       ...options.scriptEngine,
@@ -152,6 +157,17 @@ class HyperrealitySystem {
     });
 
     // P2-4: Requirement Alignment Gate - 需求对齐闸机
+
+    // 🆕 【v2.1.6-fix】Prompt 长度同步器（所有修改 prompt 的模块共用）
+    const { PromptSync } = require('./utils/prompt-sync');
+    this.promptSync = new PromptSync({ maxLength: 12000 });
+
+    // 🆕 【v2.1.6-fix】台词时长计算器（已存在但未集成）
+    const { DialogueTimingCalculator } = require('./utils/dialogue-timing-calculator');
+    this.dialogueTimingCalc = new DialogueTimingCalculator({
+      autoAdjust: true,
+      adjustStrategy: 'smart'
+    });
     this.requirementAlignmentGate = new RequirementAlignmentGate({
       enabled: options.requirementAlignment?.enabled !== false,
       threshold: options.requirementAlignment?.threshold || 0.7,
@@ -827,6 +843,48 @@ class HyperrealitySystem {
           console.log('   ✅ 智能引用绑定完成');
         } catch (err) {
           console.warn(`   ⚠️ SmartImageRef 失败: ${err.message}`);
+        }
+      }
+
+      // 🆕 【v2.1.6-fix】Prompt 长度同步：所有增强模块完成后统一同步
+      if (productionResult?.shots) {
+        this.promptSync.syncAll(productionResult.shots, 'PostEnhancement');
+      }
+
+      // 🆕 【v2.1.6-fix】台词时长校验（已有工具，集成到主流程）
+      if (this.dialogueTimingCalc && scriptResult?.adapted?.scenes && metadata.target_duration) {
+        console.log('\n🗣️ [DialogueTiming] 台词时长校验...');
+        try {
+          const dialogueShots = scriptResult.adapted.scenes.map((scene) => ({
+            shot_id: scene.scene_id,
+            duration: scene.timing?.duration || scene.duration || 0,
+            emotion: scene.emotion || scene.mood || 'normal',
+            dialogue: scene.dialogue
+          }));
+          const validation = this.dialogueTimingCalc.validateShots(dialogueShots);
+          if (validation.criticalCount > 0) {
+            console.warn(`   ⚠️ 发现 ${validation.criticalCount} 个台词溢出问题！`);
+            for (const issue of validation.results.filter((r) => r.severity === 'critical')) {
+              console.warn(`   • ${issue.shotId}: ${issue.suggestion}`);
+              if (issue.autoFix) {
+                const scene = scriptResult.adapted.scenes.find((s) => s.scene_id === issue.shotId);
+                if (scene && issue.autoFix.type === 'extend_shot') {
+                  const newDuration = issue.autoFix.suggestedDuration;
+                  if (scene.timing) scene.timing.duration = newDuration;
+                  scene.duration = newDuration;
+                  console.log(`   ✅ 已自动延长 ${issue.shotId} 至 ${newDuration}秒`);
+                }
+              }
+            }
+          }
+          if (validation.warningCount > 0) {
+            console.warn(`   ℹ️ ${validation.warningCount} 个台词占比警告`);
+          }
+          if (validation.valid) {
+            console.log('   ✅ 台词时长校验通过');
+          }
+        } catch (err) {
+          console.warn(`   ⚠️ DialogueTiming 校验失败: ${err.message}`);
         }
       }
 
