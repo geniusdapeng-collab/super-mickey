@@ -5,7 +5,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { GlobalNegativePromptInjector } = require('../systems/global-negative-prompts');
+const { GlobalNegativePromptInjector } = require('../../systems/global-negative-prompts');
 
 // 复用现有系统的渲染提交核心
 const RENDER_CORE_PATH = path.join(__dirname, '../../../scripts/render-submitter-core.js');

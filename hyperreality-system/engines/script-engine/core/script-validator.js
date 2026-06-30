@@ -3,6 +3,7 @@
 // 版本：v1.1 | 日期：2026-06-30
 
 const { DialogueTimingCalculator } = require('../../../utils/dialogue-timing-calculator');
+const { SafeCast } = require('../../../utils/safe-cast'); // 【v2.1.6-fix】补充缺失的导入
 const ThemeConfig = require('../../../config/theme-config');
 
 class ScriptValidator {
