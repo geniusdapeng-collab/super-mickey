@@ -332,16 +332,23 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
       console.warn(`[PromptFusion] ${shot.shotId} 补齐失败，保留已有: ${e.message}`);
     }
 
-    // 3. 仍缺的字段，才用规则兜底（明确标记来源，便于审计）
+    // 3. 仍缺的字段，尝试最小 LLM 降级（保留灵气），失败再用固定模板兜底
     const stillMissing = REQUIRED_FIELDS.filter(f => !fields[f] || String(fields[f]).trim() === '');
     if (stillMissing.length > 0) {
       usedRuleFallback = true;
       const shotData = this._extractFieldsFromShot(shot);
+      
+      // 【v2.1.0】先尝试最小 LLM 降级，保留创作灵气
       for (const f of stillMissing) {
-        if (shotData[f]) fields[f] = shotData[f];
-        else fields[f] = this._defaultFieldValue(f, shot); // 见下
+        if (shotData[f]) {
+          fields[f] = shotData[f];
+        } else {
+          // 尝试最小 LLM 调用生成个性化字段
+          const minimalValue = await this._minimalLLMDegradation(f, shot, ratio, characters);
+          fields[f] = minimalValue || this._defaultFieldValue(f, shot);
+        }
       }
-      console.warn(`[PromptFusion] ${shot.shotId} 规则兜底 ${stillMissing.length} 字段`);
+      console.warn(`[PromptFusion] ${shot.shotId} 兜底 ${stillMissing.length} 字段（先尝试最小LLM降级）`);
     }
 
     return { fields, usedRuleFallback };
@@ -394,7 +401,77 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
     return this._buildShotResult(shot, fields);
   }
 
+  // 【v2.1.0】最小 LLM 降级：用缩短的 prompt + 剧本上下文推断字段，保留创作灵气
+  async _minimalLLMDegradation(field, shot, ratio, characters) {
+    try {
+      const ctx = this._buildMinimalContext(shot, ratio, characters);
+      const prompt = `根据以下镜头上下文，生成 "${field}" 字段的值。只输出该字段的值，不要解释。
+
+镜头上下文：
+${ctx}
+
+字段要求：${FIELD_DESCS[field] || '无特殊要求'}
+
+注意：
+- 必须与镜头上下文（角色、场景、情绪）匹配
+- 拒绝通用模板（如"好莱坞电影级质感"）
+- 保持创作灵气，个性化描述`;
+
+      const schema = { [field]: STANDARD_FIELDS_SCHEMA[field] || '' };
+      const result = await this._callLLM(prompt, schema, () => null, {
+        maxRetries: 2,
+        maxTokens: 2048,
+        timeoutMs: 60000,
+        shotBudget: 60000 // 镜头级独立预算 60s
+      });
+      
+      if (result?.result?.[field] && String(result.result[field]).trim()) {
+        const value = String(result.result[field]).trim();
+        // 过滤掉明显的模板文本
+        if (value.length > 10 && !value.includes('好莱坞') && !value.includes('室内写实')) {
+          console.log(`[PromptFusion] ${shot.shotId} ${field} 最小降级成功 ✓`);
+          return value;
+        }
+      }
+      return null;
+    } catch (e) {
+      console.warn(`[PromptFusion] ${shot.shotId} ${field} 最小降级失败: ${e.message}`);
+      return null;
+    }
+  }
+  
+  _buildMinimalContext(shot, ratio, characters) {
+    const parts = [];
+    parts.push(`场景: ${shot.scene || shot.sceneDescription || '未知'}`);
+    parts.push(`情绪: ${shot.mood || shot.emotional_target || '未知'}`);
+    parts.push(`动作: ${shot.action || '未知'}`);
+    
+    if (shot.characters && shot.characters.length > 0) {
+      parts.push(`角色: ${shot.characters.map(c => c.name || c).join(', ')}`);
+    }
+    if (characters && characters.length > 0) {
+      const charNames = characters.map(c => c.name || c.character?.name || c).join(', ');
+      if (charNames) parts.push(`角色系统: ${charNames}`);
+    }
+    
+    if (shot.dialogue) {
+      const dialogue = typeof shot.dialogue === 'string' ? shot.dialogue : 
+        (shot.dialogue.lines || []).map(l => l.content).join('; ');
+      if (dialogue) parts.push(`台词: ${dialogue}`);
+    }
+    
+    parts.push(`时长: ${shot.duration || '?'}s`);
+    parts.push(`画幅: ${ratio || '16:9'}`);
+    
+    if (shot.timeOfDay) parts.push(`时间: ${shot.timeOfDay}`);
+    if (shot.location) parts.push(`地点: ${shot.location}`);
+    if (shot.sceneType) parts.push(`场景类型: ${shot.sceneType}`);
+    
+    return parts.join('\n');
+  }
+
   // 【v2.1.4-fix11】规则兜底默认值 - 25字段完整默认值，确保绝不返回空字符串
+  // 【v2.1.0】注意：此方法仅在最小 LLM 降级失败后才调用，作为最终底线
   _defaultFieldValue(field, shot) {
     const ratio = shot.ratio || '16:9';
     const sceneType = shot.sceneType || 'standard';

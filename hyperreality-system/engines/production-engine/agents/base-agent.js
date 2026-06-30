@@ -1,10 +1,12 @@
 /**
- * LLM Agent 基类（v2.0.1 并行优化版）
+ * LLM Agent 基类（v2.1.0 智能重试版）
  * - 模型按 Agent 透传（修复原 loadLLMEngine 写死 kimi-k2p6 的 bug）
  * - 全局截止时间（deadline）感知：单次超时 = min(自身超时, 剩余预算)
- * - 预算不足时提前降级，防止单个 Agent 拖垮全局链路
+ * - 【v2.1.0】集成错误分类器，智能重试策略
+ * - 【v2.1.0】镜头级独立预算，互不侵占
  */
 const path = require('path');
+const { ErrorClassifier } = require('./error-classifier');
 
 // 从环境变量读取模型配置，消除硬编码
 const DEFAULT_MODEL = process.env.STORMAXE_LLM_MODEL || 'kimi-k2p6';
@@ -98,8 +100,11 @@ class BaseAgent {
   }
 
   /**
-   * 核心LLM调用方法（带重试+降级+截止时间感知+外层超时+Schema校验）
-   * 【审计修复】支持第4参数 options: { maxRetries, maxTokens } 覆盖单次调用配置
+   * 核心LLM调用方法（v2.1.0 智能重试版）
+   * - 集成错误分类器，根据错误类型选择不同重试策略
+   * - 支持镜头级独立预算（options.shotBudget）
+   * - 渐进式超时：网络错误 ×1.5，指数退避：限流错误
+   * 【审计修复】支持第4参数 options: { maxRetries, maxTokens, shotBudget, timeoutStrategy }
    */
   async _callLLM(prompt, schema, fallbackFn, options = {}) {
     if (!this.enabled) {
@@ -113,56 +118,91 @@ class BaseAgent {
       return this._executeFallback(fallbackFn, 'LLM engine not available');
     }
 
-    // 单次调用可覆盖 maxTokens（补齐等轻量场景用小预算）
+    // 【v2.1.0】镜头级独立预算：每个镜头有自己的预算，不互相侵占
+    const shotBudget = options.shotBudget || null;
+    const effectiveBudget = shotBudget ? Math.min(shotBudget, this._remainingMs()) : this._remainingMs();
+    
     const callMaxTokens = options.maxTokens || this.llmMaxTokens;
     const callMaxRetries = options.maxRetries ?? this.llmMaxRetries;
-    // 支持 options.timeoutMs 覆盖单次超时（补齐等轻量场景用小预算）
     const baseTimeout = options.timeoutMs || this.llmTimeout;
-    const perCallTimeout = Math.min(baseTimeout, this._remainingMs());
-    console.log(`[${this.name}] _callLLM 进入 | perCallTimeout=${perCallTimeout}ms maxTokens=${callMaxTokens} retries=${callMaxRetries} remaining=${this._remainingMs()}ms`);
+    const perCallTimeout = Math.min(baseTimeout, effectiveBudget);
+    
+    console.log(`[${this.name}] _callLLM 进入 | perCallTimeout=${perCallTimeout}ms maxTokens=${callMaxTokens} retries=${callMaxRetries} budget=${effectiveBudget}ms${shotBudget ? ' (镜头独立预算)' : ''}`);
 
-    // 【修复】globalDeadline 过期时不强制降级，改为警告但继续执行
-    // 原因：创作系统不能因为时间预算不足就自动降级，这会扼杀创作灵气
-    // 只有 LLM 真正返回失败或超时才降级
+    // 预算不足警告，但不强制降级
     if (perCallTimeout < 20000) {
       console.warn(`[${this.name}] ⚠️ 剩余预算不足(${perCallTimeout}ms)，但仍尝试 LLM 调用（不自动降级）`);
-      // 给至少 30 秒的尝试时间
-      // return this._executeFallback(fallbackFn, 'insufficient time budget'); // 【禁用】强制降级
     }
 
-    const callStart = Date.now();
-    try {
-      const fullPrompt = `${this._getSystemPrompt()}\n\n${prompt}`;
-      console.log(`[${this.name}] reasonStructured 调用前 | promptLen=${fullPrompt.length}`);
-      const result = await this._callWithTimeout(
-        llm.reasonStructured(fullPrompt, schema, {
-          maxTokens: callMaxTokens,
-          timeoutMs: perCallTimeout,
-          maxRetries: callMaxRetries,
-          deadlineMs: this._globalDeadline
-        }),
-        perCallTimeout,
-        `[${this.name}] reasonStructured`
-      );
-      const callElapsed = Date.now() - callStart;
-      console.log(`[${this.name}] reasonStructured 返回 | 耗时=${callElapsed}ms success=${result?.success}`);
+    let currentPrompt = prompt;
+    let lastError = null;
+    let classification = null;
+    
+    for (let attempt = 1; attempt <= callMaxRetries; attempt++) {
+      const attemptStart = Date.now();
+      const currentTimeout = classification 
+        ? ErrorClassifier.calculateTimeout(perCallTimeout, attempt, classification)
+        : perCallTimeout;
+      
+      try {
+        console.log(`[${this.name}] 尝试 ${attempt}/${callMaxRetries} | timeout=${currentTimeout}ms${classification ? ` strategy=${classification.strategy}` : ''}`);
+        
+        const fullPrompt = `${this._getSystemPrompt()}\n\n${currentPrompt}`;
+        const result = await this._callWithTimeout(
+          llm.reasonStructured(fullPrompt, schema, {
+            maxTokens: callMaxTokens,
+            timeoutMs: currentTimeout,
+            maxRetries: 1, // 内层只重试1次，外层控制总重试
+            deadlineMs: this._globalDeadline
+          }),
+          currentTimeout,
+          `[${this.name}] attempt ${attempt}/${callMaxRetries}`
+        );
 
-      if (!result || !result.success) {
-        throw new Error(`LLM引擎返回失败: ${result?.error || '无返回'}`);
-      }
+        if (!result || !result.success) {
+          throw new Error(`LLM引擎返回失败: ${result?.error || '无返回'}`);
+        }
 
-      // 【v2.1.4-fix13】校验返回数据是否满足 schema
-      const validation = this._validateSchema(result.data, schema);
-      if (!validation.valid) {
-        console.warn(`[${this.name}] Schema校验失败: ${validation.reason}，尝试降级`);
-        return this._executeFallback(fallbackFn, `Schema validation failed: ${validation.reason}`);
+        // Schema 校验
+        const validation = this._validateSchema(result.data, schema);
+        if (!validation.valid) {
+          throw new Error(`Schema校验失败: ${validation.reason}`);
+        }
+        
+        console.log(`[${this.name}] LLM调用成功 ✓ | 耗时=${Date.now() - attemptStart}ms`);
+        return { result: result.data, degraded: false, degradeReason: null, attempts: attempt };
+        
+      } catch (err) {
+        lastError = err;
+        classification = ErrorClassifier.classify(err);
+        
+        console.warn(`[${this.name}] 尝试 ${attempt}/${callMaxRetries} 失败: ${err.message} | type=${classification.type} | retryable=${classification.retryable}`);
+        
+        // 不可重试错误 → 立即熔断
+        if (!classification.retryable) {
+          console.error(`[${this.name}] 🔴 不可重试错误(${classification.type})，停止重试: ${classification.message}`);
+          break;
+        }
+        
+        // 计算下次重试的等待时间
+        if (attempt < callMaxRetries) {
+          const delay = ErrorClassifier.calculateDelay(attempt, classification);
+          if (delay > 0) {
+            console.log(`[${this.name}] 等待 ${delay}ms 后重试...`);
+            await new Promise(r => setTimeout(r, delay));
+          }
+          
+          // 如果是解析错误，尝试缩短 prompt
+          if (ErrorClassifier.shouldShrinkPrompt(classification)) {
+            currentPrompt = ErrorClassifier.shrinkPrompt(currentPrompt, classification.shrinkRatio);
+            console.log(`[${this.name}] Prompt 缩短至 ${currentPrompt.length} 字符`);
+          }
+        }
       }
-      console.log(`[${this.name}] LLM调用成功 ✓`);
-      return { result: result.data, degraded: false, degradeReason: null };
-    } catch (err) {
-      console.warn(`[${this.name}] LLM调用失败: ${err.message} | 耗时≈${Date.now() - callStart}ms`);
-      return this._executeFallback(fallbackFn, `LLM failed: ${err.message}`);
     }
+    
+    console.error(`[${this.name}] 所有 ${callMaxRetries} 次尝试均失败，最后错误: ${lastError?.message}`);
+    return this._executeFallback(fallbackFn, `LLM failed after ${callMaxRetries} attempts: ${lastError?.message}`);
   }
 
   _executeFallback(fallbackFn, reason) {
