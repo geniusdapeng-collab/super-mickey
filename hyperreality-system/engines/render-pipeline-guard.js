@@ -79,7 +79,8 @@ class RenderPipelineGuard {
           const hasCharacter = /protagonist|角色|character|孙悟空|杨戬|二郎神|猴王/i.test(text);
           if (!hasCharacter) return { pass: true };
           // v6.5.60-fix: 支持古装/神话服装 + 现代职业服装
-          const hasCostumeLock = /穿[警护白][服大褂]|身穿|wearing|dressed in|in a|锁子黄金甲|凤翅紫金冠|藕丝步云履|虎皮裙|飞凤帽|战甲|古装|仙衣|道袍|铠甲|armor/i.test(text);
+          // 【修复】增加更多服装描述匹配模式，支持直接描述服装名词（无需"身穿"前缀）
+          const hasCostumeLock = /穿[警护白][服大褂]|身穿|wearing|dressed in|in a|锁子黄金甲|凤翅紫金冠|藕丝步云履|虎皮裙|飞凤帽|战甲|古装|仙衣|道袍|铠甲|armor|龙纹铠甲|银白铠甲|金色铠甲|铠甲|甲胄|战袍|道服/i.test(text);
           return {
             pass: hasCostumeLock,
             message: hasCostumeLock ? null : 'Prompt未明确锁定角色服装',
@@ -183,11 +184,12 @@ class RenderPipelineGuard {
         name: '负向提示词检查',
         check: (prompt) => {
           const text = prompt.prompt || '';
-          const hasNegative = /【负向】/.test(text) || prompt.negativePrompt;
+          // 【修复】支持多种负向提示词标记：【负面约束】、【负向】、negative 字段
+          const hasNegative = /【负面约束】|【负向】/.test(text) || prompt.negativePrompt || prompt.negative;
           return {
             pass: hasNegative,
             message: hasNegative ? null : '未找到负向提示词',
-            fix: '添加【负向】标记和负向提示词内容',
+            fix: '添加【负面约束】或【负向】标记和负向提示词内容',
             severity: 'warning'
           };
         }

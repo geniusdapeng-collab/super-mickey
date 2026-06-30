@@ -478,7 +478,13 @@ ${missing.map(f => `- ${f}：${FIELD_DESCS[f]}`).join('\n')}
     if (shot.characterRef) result.portraits = shot.characterRef;
     
     result.bright_constraint = 'bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination';
-    result.character_constraint = `只出现${shot.character?.name || '角色'}一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆`;
+    
+    // 【修复】多角色场景：character_constraint 应锁定到所有角色，不是只出现一人
+    const characterNames = shot.characters?.map(c => c.name || c).join('、') 
+      || shot.character?.name 
+      || '指定角色';
+    result.character_constraint = `只出现${characterNames}，禁止其他未指定人物入镜，禁止同一角色重复出现，禁止角色分身或克隆`;
+    
     result.director_instruction = '好莱坞大导演质感，电影级画面，写实风格，无特效，无科幻元素';
     result.consistency = '保持角色形象一致，造型不变，面部特征与体型每帧统一';
     

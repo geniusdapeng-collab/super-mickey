@@ -120,19 +120,20 @@ class DirectorOptimizationAgent {
     // 故事性：检查是否有起承转合结构
     let score = 3.0;
 
-    const types = shots.map(s => String(s.type || '').toLowerCase());
-    const hasOpening = types.some(t => t.includes('opening') || t.includes('establish'));
-    const hasClimax = types.some(t => t.includes('climax') || t.includes('reveal'));
-    const hasResolution = types.some(t => t.includes('resolution') || t.includes('ending'));
+    const types = shots.map(s => String(s.type || s.sceneType || '').toLowerCase());
+    // 【修复】支持 SuperMickey 的 sceneType: hook, inciting_incident, rising_action, midpoint, abyss, climax
+    const hasOpening = types.some(t => t.includes('opening') || t.includes('establish') || t.includes('hook') || t.includes('inciting'));
+    const hasClimax = types.some(t => t.includes('climax') || t.includes('reveal') || t.includes('midpoint'));
+    const hasResolution = types.some(t => t.includes('resolution') || t.includes('ending') || t.includes('abyss') || t.includes('falling'));
 
     if (hasOpening) score += 0.5;
     if (hasClimax) score += 0.5;
     if (hasResolution) score += 0.5;
 
     // 检查是否有情绪变化
-    const emotions = shots.map(s => String(s.emotion || '').toLowerCase());
-    const uniqueEmotions = new Set(emotions);
-    if (uniqueEmotions.size >= 2) score += 0.5;
+    const emotions = shots.map(s => String(s.emotion || s.mood || '').toLowerCase());
+    const uniqueEmotions = [...new Set(emotions)].filter(e => e && e !== 'none');
+    if (uniqueEmotions.length >= 2) score += 0.5;
 
     return Math.min(5.0, score);
   }
@@ -148,14 +149,14 @@ class DirectorOptimizationAgent {
       const prev = shots[i - 1];
       const curr = shots[i];
 
-      // 检查是否有过渡
-      if (curr.transition || curr._transitionType) {
+      // 检查是否有过渡（支持 transition / _transitionType / pacing）
+      if (curr.transition || curr._transitionType || curr.pacing || curr.transition) {
         continuityCount++;
       }
       // 检查情绪是否连贯
-      const prevEmotion = String(prev.emotion || '').toLowerCase();
-      const currEmotion = String(curr.emotion || '').toLowerCase();
-      if (prevEmotion === currEmotion || prevEmotion && currEmotion) {
+      const prevEmotion = String(prev.emotion || prev.mood || '').toLowerCase();
+      const currEmotion = String(curr.emotion || curr.mood || '').toLowerCase();
+      if (prevEmotion === currEmotion || (prevEmotion && currEmotion)) {
         continuityCount++;
       }
     }
@@ -172,18 +173,21 @@ class DirectorOptimizationAgent {
 
     let score = 3.0;
 
-    const cameras = shots.map(s => String(s.camera || '').toLowerCase());
-    const uniqueCameras = new Set(cameras);
-    if (uniqueCameras.size >= 3) score += 0.5;
-    if (uniqueCameras.size >= 5) score += 0.5;
+    // 【修复】支持 camera / cameraMovement / camera_movement / cameraString
+    const cameras = shots.map(s => String(s.camera || s.cameraMovement || s.camera_movement || s.cameraString || '').toLowerCase());
+    const uniqueCameras = [...new Set(cameras)].filter(c => c && c !== 'none');
+    if (uniqueCameras.length >= 3) score += 0.5;
+    if (uniqueCameras.length >= 5) score += 0.5;
 
-    const lightings = shots.map(s => String(s.lighting || '').toLowerCase());
-    const uniqueLightings = new Set(lightings);
-    if (uniqueLightings.size >= 2) score += 0.5;
+    // 【修复】支持 lighting / lightingString
+    const lightings = shots.map(s => String(s.lighting || s.lightingString || '').toLowerCase());
+    const uniqueLightings = [...new Set(lightings)].filter(l => l && l !== 'none');
+    if (uniqueLightings.length >= 2) score += 0.5;
 
-    const distances = shots.map(s => String(s.distance || '').toLowerCase());
-    const uniqueDistances = new Set(distances);
-    if (uniqueDistances.size >= 2) score += 0.5;
+    // 【修复】支持 distance / shotSize / composition
+    const distances = shots.map(s => String(s.distance || s.shotSize || s.composition || '').toLowerCase());
+    const uniqueDistances = [...new Set(distances)].filter(d => d && d !== 'none');
+    if (uniqueDistances.length >= 2) score += 0.5;
 
     return Math.min(5.0, score);
   }

@@ -211,26 +211,27 @@ class MicroMotionAdapter {
 
   _extractCameraDistance(promptObj) {
     const camera = promptObj.camera || promptObj._camera || '';
+    const cameraStr = typeof camera === 'string' ? camera : JSON.stringify(camera);
 
-    if (camera.includes('特写') || camera.includes('微距') || camera.includes('extreme close')) {
+    if (cameraStr.includes('特写') || cameraStr.includes('微距') || cameraStr.includes('extreme close')) {
       return 'extreme_close_up';
     }
-    if (camera.includes('近景') || camera.includes('close up')) {
+    if (cameraStr.includes('近景') || cameraStr.includes('close up')) {
       return 'close_up';
     }
-    if (camera.includes('中近景') || camera.includes('medium close')) {
+    if (cameraStr.includes('中近景') || cameraStr.includes('medium close')) {
       return 'medium_close_up';
     }
-    if (camera.includes('中景') || camera.includes('medium')) {
+    if (cameraStr.includes('中景') || cameraStr.includes('medium')) {
       return 'medium_shot';
     }
-    if (camera.includes('中全景') || camera.includes('medium long')) {
+    if (cameraStr.includes('中全景') || cameraStr.includes('medium long')) {
       return 'medium_long_shot';
     }
-    if (camera.includes('全景') || camera.includes('long')) {
+    if (cameraStr.includes('全景') || cameraStr.includes('long')) {
       return 'long_shot';
     }
-    if (camera.includes('大全景') || camera.includes('extreme long')) {
+    if (cameraStr.includes('大全景') || cameraStr.includes('extreme long')) {
       return 'extreme_long_shot';
     }
 
