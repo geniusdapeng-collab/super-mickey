@@ -1,6 +1,7 @@
 /**
  * VisualLanguageAgent - 视觉语言Agent
- * 负责: 运镜设计、灯光设计、动态时间轴
+ * 负责: 运镜设计、灯光设计、构图设计、色彩设计、景深设计、动态时间轴
+ * v2.1.7: 新增 composition/color_palette/depth_of_field 输出
  */
 const { BaseAgent } = require('./base-agent');
 
@@ -10,7 +11,7 @@ class VisualLanguageAgent extends BaseAgent {
   }
 
   _getSystemPrompt() {
-    return `你是一位专业的电影摄影师和灯光师。根据剧本和场景信息，为每个镜头设计运镜方案和灯光方案。
+    return `你是一位专业的电影摄影师和灯光师。根据剧本和场景信息，为每个镜头设计运镜方案、灯光方案、构图方案、色彩方案和景深方案。
 
 输出JSON格式:
 {
@@ -32,6 +33,9 @@ class VisualLanguageAgent extends BaseAgent {
         "atmosphere": "氛围光描述"
       },
       "lightingString": "灯光描述文本",
+      "composition": "构图描述（景别+主体位置+线条引导+留白）",
+      "color_palette": "色彩方案（主色+辅色+肤色+饱和度+对比度）",
+      "depth_of_field": "景深方案（焦点+光圈+前景背景虚化）",
       "timeline": [
         { "segment": 1, "timeRange": "0s-3s", "cameraMovement": "缓推全景", "shotType": "wide", "purpose": "建立空间" }
       ]
@@ -40,10 +44,13 @@ class VisualLanguageAgent extends BaseAgent {
 }
 
 设计原则:
-1. 运镜要服务叙事：情绪紧张用手持晃动，情绪平和用稳定机位;
-2. 时间轴动态切分：根据台词密度和情绪变化切分2-6段，不等分;
-3. 灯光要场景化：不说"key light 3200K"，说"夕阳从右侧窗户斜射进来，在示例角色脸上形成温暖的侧光";
-4. 考虑镜头间衔接：相邻镜头的景别和运动要有逻辑过渡;`;
+1. 运镜要服务叙事：情绪紧张用手持晃动，情绪平和用稳定机位
+2. 构图要服务情绪：紧张→对称/居中，自由→三分法/对角线
+3. 色彩要服务情绪：紧张→冷色/高对比，温馨→暖色/低对比
+4. 景深要服务景别：特写→浅景深(f/2.8)，全景→深景深(f/8)
+5. 时间轴动态切分：根据台词密度和情绪变化切分2-6段，不等分
+6. 灯光要场景化：不用技术术语，用自然描述
+7. 考虑镜头间衔接：相邻镜头的景别和运动要有逻辑过渡;`;
   }
 
   async process(shots, blueprint) {
@@ -73,6 +80,10 @@ class VisualLanguageAgent extends BaseAgent {
         cameraString: designed.cameraString || shot.cameraString || '',
         lighting: designed.lighting || shot.lighting,
         lightingString: designed.lightingString || shot.lightingString || '',
+        // ⭐ v2.1.7: 新增构图/色彩/景深
+        composition: designed.composition || shot.composition || '',
+        color_palette: designed.color_palette || shot.color_palette || '',
+        depth_of_field: designed.depth_of_field || shot.depth_of_field || '',
         timeline: designed.timeline || shot.timeline,
         cameraMovement: {
           ...shot.cameraMovement,
@@ -99,7 +110,7 @@ class VisualLanguageAgent extends BaseAgent {
 ${shotsInfo}
 
 ## 任务
-为每个镜头设计运镜+灯光+时间轴。
+为每个镜头设计运镜+灯光+构图+色彩+景深+时间轴。
 
 【重要】每个镜头的"动作触发"和"说话方式"信息已提供，你的运镜设计必须与之配合：
 - 如果动作触发是"looks at camera"，运镜应设计为正面中景或特写，角色直视镜头
@@ -112,16 +123,22 @@ ${shotsInfo}
 2. cameraString: 运镜描述文本（30-50字，动态描述，必须呼应动作触发）
 3. lighting: {key_light, fill_light, time_of_day, atmosphere}
 4. lightingString: 灯光场景化描述（30-50字，必须呼应说话方式和情绪）
-5. timeline: 运镜时间轴（动态切分4-6段，根据台词节奏和动作触发设计，每段包含时间范围、运镜动作、画面目的，必须详细具体）
+5. composition: 构图方案（景别+主体位置+线条引导+留白，≥80字）
+6. color_palette: 色彩方案（主色调+辅助色+肤色+饱和度+对比度，≥80字）
+7. depth_of_field: 景深方案（焦点+光圈+前景背景虚化，≥80字）
+8. timeline: 运镜时间轴（动态切分4-6段，根据台词节奏和动作触发设计，每段包含时间范围、运镜动作、画面目的，必须详细具体）
 
 设计要点:
 - 台词密集处：短切+手持
 - 情绪铺垫处：长镜头+缓慢推近
 - 景别过渡：相邻镜头不要跳跃太大
 - 灯光场景化：不用技术术语，用自然描述
+- 构图服务情绪：紧张→对称/居中，自由→三分法/对角线
+- 色彩服务情绪：紧张→冷色/高对比，温馨→暖色/低对比
+- 景深服务景别：特写→浅景深(f/2.8)，全景→深景深(f/8)
 - 必须呼应动作触发：运镜时机与角色动作同步
 
-输出JSON: {"shots": [{"shotId":"SC01","camera":{},"cameraString":"...","lighting":{},"lightingString":"...","timeline":[]}]}`;
+输出JSON: {"shots": [{"shotId":"SC01","camera":{},"cameraString":"...","lighting":{},"lightingString":"...","composition":"...","color_palette":"...","depth_of_field":"...","timeline":[]}]};`;
   }
 
   _fallback(shots) {
@@ -145,6 +162,10 @@ ${shotsInfo}
           atmosphere: '自然明亮'
         },
         lightingString: shot.lightingString || '柔和顶光照明，自然补光填充，白天室内明亮氛围',
+        // ⭐ v2.1.7: 新增构图/色彩/景深兜底
+        composition: shot.composition || '景别：中景（膝上）；主体位置：画面黄金分割点右侧；线条引导：纵深层次；画框边缘：适度留白，呼吸空间充足',
+        color_palette: shot.color_palette || '主色调：自然偏暖；辅助色：环境本色；肤色：自然健康；饱和度：中等自然；对比度：中高清晰',
+        depth_of_field: shot.depth_of_field || '焦点：主体面部或动作中心；景深：中等（f/4），背景适度虚化；前景：轻微虚化增加层次；层次：前景-中景-背景三层分离',
         timeline: shot.timeline || [
           { segment: 1, timeRange: '0s-3s', cameraMovement: '镜头稳定，角色入画', shotType: 'wide', purpose: '建立场景' },
           { segment: 2, timeRange: '3s-6s', cameraMovement: '保持构图，角色开始动作', shotType: 'medium', purpose: '推进叙事' }

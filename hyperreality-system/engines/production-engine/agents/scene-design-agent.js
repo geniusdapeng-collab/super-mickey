@@ -50,6 +50,8 @@ ${sceneOptions}
       "scene": "具体场景描述，包含墙面材质、灯光类型、家具设备",
       "mood": "情绪关键词和氛围描述",
       "action": "角色动作描述（含肢体语言、走位）",
+      "makeup": "角色妆容描述（妆容风格+发型+面部细节，20-40字）",
+      "props": "关键道具描述（手持物、桌面物品、背景物件，20-40字）",
       "emotional_target": "场景情绪目标"
     }
   ]
@@ -59,7 +61,9 @@ ${sceneOptions}
 1. 场景描述要具体真实：包含墙面材质、灯光类型、设备、地面材质
 2. 情绪要与台词匹配
 3. 动作要自然：走动、手势、转身、指向等
-4. 考虑镜头连续性：相邻场景的环境和光线要有逻辑关联;`;
+4. 化妆要场景化：手术室→无菌无妆，战场→汗水/泥土，舞会→精致妆容，日常→素颜/淡妆
+5. 道具要具体：从台词和场景中推断，不是"必要道具"而是"具体物品"
+6. 考虑镜头连续性：相邻场景的环境和光线要有逻辑关联;`;
   }
 
   /**
@@ -130,6 +134,9 @@ ${sceneOptions}
         scene: scene,
         mood: designed.mood || shot.mood || '',
         action: designed.action || shot.action || '',
+        // ⭐ v2.1.7: 新增化妆/道具
+        makeup: designed.makeup || shot.makeup || '',
+        props: designed.props || shot.props || '',
         emotional_target: designed.emotional_target || ''
       };
     });
@@ -174,7 +181,9 @@ ${sceneOptions}
 1. scene: 输出最终场景描述（必须是写实环境，50-80字）
 2. mood: 情绪氛围（15-25字）
 3. action: 角色动作（肢体语言、走位、手势，30-50字）
-4. emotional_target: 情绪目标（1个词）
+4. makeup: 角色妆容（根据场景自动推导：手术室→无菌无妆，战场→汗水/泥土，舞会→精致妆容，日常→素颜/淡妆，20-40字）
+5. props: 关键道具（从台词和场景中推断具体物品：手持物、桌面物品、背景物件，20-40字）
+6. emotional_target: 情绪目标（1个词）
 
 【强制约束 - 违反则输出无效】
 - 场景描述必须包含具体物理细节：墙面材质、灯光类型、家具/设备、地面材质
@@ -182,7 +191,7 @@ ${sceneOptions}
 - 光线必须是真实光源：荧光灯、LED顶灯、窗光、无影灯、自然光
 - 角色必须在真实地面站立，背景必须是真实墙面
 
-输出JSON: {"shots": [{"shotId":"SC01","scene":"具体场景描述，50-80字","mood":"...","action":"...","emotional_target":"..."}]}`;
+输出JSON: {"shots": [{"shotId":"SC01","scene":"具体场景描述，50-80字","mood":"...","action":"...","makeup":"...","props":"...","emotional_target":"..."}]}`;
   }
   
   /**
@@ -228,6 +237,9 @@ ${sceneOptions}
         scene: shot.scene || '',
         mood: shot.mood || '',
         action: shot.action || '',
+        // ⭐ v2.1.7: 新增化妆/道具兜底
+        makeup: shot.makeup || '',
+        props: shot.props || '',
         emotional_target: shot.emotional_target || ''
       }))
     };
