@@ -631,6 +631,36 @@ ${ctx}
     return null;
   }
 
+  /**
+   * ⭐ v2.1.7: 按镜头时长动态生成时间轴节拍
+   * 5秒→3节拍, 10秒→5节拍, 15秒→6节拍
+   */
+  _generateTimelineBeats(duration) {
+    const d = duration || 10;
+    if (d <= 5) {
+      return 'T00:00 - 全景establishing，环境展示；T00:02 - 主体动作，情绪推进；T00:04 - 收尾定格，情绪落定';
+    } else if (d <= 8) {
+      const s2 = Math.floor(d * 0.25);
+      const s3 = Math.floor(d * 0.5);
+      const s4 = Math.floor(d * 0.75);
+      return `T00:00 - 全景establishing，环境展示；T00:${String(s2).padStart(2, '0')} - 主体入画，动作开始；T00:${String(s3).padStart(2, '0')} - 情绪推进，动作展开；T00:${String(s4).padStart(2, '0')} - 动作高潮，情绪升温；T00:${String(d-1).padStart(2, '0')} - 收尾定格，情绪落定`;
+    } else if (d <= 12) {
+      const s2 = Math.floor(d * 0.2);
+      const s3 = Math.floor(d * 0.4);
+      const s4 = Math.floor(d * 0.6);
+      const s5 = Math.floor(d * 0.8);
+      return `T00:00 - 全景establishing，环境展示，冷静氛围；T00:${String(s2).padStart(2, '0')} - 中景推进，主体动作；T00:${String(s3).padStart(2, '0')} - 情绪升温，动作展开；T00:${String(s4).padStart(2, '0')} - 动作高潮，情绪顶点；T00:${String(s5).padStart(2, '0')} - 情绪回落，光线平复；T00:${String(d-1).padStart(2, '0')} - 收尾定格`;
+    } else {
+      const s2 = Math.floor(d * 0.15);
+      const s3 = Math.floor(d * 0.3);
+      const s4 = Math.floor(d * 0.45);
+      const s5 = Math.floor(d * 0.6);
+      const s6 = Math.floor(d * 0.75);
+      const s7 = Math.floor(d * 0.9);
+      return `T00:00 - 全景establishing，环境展示，冷静氛围；T00:${String(s2).padStart(2, '0')} - 主体入画，动作开始；T00:${String(s3).padStart(2, '0')} - 中景推进，情绪升温；T00:${String(s4).padStart(2, '0')} - 动作展开，情绪推进；T00:${String(s5).padStart(2, '0')} - 情绪顶点，动作高潮；T00:${String(s6).padStart(2, '0')} - 情绪回落，光线变化；T00:${String(s7).padStart(2, '0')} - 收尾定格，情绪落定`;
+    }
+  }
+
   // ==================== 原有方法 ====================
   _buildFillPrompt(shot, missing, existingFields, ratio, characters) {
     const ctx = Object.entries(existingFields)
@@ -885,11 +915,10 @@ ${missing.map(f => `- ${f}：${FIELD_DESCS[f]}`).join('\n')}
     if (timelineField) {
       parts.push(`【时间轴】${timelineField}`);
     } else {
-      // 兜底：使用T00:XX相对时间戳格式，至少3段
+      // ⭐ v2.1.7: 按镜头时长动态生成时间轴节拍
       const duration = shot.duration || 10;
-      const seg1 = Math.floor(duration * 0.3);
-      const seg2 = Math.floor(duration * 0.6);
-      parts.push(`【时间轴】T00:00 - 全景establishing，环境展示，冷静氛围；T00:${String(seg1).padStart(2, '0')} - 中景推进，人物动作，情绪升温；T00:${String(seg2).padStart(2, '0')} - 情绪收尾，光线平复`);
+      const beats = this._generateTimelineBeats(duration);
+      parts.push(`【时间轴】${beats}`);
     }
 
     // 【情绪】
