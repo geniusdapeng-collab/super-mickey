@@ -317,6 +317,10 @@ class HyperrealitySystem {
    * @returns {object} 完整创作结果
    */
   async create(intent, metadata = {}, options = {}) {
+    // 【v2.1.6-fix-bug39】metadata 深拷贝隔离，防止模块间状态污染
+    const { deepClone } = require('./utils/safe-clone');
+    metadata = deepClone(metadata);
+
     console.log(`\n🔥 [HyperrealitySystem v${this.version}] 开始创作`);
     console.log(`   意图: ${intent}`);
     console.log(`   项目: ${metadata.title || '未命名'}`);
@@ -741,6 +745,13 @@ class HyperrealitySystem {
 
       productionResult = await this.productionEngine.produce(adapted, options.productionEngine?.agentConfig);
 
+      // 【v2.1.6-fix-bug36+38】分离 shots↔prompts 引用 + 建立 O(1) 索引
+      const { DualArraySync } = require('./utils/dual-array-sync');
+      this.dualSync = new DualArraySync();
+      const detached = this.dualSync.detach(productionResult.shots, productionResult.prompts);
+      productionResult.shots = detached.shots;
+      productionResult.prompts = detached.prompts;
+
       result.stages.productionEngine = {
         shots: productionResult.shots.map(s => {
           const clean = {};
@@ -913,15 +924,14 @@ class HyperrealitySystem {
         console.log('\n💫 [EmotionShotSyntax] 情绪镜头语法注入...');
         try {
           const injectedShots = this.emotionShotSyntaxInjector.inject(productionResult.shots, metadata._emotionArc);
+          const oldShots = productionResult.shots; // 【v2.1.6-fix-bug37】保存旧 shots 用于元数据保留
           productionResult.shots = injectedShots;
 
-          // 同步 prompts
-          for (const p of productionResult.prompts) {
-            const shot = productionResult.shots.find(s => s.shotId === p.shotId);
-            if (shot && shot._emotionInjected) {
-              p._emotionInjected = shot._emotionInjected;
-            }
-          }
+          // 【v2.1.6-fix-bug37】不可变更新保留元数据
+          productionResult.shots = this.dualSync.immutableUpdate(oldShots, productionResult.shots);
+
+          // 同步 prompts（使用 DualArraySync O(1) 查找）
+          this.dualSync.syncShotsToPrompts('EmotionShotSyntax', productionResult.shots, productionResult.prompts, ['_emotionInjected']);
 
           console.log(`   ✅ 情绪镜头语法注入完成`);
           result.stages.emotionShotSyntax = {
@@ -960,13 +970,10 @@ class HyperrealitySystem {
 
           // 同步 prompts
           for (const p of productionResult.prompts) {
-            const shot = productionResult.shots.find(s => s.shotId === p.shotId);
-            if (shot) {
-              p._qualityEnhanced = true;
-              p._narrativePurpose = shot._narrativePurpose;
-              p._visualHook = shot._visualHook;
-              p._primaryFocus = shot._primaryFocus;
-            }
+            // 同步 prompts（使用 DualArraySync O(1) 查找）
+            this.dualSync.syncShotsToPrompts('ShotQuality', productionResult.shots, productionResult.prompts, [
+              '_qualityEnhanced', '_narrativePurpose', '_visualHook', '_primaryFocus'
+            ]);
           }
 
           console.log(`   ✅ 镜头质量增强完成: ${sqResult.enhancedCount}/${productionResult.shots.length} 个镜头`);
@@ -1007,11 +1014,8 @@ class HyperrealitySystem {
             shot.promptCharCount = this.productionEngine.countChars ? this.productionEngine.countChars(rebuilt) : rebuilt.length;
           }
         }
-        // prompts 数组也要同步
-        for (const p of (productionResult.prompts || [])) {
-          const shot = productionResult.shots.find(s => s.shotId === p.shotId);
-          if (shot) { p.prompt = shot.prompt; p.promptCharCount = shot.promptCharCount; }
-        }
+        // prompts 数组同步（使用 DualArraySync O(1) 查找）
+        this.dualSync.syncShotsToPrompts('FieldGuard', productionResult.shots, productionResult.prompts, ['prompt', 'promptCharCount']);
 
         // v1.2.6-fix5: 不再用 normalized.shots 覆盖 prompts(prompts 已是标准输出对象,标准化会破坏结构)
         // productionResult.prompts = normalized.shots; // ❌ 删除此行
@@ -1069,7 +1073,12 @@ class HyperrealitySystem {
             brandConfig: options.commercialMode?.brandConfig || this.commercialModeEnhancer.brandConfig
           });
 
+          const oldShots = productionResult.shots; // 【v2.1.6-fix-bug37】保存旧 shots 用于元数据保留
           productionResult.shots = commercialResult.shots;
+
+          // 【v2.1.6-fix-bug37+41】不可变更新保留元数据 + 同步 prompts
+          productionResult.shots = this.dualSync.immutableUpdate(oldShots, productionResult.shots);
+          this.dualSync.syncShotsToPrompts('CommercialMode', productionResult.shots, productionResult.prompts);
 
           console.log(`   ✅ 商业广告模式增强完成`);
           if (!commercialResult.complianceReport.passed) {
@@ -1109,7 +1118,12 @@ class HyperrealitySystem {
           const fpvResult = this.fpvModeEnhancer.enhance(productionResult.shots, intent);
 
           if (fpvResult.fpvEnabled) {
+            const oldShots = productionResult.shots; // 【v2.1.6-fix-bug37】保存旧 shots 用于元数据保留
             productionResult.shots = fpvResult.shots;
+
+            // 【v2.1.6-fix-bug37+41】不可变更新保留元数据 + 同步 prompts
+            productionResult.shots = this.dualSync.immutableUpdate(oldShots, productionResult.shots);
+            this.dualSync.syncShotsToPrompts('FPVMode', productionResult.shots, productionResult.prompts);
 
             console.log(`   ✅ FPV 模式增强完成: ${fpvResult.enhancements.length} 个镜头`);
             console.log(`      运动类型: ${fpvResult.sportType}`);
@@ -1150,18 +1164,14 @@ class HyperrealitySystem {
         });
 
         // 更新 shots
+        const oldShots = productionResult.shots; // 【v2.1.6-fix-bug37】保存旧 shots 用于元数据保留
         productionResult.shots = enhancedShots;
 
-        // 将导演风格同步到 prompts
-        for (let i = 0; i < productionResult.prompts.length; i++) {
-          const shot = enhancedShots.find(s => s.shotId === productionResult.prompts[i].shotId);
-          if (shot && shot._appliedSkills) {
-            productionResult.prompts[i].directorStyle = shot._appliedSkills
-              .map(s => `${s.type}_${s.director}_${s.emotion}`)
-              .join(', ');
-            productionResult.prompts[i]._appliedSkills = shot._appliedSkills;
-          }
-        }
+        // 【v2.1.6-fix-bug37+38】不可变更新保留元数据 + O(1) 同步 prompts
+        productionResult.shots = this.dualSync.immutableUpdate(oldShots, productionResult.shots);
+        this.dualSync.syncShotsToPrompts('DirectorSkills', productionResult.shots, productionResult.prompts, [
+          'directorStyle', '_appliedSkills'
+        ]);
 
         console.log(`   ✅ 导演技能注入完成`);
         console.log(`      增强镜头: ${report.enhancedShots}/${report.totalShots}`);
@@ -1220,7 +1230,11 @@ class HyperrealitySystem {
           const optResult = await this.directorOptimizationAgent.optimize(productionResult.shots, metadata);
 
           if (optResult.improved) {
+            const oldShots = productionResult.shots; // 【v2.1.6-fix-bug37】保存旧 shots 用于元数据保留
             productionResult.shots = optResult.shots;
+
+            // 【v2.1.6-fix-bug37】不可变更新保留元数据
+            productionResult.shots = this.dualSync.immutableUpdate(oldShots, productionResult.shots);
             console.log(`   ✅ 导演优化完成: ${optResult.score.toFixed(2)}/5.0 (迭代 ${optResult.iterations} 次)`);
           } else {
             console.log(`   ✅ 导演优化检查通过: ${optResult.score.toFixed(2)}/5.0`);
@@ -1263,13 +1277,8 @@ class HyperrealitySystem {
 
           productionResult.prompts = mmResult.prompts;
 
-          // 同步 shots
-          for (const p of productionResult.prompts) {
-            const shot = productionResult.shots.find(s => s.shotId === p.shotId);
-            if (shot && p._microMotion) {
-              shot._microMotion = p._microMotion;
-            }
-          }
+          // 同步 shots（使用 DualArraySync O(1) 查找）
+          this.dualSync.syncPromptsToShots('MicroMotion', productionResult.shots, productionResult.prompts, ['_microMotion']);
 
           console.log(`   ✅ 微动作增强完成: ${mmResult.enhancedCount}/${productionResult.prompts.length} 镜头`);
           result.stages.microMotion = {
@@ -1316,11 +1325,8 @@ class HyperrealitySystem {
 
             // 同步 shots 中的 prompt
             for (const p of productionResult.prompts) {
-              const shot = productionResult.shots.find(s => s.shotId === p.shotId);
-              if (shot) {
-                shot.prompt = p.prompt;
-                shot.promptCharCount = p.promptCharCount || p.prompt?.length || 0;
-              }
+              // 同步 shots（使用 DualArraySync O(1) 查找）
+              this.dualSync.syncPromptsToShots('PromptGuardian', productionResult.shots, productionResult.prompts, ['prompt', 'promptCharCount']);
             }
 
             result.stages.promptGuardian = {
@@ -1568,6 +1574,7 @@ class HyperrealitySystem {
         const adapter = result.stages?.adapter || {};
         // 【审计修复】统一片头判定,兼容 SC00/S00
         let openingShot = productionResult.shots.find(s => isOpeningShot(s));
+        const openingShotId = openingShot ? (openingShot.shotId || openingShot.shot_id) : null; // 【v2.1.6-fix-bug40】缓存片头shotId
         if (openingShot) {
           // 如果片头缺少title/subtitle,先用adapter标题兜底
           if (!openingShot.title || openingShot.title === '未命名') {
@@ -1586,7 +1593,10 @@ class HyperrealitySystem {
 
           // 【v2.1.4-fix11-G】片头优化必须在FieldGuard之前执行,确保片头字段被正确添加
           // 【审计修复】统一片头判定,兼容 SC00/S00
-          openingShot = productionResult.shots.find(s => isOpeningShot(s));
+          // 【v2.1.6-fix-bug40】使用缓存的shotId重新查找，避免FieldGuard修改sceneType后选中不同shot
+          openingShot = openingShotId
+            ? productionResult.shots.find(s => (s.shotId || s.shot_id) === openingShotId)
+            : productionResult.shots.find(s => isOpeningShot(s));
           if (openingShot) {
             console.log('\n🎬 [OpeningTitleOptimizer] 片头专属字段优化...');
             try {

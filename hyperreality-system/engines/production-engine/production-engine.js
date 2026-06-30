@@ -1664,7 +1664,8 @@ class ProductionEngine {
       }
 
       engineeredShots.push(standardOutput);
-      prompts.push(standardOutput);
+      // 【v2.1.6-fix-bug36】分离 shots 和 prompts 的引用，防止影分身问题
+      prompts.push({ ...standardOutput });
     }
 
     return { shots: engineeredShots, prompts };
