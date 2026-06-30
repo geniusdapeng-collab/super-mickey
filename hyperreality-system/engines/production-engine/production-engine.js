@@ -35,7 +35,7 @@ const DEFAULT_AGENT_CONFIG = {
   // 【v2.1.4-fix13-审计修复】从环境变量读取模型配置，消除硬编码
   llmModel: process.env.STORMAXE_LLM_MODEL || 'kimi-k2p6',
   fastModel: process.env.STORMAXE_LLM_FAST_MODEL || process.env.STORMAXE_LLM_MODEL || 'kimi-k2p6',
-  totalDeadlineMs: 1050000, // 【v2.1.4-fix13-审计修复】从540000提升至1050000(~17.5分钟)，匹配实际需求：Phase1(~90s)+Phase2(~300s)+Phase3(~540s)+QualityCheck(~120s)
+  totalDeadlineMs: 2400000, // 【修复】从1050000提升至2400000(~40分钟)，实际测试需要30+分钟，预留余量避免globalDeadline过期导致强制降级
   memThresholdMB: 1800, // 【v2.1.4-fix10-P25-fix3】提升阈值，避免GC风暴
   promptFusionConcurrency: 2 // 【v2.1.4-fix10-P25-fix3】并发2，平衡速度与稳定性
 };

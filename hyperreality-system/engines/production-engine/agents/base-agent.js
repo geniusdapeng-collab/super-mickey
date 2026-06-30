@@ -121,9 +121,13 @@ class BaseAgent {
     const perCallTimeout = Math.min(baseTimeout, this._remainingMs());
     console.log(`[${this.name}] _callLLM 进入 | perCallTimeout=${perCallTimeout}ms maxTokens=${callMaxTokens} retries=${callMaxRetries} remaining=${this._remainingMs()}ms`);
 
+    // 【修复】globalDeadline 过期时不强制降级，改为警告但继续执行
+    // 原因：创作系统不能因为时间预算不足就自动降级，这会扼杀创作灵气
+    // 只有 LLM 真正返回失败或超时才降级
     if (perCallTimeout < 20000) {
-      console.warn(`[${this.name}] 剩余预算不足(${perCallTimeout}ms)，提前降级以保住全局链路`);
-      return this._executeFallback(fallbackFn, 'insufficient time budget');
+      console.warn(`[${this.name}] ⚠️ 剩余预算不足(${perCallTimeout}ms)，但仍尝试 LLM 调用（不自动降级）`);
+      // 给至少 30 秒的尝试时间
+      // return this._executeFallback(fallbackFn, 'insufficient time budget'); // 【禁用】强制降级
     }
 
     const callStart = Date.now();

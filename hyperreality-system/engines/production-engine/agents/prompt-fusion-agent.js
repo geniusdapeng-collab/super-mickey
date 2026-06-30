@@ -86,7 +86,7 @@ function buildFullSchema(shotId) {
 
 class PromptFusionAgent extends BaseAgent {
   constructor(options = {}) {
-    super({ name: 'PromptFusionAgent', enabled: true, llmTimeout: 300000, ...options });
+    super({ name: 'PromptFusionAgent', enabled: true, llmTimeout: 300000, llmMaxRetries: 5, ...options });
 const PromptLengthConfig = require('../../../config/prompt-length.js');
 // ...
     // 【审计修复】从配置文件读取，不再硬编码
@@ -176,15 +176,43 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
       } catch (e) {
         failed++;
         console.warn(`  ❌ ${shot.shotId} 融合失败: ${e.message}`);
-        // 尝试用fillMissingFields补全，而不是直接降级
+        
+        // 【修复】增加主调用重试（3次），不立即降级
+        let fused = null;
+        for (let retry = 1; retry <= 3; retry++) {
+          console.log(`  🔄 主调用重试 ${retry}/3...`);
+          try {
+            await new Promise(r => setTimeout(r, 2000 * retry)); // 指数退避
+            fused = await this._fuseSingleShot(shot, ratio, characters);
+            console.log(`  ✅ ${shot.shotId} 重试成功`);
+            break;
+          } catch (retryErr) {
+            console.warn(`  ❌ 重试 ${retry} 失败: ${retryErr.message}`);
+          }
+        }
+        
+        if (fused) {
+          results[i] = fused;
+          continue;
+        }
+        
+        // 主调用彻底失败，尝试补全
         try {
           console.log(`  🔄 尝试补全缺失字段...`);
           const filled = await this._fillMissingFieldsWithRetry(shot, ratio, characters);
           results[i] = filled;
           console.log(`  ✅ ${shot.shotId} 补全完成`);
         } catch (fillError) {
-          console.warn(`  ❌ ${shot.shotId} 补全也失败: ${fillError.message}，规则兜底`);
-          results[i] = this._fallbackSingleShot(shot, ratio);
+          console.warn(`  ❌ ${shot.shotId} 补全也失败: ${fillError.message}`);
+          // 【修复】不直接规则兜底，而是尝试用已有数据组装
+          const shotFields = this._extractFieldsFromShot(shot);
+          if (Object.keys(shotFields).some(k => shotFields[k])) {
+            console.log(`  ⚠️ 使用已有字段组装 prompt（非兜底）`);
+            results[i] = this._buildShotResult(shot, shotFields);
+          } else {
+            console.warn(`  ❌ ${shot.shotId} 无任何可用数据，规则兜底`);
+            results[i] = this._fallbackSingleShot(shot, ratio);
+          }
         }
       }
     }
@@ -287,10 +315,11 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
 
     try {
       // 【P1-2 修复】fill调用用小预算，不占用主调用时间
+      // 【修复】提升重试和超时，给补齐更多机会
       const fillResult = await this._callLLM(fillPrompt, fillSchema, () => null, {
-        maxRetries: 1,
+        maxRetries: 3,
         maxTokens: 4096,
-        timeoutMs: 45000 // fill 用小预算
+        timeoutMs: 90000 // fill 从 45s 提升到 90s
       });
       const fillFields = fillResult?.result?.fields || fillResult?.result?.[shot.shotId] || {};
       const normalized = normalizeFields(fillFields);
@@ -322,7 +351,8 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
    * 【v2.1.4-fix13-审计修复】降为1次重试，去掉指数退避等待，失败后直接规则兜底
    */
   async _fillMissingFieldsWithRetry(shot, ratio, characters) {
-    const maxRetries = 1;
+    // 【修复】从 1 次提升到 3 次，给补齐更多机会
+    const maxRetries = 3;
     
     // 先从shot中提取已有数据
     const fields = {};
@@ -332,10 +362,10 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
     }
     
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      // 每次重试前检查剩余预算，避免重试吃掉全部时间
+      // 【修复】放宽预算检查到 10s，不因时间紧张就放弃
       const remaining = this._remainingMs();
-      if (remaining < 30000) {
-        console.warn(`  ⏰ 剩余预算不足(${remaining}ms)，中止重试，直接降级`);
+      if (remaining < 10000) {
+        console.warn(`  ⏰ 剩余预算不足(${remaining}ms)，中止补全重试`);
         break;
       }
 
@@ -358,8 +388,9 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
       }
     }
     
-    // 【修复】重试用完仍有缺失，直接用规则兜底（不再 throw）
-    console.warn(`  ⚠️ 补全重试耗尽，使用规则兜底`);
+    // 【修复】重试用完仍有缺失，返回当前已填充的字段（不强制兜底为默认值）
+    // 原因：部分字段有值比全部模板化更好，保留 LLM 已生成的内容
+    console.warn(`  ⚠️ 补全重试耗尽，返回已有字段（${Object.keys(fields).filter(k => fields[k]).length}/${REQUIRED_FIELDS.length} 已填充）`);
     return this._buildShotResult(shot, fields);
   }
 
