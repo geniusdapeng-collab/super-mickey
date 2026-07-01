@@ -270,7 +270,8 @@ ${script.substring(0, 3000)}${script.length > 3000 ? '\n...（脚本截断，剩
       else if (typeof this.config.llmEngine.reasonStructured === 'function') {
         const reasonPromise = this.config.llmEngine.reasonStructured(prompt, null, {
           maxTokens: 4000, // 【v2.1.8-fix12】增加token预算
-          timeoutMs: this.config.timeout
+          timeoutMs: this.config.timeout,
+          thinking: { type: 'disabled' } // 【v2.1.8-fix13】禁用reasoning
         });
         reasonPromise.catch(() => {}); // 【v2.1.6-fix】防止悬空 rejection
         const result = await Promise.race([

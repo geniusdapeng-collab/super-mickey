@@ -484,7 +484,7 @@ class RequirementListBuilder {
         responseText = result?.content || result?.data || '';
       } else if (typeof llmEngine.reasonStructured === 'function') {
         // 方式3: .reasonStructured(prompt, schema, options)
-        const reasonPromise = llmEngine.reasonStructured(prompt, null, { maxTokens: 8000, timeoutMs });
+        const reasonPromise = llmEngine.reasonStructured(prompt, null, { maxTokens: 8000, timeoutMs, thinking: { type: 'disabled' } });
         reasonPromise.catch(() => {}); // 【v2.1.6-fix】防止悬空 rejection
         const result = await Promise.race([
           reasonPromise,

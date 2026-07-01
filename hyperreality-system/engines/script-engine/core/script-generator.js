@@ -393,7 +393,8 @@ ${meta._directorStyle}` : ''}
             ],
             max_tokens: this.config.maxTokens,
             temperature: 1,
-            top_p: 0.95
+            top_p: 0.95,
+            thinking: { type: 'disabled' } // 【v2.1.8-fix13】禁用reasoning，释放token配额给content
           },
           {
             headers: {

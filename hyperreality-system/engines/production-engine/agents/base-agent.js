@@ -153,7 +153,8 @@ class BaseAgent {
             maxTokens: callMaxTokens,
             timeoutMs: currentTimeout,
             maxRetries: 1, // 内层只重试1次，外层控制总重试
-            deadlineMs: this._globalDeadline
+            deadlineMs: this._globalDeadline,
+            thinking: { type: 'disabled' } // 【v2.1.8-fix13】禁用reasoning，释放token配额
           }),
           currentTimeout,
           `[${this.name}] attempt ${attempt}/${callMaxRetries}`
