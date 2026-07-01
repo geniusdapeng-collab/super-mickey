@@ -27,7 +27,7 @@ class ScriptGenerator {
       apiKey: options.apiKey || process.env.VOLCENGINE_ARK_API_KEY,
       // 【v2.1.4-fix13-审计修复】从环境变量读取，消除硬编码
       model: model,
-      maxTokens: options.maxTokens || 24000, // 【v2.1.8-fix11】增加默认maxTokens到24000，防止JSON被截断
+      maxTokens: options.maxTokens || 32000, // 【v2.1.8-fix14】maxTokens提升到32000，覆盖reasoning+content
       temperature: options.temperature || 1,
       promptTemplateDir: options.promptTemplateDir || path.join(__dirname, '../prompts'),
       templateDir: options.templateDir || path.join(__dirname, '../templates'),

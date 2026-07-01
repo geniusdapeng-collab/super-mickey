@@ -33,7 +33,7 @@ class BaseAgent {
     this.llmTimeout = options.llmTimeout || 300000; // 单次调用上限 5 分钟（足以覆盖最慢的 VisualLanguage 258s）
     this.llmMaxRetries = options.llmMaxRetries ?? 2; // 重试收敛到 2 次（原 3 次是隐藏时间炸弹）
     this.llmModel = options.llmModel || DEFAULT_MODEL; // 修复：用环境变量
-    this.llmMaxTokens = options.llmMaxTokens || 16000;
+    this.llmMaxTokens = options.llmMaxTokens || 32000; // 【v2.1.8-fix14】增加token预算覆盖reasoning
     this.enabled = options.enabled !== false;
 
     this._llmEngine = null;
