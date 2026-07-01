@@ -30,7 +30,7 @@ const { globalNegativePromptInjector } = require('../../../systems/global-negati
 // v2.0.0-LLM-Agent: Agent配置
 const DEFAULT_AGENT_CONFIG = {
   enableLLMAgents: true,
-  llmTimeout: 300000, // 【v2.1.7-fix】从180000提升至300000(5分钟)，VisualLanguageAgent 需要更长时间完成6镜头×25维提示词设计
+  llmTimeout: 450000, // 【v2.1.7-fix】从300000提升至450000(7.5分钟)，保质量前提下给LLM更充裕时间
   llmMaxRetries: 2,
   // 【v2.1.4-fix13-审计修复】从环境变量读取模型配置，消除硬编码
   llmModel: process.env.STORMAXE_LLM_MODEL || 'kimi-k2p6',
