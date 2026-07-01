@@ -343,23 +343,32 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
       console.warn(`[PromptFusion] ${shot.shotId} 补齐失败，保留已有: ${e.message}`);
     }
 
-    // 3. 仍缺的字段，尝试最小 LLM 降级（保留灵气），失败再用固定模板兜底
+    // 3. 仍缺的字段，先尝试从 shotData 提取，然后批量 LLM 补齐（而非逐个），失败再用固定模板兜底
     const stillMissing = REQUIRED_FIELDS.filter(f => !fields[f] || String(fields[f]).trim() === '');
     if (stillMissing.length > 0) {
       usedRuleFallback = true;
       const shotData = this._extractFieldsFromShot(shot);
       
-      // 【v2.1.0】先尝试最小 LLM 降级，保留创作灵气
+      // 先从 shotData 填充
+      const stillNeedLLM = [];
       for (const f of stillMissing) {
         if (shotData[f]) {
           fields[f] = shotData[f];
         } else {
-          // 尝试最小 LLM 调用生成个性化字段
-          const minimalValue = await this._minimalLLMDegradation(f, shot, ratio, characters);
-          fields[f] = minimalValue || this._defaultFieldValue(f, shot);
+          stillNeedLLM.push(f);
         }
       }
-      console.warn(`[PromptFusion] ${shot.shotId} 兜底 ${stillMissing.length} 字段（先尝试最小LLM降级）`);
+      
+      // 【v2.1.8-fix4】批量 LLM 降级：一次调用补齐所有缺失字段
+      if (stillNeedLLM.length > 0) {
+        console.log(`[PromptFusion] ${shot.shotId} 批量降级 ${stillNeedLLM.length} 个字段 → 单次 LLM 调用`);
+        const batchValues = await this._batchMinimalLLMDegradation(stillNeedLLM, shot, ratio, characters);
+        for (const f of stillNeedLLM) {
+          fields[f] = batchValues[f] || this._defaultFieldValue(f, shot);
+        }
+      }
+      
+      console.warn(`[PromptFusion] ${shot.shotId} 兜底 ${stillMissing.length} 字段（批量 LLM + 规则兜底）`);
     }
 
     return { fields, usedRuleFallback };
@@ -448,6 +457,61 @@ ${ctx}
     } catch (e) {
       console.warn(`[PromptFusion] ${shot.shotId} ${field} 最小降级失败: ${e.message}`);
       return null;
+    }
+  }
+  
+  /**
+   * 【v2.1.8-fix4】批量最小 LLM 降级：一次调用补齐多个缺失字段
+   * 替代逐个字段调用 _minimalLLMDegradation，将 25 次 LLM 调用降为 1 次
+   */
+  async _batchMinimalLLMDegradation(fields, shot, ratio, characters) {
+    if (fields.length === 0) return {};
+    
+    try {
+      const ctx = this._buildMinimalContext(shot, ratio, characters);
+      const fieldDescs = fields.map(f => `- ${f}: ${FIELD_DESCS[f] || '无特殊要求'}`).join('\n');
+      
+      const prompt = `根据以下镜头上下文，生成 ${fields.length} 个字段的值。以 JSON 格式输出所有字段。
+
+镜头上下文：
+${ctx}
+
+需要生成的字段：
+${fieldDescs}
+
+注意：
+- 每个字段必须与镜头上下文（角色、场景、情绪）匹配
+- 拒绝通用模板（如"好莱坞电影级质感"）
+- 保持创作灵气，个性化描述
+- 直接返回 JSON 对象，不要包裹在 code block 中`;
+
+      const schema = { fields: Object.fromEntries(fields.map(f => [f, STANDARD_FIELDS_SCHEMA[f] || ''])) };
+      const result = await this._callLLM(prompt, schema, () => null, {
+        maxRetries: 2,
+        maxTokens: 4096,
+        timeoutMs: 120000, // 批量补齐给 120s 预算
+        shotBudget: 120000
+      });
+      
+      const batchFields = result?.result?.fields || result?.result || {};
+      const normalized = normalizeFields(batchFields);
+      
+      // 过滤掉模板文本
+      const cleaned = {};
+      for (const f of fields) {
+        const value = normalized[f];
+        if (value && String(value).trim().length > 10 
+            && !String(value).includes('好莱坞') 
+            && !String(value).includes('室内写实')) {
+          cleaned[f] = String(value).trim();
+        }
+      }
+      
+      console.log(`[PromptFusion] ${shot.shotId} 批量降级成功: ${Object.keys(cleaned).join(',')} ✓`);
+      return cleaned;
+    } catch (e) {
+      console.warn(`[PromptFusion] ${shot.shotId} 批量降级失败: ${e.message}`);
+      return {};
     }
   }
   
