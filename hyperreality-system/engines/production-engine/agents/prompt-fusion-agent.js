@@ -442,7 +442,7 @@ ${ctx}
         maxRetries: 2,
         maxTokens: 2048,
         timeoutMs: 60000,
-        shotBudget: 60000 // 镜头级独立预算 60s
+        shotBudget: 180000 // 镜头级独立预算 60s
       });
       
       if (result?.result?.[field] && String(result.result[field]).trim()) {
@@ -534,8 +534,8 @@ ${fieldDescs}
         const result = await this._callLLM(prompt, schema, () => null, {
           maxRetries: 2,
           maxTokens: 4096,
-          timeoutMs: 60000, // 每组 60s
-          shotBudget: 60000
+          timeoutMs: 180000, // 【v2.1.8-fix9】每组 180s，解决批量补齐超时
+          shotBudget: 180000
         });
         
         const batchFields = result?.result?.fields || result?.result || {};
