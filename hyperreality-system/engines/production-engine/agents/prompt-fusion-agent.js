@@ -171,7 +171,7 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
       const shot = shots[i];
       console.log(`\n🎬 处理镜头 ${i + 1}/${shots.length}: ${shot.shotId}`);
       try {
-        const fused = await this._fuseSingleShot(shot, ratio, characters);
+        const fused = await this._fuseSingleShot(shot, ratio, characters, blueprint);
         results[i] = fused;
         console.log(`  ✅ ${shot.shotId} 完成`);
       } catch (e) {
@@ -184,7 +184,7 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
           console.log(`  🔄 主调用重试 ${retry}/3...`);
           try {
             await new Promise(r => setTimeout(r, 2000 * retry)); // 指数退避
-            fused = await this._fuseSingleShot(shot, ratio, characters);
+            fused = await this._fuseSingleShot(shot, ratio, characters, blueprint);
             console.log(`  ✅ ${shot.shotId} 重试成功`);
             break;
           } catch (retryErr) {
@@ -244,7 +244,7 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
     };
   }
 
-  async _fuseSingleShot(shot, ratio, characters) {
+  async _fuseSingleShot(shot, ratio, characters, blueprint) {
     const prompt = this._buildBatchPrompt([shot], ratio, characters);
     // 【v2.1.4-fix10-P25-fix3】把空 schema 换成带 25 字段键名的完整模板
     // 【P1-4 修复】schema 加 required/requiredArrays/rejectEmptyArray，让质量门真正生效
