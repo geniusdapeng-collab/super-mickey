@@ -240,7 +240,7 @@ ${meta._directorStyle}` : ''}
         
         // 【v2.1.5-fix-B-REV】恢复systemPrompt，约束指令走system role
         // 原因：systemPrompt移除后LLM约束变弱，导致角色服装被篡改、科幻词汇混入
-        const systemInstruction = '你是一位专业的AI视频编剧。只输出严格格式的JSON，不要markdown代码块，不要解释，不要思考过程。使用最紧凑的JSON格式（不要换行和缩进）。';
+        const systemInstruction = '你是一位专业的AI视频编剧。只输出严格格式的JSON，不要markdown代码块，不要解释，不要思考过程。使用最紧凑的JSON格式（不要换行和缩进）。\n\n【重要】如果内容较长，优先保证JSON结构完整闭合。必要时压缩场景描述，但必须有合法的JSON结尾。';
         
         // 创建超时promise
         const timeoutPromise = new Promise((_, reject) => {

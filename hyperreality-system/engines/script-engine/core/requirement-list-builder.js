@@ -73,6 +73,10 @@ const StyleEncoder = {
  */
 const ParserRules = {
   videoTypeRules: [
+    // 【v2.1.8-fix8】修复P1: 硬科幻/科幻片映射到 CINE（高优先级，避免被误分为DOC）
+    { keywords: ['硬科幻', '科幻片', '软科幻', '太空', '星际', '赛博朋克', '外星', '未来世界', '火星', '空间站'], type: 'CINE', name: '电影级叙事' },
+    // 【v2.1.8-fix8】新增：戏剧/情感/故事类映射到 DRAMA
+    { keywords: ['戏剧', '情感', '爱情', '亲情', '友情', '温情'], type: 'DRAMA', name: '剧情' },
     // 【v2.1.7-fix】新增：神话/史诗/战斗类内容（高优先级，避免被误分为EDU）
     { keywords: ['神话', '史诗', '传奇', '神仙', '天庭', '奥林匹斯', '诸神'], type: 'CINE', name: '电影级叙事' },
     { keywords: ['战斗', '大战', '对决', '战争', '战场', '武力', '兵器', '神器'], type: 'CINE', name: '电影级叙事' },
@@ -291,7 +295,12 @@ class RequirementListBuilder {
         }
       }
       if (matchedTypes.length > 0) {
-        const priority = { ADV: 3, PROMO: 3, DRAMA: 2, DOC: 1, CINE: 2, EDU: 1, LIFELOG: 1 }; // 【修复】降低 DOC 优先级
+        const priority = {
+          // 【v2.1.8-fix8】修复P1: 完整优先级表，CINE=3（最高），避免 undefined
+          CINE: 3, ADV: 3, PROMO: 3, MARKETING: 3,
+          DRAMA: 2, DOC: 2, ART: 2, VFX: 2,
+          EDU: 1, LIFELOG: 1, FAMILY: 1, TRAVEL: 1, FOOD: 1, FITNESS: 1, KIDS: 1
+        };
         const bestType = matchedTypes.sort((a, b) => (priority[b] || 0) - (priority[a] || 0))[0];
         const bestRule = this.rules.videoTypeRules.find(r => r.type === bestType);
         result.videoType = bestType;
@@ -595,32 +604,19 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
       confidence: intentResult.analysis?.confidence || 0.5
     };
 
-    // 【v2.1.8-fix7】IntentParser 高置信度(>=0.9)时优先使用其分类
+    // 【v2.1.8-fix8】IntentParser 高置信度(>=0.7)时优先使用其分类
     const intentConfidence = intentResult.analysis?.confidence || 0;
-    const intentMode = intentResult.parsed?.narrative_mode;
+    const intentType = this._mapNarrativeModeToVideoType(intentResult.parsed?.narrative_mode);
     
-    if (intentConfidence >= 0.9 && intentMode) {
-      // IntentParser 明确分类（如 dramatic），信任它
-      const intentTypeMap = {
-        'dramatic': 'CINE',
-        'advertisement': 'MARKETING',
-        'commercial': 'MARKETING',
-        'documentary': 'DOC',
-        'music_video': 'ART',
-        'vlog': 'TRAVEL',
-        'educational': 'EDU'
-      };
-      const mappedType = intentTypeMap[intentMode];
-      if (mappedType) {
-        merged.videoType = mappedType;
-        const bestRule = this.rules.videoTypeRules.find(r => r.type === mappedType);
-        merged.videoTypeName = bestRule?.name || mappedType;
-        console.log(`   [Merge] IntentParser 高置信度(${intentConfidence})，优先使用: ${intentMode} → ${mappedType}`);
-      }
+    if (intentConfidence >= 0.7 && intentType) {
+      merged.videoType = intentType;
+      merged.videoTypeName = this._getVideoTypeName(intentType);
+      merged.videoTypeSource = 'intentParser';
+      console.log(`   [Merge] IntentParser 高置信度(${intentConfidence})，优先使用: ${intentResult.parsed?.narrative_mode} → ${intentType}`);
     } else if (ruleResult.videoType) {
-      // 规则库有明确值且 IntentParser 置信度不高
       merged.videoType = ruleResult.videoType;
       merged.videoTypeName = ruleResult.videoTypeName;
+      merged.videoTypeSource = 'ruleBased';
     }
     
     if (ruleResult.duration) {
@@ -638,6 +634,31 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
     }
 
     return merged;
+  }
+
+  /**
+   * 【v2.1.8-fix8】narrative_mode 到 videoType 的映射
+   */
+  _mapNarrativeModeToVideoType(narrativeMode) {
+    const mapping = {
+      'dramatic': 'CINE',
+      'documentary': 'DOC',
+      'educational': 'EDU',
+      'promotional': 'MARKETING',
+      'artistic': 'ART',
+      'vfx_heavy': 'VFX',
+      'lifestyle': 'LIFELOG',
+      'family': 'FAMILY'
+    };
+    return mapping[narrativeMode] || null;
+  }
+
+  /**
+   * 【v2.1.8-fix8】获取视频类型名称
+   */
+  _getVideoTypeName(type) {
+    const rule = this.rules.videoTypeRules.find(r => r.type === type);
+    return rule?.name || type;
   }
 
   /**
