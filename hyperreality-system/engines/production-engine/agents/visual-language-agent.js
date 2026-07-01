@@ -56,44 +56,62 @@ class VisualLanguageAgent extends BaseAgent {
   async process(shots, blueprint) {
     console.log(`[VisualLanguageAgent] 开始处理 ${shots.length} 个镜头...`);
 
-    const prompt = this._buildPrompt(shots, blueprint);
+    // 【v2.1.7-fix】分批处理：每批最多 4 个镜头，避免单批次 LLM 超时
+    const BATCH_SIZE = 4;
+    const batches = [];
+    for (let i = 0; i < shots.length; i += BATCH_SIZE) {
+      batches.push(shots.slice(i, i + BATCH_SIZE));
+    }
+    console.log(`[VisualLanguageAgent] 拆分为 ${batches.length} 批处理: ${batches.map(b => b.length).join('+')}`);
 
     const schema = {
-      required: ['shots'], requiredArrays: ['shots'], rejectEmptyArray: true, // 【P1-6 修复】启用数组类型校验
+      required: ['shots'], requiredArrays: ['shots'], rejectEmptyArray: true,
     };
 
-    const llmResult = await this._callLLM(prompt, schema, () => {
-      return this._fallback(shots);
-    });
+    const allDesignedShots = [];
+    let anyDegraded = false;
+    let degradeReason = null;
 
-    if (llmResult.degraded) {
-      return { shots: llmResult.result?.shots || shots, degraded: true, degradeReason: llmResult.degradeReason };
+    for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+      const batchShots = batches[batchIndex];
+      console.log(`[VisualLanguageAgent] 处理第 ${batchIndex + 1}/${batches.length} 批 (${batchShots.length} 个镜头)...`);
+
+      const prompt = this._buildPrompt(batchShots, blueprint);
+
+      const llmResult = await this._callLLM(prompt, schema, () => {
+        return this._fallback(batchShots);
+      });
+
+      if (llmResult.degraded) {
+        anyDegraded = true;
+        degradeReason = llmResult.degradeReason;
+      }
+
+      // 合并本批结果
+      const batchDesignedShots = batchShots.map((shot) => {
+        const designed = llmResult.result?.shots?.find(s => s.shotId === shot.shotId) || {};
+        return {
+          ...shot,
+          camera: designed.camera || shot.camera,
+          cameraString: designed.cameraString || shot.cameraString || '',
+          lighting: designed.lighting || shot.lighting,
+          lightingString: designed.lightingString || shot.lightingString || '',
+          composition: designed.composition || shot.composition || '',
+          color_palette: designed.color_palette || shot.color_palette || '',
+          depth_of_field: designed.depth_of_field || shot.depth_of_field || '',
+          timeline: designed.timeline || shot.timeline,
+          cameraMovement: {
+            ...shot.cameraMovement,
+            ...(designed.timeline ? { timeline: designed.timeline } : {})
+          }
+        };
+      });
+
+      allDesignedShots.push(...batchDesignedShots);
     }
 
-    // 合并LLM结果
-    const designedShots = shots.map((shot) => {
-      const designed = llmResult.result?.shots?.find(s => s.shotId === shot.shotId) || {};
-      return {
-        ...shot,
-        camera: designed.camera || shot.camera,
-        // 【P1-3 修复】保留 shot 原值兜底，避免 LLM 未返回时清空已有字段
-        cameraString: designed.cameraString || shot.cameraString || '',
-        lighting: designed.lighting || shot.lighting,
-        lightingString: designed.lightingString || shot.lightingString || '',
-        // ⭐ v2.1.7: 新增构图/色彩/景深
-        composition: designed.composition || shot.composition || '',
-        color_palette: designed.color_palette || shot.color_palette || '',
-        depth_of_field: designed.depth_of_field || shot.depth_of_field || '',
-        timeline: designed.timeline || shot.timeline,
-        cameraMovement: {
-          ...shot.cameraMovement,
-          ...(designed.timeline ? { timeline: designed.timeline } : {})
-        }
-      };
-    });
-
-    console.log(`[VisualLanguageAgent] 完成 ✓`);
-    return { shots: designedShots, degraded: false, degradeReason: null };
+    console.log(`[VisualLanguageAgent] 完成 ✓ (${allDesignedShots.length} 个镜头)`);
+    return { shots: allDesignedShots, degraded: anyDegraded, degradeReason: anyDegraded ? degradeReason : null };
   }
 
   _buildPrompt(shots, blueprint) {
