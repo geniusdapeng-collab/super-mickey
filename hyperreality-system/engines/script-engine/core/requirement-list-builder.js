@@ -466,7 +466,7 @@ class RequirementListBuilder {
     try {
       if (typeof llmEngine.generate === 'function') {
         // 【P1-16 修复】统一调用契约 (prompt, options)，与 ScriptGenerator/CrossEpisodeValidator 一致
-        const genPromise = llmEngine.generate(prompt, { maxTokens: 2500, temperature: 1, timeoutMs });
+        const genPromise = llmEngine.generate(prompt, { maxTokens: 8000, temperature: 1, timeoutMs });
         genPromise.catch(() => {}); // 【v2.1.6-fix】防止悬空 rejection
         const response = await Promise.race([
           genPromise,
@@ -484,7 +484,7 @@ class RequirementListBuilder {
         responseText = result?.content || result?.data || '';
       } else if (typeof llmEngine.reasonStructured === 'function') {
         // 方式3: .reasonStructured(prompt, schema, options)
-        const reasonPromise = llmEngine.reasonStructured(prompt, null, { maxTokens: 2500, timeoutMs });
+        const reasonPromise = llmEngine.reasonStructured(prompt, null, { maxTokens: 8000, timeoutMs });
         reasonPromise.catch(() => {}); // 【v2.1.6-fix】防止悬空 rejection
         const result = await Promise.race([
           reasonPromise,

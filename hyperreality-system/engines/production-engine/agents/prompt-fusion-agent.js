@@ -441,8 +441,8 @@ ${ctx}
       const result = await this._callLLM(prompt, schema, () => null, {
         maxRetries: 2,
         maxTokens: 2048,
-        timeoutMs: 60000,
-        shotBudget: 180000 // 镜头级独立预算 60s
+        timeoutMs: 180000, // 【v2.1.8-fix12】最小降级超时 60s→180s
+        shotBudget: 180000 // 镜头级独立预算 180s
       });
       
       if (result?.result?.[field] && String(result.result[field]).trim()) {

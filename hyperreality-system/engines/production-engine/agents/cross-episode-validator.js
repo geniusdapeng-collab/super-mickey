@@ -269,7 +269,7 @@ ${script.substring(0, 3000)}${script.length > 3000 ? '\n...（脚本截断，剩
       // 兼容 reasonStructured 方法
       else if (typeof this.config.llmEngine.reasonStructured === 'function') {
         const reasonPromise = this.config.llmEngine.reasonStructured(prompt, null, {
-          maxTokens: 2000,
+          maxTokens: 4000, // 【v2.1.8-fix12】增加token预算
           timeoutMs: this.config.timeout
         });
         reasonPromise.catch(() => {}); // 【v2.1.6-fix】防止悬空 rejection
@@ -288,7 +288,7 @@ ${script.substring(0, 3000)}${script.length > 3000 ? '\n...（脚本截断，剩
       else if (typeof this.config.llmEngine.generate === 'function') {
         const genPromise = this.config.llmEngine.generate(prompt, {
           systemPrompt: '你是一位严格但公正的内容审查员。只输出JSON，不要解释。',
-          maxTokens: 2000,
+          maxTokens: 4000, // 【v2.1.8-fix12】增加token预算
           timeoutMs: this.config.timeout,
           forceJson: true
         });
