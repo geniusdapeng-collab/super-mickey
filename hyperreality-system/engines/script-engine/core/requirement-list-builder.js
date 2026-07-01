@@ -322,10 +322,6 @@ class RequirementListBuilder {
         result.title = parsedInput.theme;
       }
     }
-      const bestRule = this.rules.videoTypeRules.find(r => r.type === bestType);
-      result.videoType = bestType;
-      result.videoTypeName = bestRule?.name || bestType;
-    }
 
     // 推断平台
     for (const rule of this.rules.platformRules) {

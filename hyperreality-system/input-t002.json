@@ -1,0 +1,17 @@
+{
+  "type": "硬科幻",
+  "theme": "火星殖民基地的第一场沙尘暴",
+  "setting": "2147年，火星奥林匹斯山脚下Ares-7基地",
+  "core_conflict": "百年一遇超级沙尘暴，基地AI与人类指挥官生死博弈",
+  "duration_sec": 55,
+  "tone": "紧张压抑",
+  "creative_style": 0.63,
+  "visual_style": "《火星救援》+《星际穿越》混合美学，橙红色沙尘物理真实体积感，HUD清晰可读",
+  "structure": "沙尘暴三阶段递进（预警→吞噬→窒息），每阶段运镜手法不同",
+  "target_audience": "科幻迷，18-35岁",
+  "difficulty": "极高",
+  "required_line": "这不是命令，这是请求",
+  "character_ai": "Ares-7 AI，语音机械冰冷感，逻辑至上",
+  "character_human": "人类指挥官，恐惧与理性对抗",
+  "dialogue_style": "全对话驱动"
+}
