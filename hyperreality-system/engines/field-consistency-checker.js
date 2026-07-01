@@ -53,7 +53,10 @@ class FieldConsistencyChecker {
       const level = result.errorCount > 0 ? 'error' : 'warn';
       console[level](`[FieldConsistencyChecker] ${shot.shotId}: ${issues.length} issues (${result.errorCount} errors, ${result.warningCount} warnings)`);
       if (this.logLevel === 'warn' || this.logLevel === 'error') {
-        issues.forEach(i => console[i.severity](`  ${i.severity}: ${i.fieldA} ↔ ${i.fieldB}: ${i.message}`));
+        issues.forEach(i => {
+          const method = i.severity === 'error' ? 'error' : i.severity === 'warn' ? 'warn' : 'log';
+          console[method](`  ${i.severity}: ${i.fieldA} ↔ ${i.fieldB}: ${i.message}`);
+        });
       }
     }
 
