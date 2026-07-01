@@ -216,14 +216,24 @@ class RequirementListBuilder {
 
   /**
    * 规则库解析 - 快速确定性提取
+   * 【v2.1.8-fix7】修复：优先提取结构化输入中的 type 字段，增强 JSON 识别
    */
   _ruleBasedParse(input, metadata) {
-    // v2.1.4-fix8: 防御性处理 - input可能是对象
+    // 防御性处理 - input可能是对象或JSON字符串
     let text = '';
+    let parsedInput = null;
+    
     if (typeof input === 'string') {
+      // 尝试解析 JSON 字符串
+      try {
+        parsedInput = JSON.parse(input);
+      } catch (e) {
+        // 不是 JSON，当作纯文本
+        parsedInput = null;
+      }
       text = input.toLowerCase();
     } else if (input && typeof input === 'object') {
-      // 尝试从对象中提取文本
+      parsedInput = input;
       text = (input.text || input.content || input.description || input.title || '').toString().toLowerCase();
     } else {
       text = (input || '').toString().toLowerCase();
@@ -233,7 +243,7 @@ class RequirementListBuilder {
       videoType: null,
       platform: null,
       style: { primary: null, secondary: [] },
-      duration: metadata.target_duration || null,  // 优先使用metadata
+      duration: metadata.target_duration || null,
       title: metadata.title || null,
       creativeIntensity: null,
       characters: [],
@@ -244,21 +254,65 @@ class RequirementListBuilder {
       uncertainties: []
     };
 
-    // 推断视频类型
-    // 【P0-6 修复】改为"全部打分取最高"而非"首条命中即 break"，
-    // 商业/宣传片强信号优先于教育科普
-    const matchedTypes = [];
-    for (const rule of this.rules.videoTypeRules) {
-      for (const keyword of rule.keywords) {
-        if (text.includes(keyword.toLowerCase())) {
-          matchedTypes.push(rule.type);
+    // 【v2.1.8-fix7】优先从结构化输入中提取 type 字段
+    if (parsedInput && parsedInput.type) {
+      const userType = String(parsedInput.type).toLowerCase();
+      // 映射用户类型到系统类型
+      const typeMapping = {
+        '硬科幻': 'CINE', '科幻': 'CINE', '软科幻': 'CINE',
+        '剧情': 'CINE', '电影级': 'CINE', '微电影': 'CINE',
+        '音乐mv': 'ART', 'mv': 'ART', '音乐': 'ART',
+        '纪录片': 'DOC', '纪实': 'DOC',
+        '广告': 'MARKETING', '宣传片': 'MARKETING',
+        '教育': 'EDU', '科普': 'EDU',
+        'vlog': 'TRAVEL', '旅行': 'TRAVEL'
+      };
+      
+      for (const [key, value] of Object.entries(typeMapping)) {
+        if (userType.includes(key)) {
+          result.videoType = value;
+          const bestRule = this.rules.videoTypeRules.find(r => r.type === value);
+          result.videoTypeName = bestRule?.name || value;
+          console.log(`   [RuleParse] 从用户 type 字段提取: ${parsedInput.type} → ${value}`);
           break;
         }
       }
     }
-    if (matchedTypes.length > 0) {
-      const priority = { ADV: 3, PROMO: 3, DRAMA: 2, DOC: 2, EDU: 1, LIFELOG: 1 };
-      const bestType = matchedTypes.sort((a, b) => (priority[b] || 0) - (priority[a] || 0))[0];
+
+    // 推断视频类型（仅当未从结构化输入中提取时）
+    if (!result.videoType) {
+      const matchedTypes = [];
+      for (const rule of this.rules.videoTypeRules) {
+        for (const keyword of rule.keywords) {
+          if (text.includes(keyword.toLowerCase())) {
+            matchedTypes.push(rule.type);
+            break;
+          }
+        }
+      }
+      if (matchedTypes.length > 0) {
+        const priority = { ADV: 3, PROMO: 3, DRAMA: 2, DOC: 1, CINE: 2, EDU: 1, LIFELOG: 1 }; // 【修复】降低 DOC 优先级
+        const bestType = matchedTypes.sort((a, b) => (priority[b] || 0) - (priority[a] || 0))[0];
+        const bestRule = this.rules.videoTypeRules.find(r => r.type === bestType);
+        result.videoType = bestType;
+        result.videoTypeName = bestRule?.name || bestType;
+      }
+    }
+
+    // 【v2.1.8-fix7】从结构化输入中提取时长
+    if (parsedInput) {
+      if (parsedInput.duration_sec) {
+        result.duration = safeParseInt(parsedInput.duration_sec);
+      } else if (parsedInput.duration) {
+        result.duration = safeParseInt(parsedInput.duration);
+      }
+      if (parsedInput.creative_style) {
+        result.creativeIntensity = safeParseFloat(parsedInput.creative_style);
+      }
+      if (parsedInput.theme && !result.title) {
+        result.title = parsedInput.theme;
+      }
+    }
       const bestRule = this.rules.videoTypeRules.find(r => r.type === bestType);
       result.videoType = bestType;
       result.videoTypeName = bestRule?.name || bestType;
@@ -529,6 +583,9 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
   /**
    * 合并三种解析结果
    */
+  /**
+   * 【v2.1.8-fix7】合并结果 - IntentParser 高置信度时优先
+   */
   _mergeResults(ruleResult, llmResult, intentResult) {
     const merged = {
       ...ruleResult,
@@ -538,11 +595,34 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
       confidence: intentResult.analysis?.confidence || 0.5
     };
 
-    // 规则库结果优先(确定性更高),除非LLM明确提供了非推断值
-    if (ruleResult.videoType) {
+    // 【v2.1.8-fix7】IntentParser 高置信度(>=0.9)时优先使用其分类
+    const intentConfidence = intentResult.analysis?.confidence || 0;
+    const intentMode = intentResult.parsed?.narrative_mode;
+    
+    if (intentConfidence >= 0.9 && intentMode) {
+      // IntentParser 明确分类（如 dramatic），信任它
+      const intentTypeMap = {
+        'dramatic': 'CINE',
+        'advertisement': 'MARKETING',
+        'commercial': 'MARKETING',
+        'documentary': 'DOC',
+        'music_video': 'ART',
+        'vlog': 'TRAVEL',
+        'educational': 'EDU'
+      };
+      const mappedType = intentTypeMap[intentMode];
+      if (mappedType) {
+        merged.videoType = mappedType;
+        const bestRule = this.rules.videoTypeRules.find(r => r.type === mappedType);
+        merged.videoTypeName = bestRule?.name || mappedType;
+        console.log(`   [Merge] IntentParser 高置信度(${intentConfidence})，优先使用: ${intentMode} → ${mappedType}`);
+      }
+    } else if (ruleResult.videoType) {
+      // 规则库有明确值且 IntentParser 置信度不高
       merged.videoType = ruleResult.videoType;
       merged.videoTypeName = ruleResult.videoTypeName;
     }
+    
     if (ruleResult.duration) {
       merged.duration = ruleResult.duration;
       merged.durationRange = ruleResult.durationRange;
