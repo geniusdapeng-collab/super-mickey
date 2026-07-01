@@ -129,34 +129,210 @@ const TYPE_AUDIENCE = {
   '文化遗产': '文化爱好者/高知群体'
 };
 
+// ============ 输入规范化器 ============
+class InputNormalizer {
+  /**
+   * 将任意格式输入统一规范化为纯文本描述
+   * 支持: JSON、Python dict、纯文本、Markdown 等
+   */
+  normalize(input) {
+    const text = String(input || '').trim();
+    
+    // 场景1: JSON 格式
+    if ((text.startsWith('{') && text.endsWith('}')) || 
+        (text.startsWith('[') && text.endsWith(']'))) {
+      return this._normalizeJSON(text);
+    }
+    
+    // 场景2: Python dict 格式 (key='value' 或 key="value")
+    if (text.includes("='") || text.includes('="') || text.includes('": ')) {
+      const pythonResult = this._normalizePythonDict(text);
+      if (pythonResult) return pythonResult;
+    }
+    
+    // 场景3: 代码块 (```json/```python)
+    if (text.includes('```')) {
+      const codeResult = this._normalizeCodeBlock(text);
+      if (codeResult) return codeResult;
+    }
+    
+    // 场景4: 纯文本（直接返回）
+    return { text, format: 'text', sourceFields: {} };
+  }
+  
+  _normalizeJSON(text) {
+    try {
+      const data = JSON.parse(text);
+      return this._extractFromObject(data, 'json');
+    } catch (e) {
+      // JSON 解析失败，可能是截断或不完整的 JSON，尝试提取关键字段
+      return this._extractFieldsFromText(text, 'json-partial');
+    }
+  }
+  
+  _normalizePythonDict(text) {
+    // 尝试匹配 key='value' 或 key="value" 或 key: value 模式
+    const fieldPatterns = [
+      // "key": "value" 或 'key': 'value'
+      /['"](\w+)['"]\s*:\s*['"]([^'"]+)['"]/g,
+      // key='value'
+      /(\w+)\s*=\s*['"]([^'"]+)['"]/g,
+      // key: value (无引号字符串)
+      /['"](\w+)['"]\s*:\s*([^,\n\r]+)/g
+    ];
+    
+    const fields = {};
+    for (const pattern of fieldPatterns) {
+      let match;
+      while ((match = pattern.exec(text)) !== null) {
+        const [, key, value] = match;
+        if (key && value) {
+          fields[key] = value.trim();
+        }
+      }
+    }
+    
+    if (Object.keys(fields).length >= 2) {
+      return this._buildTextFromFields(fields, 'python-dict');
+    }
+    return null;
+  }
+  
+  _normalizeCodeBlock(text) {
+    // 提取 ```json/```python 等代码块内容
+    const codeBlockPattern = /```(?:json|python)?\s*\n?([\s\S]*?)```/;
+    const match = text.match(codeBlockPattern);
+    if (match) {
+      const content = match[1].trim();
+      // 递归处理代码块内的内容
+      return this.normalize(content);
+    }
+    return null;
+  }
+  
+  _extractFromObject(data, format) {
+    const fields = {};
+    
+    // 提取常见字段
+    const fieldMap = {
+      'type': ['type', '类型', 'category', 'genre'],
+      'theme': ['theme', '主题', 'title', 'name'],
+      'description': ['description', '描述', 'desc', 'content', 'prompt', 'story'],
+      'duration_sec': ['duration_sec', 'duration', '时长', 'length', 'time'],
+      'tone': ['tone', '情绪', 'mood', 'emotion', 'atmosphere'],
+      'visual_style': ['visual_style', 'visual', '视觉风格', 'style'],
+      'dialogue_requirement': ['dialogue_requirement', 'dialogue', '对白', '台词'],
+      'special_notes': ['special_notes', 'special', '备注', 'notes', 'requirements'],
+      'target_audience': ['target_audience', 'audience', '受众', '观众']
+    };
+    
+    for (const [canonical, aliases] of Object.entries(fieldMap)) {
+      for (const alias of aliases) {
+        if (data[alias] !== undefined) {
+          fields[canonical] = data[alias];
+          break;
+        }
+      }
+    }
+    
+    return this._buildTextFromFields(fields, format);
+  }
+  
+  _buildTextFromFields(fields, format) {
+    // 构建规范化文本：优先使用 description，其次是 theme + 其他字段
+    const parts = [];
+    
+    // 1. 类型信息（如果有）
+    if (fields.type) {
+      parts.push(String(fields.type));
+    }
+    
+    // 2. 主题信息（如果有）
+    if (fields.theme) {
+      parts.push(String(fields.theme));
+    }
+    
+    // 3. 核心描述（最重要）
+    if (fields.description) {
+      parts.push(String(fields.description));
+    }
+    
+    // 4. 其他补充信息
+    const extraFields = ['dialogue_requirement', 'visual_style', 'special_notes', 'tone', 'target_audience'];
+    for (const field of extraFields) {
+      if (fields[field] && !parts.includes(String(fields[field]))) {
+        parts.push(String(fields[field]));
+      }
+    }
+    
+    // 5. 时长信息
+    if (fields.duration_sec) {
+      parts.push(`${fields.duration_sec}秒`);
+    }
+    
+    const normalizedText = parts.join('，');
+    
+    return {
+      text: normalizedText,
+      format,
+      sourceFields: fields
+    };
+  }
+  
+  _extractFieldsFromText(text, format) {
+    // 从非标准文本中提取可能的字段
+    const fields = {};
+    
+    // 尝试匹配 "key": "value" 模式（可能是不完整的 JSON）
+    const pairPattern = /['"](\w+)['"]\s*:\s*['"]([^'"]+)['"]/g;
+    let match;
+    while ((match = pairPattern.exec(text)) !== null) {
+      fields[match[1]] = match[2];
+    }
+    
+    if (Object.keys(fields).length >= 2) {
+      return this._buildTextFromFields(fields, format);
+    }
+    
+    // 回退：返回清理后的文本
+    const cleanText = text.replace(/[{}[\]"']/g, ' ').replace(/\s+/g, ' ').trim();
+    return { text: cleanText, format, sourceFields: {} };
+  }
+}
+
 // ============ 输入解析器 ============
 class InputParser {
   parse(input) {
-    const text = String(input || '').trim();
+    // 【v2.1.8-fix】先规范化输入（支持 JSON/Python/纯文本等多种格式）
+    const normalizer = new InputNormalizer();
+    const normalized = normalizer.normalize(input);
+    const text = normalized.text;
+    
+    console.log(`[InputParser] 输入格式: ${normalized.format}, 长度: ${text.length}字符`);
     
     // 场景C：无输入/随机
     if (!text || this._isRandomRequest(text)) {
-      return { scene: 'C', input: text };
+      return { scene: 'C', input: text, sourceFields: normalized.sourceFields };
     }
     
     // 场景D：长篇文本
     if (text.length > 500) {
-      return { scene: 'D', input: text };
+      return { scene: 'D', input: text, sourceFields: normalized.sourceFields };
     }
     
     // 场景B：单个关键词
     if (text.length < 20 && !text.includes(' ')) {
-      return { scene: 'B', input: text };
+      return { scene: 'B', input: text, sourceFields: normalized.sourceFields };
     }
     
-    // 场景E：部分字段检测
-    const partialFields = this._detectPartialFields(text);
+    // 场景E：部分字段检测（基于规范化后的文本）
+    const partialFields = this._detectPartialFields(text, normalized.sourceFields);
     if (partialFields.length >= 2) {
-      return { scene: 'E', input: text, partialFields };
+      return { scene: 'E', input: text, partialFields, sourceFields: normalized.sourceFields };
     }
     
     // 场景A：自然语言描述
-    return { scene: 'A', input: text };
+    return { scene: 'A', input: text, sourceFields: normalized.sourceFields };
   }
   
   _isRandomRequest(text) {
@@ -164,15 +340,27 @@ class InputParser {
     return triggers.some(t => text.includes(t));
   }
   
-  _detectPartialFields(text) {
+  _detectPartialFields(text, sourceFields = {}) {
     const fields = [];
-    // 检测类型
-    for (const [type, keywords] of Object.entries(TYPE_LIBRARY)) {
-      if (keywords.some(k => text.includes(k))) {
-        fields.push({ field: 'type', value: type });
-        break;
+    
+    // 检测类型（基于描述内容而非关键词）
+    const typeFromSource = sourceFields?.type;
+    if (typeFromSource) {
+      // 如果原始输入明确提供了类型，优先使用
+      const normalizedType = this._normalizeTypeName(typeFromSource);
+      if (normalizedType) {
+        fields.push({ field: 'type', value: normalizedType });
       }
     }
+    
+    // 基于内容推断类型（改进：使用加权匹配而非简单包含）
+    if (!fields.find(f => f.field === 'type')) {
+      const inferredType = this._inferTypeWeighted(text);
+      if (inferredType) {
+        fields.push({ field: 'type', value: inferredType });
+      }
+    }
+    
     // 检测时长
     const durationMatch = text.match(/(\d+)\s*(秒|分钟|分|s|min)/);
     if (durationMatch) {
@@ -181,6 +369,7 @@ class InputParser {
       const sec = unit === '分钟' || unit === '分' || unit === 'min' ? num * 60 : num;
       fields.push({ field: 'duration_sec', value: sec });
     }
+    
     // 检测情绪
     for (const [tone, keywords] of Object.entries(TONE_LIBRARY)) {
       if (keywords.some(k => text.includes(k))) {
@@ -189,6 +378,81 @@ class InputParser {
       }
     }
     return fields;
+  }
+  
+  /**
+   * 规范化类型名称（处理用户自定义类型）
+   */
+  _normalizeTypeName(typeName) {
+    const typeMappings = {
+      '音乐舞蹈·编舞同步': '音乐MV',
+      '音乐MV': '音乐MV',
+      '音乐': '音乐MV',
+      '舞蹈': '音乐MV',
+      '编舞': '音乐MV',
+      '纪录片': '自然纪录片',
+      '科幻': '硬科幻',
+      '武侠': '武侠动作',
+      '恐怖': '恐怖悬疑',
+      '悬疑': '恐怖悬疑',
+      '广告': '商业广告',
+      '宣传片': '商业广告',
+      '科普': '科普教育',
+      '教育': '科普教育',
+      '美食': '美食文化',
+      '家庭': '家庭温情',
+      '爱情': '浪漫爱情',
+      '浪漫': '浪漫爱情',
+      '喜剧': '喜剧荒诞',
+      '搞笑': '喜剧荒诞',
+      '历史': '历史战争',
+      '战争': '历史战争',
+      '运动': '运动竞技',
+      '体育': '运动竞技',
+      '文化': '文化遗产',
+      '社会': '社会现实',
+      '艺术': '艺术实验',
+      '实验': '艺术实验'
+    };
+    
+    const normalized = String(typeName).trim();
+    return typeMappings[normalized] || null;
+  }
+  
+  /**
+   * 加权类型推断（避免单一关键词误匹配）
+   * 策略: 统计每个类型的关键词命中数，选择得分最高的
+   */
+  _inferTypeWeighted(text) {
+    const scores = {};
+    
+    for (const [type, keywords] of Object.entries(TYPE_LIBRARY)) {
+      let score = 0;
+      for (const keyword of keywords) {
+        // 使用正则匹配完整词，避免子串误匹配
+        const regex = new RegExp(keyword, 'gi');
+        const matches = text.match(regex);
+        if (matches) {
+          // 长关键词权重更高
+          score += matches.length * keyword.length;
+        }
+      }
+      if (score > 0) {
+        scores[type] = score;
+      }
+    }
+    
+    // 选择得分最高的类型
+    const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+    if (sorted.length === 0) return null;
+    
+    // 如果最高分明显领先（> 第二名的1.5倍），直接采用
+    if (sorted.length === 1 || sorted[0][1] > sorted[1][1] * 1.5) {
+      return sorted[0][0];
+    }
+    
+    // 分数接近时，返回 null（让上层使用更多上下文判断）
+    return null;
   }
 }
 
@@ -274,6 +538,37 @@ class FieldCompleter {
       }
     }
     return '艺术实验'; // 默认
+  }
+  
+  /**
+   * 加权类型推断（改进版，避免单一关键词误匹配）
+   */
+  _inferTypeWeighted(input) {
+    const text = String(input || '').toLowerCase();
+    const scores = {};
+    
+    for (const [type, keywords] of Object.entries(TYPE_LIBRARY)) {
+      let score = 0;
+      for (const keyword of keywords) {
+        const regex = new RegExp(keyword.toLowerCase(), 'gi');
+        const matches = text.match(regex);
+        if (matches) {
+          score += matches.length * keyword.length;
+        }
+      }
+      if (score > 0) {
+        scores[type] = score;
+      }
+    }
+    
+    const sorted = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+    if (sorted.length === 0) return '艺术实验';
+    
+    if (sorted.length === 1 || sorted[0][1] > sorted[1][1] * 1.5) {
+      return sorted[0][0];
+    }
+    
+    return '艺术实验'; // 分数接近时，使用默认
   }
   
   _generateTheme(type, input) {
@@ -566,20 +861,20 @@ class CreativeThemeGenerator {
   async generate(input) {
     console.log('[CreativeThemeGenerator] 开始解析用户输入...');
     
-    // Step 1: 解析输入场景
+    // Step 1: 解析输入场景（含规范化）
     const parseResult = this.inputParser.parse(input);
     console.log(`[CreativeThemeGenerator] 识别场景: ${parseResult.scene}`);
     
-    // Step 2: 提取已有字段
+    // Step 2: 提取已有字段（优先用户明确指定的）
     const extractedFields = this._extractFields(parseResult);
     
     // Step 3: 选择压力锚点
-    const type = extractedFields.type || this.fieldCompleter._inferType(input);
-    const pressureAnchors = this.paSelector.select(type, input);
+    const type = extractedFields.type || this.fieldCompleter._inferTypeWeighted(parseResult.input);
+    const pressureAnchors = this.paSelector.select(type, parseResult.input);
     extractedFields.pressureAnchors = pressureAnchors;
     
     // Step 4: 补全所有字段
-    const completedTask = this.fieldCompleter.complete(extractedFields, parseResult.scene, input);
+    const completedTask = this.fieldCompleter.complete(extractedFields, parseResult.scene, parseResult.input);
     
     // Step 5: 质量检查
     const quality = this.qualityChecker.check(completedTask);
@@ -588,7 +883,7 @@ class CreativeThemeGenerator {
     // Step 6: 组装输出
     const result = {
       meta: {
-        version: '2.0',
+        version: '2.1.8',
         generated_at: new Date().toISOString().split('T')[0],
         total_tasks: 1,
         batch_name: '用户定制生成',
@@ -613,9 +908,19 @@ class CreativeThemeGenerator {
    */
   _extractFields(parseResult) {
     const fields = {};
+    
+    // 优先使用原始输入中的明确字段（如 JSON 中的 type、theme 等）
+    if (parseResult.sourceFields) {
+      Object.assign(fields, parseResult.sourceFields);
+    }
+    
+    // 然后叠加 partialFields
     if (parseResult.partialFields) {
       for (const pf of parseResult.partialFields) {
-        fields[pf.field] = pf.value;
+        // 如果 sourceFields 中已有该字段，优先保留（用户明确指定的）
+        if (fields[pf.field] === undefined) {
+          fields[pf.field] = pf.value;
+        }
       }
     }
     return fields;
