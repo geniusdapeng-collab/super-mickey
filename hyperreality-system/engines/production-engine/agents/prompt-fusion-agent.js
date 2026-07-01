@@ -461,17 +461,62 @@ ${ctx}
   }
   
   /**
-   * 【v2.1.8-fix4】批量最小 LLM 降级：一次调用补齐多个缺失字段
-   * 替代逐个字段调用 _minimalLLMDegradation，将 25 次 LLM 调用降为 1 次
+   * 【v2.1.8-fix5】分组批量 LLM 降级：按逻辑分组，每组一次调用
+   * 分组策略：
+   * - 视觉组：lighting, composition, color_palette, depth_of_field, camera_movement
+   * - 角色组：character, costume, makeup, action, props
+   * - 叙事组：timeline, mood, pacing, transition, audio
+   * - 技术组：constraint, baseline, negative, bright_constraint, character_constraint, consistency
+   * - 指令组：director_instruction, scene
+   * 
+   * 相比 v2.1.8-fix4 的全批量：字段间上下文更聚焦，质量接近逐个
+   * 相比逐个：速度提升 5-6 倍（25 次 → 4-5 次调用）
    */
   async _batchMinimalLLMDegradation(fields, shot, ratio, characters) {
     if (fields.length === 0) return {};
     
-    try {
-      const ctx = this._buildMinimalContext(shot, ratio, characters);
-      const fieldDescs = fields.map(f => `- ${f}: ${FIELD_DESCS[f] || '无特殊要求'}`).join('\n');
+    // 字段分组定义
+    const FIELD_GROUPS = {
+      visual: ['lighting', 'composition', 'color_palette', 'depth_of_field', 'camera_movement'],
+      character: ['character', 'costume', 'makeup', 'action', 'props'],
+      narrative: ['timeline', 'mood', 'pacing', 'transition', 'audio'],
+      technical: ['constraint', 'baseline', 'negative', 'bright_constraint', 'character_constraint', 'consistency'],
+      instruction: ['director_instruction', 'scene']
+    };
+    
+    // 将缺失字段映射到对应组
+    const groupAssignments = {};
+    for (const f of fields) {
+      let assigned = false;
+      for (const [groupName, groupFields] of Object.entries(FIELD_GROUPS)) {
+        if (groupFields.includes(f)) {
+          groupAssignments[groupName] = groupAssignments[groupName] || [];
+          groupAssignments[groupName].push(f);
+          assigned = true;
+          break;
+        }
+      }
+      if (!assigned) {
+        // 未匹配的字段归入 instruction 组
+        groupAssignments['instruction'] = groupAssignments['instruction'] || [];
+        groupAssignments['instruction'].push(f);
+      }
+    }
+    
+    const ctx = this._buildMinimalContext(shot, ratio, characters);
+    const allResults = {};
+    
+    // 逐组调用 LLM
+    for (const [groupName, groupFields] of Object.entries(groupAssignments)) {
+      if (groupFields.length === 0) continue;
       
-      const prompt = `根据以下镜头上下文，生成 ${fields.length} 个字段的值。以 JSON 格式输出所有字段。
+      try {
+        const fieldDescs = groupFields.map(f => `- ${f}: ${FIELD_DESCS[f] || '无特殊要求'}`).join('\n');
+        const groupContext = this._buildGroupContext(groupName, shot, ratio, characters);
+        
+        const prompt = `根据以下镜头上下文，生成 ${groupFields.length} 个字段的值。以 JSON 格式输出所有字段。
+
+${groupContext}
 
 镜头上下文：
 ${ctx}
@@ -485,34 +530,47 @@ ${fieldDescs}
 - 保持创作灵气，个性化描述
 - 直接返回 JSON 对象，不要包裹在 code block 中`;
 
-      const schema = { fields: Object.fromEntries(fields.map(f => [f, STANDARD_FIELDS_SCHEMA[f] || ''])) };
-      const result = await this._callLLM(prompt, schema, () => null, {
-        maxRetries: 2,
-        maxTokens: 4096,
-        timeoutMs: 120000, // 批量补齐给 120s 预算
-        shotBudget: 120000
-      });
-      
-      const batchFields = result?.result?.fields || result?.result || {};
-      const normalized = normalizeFields(batchFields);
-      
-      // 过滤掉模板文本
-      const cleaned = {};
-      for (const f of fields) {
-        const value = normalized[f];
-        if (value && String(value).trim().length > 10 
-            && !String(value).includes('好莱坞') 
-            && !String(value).includes('室内写实')) {
-          cleaned[f] = String(value).trim();
+        const schema = { fields: Object.fromEntries(groupFields.map(f => [f, STANDARD_FIELDS_SCHEMA[f] || ''])) };
+        const result = await this._callLLM(prompt, schema, () => null, {
+          maxRetries: 2,
+          maxTokens: 4096,
+          timeoutMs: 60000, // 每组 60s
+          shotBudget: 60000
+        });
+        
+        const batchFields = result?.result?.fields || result?.result || {};
+        const normalized = normalizeFields(batchFields);
+        
+        for (const f of groupFields) {
+          const value = normalized[f];
+          if (value && String(value).trim().length > 10 
+              && !String(value).includes('好莱坞') 
+              && !String(value).includes('室内写实')) {
+            allResults[f] = String(value).trim();
+          }
         }
+        
+        console.log(`[PromptFusion] ${shot.shotId} ${groupName}组(${groupFields.length}字段)降级成功 ✓`);
+      } catch (e) {
+        console.warn(`[PromptFusion] ${shot.shotId} ${groupName}组降级失败: ${e.message}`);
       }
-      
-      console.log(`[PromptFusion] ${shot.shotId} 批量降级成功: ${Object.keys(cleaned).join(',')} ✓`);
-      return cleaned;
-    } catch (e) {
-      console.warn(`[PromptFusion] ${shot.shotId} 批量降级失败: ${e.message}`);
-      return {};
     }
+    
+    return allResults;
+  }
+  
+  /**
+   * 为不同字段组构建针对性上下文
+   */
+  _buildGroupContext(groupName, shot, ratio, characters) {
+    const contexts = {
+      visual: `你是资深电影摄影师。请从摄影、光影、构图、色彩角度描述镜头。`,
+      character: `你是角色造型设计师。请从人物造型、服装、妆容、动作角度描述。`,
+      narrative: `你是剪辑师/声音设计师。请从节奏、情绪、时间线、转场角度描述。`,
+      technical: `你是技术总监。请提供精确的格式约束和技术规范。`,
+      instruction: `你是导演。请给出高层次的视觉指导和场景描述。`
+    };
+    return contexts[groupName] || contexts['instruction'];
   }
   
   _buildMinimalContext(shot, ratio, characters) {
