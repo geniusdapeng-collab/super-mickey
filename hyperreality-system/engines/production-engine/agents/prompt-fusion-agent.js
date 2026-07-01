@@ -330,7 +330,7 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
       const fillResult = await this._callLLM(fillPrompt, fillSchema, () => null, {
         maxRetries: 2,
         maxTokens: 4096,
-        timeoutMs: 60000 // fill 用 60s，不占用主预算
+        timeoutMs: 180000 // 【v2.1.8-fix10】fill 180s，避免批量补齐超时
       });
       const fillFields = fillResult?.result?.fields || fillResult?.result?.[shot.shotId] || {};
       const normalized = normalizeFields(fillFields);
