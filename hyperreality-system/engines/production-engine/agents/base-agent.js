@@ -124,14 +124,34 @@ class BaseAgent {
     
     const callMaxTokens = options.maxTokens || this.llmMaxTokens;
     const callMaxRetries = options.maxRetries ?? this.llmMaxRetries;
-    const baseTimeout = options.timeoutMs || this.llmTimeout;
-    const perCallTimeout = Math.min(baseTimeout, effectiveBudget);
     
-    console.log(`[${this.name}] _callLLM 进入 | perCallTimeout=${perCallTimeout}ms maxTokens=${callMaxTokens} retries=${callMaxRetries} budget=${effectiveBudget}ms${shotBudget ? ' (镜头独立预算)' : ''}`);
+    // 【P0-ARCH-01 修复】三层timeout优先级清晰化：
+    // 1. 用户显式指定的timeoutMs是"必要最低保障"，优先满足
+    // 2. effectiveBudget是"硬性上限"，不能突破
+    // 3. 两者冲突时，按比例缩放，确保内层至少50%时间
+    const requestedTimeout = options.timeoutMs || this.llmTimeout;
+    const hardCeiling = effectiveBudget; // 绝对不能超过此值
 
-    // 预算不足警告，但不强制降级
-    if (perCallTimeout < 20000) {
-      console.warn(`[${this.name}] ⚠️ 剩余预算不足(${perCallTimeout}ms)，但仍尝试 LLM 调用（不自动降级）`);
+    let perCallTimeout;
+    if (requestedTimeout <= hardCeiling) {
+      perCallTimeout = requestedTimeout; // 正常情况：内层可以完整执行
+    } else {
+      // budget不足：按比例缩放，但保证至少50%的内层时间
+      perCallTimeout = Math.max(requestedTimeout * 0.5, hardCeiling);
+      console.warn(`[${this.name}] ⚠️ timeout缩放: 请求${requestedTimeout}ms > budget上限${hardCeiling}ms, 按比例缩放为${perCallTimeout}ms (保证内层50%)`);
+    }
+
+    // 【P0-ARCH-01 修复】fastMode覆盖必须经过同样的优先级校验
+    if (options.fastMode && perCallTimeout > options.fastTimeoutMs) {
+      perCallTimeout = Math.max(options.fastTimeoutMs, hardCeiling * 0.3);
+    }
+    
+    console.log(`[${this.name}] _callLLM 进入 | perCallTimeout=${perCallTimeout}ms maxTokens=${callMaxTokens} retries=${callMaxRetries} budget=${effectiveBudget}ms ceiling=${hardCeiling}ms${shotBudget ? ' (镜头独立预算)' : ''}`);
+
+    // 【P0-ARCH-01 修复】budget严重不足时（<5秒），直接降级，不尝试LLM
+    if (perCallTimeout < 5000) {
+      console.warn(`[${this.name}] ⛔ budget严重不足(${perCallTimeout}ms)，直接降级`);
+      return this._executeFallback(fallbackFn, `Budget insufficient: ${perCallTimeout}ms`);
     }
 
     let currentPrompt = prompt;

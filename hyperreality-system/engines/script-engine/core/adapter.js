@@ -210,6 +210,35 @@ class ScriptBlueprintAdapter {
   }
 
   /**
+   * 【P0-PROMPT-01 修复】安全的setting字符串化
+   * @param {string|object} setting
+   * @returns {string|null}
+   */
+  _stringifySetting(setting) {
+    if (!setting) return null;
+    if (typeof setting === 'string') {
+      return setting;
+    }
+    if (typeof setting === 'object' && !Array.isArray(setting)) {
+      const parts = [];
+      if (setting.location) parts.push(setting.location);
+      if (setting.time) parts.push(setting.time);
+      if (setting.description) parts.push(setting.description);
+      if (setting.scene) parts.push(setting.scene);
+      if (parts.length === 0) {
+        for (const [key, value] of Object.entries(setting)) {
+          if (typeof value === 'string' && value.trim()) {
+            parts.push(`${key}:${value}`);
+          }
+        }
+      }
+      return parts.length > 0 ? parts.join('，') : null;
+    }
+    const str = String(setting);
+    return str.startsWith('[object ') ? null : str;
+  }
+
+  /**
    * 生成 Prompt 基础文本
    */
   _generatePromptBase(scene, blueprint) {
@@ -224,9 +253,12 @@ class ScriptBlueprintAdapter {
       parts.push('Nirath星球');
     }
     
-    // 3. 设定
+    // 3. 设定 —— 【P0-PROMPT-01 修复】安全序列化
     if (scene.setting) {
-      parts.push(scene.setting);
+      const settingStr = this._stringifySetting(scene.setting);
+      if (settingStr) {
+        parts.push(settingStr);
+      }
     }
     
     // 4. 角色
@@ -243,13 +275,21 @@ class ScriptBlueprintAdapter {
     
     // 5. 视觉方向
     if (scene.visual_direction) {
-      parts.push(`${scene.visual_direction.shot_type}，${scene.visual_direction.camera_movement}`);
+      const vd = scene.visual_direction;
+      const shotType = typeof vd.shot_type === 'string' ? vd.shot_type : '';
+      const cameraMovement = typeof vd.camera_movement === 'string' ? vd.camera_movement : '';
+      if (shotType && cameraMovement) {
+        parts.push(`${shotType}，${cameraMovement}`);
+      }
     }
     
     // 6. 对话提示（如果有）
     if (scene.dialogue?.has_dialogue && scene.dialogue.lines?.length > 0) {
       const line = scene.dialogue.lines[0];
-      parts.push(`台词：「${line.text}」`);
+      const lineText = line.text || line.line || '';
+      if (lineText) {
+        parts.push(`台词：「${lineText}」`);
+      }
     }
     
     return parts.join('，');

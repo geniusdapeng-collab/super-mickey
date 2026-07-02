@@ -1068,7 +1068,9 @@ class ProductionEngine {
         characters: scene.characters || [],
         // 【v2.1.4-patch5】将 | 改为逗号,避免Seedance渲染乱码
         characterDescs: characterAnchors.join(', '),
-        dialogueText: (scene.dialogue?.lines && Array.isArray(scene.dialogue.lines)) ? scene.dialogue.lines.map(l => l.text).join(';') : '',
+        dialogueText: (scene.dialogue?.lines && Array.isArray(scene.dialogue.lines))
+          ? scene.dialogue.lines.map(l => l.text || l.line || '').filter(Boolean).join(';')
+          : '',
 
         // 情感
         emotionalTarget: scene.emotional_target || { valence: 0, arousal: 0.5 },
