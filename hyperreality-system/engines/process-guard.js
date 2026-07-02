@@ -1,67 +1,171 @@
 'use strict';
 /**
- * 全局进程防护 v1.1
- * 【v2.1.6-fix-bug50】分类处理错误，可配置吸收/退出策略
+ * 全局进程防护 v2.0 (P0-QUAL-01 修复)
+ * 【v2.1.8-fix15】实例隔离：每个install实例独立配置和监听器
  * 作用：捕获 unhandledRejection / uncaughtException，防止静默数据损坏
  */
-let installed = false;
-const installedFor = new Set(); // 【v2.1.6-fix-bug58】按实例追踪，避免多实例共享状态
+
+const installations = new Map(); // instanceId -> {config, listeners}
+
+const EXIT_CODES = {
+  OK: 0,
+  GENERIC_ERROR: 1,
+  AUTH_ERROR: 10,
+  PARAM_ERROR: 11,
+  NETWORK_ERROR: 12,
+  RATE_LIMIT: 13,
+  TIMEOUT: 14,
+  OOM_FATAL: 15,
+  UNCAUGHT_EXCEPTION: 20,
+  UNHANDLED_REJECTION: 21,
+};
+
 function install(instanceId = 'default', options = {}) {
-  if (installedFor.has(instanceId)) return;
-  installedFor.add(instanceId);
-  if (installed) return; // 全局事件只注册一次
-  installed = true;
+  if (installations.has(instanceId)) {
+    console.warn(`[ProcessGuard] 实例 ${instanceId} 已安装，跳过重复安装`);
+    return;
+  }
 
-  // 🆕 可配置：哪些错误类型被吸收，哪些导致退出
-  const absorbTimeouts = options.absorbTimeouts !== false;
-  const absorbNetworkErrors = options.absorbNetworkErrors !== false;
-  const exitOnUnexpected = options.exitOnUnexpected !== false;
+  const config = {
+    absorbTimeouts: options.absorbTimeouts !== false,
+    absorbNetworkErrors: options.absorbNetworkErrors !== false,
+    absorbUnhandled: options.absorbUnhandled ?? false,
+    exitOnUnexpected: options.exitOnUnexpected !== false,
+    maxListeners: options.maxListeners || 10,
+    onFatal: options.onFatal || null,
+    onError: options.onError || null,
+  };
 
-  process.on('unhandledRejection', (reason, promise) => {
-    const msg = reason instanceof Error ? reason.message : String(reason);
+  const listeners = {};
+
+  // === unhandledRejection 处理器 ===
+  listeners.unhandledRejection = (reason, promise) => {
+    const error = reason instanceof Error ? reason : new Error(String(reason));
+    const msg = error.message;
+    const timestamp = new Date().toISOString();
+    const errorInfo = {
+      type: 'unhandledRejection',
+      message: msg,
+      stack: error.stack,
+      instanceId,
+      timestamp,
+      fatal: false
+    };
 
     // 分类处理
-    if (msg.includes('超时') || msg.includes('timeout') || msg.includes('Timeout')) {
-      if (absorbTimeouts) {
-        console.warn(`[ProcessGuard] 吸收LLM超时: ${msg}`);
+    const isTimeout = msg.includes('超时') || msg.includes('timeout') || msg.includes('Timeout');
+    const isNetwork = msg.includes('ECONNREFUSED') || msg.includes('ETIMEDOUT') || msg.includes('network') || msg.includes('ENOTFOUND');
+    const isOOM = /out of memory|heap out of memory|ENOMEM/i.test(msg);
+    const isAuth = msg.includes('auth') || msg.includes('401') || msg.includes('403');
+
+    if (isOOM) {
+      errorInfo.fatal = true;
+      console.error(`[ProcessGuard:${instanceId}] 🔴 OOM致命错误: ${msg}`);
+      if (config.onFatal) config.onFatal(errorInfo);
+      process.exit(EXIT_CODES.OOM_FATAL);
+    }
+
+    if (isAuth) {
+      errorInfo.fatal = true;
+      console.error(`[ProcessGuard:${instanceId}] 🔴 鉴权错误(不可恢复): ${msg}`);
+      if (config.onFatal) config.onFatal(errorInfo);
+      if (config.exitOnUnexpected) process.exit(EXIT_CODES.AUTH_ERROR);
+      return;
+    }
+
+    if (isTimeout) {
+      if (config.absorbTimeouts) {
+        console.warn(`[ProcessGuard:${instanceId}] 吸收LLM超时: ${msg}`);
+        if (config.onError) config.onError(errorInfo);
         return;
       }
     }
 
-    if (msg.includes('ECONNREFUSED') || msg.includes('ETIMEDOUT') || msg.includes('network')) {
-      if (absorbNetworkErrors) {
-        console.warn(`[ProcessGuard] 吸收网络错误: ${msg}`);
+    if (isNetwork) {
+      if (config.absorbNetworkErrors) {
+        console.warn(`[ProcessGuard:${instanceId}] 吸收网络错误: ${msg}`);
+        if (config.onError) config.onError(errorInfo);
         return;
       }
     }
 
-    // 其他错误：根据配置决定
-    if (exitOnUnexpected) {
-      console.error(`[ProcessGuard] 未预期错误，进程退出: ${msg}`);
-      process.exit(1);
+    // 其他未预期错误
+    if (config.exitOnUnexpected) {
+      console.error(`[ProcessGuard:${instanceId}] 未预期错误，进程退出: ${msg}`);
+      if (config.onFatal) config.onFatal(errorInfo);
+      process.exit(EXIT_CODES.UNHANDLED_REJECTION);
     } else {
-      console.error(`[ProcessGuard] 未预期错误(已吸收): ${msg}`);
+      console.error(`[ProcessGuard:${instanceId}] 未预期错误(已吸收): ${msg}`);
+      if (config.onError) config.onError(errorInfo);
     }
-  });
+  };
 
-  process.on('uncaughtException', (err) => {
+  // === uncaughtException 处理器 ===
+  listeners.uncaughtException = (err) => {
     const FATAL_PATTERNS = [
       /out of memory/i, /heap out of memory/i, /ENOMEM/i,
-      /allocation failed/i, /segfault/i, /SIGSEGV/i, /SIGABRT/i
+      /allocation failed/i, /segfault/i, /SIGSEGV/i, /SIGABRT/i,
+      /RangeError: Maximum call stack size exceeded/i,
+      /FATAL ERROR: Reached heap limit/i,
+      /FATAL ERROR: Ineffective mark-compacts/i,
     ];
     const isFatal = FATAL_PATTERNS.some(p => p.test(err.message));
 
+    const errorInfo = {
+      type: 'uncaughtException',
+      message: err.message,
+      stack: err.stack,
+      instanceId,
+      timestamp: new Date().toISOString(),
+      fatal: isFatal
+    };
+
     if (isFatal) {
-      console.error(`[ProcessGuard] 致命错误: ${err.message}`);
-      process.exit(1);
-    } else if (exitOnUnexpected) {
-      console.error(`[ProcessGuard] 未捕获异常，进程退出: ${err.message}`);
-      process.exit(1);
+      console.error(`[ProcessGuard:${instanceId}] 致命错误: ${err.message}`);
+      if (config.onFatal) config.onFatal(errorInfo);
+      process.exit(EXIT_CODES.OOM_FATAL);
+    } else if (config.exitOnUnexpected) {
+      console.error(`[ProcessGuard:${instanceId}] 未捕获异常，进程退出: ${err.message}`);
+      if (config.onFatal) config.onFatal(errorInfo);
+      process.exit(EXIT_CODES.UNCAUGHT_EXCEPTION);
     } else {
-      console.error(`[ProcessGuard] 未捕获异常(已吸收): ${err.message}`);
+      console.error(`[ProcessGuard:${instanceId}] 未捕获异常(已吸收): ${err.message}`);
+      if (config.onError) config.onError(errorInfo);
     }
-  });
+  };
+
+  // 注册监听器
+  process.on('unhandledRejection', listeners.unhandledRejection);
+  process.on('uncaughtException', listeners.uncaughtException);
+
+  installations.set(instanceId, { config, listeners });
+  console.log(`[ProcessGuard] 实例 ${instanceId} 安装完成`);
 }
 
+/**
+ * 卸载指定实例的监听器
+ */
+function uninstall(instanceId = 'default') {
+  const inst = installations.get(instanceId);
+  if (!inst) return;
+
+  if (inst.listeners.unhandledRejection) {
+    process.off('unhandledRejection', inst.listeners.unhandledRejection);
+  }
+  if (inst.listeners.uncaughtException) {
+    process.off('uncaughtException', inst.listeners.uncaughtException);
+  }
+  installations.delete(instanceId);
+  console.log(`[ProcessGuard] 实例 ${instanceId} 已卸载`);
+}
+
+/**
+ * 获取已安装实例列表
+ */
+function getInstalledInstances() {
+  return Array.from(installations.keys());
+}
+
+// 默认安装
 install();
-module.exports = { install };
+module.exports = { install, uninstall, getInstalledInstances, EXIT_CODES };

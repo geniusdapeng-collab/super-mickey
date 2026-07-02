@@ -226,12 +226,13 @@ class BaseAgent {
     return this._executeFallback(fallbackFn, `LLM failed after ${callMaxRetries} attempts: ${lastError?.message}`);
   }
 
-  _executeFallback(fallbackFn, reason) {
+  async _executeFallback(fallbackFn, reason) {
     try {
-      const fallbackResult = fallbackFn ? fallbackFn() : null;
-      // 【v2.1.4-fix13】如果降级结果也为 null，明确标记
-      if (fallbackResult === null) {
-        console.warn(`[${this.name}] 降级结果为null: ${reason}`);
+      const fallbackResult = fallbackFn ? await Promise.resolve(fallbackFn()) : null;
+      // 【v2.1.4-fix13-P0-QUAL-03】如果降级结果也为 null，明确标记
+      if (fallbackResult === null || fallbackResult === undefined) {
+        console.warn(`[${this.name}] 降级结果为null/undefined: ${reason}`);
+        return { result: null, degraded: true, degradeReason: reason, attempts: this.llmMaxRetries };
       }
       return { result: fallbackResult, degraded: true, degradeReason: reason, attempts: this.llmMaxRetries };
     } catch (fallbackErr) {

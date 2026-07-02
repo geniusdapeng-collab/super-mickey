@@ -16,6 +16,28 @@ try {
   console.warn('[ScriptGenerator] 无法加载LLMEngine:', e.message);
 }
 
+// 【P0-DATA-02 修复】自定义错误类，支持结构化错误信息
+class ScriptGenerationError extends Error {
+  constructor(code, message, details = {}) {
+    super(message);
+    this.name = 'ScriptGenerationError';
+    this.code = code;
+    this.details = details;
+    this.timestamp = new Date().toISOString();
+  }
+
+  toJSON() {
+    return {
+      name: this.name,
+      code: this.code,
+      message: this.message,
+      details: this.details,
+      timestamp: this.timestamp,
+      stack: this.stack
+    };
+  }
+}
+
 class ScriptGenerator {
   constructor(options = {}) {
     const model = options.model || process.env.STORMAXE_LLM_MODEL || null;
@@ -59,20 +81,50 @@ class ScriptGenerator {
   async generate(userIntent, templateData = null) {
     console.log(`[ScriptGenerator] 开始生成剧本: ${userIntent.metadata?.title}`);
 
-    // 1. 加载模板
-    const template = templateData || await this._loadTemplate(userIntent);
+    const maxAttempts = 3;
+    let lastError = null;
 
-    // 2. 构建 LLM Prompt
-    const prompt = this._buildGenerationPrompt(userIntent, template);
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        // 1. 加载模板
+        const template = templateData || await this._loadTemplate(userIntent);
 
-    // 3. 调用 LLM
-    const llmResponse = await this._callLLM(prompt);
+        // 2. 构建 LLM Prompt
+        const prompt = this._buildGenerationPrompt(userIntent, template);
 
-    // 4. 解析并构建 Blueprint
-    const blueprint = this._parseLLMResponse(llmResponse, userIntent);
+        // 3. 调用 LLM
+        const llmResponse = await this._callLLM(prompt);
 
-    console.log(`[ScriptGenerator] 剧本生成完成: ${blueprint.blueprint_id}, ${blueprint.structure.scenes.length} 场景`);
-    return blueprint;
+        // 4. 解析并构建 Blueprint
+        const blueprint = this._parseLLMResponse(llmResponse, userIntent);
+
+        // 5. 验证scenes存在且非空
+        if (!blueprint.structure?.scenes || !Array.isArray(blueprint.structure.scenes) || blueprint.structure.scenes.length === 0) {
+          throw new ScriptGenerationError('JSON_NO_SCENES', 'LLM输出JSON中structure.scenes为空或缺失');
+        }
+
+        console.log(`[ScriptGenerator] 剧本生成完成: ${blueprint.blueprint_id}, ${blueprint.structure.scenes.length} 场景`);
+        return blueprint;
+
+      } catch (error) {
+        lastError = error;
+        console.error(`[ScriptGenerator] 第${attempt}/${maxAttempts}次生成失败:`, error.message);
+
+        if (attempt < maxAttempts) {
+          // 等待后重试
+          const delay = attempt * 2000;
+          console.log(`[ScriptGenerator] ${delay}ms后重试...`);
+          await new Promise(r => setTimeout(r, delay));
+        }
+      }
+    }
+
+    // 所有重试都失败，抛出错误
+    throw new ScriptGenerationError(
+      'GENERATE_FAILED',
+      `剧本生成失败，已重试${maxAttempts}次: ${lastError?.message}`,
+      { lastError: lastError?.toJSON?.() || lastError?.message }
+    );
   }
 
   /**
@@ -613,27 +665,12 @@ ${meta._directorStyle}` : ''}
       console.error('[ScriptGenerator] JSON 解析失败:', err.message);
       console.error('[ScriptGenerator] 原始响应:', response.substring(0, 500));
 
-      // 返回一个带有错误信息的 Blueprint
-      const fallbackBlueprint = new ScriptBlueprint({
-        intent_ref: userIntent.intent_id,
-        meta: {
-          title: userIntent.metadata?.title || '生成失败',
-          narrative_mode: 'dramatic',
-          target_duration: userIntent.metadata?.target_duration || 120
-        },
-        quality_report: {
-          evaluator: 'Error',
-          scores: { error: 0 },
-          passed: false
-        }
-      });
-
-      fallbackBlueprint._generation_error = {
-        message: err.message,
-        raw_response: response.substring(0, 1000)
-      };
-
-      return fallbackBlueprint;
+      // 【P0-DATA-02 修复】抛出异常，不静默吞错，让调用方重试
+      throw new ScriptGenerationError(
+        'JSON_PARSE_FAILED',
+        '无法从LLM响应中提取有效JSON: ' + err.message,
+        { rawResponse: response.substring(0, 2000) }
+      );
     }
   }
 

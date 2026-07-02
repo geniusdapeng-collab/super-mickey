@@ -311,8 +311,6 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
     // 【v2.1.4-fix9-P25-fix7】将 fields 中的关键字段展开到 shot 顶层
     const expandedFields = { ...fields };
 
-    const fullPrompt = this._assembleStandardPrompt(shot, fields, ratio);
-
     // v2.1.7: 跨字段一致性校验 + 自动修复
     const shotWithBlueprint = { ...shot, fields, blueprint: shot.blueprint || blueprint };
     const checkResult = this.consistencyChecker.check(shotWithBlueprint);
@@ -324,12 +322,15 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
       }
     }
 
+    // 【P0-PROMPT-05 修复】autoFix 修改 fields 后，重新组装 prompt，确保 prompt 反映修复后的字段
+    const fullPrompt = this._assembleStandardPrompt(shot, fields, ratio);
+
     return {
       ...shot,
       ...expandedFields,
       fields,
       fusionText: fields.scene || '',
-      prompt: fullPrompt,
+      prompt: fullPrompt, // 【P0-PROMPT-05 修复】现在包含 autoFix 的修改
       promptCharCount: this._countChars(fullPrompt),
       degraded: finalDegraded, // 【P1-4 修复】真实降级标记
       degradeReason: finalDegradeReason
@@ -369,8 +370,25 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
       const fillFields = fillResult?.result?.fields || fillResult?.result?.[shot.shotId] || {};
       const normalized = normalizeFields(fillFields);
       for (const k of missing) {
-        if (normalized[k] && String(normalized[k]).trim() !== '') {
-          fields[k] = normalized[k];
+        if (normalized[k]) {
+          // 【P0-PROMPT-04 修复】安全赋值：对象类型字段序列化为字符串
+          let value = normalized[k];
+          if (typeof value === 'object' && value !== null) {
+            // timeline 支持结构化对象，需要特殊处理
+            if (k === 'timeline' && value.beats) {
+              value = this._renderStructuredTimeline(value);
+            } else {
+              // 其他对象字段安全序列化
+              try {
+                value = JSON.stringify(value);
+              } catch {
+                value = String(value);
+              }
+            }
+          }
+          if (String(value).trim() !== '' && !String(value).startsWith('[object ')) {
+            fields[k] = value;
+          }
         }
       }
     } catch (e) {
