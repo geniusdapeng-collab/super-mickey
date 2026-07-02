@@ -104,17 +104,63 @@ class DirectorOptimizationAgent {
 
   _score(shots, metadata) {
     // 四维评分：故事性、连贯性、视觉语言、风格一致性
+    // 【P1-QUAL-05 修复】新增字段完整性维度
     const storyScore = this._scoreStory(shots, metadata);
     const continuityScore = this._scoreContinuity(shots);
     const visualScore = this._scoreVisual(shots);
     const styleScore = this._scoreStyle(shots, metadata);
+    const completenessScore = this._scoreFieldCompleteness(shots); // 【P1-QUAL-05 修复】
 
+    // 调整权重：将style的5%分给字段完整性
     return (
-      storyScore * this.weights.story +
-      continuityScore * this.weights.continuity +
-      visualScore * this.weights.visual +
-      styleScore * this.weights.style
+      storyScore * 0.30 +
+      continuityScore * 0.25 +
+      visualScore * 0.25 +
+      styleScore * 0.15 +      // 从20%降到15%
+      completenessScore * 0.05  // 【P1-QUAL-05 修复】新增5%
     );
+  }
+
+  /**
+   * 【P1-QUAL-05 修复】字段完整性评分
+   * 检查10个关键字段是否存在且长度足够
+   * 10个字段全满=5.0，每缺1个扣0.5分
+   */
+  _scoreFieldCompleteness(shots) {
+    if (shots.length === 0) return 3.0;
+
+    const KEY_FIELDS = [
+      'director_instruction', 'scene', 'lighting', 'camera_movement',
+      'action', 'timeline', 'audio', 'negative', 'consistency', 'mood'
+    ];
+    const MIN_LENGTHS = {
+      director_instruction: 20, scene: 30, lighting: 30, camera_movement: 20,
+      action: 20, timeline: 10, audio: 20, negative: 20, consistency: 20, mood: 5
+    };
+
+    let totalFieldScore = 0;
+
+    for (const shot of shots) {
+      const fields = shot.fields || shot;
+      let shotFieldScore = 5.0;
+      let missingCount = 0;
+
+      for (const field of KEY_FIELDS) {
+        const value = fields[field];
+        const strValue = String(value || '');
+        const minLen = MIN_LENGTHS[field] || 1;
+
+        if (!value || strValue.trim().length < minLen) {
+          missingCount++;
+        }
+      }
+
+      // 每缺1个关键字段扣0.5分
+      shotFieldScore = Math.max(0, 5.0 - missingCount * 0.5);
+      totalFieldScore += shotFieldScore;
+    }
+
+    return totalFieldScore / shots.length;
   }
 
   _scoreStory(shots, metadata) {
