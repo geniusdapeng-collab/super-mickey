@@ -198,8 +198,15 @@ async function main() {
   
   // 检查是否自动确认模式
   const autoConfirm = process.argv.includes('--auto-confirm');
+  // 【v2.1.8-fix】支持 --duration 参数指定时长
+  const durationArg = process.argv.find(arg => arg.startsWith('--duration='));
+  const durationMs = durationArg ? parseInt(durationArg.split('=')[1]) * 1000 : null;
+  
   if (autoConfirm) {
     console.log('  🚀 自动确认模式: 将自动创建所有确认文件');
+  }
+  if (durationMs) {
+    console.log(`  ⏱️  指定时长: ${durationMs / 1000}秒`);
   }
   
   console.log('══════════════════════════════════════════');
@@ -207,6 +214,7 @@ async function main() {
   console.log('══════════════════════════════════════════');
   console.log(`输入: "${userInput}"`);
   if (autoConfirm) console.log('模式: 自动确认 (--auto-confirm)');
+  if (durationMs) console.log(`时长: ${durationMs / 1000}秒`);
   console.log('');
   
   // Step 1: 清理旧数据
@@ -225,7 +233,7 @@ async function main() {
     console.log('══════════════════════════════════════════');
     const confirmations = [
       'creative-theme',
-      'requirement-list',
+      'requirement',  // 注意：系统内部使用 'requirement' 而非 'requirement-list'
       'character-portraits',
       'prompts'
     ];
@@ -260,10 +268,24 @@ async function main() {
   
   try {
     // Step 2-5: 执行系统流程（包含确认环节）
-    const result = await system.create(userInput, {
+    // 【v2.1.8-fix】传递时长和约束参数
+    const systemOptions = {
       skipRender: true,
       skipPostProduction: true
-    });
+    };
+    if (durationMs) {
+      systemOptions.targetDuration = durationMs;
+      systemOptions.duration = durationMs;
+      // 传递元数据给 RequirementListBuilder
+      systemOptions.metadata = {
+        target_duration: durationMs,
+        duration: durationMs,
+        maxScenes: Math.ceil(durationMs / 1000 / 5), // 每场景约5秒
+        maxCharacters: 2, // 30秒视频建议最多2个主要角色
+        style: 'CINE'
+      };
+    }
+    const result = await system.create(userInput, systemOptions);
     
     // Step 6: 输出结果
     const mdPath = exportResultsToMarkdown(result);
