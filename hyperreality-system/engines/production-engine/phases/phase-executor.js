@@ -17,7 +17,10 @@ class PhaseExecutor {
     this.canAfford = options.canAfford || (() => true);
     this.budgetRemaining = options.budgetRemaining || (() => Infinity);
     this.checkMemory = options.checkMemory || (() => {});
-    this.cloneShots = options.cloneShots || ((s) => JSON.parse(JSON.stringify(s)));
+    this.cloneShots = options.cloneShots || ((s) => {
+      const { deepClone } = require('../../../utils/safe-clone');
+      return deepClone(s);
+    });
     this.mergeShots = options.mergeShots || ((a, b, fields) => a);
     // 【v2.1.6-fix】长时间任务健康监控支持
     this.healthMonitor = options.healthMonitor || null;

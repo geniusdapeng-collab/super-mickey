@@ -205,7 +205,9 @@ class AgentContractValidator {
   }
 
   _autoFix(data, schema, contractName) {
-    const fixed = JSON.parse(JSON.stringify(data)); // 深拷贝
+    // 【P2-Bug-11 修复】使用safe-clone替代JSON.parse(JSON.stringify())
+    const { deepClone } = require('../../../utils/safe-clone');
+    const fixed = deepClone(data);
     let fixCount = 0;
 
     for (const [key, rule] of Object.entries(schema)) {

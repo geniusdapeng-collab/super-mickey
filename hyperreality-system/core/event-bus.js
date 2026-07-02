@@ -3,6 +3,8 @@
 // 内存版发布-订阅，后期可替换为Redis Stream
 // 日期: 2026-06-26
 
+const crypto = require('crypto');
+
 // 【P1-ARCH-03 修复】EventBus错误传播 + 内存泄漏防护
 class EventBus {
   constructor() {
@@ -66,7 +68,8 @@ class EventBus {
       type: eventType,
       payload,
       timestamp: Date.now(),
-      id: `${eventType}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+      // 【P2-Bug-10 修复】使用crypto.randomInt替代Math.random，防止高并发下ID碰撞
+      id: `${eventType}-${Date.now()}-${crypto.randomInt(0, 1000000000).toString(36).padStart(6, '0')}`
     };
     
     this._appendHistory(event);
