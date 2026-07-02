@@ -9,24 +9,39 @@ const path = require('path');
 
 // 简单内存缓存（生产环境可替换为Redis）
 class SimpleCache {
-  constructor() {
+  constructor(options = {}) {
     this.store = new Map();
-    this.maxSize = 1000; // 最多缓存1000条
+    this.maxSize = options.maxSize || 1000;
+    this.defaultTTL = options.defaultTTL || 3600000;
+    this._hits = 0;
+    this._misses = 0;
   }
   
   get(key) {
     const entry = this.store.get(key);
-    if (!entry) return null;
-    if (Date.now() > entry.expiry) {
-      this.store.delete(key);
+    if (!entry) {
+      this._misses++;
       return null;
     }
+    if (Date.now() > entry.expiry) {
+      this.store.delete(key);
+      this._misses++;
+      return null;
+    }
+    // 【P0-Bug-3 修复】LRU: 命中后删除并重新插入，使其成为"最新使用"
+    this.store.delete(key);
+    this.store.set(key, entry);
+    entry.hits = (entry.hits || 0) + 1; // 【P0-Bug-3 修复】递增hits计数器
+    this._hits++;
     return entry.value;
   }
   
-  set(key, value, ttlMs = 3600000) {
-    if (this.store.size >= this.maxSize) {
-      // LRU淘汰：删除最旧的
+  set(key, value, ttlMs = this.defaultTTL) {
+    // 【P0-Bug-3 修复】如果key已存在，先删除（确保更新位置和TTL）
+    if (this.store.has(key)) {
+      this.store.delete(key);
+    } else if (this.store.size >= this.maxSize) {
+      // 【P0-Bug-3 修复】真正的LRU: 淘汰最久未访问的（Map的第一个key）
       const oldest = this.store.keys().next().value;
       this.store.delete(oldest);
     }
@@ -38,9 +53,13 @@ class SimpleCache {
   }
   
   stats() {
+    const total = this._hits + this._misses;
     return {
       size: this.store.size,
-      maxSize: this.maxSize
+      maxSize: this.maxSize,
+      hits: this._hits,
+      misses: this._misses,
+      hitRate: total > 0 ? (this._hits / total * 100).toFixed(2) + '%' : 'N/A'
     };
   }
 }
@@ -174,27 +193,70 @@ class LLMGateway {
   
   /**
    * 执行LLM调用（带超时）
+   * 【P0-D1 修复】使用settled标志+finally确保timer清理，防止悬空Promise泄漏
+   * 【P0-D2 修复】timeout截断到32位安全值
    */
   async _executeWithTimeout(prompt, model, timeout, options) {
     if (!this.llmEngine) {
       throw new Error('LLM引擎未注入');
     }
     
+    // 【P0-D2 修复】截断到32位安全值
+    const safeTimeout = Math.min(timeout, 2147483647);
+    
     return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => {
-        reject({ type: 'TIMEOUT', message: `LLM调用超时: ${timeout}ms` });
-      }, timeout);
+      let timer = null;
+      let settled = false;
       
-      this.llmEngine.reasonStructured(prompt, options.schema || null, {
-        model: model,
-        ...options
-      }).then(result => {
-        clearTimeout(timer);
-        resolve(result);
-      }).catch(err => {
-        clearTimeout(timer);
-        reject({ type: 'LLM_ERROR', message: err.message, original: err });
-      });
+      const cleanup = () => {
+        if (timer) {
+          clearTimeout(timer);
+          timer = null;
+        }
+      };
+      
+      timer = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        // 【P0-D1 修复】使用Error实例而非普通对象
+        const err = new Error(`LLM调用超时: ${safeTimeout}ms`);
+        err.type = 'TIMEOUT';
+        err.timeout = safeTimeout;
+        reject(err);
+      }, safeTimeout);
+      
+      try {
+        this.llmEngine.reasonStructured(prompt, options.schema || null, {
+          model: model,
+          ...options
+        }).then(result => {
+          if (!settled) {
+            settled = true;
+            cleanup();
+            resolve(result);
+          }
+        }).catch(err => {
+          if (!settled) {
+            settled = true;
+            cleanup();
+            const wrapped = new Error(err.message || 'LLM调用失败');
+            wrapped.type = 'LLM_ERROR';
+            wrapped.original = err;
+            reject(wrapped);
+          }
+        });
+      } catch (syncErr) {
+        // 【P0-D1 修复】捕获同步异常
+        if (!settled) {
+          settled = true;
+          cleanup();
+          const wrapped = new Error(syncErr.message || 'LLM同步调用异常');
+          wrapped.type = 'LLM_ERROR';
+          wrapped.original = syncErr;
+          reject(wrapped);
+        }
+      }
     });
   }
   

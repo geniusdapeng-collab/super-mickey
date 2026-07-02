@@ -34,6 +34,11 @@ class PipelineStateMachine {
     this.failureLog = [];
     this.compensationStack = [];
     
+    // 【P0-Bug-2 修复】checkpoint数据限制，防止无限累积
+    this._maxCheckpointDataSize = options.maxCheckpointDataSize || 50 * 1024 * 1024; // 50MB
+    this._maxFailureLogSize = options.maxFailureLogSize || 1000;
+    this._checkpointKeysLimit = options.checkpointKeysLimit || 5; // 只保留最近5个stage
+    
     this._ensureDir();
     this._loadCheckpoint();
   }
@@ -73,12 +78,38 @@ class PipelineStateMachine {
   
   /**
    * 原子提交checkpoint
+   * 【P0-Bug-2 修复】限制checkpoint数据大小，使用异步I/O避免阻塞事件循环
    */
   async _atomicCheckpoint(stageName, data = {}) {
-    this.checkpointData[stageName] = {
-      timestamp: Date.now(),
-      data
-    };
+    // 【P0-Bug-2 修复】只保留最近N个stage数据
+    const keys = Object.keys(this.checkpointData);
+    if (keys.length >= this._checkpointKeysLimit) {
+      const keysToDelete = keys.slice(0, keys.length - this._checkpointKeysLimit + 1);
+      for (const key of keysToDelete) {
+        delete this.checkpointData[key];
+      }
+    }
+    
+    // 【P0-Bug-2 修复】限制单个checkpoint数据大小
+    const serialized = JSON.stringify(data);
+    if (serialized.length > this._maxCheckpointDataSize) {
+      console.warn(`[StateMachine] Stage ${stageName} 数据 ${serialized.length} bytes 超过限制，仅保存元数据`);
+      this.checkpointData[stageName] = {
+        timestamp: Date.now(),
+        dataSize: serialized.length,
+        dataSummary: `[Data truncated: ${serialized.length} bytes]`
+      };
+    } else {
+      this.checkpointData[stageName] = {
+        timestamp: Date.now(),
+        data
+      };
+    }
+    
+    // 【P0-Bug-2 修复】限制failureLog大小
+    if (this.failureLog.length > this._maxFailureLogSize) {
+      this.failureLog = this.failureLog.slice(-this._maxFailureLogSize);
+    }
     
     const payload = {
       projectId: this.projectId,
@@ -89,11 +120,13 @@ class PipelineStateMachine {
     };
     
     try {
-      // 先写临时文件
-      fs.writeFileSync(this._tempCheckpointPath(), JSON.stringify(payload, null, 2));
-      // 原子rename
-      fs.renameSync(this._tempCheckpointPath(), this._checkpointPath());
-      console.log(`[StateMachine] checkpoint原子提交: ${stageName}`);
+      // 【P0-Bug-2 修复】使用异步I/O替代同步I/O
+      const fsPromises = require('fs').promises;
+      const tmpPath = this._tempCheckpointPath();
+      const finalPath = this._checkpointPath();
+      await fsPromises.writeFile(tmpPath, JSON.stringify(payload));
+      await fsPromises.rename(tmpPath, finalPath);
+      console.log(`[StateMachine] checkpoint异步原子提交: ${stageName}`);
     } catch (e) {
       console.error('[StateMachine] checkpoint提交失败:', e.message);
     }
@@ -174,16 +207,27 @@ class PipelineStateMachine {
   
   /**
    * 执行补偿（倒序回滚）
+   * 【P0-Bug-1 修复】使用pop()实现真正的LIFO，避免reverse()原地反转破坏顺序
    */
   async _compensate() {
     console.log(`[StateMachine] 执行补偿事务，回滚${this.compensationStack.length}个Stage...`);
     
-    for (const item of this.compensationStack.reverse()) {
+    // 使用pop()从尾部弹出，实现真正的LIFO（最后执行的先补偿）
+    while (this.compensationStack.length > 0) {
+      const item = this.compensationStack.pop();
       try {
         await item.compensate();
         console.log(`[StateMachine] 补偿完成: ${item.stage}`);
       } catch (e) {
         console.error(`[StateMachine] 补偿失败: ${item.stage} - ${e.message}`);
+        // 补偿失败记录到failureLog，不中断后续补偿
+        this.failureLog.push({
+          stage: item.stage,
+          error: e.message,
+          stack: e.stack,
+          timestamp: Date.now(),
+          type: 'compensation_failure'
+        });
       }
     }
     
