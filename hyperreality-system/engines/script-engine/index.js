@@ -13,7 +13,10 @@ const { 示例世界Extension: NirathExtension } = require('./extensions/nirath-
 class ScriptEngine {
   constructor(options = {}) {
     this.intentParser = new IntentParser(options.intentParser);
-    this.scriptGenerator = new ScriptGenerator(options.scriptGenerator);
+    this.scriptGenerator = new ScriptGenerator({
+      ...options.scriptGenerator,
+      model: options.scriptGenerator?.model || process.env.STORMAXE_LLM_MODEL || 'kimi-k2p6'
+    });
     this.scriptValidator = new ScriptValidator(options.scriptValidator);
     this.adapter = new ScriptBlueprintAdapter(options.adapter);
     this.nirathExtension = new NirathExtension();
