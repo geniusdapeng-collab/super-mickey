@@ -116,17 +116,35 @@ class LLMGateway {
   
   /**
    * 生成缓存键
+   * 【P1-Bug-6 修复】使用稳定键序列化（排序键）+ SHA-256替代MD5 + 包含所有影响结果的参数
    */
   _cacheKey(prompt, options) {
-    const hash = crypto.createHash('md5');
-    hash.update(prompt);
-    hash.update(JSON.stringify(options.agentType || 'unknown'));
-    hash.update(JSON.stringify(options.schema || {}));
-    // 【P1-ARCH-04 修复】context也参与哈希，确保不同项目的调用不碰撞
-    hash.update(JSON.stringify(options.context || {}));
-    // 增加时间戳窗口（1小时），防止过期缓存被长期命中
-    hash.update(Math.floor(Date.now() / 3600000).toString());
-    return `llm:${hash.digest('hex')}`;
+    // 稳定序列化：按键排序，消除键顺序影响
+    const stableStringify = (obj) => {
+      if (obj === null || typeof obj !== 'object') return JSON.stringify(obj);
+      if (Array.isArray(obj)) {
+        return '[' + obj.map(stableStringify).join(',') + ']';
+      }
+      const sorted = {};
+      for (const key of Object.keys(obj).sort()) {
+        sorted[key] = obj[key];
+      }
+      return JSON.stringify(sorted);
+    };
+
+    // 包含所有影响结果的参数
+    const keyData = [
+      String(prompt),
+      options.agentType || 'unknown',
+      stableStringify(options.schema || {}),
+      options.model || 'default',
+      String(options.temperature || ''),
+      String(options.maxTokens || ''),
+      stableStringify(options.context || {}),
+    ].join('\0');
+
+    // 使用SHA-256替代MD5（更安全），截取前32字符
+    return `llm:${crypto.createHash('sha256').update(keyData).digest('hex').slice(0, 32)}`;
   }
   
   /**
@@ -262,23 +280,59 @@ class LLMGateway {
   
   /**
    * 错误处理与降级链
+   * 【P1-D3 修复】添加降级链深度追踪和timeout下限保护，防止timeout收缩至0
    */
   async _handleError(err, prompt, options, latency, retryCount = 0) {
     this._recordFailure();
     
+    // 【P1-D3 修复】降级链深度追踪
+    const degradeDepth = options._degradeDepth || 0;
+    const MAX_DEGRADE_DEPTH = 2; // 最多2层降级（主模型→fallback→规则模板）
+    
+    if (degradeDepth >= MAX_DEGRADE_DEPTH) {
+      console.error(`[LLMGateway] 降级链已达最大深度${MAX_DEGRADE_DEPTH}，直接返回规则模板`);
+      this.stats.fallbackUsed++;
+      return this._ruleTemplateFallback(options.agentType, prompt, options.context);
+    }
+    
+    // 保存原始timeout用于预算控制
+    const originalTimeout = options._originalTimeout || (options.timeout || this.defaultTimeout);
+    
     if (err.type === 'TIMEOUT') {
       this.stats.timeouts++;
-      console.warn(`[LLMGateway] 超时(${latency}ms)，触发降级链`);
+      console.warn(`[LLMGateway] 超时(${latency}ms)，触发降级链 | depth=${degradeDepth}`);
       
       // 降级链1：轻量模型
-      if (!options.preferFast && this.models.fallback) {
+      if (!options.preferFast && this.models.fallback && degradeDepth < 1) {
         console.log('[LLMGateway] 降级到轻量模型:', this.models.fallback);
         try {
+          // 【P1-D3 修复】收缩后的timeout不低于MIN_FALLBACK_TIMEOUT
+          const MIN_FALLBACK_TIMEOUT = 10000; // 10秒最低保障
+          const shrunkTimeout = Math.max(
+            MIN_FALLBACK_TIMEOUT,
+            Math.floor(originalTimeout * 0.7)
+          );
+          
+          // 【P1-D3 修复】总降级预算不超过原始timeout的80%
+          const totalBudgetUsed = options._budgetUsed || 0;
+          const remainingBudget = originalTimeout * 0.8 - totalBudgetUsed;
+          const finalTimeout = Math.min(shrunkTimeout, remainingBudget);
+          
+          if (finalTimeout < MIN_FALLBACK_TIMEOUT) {
+            console.warn(`[LLMGateway] fallback预算不足(${finalTimeout}ms)，跳过fallback直接规则兜底`);
+            throw new Error('INSUFFICIENT_FALLBACK_BUDGET');
+          }
+          
           const result = await this._executeWithTimeout(
             prompt, 
             this.models.fallback, 
-            Math.floor((options.timeout || this.defaultTimeout) * 0.7),
-            options
+            finalTimeout,
+            {
+              ...options,
+              _degradeDepth: degradeDepth + 1,
+              _originalTimeout: originalTimeout,
+              _budgetUsed: totalBudgetUsed + latency
+            }
           );
           this.stats.fallbackUsed++;
           return result;
@@ -370,13 +424,18 @@ class LLMGateway {
   
   /**
    * 熔断器检查
+   * 【P1-D4 修复】使用首次失败时间进行恢复倒计时，防止lastFailureTime持续更新导致无法恢复
    */
   _isCircuitOpen() {
     const cb = this.circuitBreaker;
     
     if (cb.state === 'OPEN') {
-      if (Date.now() - cb.lastFailureTime > cb.recoveryTimeout) {
+      // 【P1-D4 修复】使用firstFailureTime进行恢复倒计时（不是lastFailureTime）
+      const timeSinceFirstFailure = Date.now() - (cb.firstFailureTime || cb.lastFailureTime || 0);
+      
+      if (timeSinceFirstFailure > cb.recoveryTimeout) {
         cb.state = 'HALF_OPEN';
+        cb.consecutiveSuccesses = 0;
         console.log('[LLMGateway] 熔断器进入半开状态，尝试恢复');
         return false;
       }
@@ -385,33 +444,79 @@ class LLMGateway {
     return false;
   }
   
+  /**
+   * 【P1-D4 修复】记录成功 - HALF_OPEN状态需要连续N次成功才关闭
+   */
   _recordSuccess() {
     const cb = this.circuitBreaker;
     cb.consecutiveFailures = 0;
+    
     if (cb.state === 'HALF_OPEN') {
-      cb.state = 'CLOSED';
-      console.log('[LLMGateway] 熔断器关闭，服务恢复');
+      cb.consecutiveSuccesses = (cb.consecutiveSuccesses || 0) + 1;
+      // 需要连续3次成功才关闭（渐进恢复）
+      const halfOpenMaxCalls = cb.halfOpenMaxCalls || 3;
+      if (cb.consecutiveSuccesses >= halfOpenMaxCalls) {
+        cb.state = 'CLOSED';
+        cb.consecutiveSuccesses = 0;
+        cb.firstFailureTime = null;
+        console.log(`[LLMGateway] 熔断器关闭，连续${halfOpenMaxCalls}次探测成功`);
+      }
     }
   }
   
+  /**
+   * 【P1-D4 修复】记录失败 - 只在首次失败时记录firstFailureTime
+   */
   _recordFailure() {
     const cb = this.circuitBreaker;
     cb.consecutiveFailures++;
     cb.lastFailureTime = Date.now();
     
-    if (cb.consecutiveFailures >= cb.failureThreshold) {
+    // 【P1-D4 修复】只在首次失败时记录firstFailureTime
+    if (!cb.firstFailureTime) {
+      cb.firstFailureTime = cb.lastFailureTime;
+    }
+    
+    if (cb.state === 'HALF_OPEN') {
+      // 半开状态下1次失败就回到OPEN（保守策略）
       cb.state = 'OPEN';
+      cb.consecutiveSuccesses = 0;
+      console.warn('[LLMGateway] 半开探测失败，熔断器重新开启');
+    } else if (cb.consecutiveFailures >= cb.failureThreshold) {
+      cb.state = 'OPEN';
+      cb.firstFailureTime = Date.now();
       console.error(`[LLMGateway] 熔断器开启！连续失败${cb.consecutiveFailures}次`);
     }
   }
   
+  /**
+   * 【P1-D5 修复】使用O(1)环形缓冲区替代shift()，避免高频O(n)阻塞
+   */
   _recordLatency(latency) {
-    this.stats.latencyHistory.push(latency);
-    if (this.stats.latencyHistory.length > 100) {
-      this.stats.latencyHistory.shift();
+    if (!this._latencyRing) {
+      this._latencyRing = {
+        buffer: new Array(100),
+        head: 0,
+        count: 0,
+        sum: 0
+      };
     }
-    const sum = this.stats.latencyHistory.reduce((a, b) => a + b, 0);
-    this.stats.avgLatency = Math.floor(sum / this.stats.latencyHistory.length);
+    
+    const ring = this._latencyRing;
+    if (ring.count === 100) {
+      // 覆盖最旧的元素
+      ring.sum -= ring.buffer[ring.head];
+      ring.sum += latency;
+      ring.buffer[ring.head] = latency;
+      ring.head = (ring.head + 1) % 100;
+    } else {
+      ring.sum += latency;
+      ring.buffer[ring.head] = latency;
+      ring.head = (ring.head + 1) % 100;
+      ring.count++;
+    }
+    
+    this.stats.avgLatency = ring.count > 0 ? Math.floor(ring.sum / ring.count) : 0;
   }
   
   _exponentialBackoff(attempt) {
