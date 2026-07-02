@@ -630,15 +630,19 @@ ${ctx}
     const ctx = this._buildMinimalContext(shot, ratio, characters);
     const allResults = {};
 
-    // 逐组调用 LLM
-    for (const [groupName, groupFields] of Object.entries(groupAssignments)) {
-      if (groupFields.length === 0) continue;
+    // 【P0-PROMPT-03 修复】组间并行执行，最多2组并发（避免API限流）
+    const groupEntries = Object.entries(groupAssignments).filter(([_, gfs]) => gfs.length > 0);
+    const CONCURRENCY = 2; // 最多2组同时调用
+    
+    for (let i = 0; i < groupEntries.length; i += CONCURRENCY) {
+      const batch = groupEntries.slice(i, i + CONCURRENCY);
+      const batchResults = await Promise.allSettled(
+        batch.map(async ([groupName, groupFields]) => {
+          try {
+            const fieldDescs = groupFields.map(f => `- ${f}: ${FIELD_DESCS[f] || '无特殊要求'}`).join('\n');
+            const groupContext = this._buildGroupContext(groupName, shot, ratio, characters);
 
-      try {
-        const fieldDescs = groupFields.map(f => `- ${f}: ${FIELD_DESCS[f] || '无特殊要求'}`).join('\n');
-        const groupContext = this._buildGroupContext(groupName, shot, ratio, characters);
-
-        const prompt = `根据以下镜头上下文,生成 ${groupFields.length} 个字段的值。以 JSON 格式输出所有字段。
+            const prompt = `根据以下镜头上下文,生成 ${groupFields.length} 个字段的值。以 JSON 格式输出所有字段。
 
 ${groupContext}
 
@@ -654,29 +658,41 @@ ${fieldDescs}
 - 保持创作灵气,个性化描述
 - 直接返回 JSON 对象,不要包裹在 code block 中`;
 
-        const schema = { fields: Object.fromEntries(groupFields.map(f => [f, STANDARD_FIELDS_SCHEMA[f] || ''])) };
-        const result = await this._callLLM(prompt, schema, () => null, {
-          maxRetries: 2,
-          maxTokens: 4096,
-          timeoutMs: 180000, // 【v2.1.8-fix9】每组 180s,解决批量补齐超时
-          shotBudget: 180000
-        });
+            const schema = { fields: Object.fromEntries(groupFields.map(f => [f, STANDARD_FIELDS_SCHEMA[f] || ''])) };
+            const result = await this._callLLM(prompt, schema, () => null, {
+              maxRetries: 2,
+              maxTokens: 4096,
+              timeoutMs: 180000,
+              shotBudget: 180000
+            });
 
-        const batchFields = result?.result?.fields || result?.result || {};
-        const normalized = normalizeFields(batchFields);
+            const batchFields = result?.result?.fields || result?.result || {};
+            const normalized = normalizeFields(batchFields);
+            const groupResults = {};
 
-        for (const f of groupFields) {
-          const value = normalized[f];
-          if (value && String(value).trim().length > 10
-              && !String(value).includes('好莱坞')
-              && !String(value).includes('室内写实')) {
-            allResults[f] = String(value).trim();
+            for (const f of groupFields) {
+              const value = normalized[f];
+              if (value && String(value).trim().length > 10
+                  && !String(value).includes('好莱坞')
+                  && !String(value).includes('室内写实')) {
+                groupResults[f] = String(value).trim();
+              }
+            }
+
+            console.log(`[PromptFusion] ${shot.shotId} ${groupName}组(${groupFields.length}字段)降级成功 ✓`);
+            return { groupName, results: groupResults };
+          } catch (e) {
+            console.warn(`[PromptFusion] ${shot.shotId} ${groupName}组降级失败: ${e.message}`);
+            return { groupName, results: {}, error: e.message };
           }
+        })
+      );
+      
+      // 合并结果
+      for (const r of batchResults) {
+        if (r.status === 'fulfilled') {
+          Object.assign(allResults, r.value.results);
         }
-
-        console.log(`[PromptFusion] ${shot.shotId} ${groupName}组(${groupFields.length}字段)降级成功 ✓`);
-      } catch (e) {
-        console.warn(`[PromptFusion] ${shot.shotId} ${groupName}组降级失败: ${e.message}`);
       }
     }
 
