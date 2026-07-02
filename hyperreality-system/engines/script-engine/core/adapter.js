@@ -315,8 +315,10 @@ class ScriptBlueprintAdapter {
         
         // 定妆照路径
         // 【v2.1.8-fix】防御性处理：LLM可能返回 id 而非 character_id
-        const charId = char.character_id || char.id || `char_${index}`;
-        portraits: this._resolvePortraitPaths(charId, char.visual_anchor?.reference_images)
+        portraits: this._resolvePortraitPaths(
+          char.character_id || char.id || `char_${index}`,
+          char.visual_anchor?.reference_images
+        )
       };
 
       return adapted;

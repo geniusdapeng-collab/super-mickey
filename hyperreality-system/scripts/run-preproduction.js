@@ -269,23 +269,18 @@ async function main() {
   try {
     // Step 2-5: 执行系统流程（包含确认环节）
     // 【v2.1.8-fix】传递时长和约束参数
-    const systemOptions = {
+    const metadata = {};
+    if (durationMs) {
+      metadata.target_duration = durationMs;
+      metadata.duration = durationMs;
+      metadata.maxScenes = Math.ceil(durationMs / 1000 / 5); // 每场景约5秒
+      metadata.maxCharacters = 2;
+      metadata.style = 'CINE';
+    }
+    const result = await system.create(userInput, metadata, {
       skipRender: true,
       skipPostProduction: true
-    };
-    if (durationMs) {
-      systemOptions.targetDuration = durationMs;
-      systemOptions.duration = durationMs;
-      // 传递元数据给 RequirementListBuilder
-      systemOptions.metadata = {
-        target_duration: durationMs,
-        duration: durationMs,
-        maxScenes: Math.ceil(durationMs / 1000 / 5), // 每场景约5秒
-        maxCharacters: 2, // 30秒视频建议最多2个主要角色
-        style: 'CINE'
-      };
-    }
-    const result = await system.create(userInput, systemOptions);
+    });
     
     // Step 6: 输出结果
     const mdPath = exportResultsToMarkdown(result);
