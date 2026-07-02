@@ -158,7 +158,26 @@ class BaseAgent {
     let lastError = null;
     let classification = null;
     
-    for (let attempt = 1; attempt <= callMaxRetries; attempt++) {
+    // 【P1-QUAL-02 修复】根据错误类型动态确定最大重试次数
+    const getMaxRetriesForType = (type) => {
+      const retriesByType = {
+        'AUTH': 0,       // 鉴权错误：不重试
+        'PARAM': 0,      // 参数错误：不重试
+        'RATE_LIMIT': 5, // 限流：最多5次
+        'SERVER': 4,     // 服务端错误：最多4次
+        'TIMEOUT': 3,    // 超时：最多3次
+        'PARSE': 2,      // 解析错误：最多2次
+        'NETWORK': 3,    // 网络错误：最多3次
+        'UNKNOWN': 2     // 未知错误：最多2次
+      };
+      return retriesByType[type] ?? callMaxRetries;
+    };
+
+    let effectiveMaxRetries = callMaxRetries; // 初始值
+    let attempt = 0;
+
+    while (attempt < effectiveMaxRetries) {
+      attempt++;
       const attemptStart = Date.now();
       const currentTimeout = classification 
         ? ErrorClassifier.calculateTimeout(perCallTimeout, attempt, classification)
@@ -197,16 +216,23 @@ class BaseAgent {
         lastError = err;
         classification = ErrorClassifier.classify(err);
         
-        console.warn(`[${this.name}] 尝试 ${attempt}/${callMaxRetries} 失败: ${err.message} | type=${classification.type} | retryable=${classification.retryable}`);
+        // 【P1-QUAL-02 修复】根据错误类型动态调整最大重试次数
+        const typeSpecificMax = getMaxRetriesForType(classification.type);
+        if (typeSpecificMax !== effectiveMaxRetries) {
+          console.log(`[${this.name}] 错误类型${classification.type} → 重试上限调整为${typeSpecificMax}次`);
+          effectiveMaxRetries = typeSpecificMax;
+        }
+        
+        console.warn(`[${this.name}] 尝试 ${attempt}/${effectiveMaxRetries} 失败: ${err.message} | type=${classification.type} | retryable=${classification.retryable}`);
         
         // 不可重试错误 → 立即熔断
-        if (!classification.retryable) {
+        if (!classification.retryable || effectiveMaxRetries === 0) {
           console.error(`[${this.name}] 🔴 不可重试错误(${classification.type})，停止重试: ${classification.message}`);
           break;
         }
         
         // 计算下次重试的等待时间
-        if (attempt < callMaxRetries) {
+        if (attempt < effectiveMaxRetries) {
           const delay = ErrorClassifier.calculateDelay(attempt, classification);
           if (delay > 0) {
             console.log(`[${this.name}] 等待 ${delay}ms 后重试...`);
@@ -222,8 +248,8 @@ class BaseAgent {
       }
     }
     
-    console.error(`[${this.name}] 所有 ${callMaxRetries} 次尝试均失败，最后错误: ${lastError?.message}`);
-    return this._executeFallback(fallbackFn, `LLM failed after ${callMaxRetries} attempts: ${lastError?.message}`);
+    console.error(`[${this.name}] 所有 ${attempt} 次尝试均失败，最后错误: ${lastError?.message}`);
+    return this._executeFallback(fallbackFn, `LLM failed after ${attempt} attempts: ${lastError?.message}`);
   }
 
   async _executeFallback(fallbackFn, reason) {

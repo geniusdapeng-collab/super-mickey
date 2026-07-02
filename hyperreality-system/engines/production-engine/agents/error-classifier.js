@@ -54,6 +54,18 @@ class ErrorClassifier {
       };
     }
     
+    // 【P1-QUAL-01 修复】JSON解析超时优先判定为PARSE而非TIMEOUT
+    // 必须先于通用TIMEOUT检查，避免"JSON parsing timeout"被误判
+    if (message.includes('json') && (message.includes('timeout') || message.includes('timed out'))) {
+      return {
+        type: 'PARSE',
+        retryable: true,
+        strategy: 'shrink-prompt',
+        shrinkRatio: 0.7,
+        message: 'JSON解析超时，缩短prompt重试'
+      };
+    }
+    
     // 4. 网络超时 → 渐进式超时
     if (message.includes('timeout') ||
         message.includes('timed out') ||
