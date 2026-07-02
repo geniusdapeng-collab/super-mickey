@@ -7,6 +7,7 @@
  */
 const path = require('path');
 const { ErrorClassifier } = require('./error-classifier');
+const { globalLLMLimiter } = require('../../../core/llm-concurrency-limiter');
 
 // 从环境变量读取模型配置，消除硬编码
 const DEFAULT_MODEL = process.env.STORMAXE_LLM_MODEL || 'kimi-k2p6';
@@ -218,16 +219,20 @@ class BaseAgent {
         console.log(`[${this.name}] 尝试 ${attempt}/${callMaxRetries} | timeout=${currentTimeout}ms${classification ? ` strategy=${classification.strategy}` : ''}`);
         
         const fullPrompt = `${this._getSystemPrompt()}\n\n${currentPrompt}`;
-        const result = await this._callWithTimeout(
-          llm.reasonStructured(fullPrompt, schema, {
-            maxTokens: callMaxTokens,
-            timeoutMs: currentTimeout,
-            maxRetries: 1, // 内层只重试1次，外层控制总重试
-            deadlineMs: this._globalDeadline,
-            thinking: { type: 'disabled' } // 【v2.1.8-fix13】禁用reasoning，释放token配额
-          }),
-          currentTimeout,
-          `[${this.name}] attempt ${attempt}/${callMaxRetries}`
+        // 【P1-D9 修复】使用全局并发限制器包装LLM调用，防止请求风暴
+        const result = await globalLLMLimiter.withLimit(
+          async () => this._callWithTimeout(
+            llm.reasonStructured(fullPrompt, schema, {
+              maxTokens: callMaxTokens,
+              timeoutMs: currentTimeout,
+              maxRetries: 1, // 内层只重试1次，外层控制总重试
+              deadlineMs: this._globalDeadline,
+              thinking: { type: 'disabled' } // 【v2.1.8-fix13】禁用reasoning，释放token配额
+            }),
+            currentTimeout,
+            `[${this.name}] attempt ${attempt}/${callMaxRetries}`
+          ),
+          currentTimeout // 等待许可的超时等于调用超时
         );
 
         if (!result || !result.success) {
