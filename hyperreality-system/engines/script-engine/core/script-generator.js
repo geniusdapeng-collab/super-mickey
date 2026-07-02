@@ -754,11 +754,14 @@ ${meta._directorStyle}` : ''}
     }
 
     // 策略3：自动补全缺失的闭合括号（处理未闭合的截断JSON）
+    // 【P0-DATA-03 修复】避免合并多个独立对象：只修复第一个完整顶层对象
     {
-      let braceCount = 0;    // {} 未闭合数
-      let bracketCount = 0;  // [] 未闭合数
+      // 首先找到第一个完整的顶层对象边界（braceCount回到0的位置）
+      let braceCount = 0;
+      let bracketCount = 0;
       let inString = false;
       let escaped = false;
+      let firstObjectEnd = -1;
 
       for (let i = start; i < str.length; i++) {
         const ch = str[i];
@@ -770,38 +773,116 @@ ${meta._directorStyle}` : ''}
         }
         if (ch === '"') { inString = true; }
         else if (ch === '{') { braceCount++; }
-        else if (ch === '}') { braceCount--; }
+        else if (ch === '}') {
+          braceCount--;
+          if (braceCount === 0 && firstObjectEnd === -1) {
+            firstObjectEnd = i + 1;
+            break; // 只取第一个完整对象，忽略后面的截断内容
+          }
+        }
         else if (ch === '[') { bracketCount++; }
         else if (ch === ']') { bracketCount--; }
       }
 
-      // braceCount > 0 或 bracketCount > 0 或 inString=true 说明被截断
-      if (braceCount > 0 || bracketCount > 0 || inString) {
-        let base = str.substring(start);
-        // 如果字符串未闭合，补上引号
-        if (inString) base += '"';
-
-        // 尝试补全组合（数量有限，性能可接受）
-        for (let arr = bracketCount; arr >= 0; arr--) {
-          for (let obj = braceCount; obj >= 0; obj--) {
-            const testA = base + ']'.repeat(arr) + '}'.repeat(obj);
-            const testB = base + '}'.repeat(obj) + ']'.repeat(arr);
-
-            for (const candidate of [testA, testB]) {
-              try {
-                const p = JSON.parse(candidate);
-                if (p && p.meta && p.structure) {
-                  console.log(`[ScriptGenerator] 通过自动补全括号提取JSON成功（补 ${arr}个] ${obj}个}），使用 ${candidate.length}/${str.length} 字符`);
-                  return p;
-                }
-              } catch (e) { /* 继续尝试 */ }
-            }
+      // 如果找到第一个完整对象，尝试解析它（它已经是完整的，无需补全）
+      if (firstObjectEnd > start) {
+        const firstObject = str.substring(start, firstObjectEnd);
+        try {
+          const p = JSON.parse(firstObject);
+          if (p.meta && p.structure) {
+            console.log(`[ScriptGenerator] 通过第一个完整对象提取JSON成功，使用 ${firstObjectEnd}/${str.length} 字符（忽略后面截断内容）`);
+            return p;
           }
+        } catch (e) { /* 第一个对象不完整，继续补全 */ }
+      }
+
+      // 未找到完整对象，需要补全：计算未闭合数
+      let openBraces = 0;
+      let openBrackets = 0;
+      let inStr = false;
+      let esc = false;
+
+      for (let i = start; i < str.length; i++) {
+        const ch = str[i];
+        if (inStr) {
+          if (esc) { esc = false; }
+          else if (ch === '\\') { esc = true; }
+          else if (ch === '"') { inStr = false; }
+          continue;
+        }
+        if (ch === '"') { inStr = true; }
+        else if (ch === '{') { openBraces++; }
+        else if (ch === '}') { openBraces--; }
+        else if (ch === '[') { openBrackets++; }
+        else if (ch === ']') { openBrackets--; }
+      }
+
+      // 如果字符串未闭合，补上引号
+      let base = str.substring(start);
+      if (inStr) base += '"';
+
+      // 【P0-DATA-03 修复】只补全第一个顶层对象，避免合并多个独立对象
+      // 策略：在原始字符串末尾补全缺失的括号，然后找到第一个完整的顶层对象
+      let candidate = base;
+      
+      // 由内到外补全：先补数组，再补对象
+      if (openBrackets > 0) candidate += ']'.repeat(openBrackets);
+      if (openBraces > 0) candidate += '}'.repeat(openBraces);
+
+      // 尝试解析补全后的结果
+      try {
+        const p = JSON.parse(candidate);
+        if (p && p.meta && p.structure) {
+          // 【P0-DATA-03 修复】验证：确保没有重复键（合并对象的特征）
+          const hasDuplicateKeys = this._checkDuplicateKeys(candidate);
+          if (!hasDuplicateKeys) {
+            console.log(`[ScriptGenerator] 通过自动补全括号提取JSON成功（补 ${openBrackets}个] ${openBraces}个}），使用 ${candidate.length}/${str.length} 字符`);
+            return p;
+          } else {
+            console.warn(`[ScriptGenerator] 补全后检测到重复键，可能合并了多个对象，拒绝使用`);
+          }
+        }
+      } catch (e) { /* 补全失败 */ }
+
+      // 如果补全失败，尝试从补全后的字符串中提取第一个完整对象
+      if (openBraces > 0) {
+        // 逐步减少补全的对象括号数，尝试找到能解析的最小补全
+        for (let reducedBraces = openBraces - 1; reducedBraces >= 0; reducedBraces--) {
+          const testCandidate = base + ']'.repeat(openBrackets) + '}'.repeat(reducedBraces);
+          try {
+            const p = JSON.parse(testCandidate);
+            if (p && p.meta && p.structure && !this._checkDuplicateKeys(testCandidate)) {
+              console.log(`[ScriptGenerator] 通过减少对象补全提取JSON成功（补 ${openBrackets}个] ${reducedBraces}个}），使用 ${testCandidate.length}/${str.length} 字符`);
+              return p;
+            }
+          } catch (e) { /* 继续尝试 */ }
         }
       }
     }
 
     return null;
+  }
+
+  /**
+   * 【P0-DATA-03 修复】检测JSON字符串中是否有重复键（合并多个对象的特征）
+   */
+  _checkDuplicateKeys(jsonStr) {
+    try {
+      // 简单检测：统计顶层键出现次数
+      const topLevelKeys = new Set();
+      const keyMatches = jsonStr.match(/"([^"]+)"\s*:/g);
+      if (!keyMatches) return false;
+      
+      for (const match of keyMatches) {
+        const key = match.match(/"([^"]+)"/)[1];
+        if (topLevelKeys.has(key)) return true;
+        topLevelKeys.add(key);
+      }
+      return false;
+    } catch (e) {
+      return false; // 检测失败时不阻止解析
+    }
+  }
   }
 
   // 【v2.1.6-fix14】增强JSON提取：从文本中智能提取JSON（支持markdown代码块、括号匹配等）

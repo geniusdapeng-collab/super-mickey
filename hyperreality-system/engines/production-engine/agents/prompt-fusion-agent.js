@@ -179,13 +179,21 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
       const shotDeadline = shotStartTime + Math.min(PER_SHOT_BUDGET, this.MAX_DEGRADE_BUDGET_PER_SHOT);
       this._callBudget.set(shot.shotId, 5); // 单镜头最多5次LLM调用
 
-      // 每3个镜头检查一次内存,防止 OOM
+      // 每3个镜头检查一次内存，启发式GC（P0-PERF-04 修复）
       if (i % 3 === 0) {
         const mem = process.memoryUsage();
         const heapMB = Math.round(mem.heapUsed / 1024 / 1024);
-        if (heapMB > 1500) {  // 1.5GB 阈值
-          console.warn(`[PromptFusionAgent] ⚠️ 内存告警: ${heapMB}MB,建议启用GC`);
-          if (global.gc) global.gc();
+        const heapTotalMB = Math.round(mem.heapTotal / 1024 / 1024);
+        const heapLimitMB = Math.round(mem.heapTotalLimit / 1024 / 1024) || heapTotalMB * 1.5; // 兼容不同Node版本
+        const usageRatio = heapMB / heapLimitMB;
+        
+        // 【P0-PERF-04 修复】动态阈值：80%堆限制时告警，不再强制GC（让V8自主管理）
+        if (usageRatio > 0.8) {
+          console.warn(`[PromptFusionAgent] ⚠️ 内存告警: ${heapMB}MB / ${heapLimitMB}MB (${(usageRatio*100).toFixed(1)}%)`);
+          // 移除强制 global.gc()，避免停顿；只建议外部监控
+          if (usageRatio > 0.95) {
+            console.error(`[PromptFusionAgent] 🔴 内存临界: 建议降低并发数或增加堆限制`);
+          }
         }
       }
 
@@ -322,7 +330,7 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
       }
     }
 
-    // 【P0-PROMPT-05 修复】autoFix 修改 fields 后，重新组装 prompt，确保 prompt 反映修复后的字段
+    // 【P0-PROMPT-05 修复】autoFix 修改 fields 后,重新组装 prompt,确保 prompt 反映修复后的字段
     const fullPrompt = this._assembleStandardPrompt(shot, fields, ratio);
 
     return {
@@ -371,10 +379,10 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
       const normalized = normalizeFields(fillFields);
       for (const k of missing) {
         if (normalized[k]) {
-          // 【P0-PROMPT-04 修复】安全赋值：对象类型字段序列化为字符串
+          // 【P0-PROMPT-04 修复】安全赋值:对象类型字段序列化为字符串
           let value = normalized[k];
           if (typeof value === 'object' && value !== null) {
-            // timeline 支持结构化对象，需要特殊处理
+            // timeline 支持结构化对象,需要特殊处理
             if (k === 'timeline' && value.beats) {
               value = this._renderStructuredTimeline(value);
             } else {
@@ -431,8 +439,8 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
    */
   async _fuseSingleShotWithDeadline(shot, ratio, characters, blueprint, deadline) {
     const remainingMs = () => deadline - Date.now();
-    
-    // 主调用（仅1次重试，不再3次）
+
+    // 主调用(仅1次重试,不再3次)
     for (let attempt = 0; attempt <= 1; attempt++) {
       if (remainingMs() < 30000) throw new Error('预算不足');
       try {
@@ -448,7 +456,7 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
   }
 
   /**
-   * 【P0-PERF-01 修复】快速兜底：不调用任何LLM，纯规则生成
+   * 【P0-PERF-01 修复】快速兜底:不调用任何LLM,纯规则生成
    */
   _fastFallback(shot, ratio) {
     const fields = {};
@@ -459,7 +467,7 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
   }
 
   /**
-   * 【P0-PERF-01 修复】动态默认值：基于镜头上下文生成参数化模板
+   * 【P0-PERF-01 修复】动态默认值:基于镜头上下文生成参数化模板
    */
   _dynamicDefaultValue(field, shot) {
     const shotIndex = parseInt(shot.shotId?.replace(/\D/g, '') || '0');
@@ -469,18 +477,18 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
 
     const variations = {
       director_instruction: [
-        '电影级写实风格，专业摄影布光，细腻质感，自然光效',
-        '好莱坞质感纪录片摄影，真实环境光线，专业调色',
-        'IMAX级别画面精度，写实主义美学，电影级色彩管理'
+        '电影级写实风格,专业摄影布光,细腻质感,自然光效',
+        '好莱坞质感纪录片摄影,真实环境光线,专业调色',
+        'IMAX级别画面精度,写实主义美学,电影级色彩管理'
       ],
       lighting: [
-        `主光：侧向自然光5600K漫射，补光：左前方反光板，${character}面部清晰明亮`,
-        `顶光+环境反射光混合照明，${scene ? scene.slice(0,20) : '室内'}空间均匀明亮`,
-        `窗光为主光源，漫反射柔光填充，${character}轮廓分明`
+        `主光:侧向自然光5600K漫射,补光:左前方反光板,${character}面部清晰明亮`,
+        `顶光+环境反射光混合照明,${scene ? scene.slice(0,20) : '室内'}空间均匀明亮`,
+        `窗光为主光源,漫反射柔光填充,${character}轮廓分明`
       ],
       scene: [
-        scene || `${sceneType}场景，室内写实环境，自然光线，真实材质质感`,
-        scene || `专业${sceneType}空间，顶灯照明，墙面材质真实，环境细节丰富`
+        scene || `${sceneType}场景,室内写实环境,自然光线,真实材质质感`,
+        scene || `专业${sceneType}空间,顶灯照明,墙面材质真实,环境细节丰富`
       ]
     };
 
@@ -492,28 +500,28 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
   }
 
   /**
-   * 【v2.1.4-fix13-审计修复】降为1次重试，去掉指数退避等待，失败后直接规则兜底
+   * 【v2.1.4-fix13-审计修复】降为1次重试,去掉指数退避等待,失败后直接规则兜底
    */
   async _fillMissingFieldsWithRetry(shot, ratio, characters, deadline = null) {
-    // 【修复】从 1 次提升到 3 次，给补齐更多机会
+    // 【修复】从 1 次提升到 3 次,给补齐更多机会
     const maxRetries = 2; // 【P0-PERF-01 修复】减少重试次数
-    
+
     // 先从shot中提取已有数据
     const fields = {};
     const shotData = this._extractFieldsFromShot(shot);
     for (const f of REQUIRED_FIELDS) {
       fields[f] = shotData[f] || '';
     }
-    
+
     const fillDeadline = deadline || (Date.now() + 120000); // 默认2分钟补齐预算
-    
+
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       // 【P0-PERF-01 修复】检查截止时间
       if (Date.now() > fillDeadline - 10000) {
-        console.warn(`  ⏰ 补齐预算不足，中止重试`);
+        console.warn(`  ⏰ 补齐预算不足,中止重试`);
         break;
       }
-      
+
       const remaining = this._remainingMs();
       if (remaining < 10000) {
         console.warn(`  ⏰ 剩余预算不足(${remaining}ms),中止补全重试`);
@@ -538,7 +546,7 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
         console.warn(`  ❌ 补全尝试 ${attempt} 失败: ${e.message}`);
       }
     }
-    
+
     // 【修复】重试用完仍有缺失,返回当前已填充的字段(不强制兜底为默认值)
     // 原因:部分字段有值比全部模板化更好,保留 LLM 已生成的内容
     console.warn(`  ⚠️ 补全重试耗尽,返回已有字段(${Object.keys(fields).filter(k => fields[k]).length}/${REQUIRED_FIELDS.length} 已填充)`);
@@ -630,10 +638,10 @@ ${ctx}
     const ctx = this._buildMinimalContext(shot, ratio, characters);
     const allResults = {};
 
-    // 【P0-PROMPT-03 修复】组间并行执行，最多2组并发（避免API限流）
+    // 【P0-PROMPT-03 修复】组间并行执行,最多2组并发(避免API限流)
     const groupEntries = Object.entries(groupAssignments).filter(([_, gfs]) => gfs.length > 0);
     const CONCURRENCY = 2; // 最多2组同时调用
-    
+
     for (let i = 0; i < groupEntries.length; i += CONCURRENCY) {
       const batch = groupEntries.slice(i, i + CONCURRENCY);
       const batchResults = await Promise.allSettled(
@@ -687,7 +695,7 @@ ${fieldDescs}
           }
         })
       );
-      
+
       // 合并结果
       for (const r of batchResults) {
         if (r.status === 'fulfilled') {
