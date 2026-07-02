@@ -114,9 +114,16 @@ class RequirementAlignmentGate {
     }
 
     // 2. 提取场景关键词
+    // 【P1-QUAL-06 修复】支持中英文场景名和科幻/抽象场景
     const scenePatterns = [
+      // 中文场景：花果山、天庭、水帘洞等
       /([\u4e00-\u9fa5]{2,6})(?:山|谷|林|海|湖|河|城|宫|殿|塔|洞|崖|原|野|空|庭|院|阁|楼)/g,
-      /在([\u4e00-\u9fa5]{2,6})(?:上|中|里|内|外|下|前|后)/g
+      // 中文场景+方位：在花果山上、在天庭中
+      /在([\u4e00-\u9fa5]{2,6})(?:上|中|里|内|外|下|前|后)/g,
+      // 英文场景：on Mount Huaguo, in Heaven, at Waterfall Curtain
+      /(?:on|in|at|near)\s+([A-Z][a-zA-Z\s]{2,30})/g,
+      // 科幻/抽象场景：cyberpunk city, virtual space, data center
+      /(cyberpunk|virtual|digital|holographic|neon|futuristic|sci-fi|space\s+station|spacecraft|mecha|robot|android|AI|matrix|simulation|metaverse|blockchain|quantum|nanotech|biotech|cyborg|genetic|clone|dystopia|utopia|parallel|dimension|multiverse|timewarp|wormhole|black\s+hole|supernova|nebula|galaxy|star\s+system|planet|moon\s+base|space\s+colony|orbital|zero-gravity|deep\s+space|void|abyss|ether|aether|astral|ethereal|spectral|phantom|ghost|spirit|entity|being|creature|monster|dragon|phoenix|unicorn|griffin|chimera|hydra|kraken|leviathan|behemoth|titan|giant|colossus|golem|elemental|fae|fairy|elf|dwarf|orc|troll|ogre|goblin|vampire|werewolf|zombie|skeleton|lich|necromancer|sorcerer|wizard|mage|warlock|witch|enchanter|druid|shaman|paladin|knight|samurai|ninja|assassin|rogue|bard|ranger|hunter|barbarian|berserker|viking|spartan|gladiator|centurion|legionnaire|crusader|templar|inquisitor|exorcist|monk|priest|cleric|healer|alchemist|artificer|engineer|pilot|captain|commander|admiral|general|marshal|chancellor|emperor|king|queen|prince|princess|lord|lady|duke|duchess|count|countess|baron|baroness|sir|dame|majesty|highness|grace|eminence|holiness|excellency|lordship|ladyship|worship|sire|madam|mistress|master|chief|head|leader|boss|chieftain|patriarch|matriarch|elder|senior|ancestor|forefather|founder|creator|maker|builder|architect|designer|planner|strategist|tactician|skipper|driver|rider|jockey|equestrian|cavalier|cuirassier|dragoon|hussar|lancer|uhlan|cossack|hunn|vandal|visigoth|ostrogoth|goth|teuton|frank|saxon|angle|jute|norman|varangian|rus|slav|magyar|hungarian|tatar|turk|ottoman|persian|arab|berber|moor|saracen|hospitaller|teutonic|shogun|daimyo|ronin|sohei|yamabushi|onmyoji|miko|geisha|kabuki|noh|bunraku|rakugo|manzai|kyogen)/gi
     ];
     for (const pattern of scenePatterns) {
       let match;
@@ -139,7 +146,9 @@ class RequirementAlignmentGate {
     const propPatterns = [
       /(?:[手持挥舞横扫刺穿击碎]{1,2})([\u4e00-\u9fa5]{1,4}(?:棒|刀|剑|枪|戟|叉|鞭|锤|斧|弓|箭|盾))/g,
       /([\u4e00-\u9fa5]{1,4}(?:棒|刀|剑|枪|戟|叉|鞭|锤|斧|弓|箭|盾|甲|袍|衣|冠|盔))/g,
-      /([\u4e00-\u9fa5]{1,4}(?:火|水|风|雷|电|光|影|雾|云|气|波))/g
+      /([\u4e00-\u9fa5]{1,4}(?:火|水|风|雷|电|光|影|雾|云|气|波))/g,
+      // 【P1-QUAL-06 修复】英文道具和武器
+      /\b(sword|blade|dagger|knife|bow|gun|rifle|pistol|shotgun|staff|wand|mace|axe|hammer|shield|armor|helmet|lightsaber|blaster|phaser|artifact|relic|crystal|gem|potion|scroll|tome|grimoire|amulet|talisman|ring|necklace|bracelet|cloak|cape|robe|tunic)/gi
     ];
     for (const pattern of propPatterns) {
       let match;
@@ -152,14 +161,24 @@ class RequirementAlignmentGate {
     }
 
     // 5. 提取情绪
+    // 【P1-QUAL-06 修复】支持中英文情绪关键词
     const emotionKeywords = {
+      // 中文
       '热血': 'epic', '暗黑': 'dark', '悬疑': 'suspense', '感人': 'emotional',
       '治愈': 'healing', '恐怖': 'horror', '史诗': 'epic', '悲壮': 'tragic',
-      '激昂': 'epic', '紧张': 'tense', '温馨': 'warm', '震撼': 'shocking'
+      '激昂': 'epic', '紧张': 'tense', '温馨': 'warm', '震撼': 'shocking',
+      '忧郁': 'melancholy', '欢快': 'joyful', '浪漫': 'romantic', '神秘': 'mysterious',
+      // 英文
+      'epic': 'epic', 'dark': 'dark', 'suspense': 'suspense', 'emotional': 'emotional',
+      'healing': 'healing', 'horror': 'horror', 'tragic': 'tragic', 'tense': 'tense',
+      'warm': 'warm', 'shocking': 'shocking', 'melancholy': 'melancholy',
+      'joyful': 'joyful', 'romantic': 'romantic', 'mysterious': 'mysterious',
+      'thrilling': 'thrilling', 'dramatic': 'dramatic', 'calm': 'calm'
     };
     let emotion = null;
     for (const [cn, en] of Object.entries(emotionKeywords)) {
-      if (text.includes(cn) || (metadata.style && metadata.style.primary === cn)) {
+      // 【P1-QUAL-06 修复】同时检查中英文关键词
+      if (text.includes(cn) || text.includes(en) || (metadata.style && metadata.style.primary === cn)) {
         emotion = cn;
         break;
       }
