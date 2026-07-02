@@ -221,7 +221,7 @@ class PipelineLogger {
    * 清理结果对象（移除循环引用和大对象）
    */
   _sanitizeResult(result) {
-    const { safeStringify } = require('../../utils/safe-clone');
+    const { safeStringify } = require('../utils/safe-clone');
     return JSON.parse(safeStringify(result)); // 【v2.1.6-fix-bug45】安全序列化，处理循环引用
   }
 
