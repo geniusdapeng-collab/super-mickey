@@ -40,7 +40,9 @@ class CheckpointManager {
         opening: extra.opening ? JSON.parse(JSON.stringify(extra.opening)) : null,
         llmStats: extra.llmStats ? JSON.parse(JSON.stringify(extra.llmStats)) : {},
         blueprintFingerprint: extra.blueprintFingerprint || null,
-        savedAt: new Date().toISOString()
+        savedAt: new Date().toISOString(),
+        // 【P1-DATA-05 修复】附加验证报告
+        _validation: this._validateShots(shots || [])
       };
 
       const safeData = safeStringify(dataToSave);

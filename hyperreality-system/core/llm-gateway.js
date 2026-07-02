@@ -103,6 +103,10 @@ class LLMGateway {
     hash.update(prompt);
     hash.update(JSON.stringify(options.agentType || 'unknown'));
     hash.update(JSON.stringify(options.schema || {}));
+    // 【P1-ARCH-04 修复】context也参与哈希，确保不同项目的调用不碰撞
+    hash.update(JSON.stringify(options.context || {}));
+    // 增加时间戳窗口（1小时），防止过期缓存被长期命中
+    hash.update(Math.floor(Date.now() / 3600000).toString());
     return `llm:${hash.digest('hex')}`;
   }
   
