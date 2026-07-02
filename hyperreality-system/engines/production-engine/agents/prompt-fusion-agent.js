@@ -69,6 +69,55 @@ const FIELD_DESCS = {
   consistency: 'string,跨镜头一致性'
 };
 
+// 【P1-PROMPT-02 修复】动态必填字段：根据场景类型决定哪些字段必须
+const OPTIONAL_BY_SCENE_TYPE = {
+  // 空景/环境镜头：不需要角色相关字段
+  'empty': ['character', 'costume', 'makeup', 'action', 'portraits', 'dialogue'],
+  'landscape': ['character', 'costume', 'makeup', 'action', 'portraits', 'dialogue'],
+  'aerial': ['character', 'costume', 'makeup', 'action', 'portraits', 'dialogue'],
+  // 角色特写：不需要大场景描述
+  'portrait': ['scene'],
+  // 对话场景：更强调角色和台词
+  'dialogue': ['props'],
+  // 动作场景：强调动作和道具
+  'action': ['dialogue'],
+  // 过渡镜头：只需要基础视觉字段
+  'transition': ['character', 'costume', 'makeup', 'action', 'dialogue', 'portraits', 'props', 'audio'],
+  // 片头/片尾：只需要基础字段
+  'opening': ['character', 'costume', 'makeup', 'action', 'dialogue', 'portraits'],
+  'closing': ['character', 'costume', 'makeup', 'action', 'dialogue', 'portraits']
+};
+
+// 判断镜头是否为空景（无角色）
+function _isEmptyScene(shot) {
+  const emptyIndicators = ['空景', '环境', '全景', '航拍', '俯视', 'establishing'];
+  const scene = (shot.scene || '').toLowerCase();
+  const action = (shot.action || '').toLowerCase();
+  const noCharacters = !shot.characters || shot.characters.length === 0;
+  const hasEmptyKeyword = emptyIndicators.some(kw => scene.includes(kw) || action.includes(kw));
+  return noCharacters && hasEmptyKeyword;
+}
+
+/**
+ * 获取镜头所需的必填字段
+ * 【P1-PROMPT-02 修复】空景不需要character/costume/makeup等字段
+ */
+function _getRequiredFieldsForShot(shot) {
+  const baseFields = [...REQUIRED_FIELDS];
+  
+  // 检测场景类型
+  let sceneType = shot.sceneType;
+  if (!sceneType && _isEmptyScene(shot)) {
+    sceneType = 'empty';
+  }
+  
+  // 获取该场景类型的可选字段
+  const optionalFields = OPTIONAL_BY_SCENE_TYPE[sceneType] || [];
+  
+  // 从必填列表中移除可选字段
+  return baseFields.filter(f => !optionalFields.includes(f));
+}
+
 // 25 字段标准名称列表(用于校验)
 const REQUIRED_FIELDS = Object.keys(STANDARD_FIELDS_SCHEMA);
 
@@ -375,7 +424,7 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
   async _ensureFieldCompleteness(shot, fields, ratio, characters) {
     let usedRuleFallback = false;
     // 1. 找出缺失或过短字段
-    const missing = REQUIRED_FIELDS.filter(f => {
+    const missing = _getRequiredFieldsForShot(shot).filter(f => {
       const v = fields[f];
       if (!v || String(v).trim() === '') return true;
       const min = MIN_LEN[f] || 0;
@@ -427,7 +476,7 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
     }
 
     // 3. 仍缺的字段,先尝试从 shotData 提取,然后批量 LLM 补齐(而非逐个),失败再用固定模板兜底
-    const stillMissing = REQUIRED_FIELDS.filter(f => !fields[f] || String(fields[f]).trim() === '');
+    const stillMissing = _getRequiredFieldsForShot(shot).filter(f => !fields[f] || String(fields[f]).trim() === '');
     if (stillMissing.length > 0) {
       usedRuleFallback = true;
       const shotData = this._extractFieldsFromShot(shot);
@@ -485,7 +534,7 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
    */
   _fastFallback(shot, ratio) {
     const fields = {};
-    for (const f of REQUIRED_FIELDS) {
+    for (const f of _getRequiredFieldsForShot(shot)) {
       fields[f] = this._dynamicDefaultValue(f, shot);
     }
     return this._buildShotResult(shot, fields);
@@ -536,7 +585,7 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
     // 先从shot中提取已有数据
     const fields = {};
     const shotData = this._extractFieldsFromShot(shot);
-    for (const f of REQUIRED_FIELDS) {
+    for (const f of _getRequiredFieldsForShot(shot)) {
       fields[f] = shotData[f] || '';
     }
     
@@ -564,7 +613,7 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
         Object.assign(fields, completeness.fields);
 
         // 检查是否还有空字段
-        const stillEmpty = REQUIRED_FIELDS.filter(f => !fields[f] || String(fields[f]).trim() === '');
+        const stillEmpty = _getRequiredFieldsForShot(shot).filter(f => !fields[f] || String(fields[f]).trim() === '');
         if (stillEmpty.length === 0) {
           console.log(`  ✅ 补全成功,所有字段已填充`);
           return this._buildShotResult(shot, fields);
@@ -577,7 +626,7 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
 
     // 【修复】重试用完仍有缺失,返回当前已填充的字段(不强制兜底为默认值)
     // 原因:部分字段有值比全部模板化更好,保留 LLM 已生成的内容
-    console.warn(`  ⚠️ 补全重试耗尽,返回已有字段(${Object.keys(fields).filter(k => fields[k]).length}/${REQUIRED_FIELDS.length} 已填充)`);
+    console.warn(`  ⚠️ 补全重试耗尽,返回已有字段(${Object.keys(fields).filter(k => fields[k]).length}/${_getRequiredFieldsForShot(shot).length} 已填充)`);
     return this._buildShotResult(shot, fields);
   }
 
@@ -782,21 +831,66 @@ ${fieldDescs}
 
   // 【v2.1.4-fix11】规则兜底默认值 - 25字段完整默认值,确保绝不返回空字符串
   // 【v2.1.0】注意:此方法仅在最小 LLM 降级失败后才调用,作为最终底线
+  /**
+   * 【P1-PROMPT-03 修复】动态默认值：基于镜头索引和场景类型选择变体模板
+   */
   _defaultFieldValue(field, shot) {
     const ratio = shot.ratio || '16:9';
     const sceneType = shot.sceneType || 'standard';
     const character = shot.character || '主角';
+    const shotIndex = parseInt(shot.shotId?.replace(/\D/g, '') || '0');
 
+    // 变体模板池（按场景类型分类）
+    const variations = {
+      director_instruction: [
+        '好莱坞电影级质感,写实风格,专业摄影布光,8K超高清',
+        'IMAX级别画面精度,写实主义美学,电影级色彩管理,细腻纹理',
+        '欧洲艺术电影质感,自然光效,柔和色调,真实情感表达',
+        '新现实主义风格,手持摄影质感,环境光主导,生活化真实感'
+      ],
+      lighting: [
+        '主光:右侧45度自然光 5600K柔光漫射;补光:左前侧反光板填充阴影;背景光:轮廓光分离层次;光比3:1,整体明亮清晰',
+        '顶光+环境反射光混合照明,漫射柔光,面部阴影柔和自然,整体明亮通透',
+        '窗光为主光源,侧向入射,漫反射柔光填充,人物轮廓分明,层次感强',
+        '逆光+正面补光,人物边缘有轮廓光,面部受光均匀,背景适度虚化'
+      ],
+      composition: [
+        '景别:中景(膝上);主体位置:画面黄金分割点;线条引导:纵深层次感;画框边缘:适度留白',
+        '景别:近景(胸上);主体面部清晰;背景适度虚化;焦点精准;画面紧凑有力',
+        '景别:全景;展示完整人物与环境关系;空间纵深感;环境细节丰富',
+        '景别:特写(面部);情绪表达为核心;浅景深;背景完全虚化;眼神光清晰'
+      ],
+      color_palette: [
+        '主色调:自然偏暖;辅助色:环境本色;肤色:自然健康;饱和度:中等自然;对比度:中高清晰',
+        '主色调:冷色偏蓝;辅助色:灰色调;肤色:冷白自然;饱和度:低;对比度:高冷峻',
+        '主色调:暖色偏金;辅助色:琥珀色;肤色:暖健康;饱和度:中高;对比度:中等',
+        '主色调:中性自然;辅助色:原色真实;肤色:标准自然;饱和度:真实;对比度:自然'
+      ],
+      camera_movement: [
+        '0-3s:固定机位稳定构图;3-6s:缓慢推近或平移;6-10s:回到固定机位',
+        '0-3s:缓慢拉远展示环境;3-6s:固定机位;6-10s:轻微横移增加动感',
+        '0-3s:低角度固定;3-6s:缓慢升起;6-10s:高角度俯瞰',
+        '全程固定机位,画面绝对稳定,无抖动,专业三脚架效果'
+      ],
+      mood: [
+        'calm, professional, natural',
+        'tense, dramatic, focused',
+        'warm, intimate, peaceful',
+        'energetic, dynamic, vibrant'
+      ]
+    };
+
+    // 根据镜头索引选择变体（循环使用）
+    const varList = variations[field];
+    if (varList) {
+      return varList[shotIndex % varList.length];
+    }
+
+    // 无变体的字段使用原始静态默认值
     const defaults = {
-      director_instruction: '好莱坞电影级质感,写实风格,专业摄影布光,8K超高清',
       constraint: `Aspect ratio: ${ratio}, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text anywhere in frame, no subtitle, no caption, no watermark, no logo, no readable characters`,
       baseline: '8K resolution, cinematic quality, highly detailed, photorealistic, hyperrealistic, sharp focus, ultra high definition, lifelike textures, professional color grading',
       scene: `${sceneType}场景,室内写实环境,自然光线照射,真实材质质感,空间层次分明,环境细节丰富`,
-      lighting: '主光:右侧45度自然光 5600K柔光漫射;补光:左前侧反光板填充阴影;背景光:轮廓光分离层次;光比3:1,整体明亮清晰',
-      composition: '景别:中景(膝上);主体位置:画面黄金分割点;线条引导:纵深层次感;画框边缘:适度留白',
-      color_palette: '主色调:自然偏暖;辅助色:环境本色;肤色:自然健康;饱和度:中等自然;对比度:中高清晰',
-      depth_of_field: '焦点:主体面部或动作中心;景深:中等(f/4),背景适度虚化;前景:轻微虚化增加层次;层次:前景-中景-背景三层分离',
-      camera_movement: '0-3s:固定机位稳定构图;3-6s:缓慢推近或平移;6-10s:回到固定机位',
       character: `${character},写实人物形象,自然姿态,真实表情,符合场景身份`,
       costume: '符合角色身份的写实服装,面料质感真实,颜色自然,款式简洁大方',
       makeup: '素颜或淡妆,妆容自然真实,发型整洁,符合日常生活场景',
@@ -805,7 +899,6 @@ ${fieldDescs}
       portraits: 'image://characters/default/portrait.png',
       dialogue: '',
       timeline: 'T00:00 - 开场构图,环境展示;T00:03 - 主体进入画面;T00:06 - 核心动作或对白;T00:09 - 收尾定格',
-      mood: 'calm, professional, natural',
       pacing: '整体:沉稳中等节奏;开头:平缓引入;中段:自然推进;结尾:平稳收尾',
       transition: '自然切换,无特效转场,直接硬切或微淡入淡出',
       audio: '环境底噪真实自然,无明显配乐干扰,人声音量适中清晰,空间感真实',
