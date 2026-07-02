@@ -196,10 +196,17 @@ async function main() {
     process.exit(1);
   }
   
+  // 检查是否自动确认模式
+  const autoConfirm = process.argv.includes('--auto-confirm');
+  if (autoConfirm) {
+    console.log('  🚀 自动确认模式: 将自动创建所有确认文件');
+  }
+  
   console.log('══════════════════════════════════════════');
   console.log('🎬 超级小香宝 v2.1.8 预生产六步法');
   console.log('══════════════════════════════════════════');
   console.log(`输入: "${userInput}"`);
+  if (autoConfirm) console.log('模式: 自动确认 (--auto-confirm)');
   console.log('');
   
   // Step 1: 清理旧数据
@@ -210,20 +217,40 @@ async function main() {
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   });
   
-  console.log('');
-  console.log('══════════════════════════════════════════');
-  console.log('⏳ 准备启动预生产流程');
-  console.log('══════════════════════════════════════════');
-  console.log('⚠️  以下环节需要人工确认：');
-  console.log('   Step 2: 创意主题确认');
-  console.log('   Step 3: 需求清单确认');
-  console.log('   Step 4: 定妆照确认（如需要）');
-  console.log('   Step 6: 最终结果确认');
-  console.log('');
-  console.log('   系统将输出确认内容到 output/confirmations/');
-  console.log('   请审阅后创建 confirmation-*.json 文件');
-  console.log('══════════════════════════════════════════');
-  console.log('');
+  // 【v2.1.8-fix】自动确认模式：预创建所有确认文件
+  if (autoConfirm) {
+    console.log('');
+    console.log('══════════════════════════════════════════');
+    console.log('🤖 自动确认: 预创建确认文件');
+    console.log('══════════════════════════════════════════');
+    const confirmations = [
+      'creative-theme',
+      'requirement-list',
+      'character-portraits',
+      'prompts'
+    ];
+    for (const type of confirmations) {
+      const confirmPath = path.join(CONFIG.confirmationsDir, `confirmation-${type}.json`);
+      fs.writeFileSync(confirmPath, JSON.stringify({ approved: true, auto: true }, null, 2), 'utf8');
+      console.log(`  ✅ ${type}`);
+    }
+    console.log('  ✅ 自动确认文件创建完成');
+  } else {
+    console.log('');
+    console.log('══════════════════════════════════════════');
+    console.log('⏳ 准备启动预生产流程');
+    console.log('══════════════════════════════════════════');
+    console.log('⚠️  以下环节需要人工确认：');
+    console.log('   Step 2: 创意主题确认');
+    console.log('   Step 3: 需求清单确认');
+    console.log('   Step 4: 定妆照确认（如需要）');
+    console.log('   Step 6: 最终结果确认');
+    console.log('');
+    console.log('   系统将输出确认内容到 output/confirmations/');
+    console.log('   请审阅后创建 confirmation-*.json 文件');
+    console.log('══════════════════════════════════════════');
+    console.log('');
+  }
   
   const system = new HyperrealitySystem({
     scriptEngine: { charactersDir: './characters' },
