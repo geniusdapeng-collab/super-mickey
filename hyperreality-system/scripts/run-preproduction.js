@@ -235,7 +235,7 @@ async function main() {
       'creative-theme',
       'requirement',  // 注意：系统内部使用 'requirement' 而非 'requirement-list'
       'character-portraits',
-      'prompts'
+      'prompt'  // 注意：系统内部使用 'prompt' 而非 'prompts'
     ];
     for (const type of confirmations) {
       const confirmPath = path.join(CONFIG.confirmationsDir, `confirmation-${type}.json`);
