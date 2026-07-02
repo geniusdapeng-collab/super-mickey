@@ -177,8 +177,8 @@ class RequirementAlignmentGate {
     };
     let emotion = null;
     for (const [cn, en] of Object.entries(emotionKeywords)) {
-      // 【P1-QUAL-06 修复】同时检查中英文关键词
-      if (text.includes(cn) || text.includes(en) || (metadata.style && metadata.style.primary === cn)) {
+      // 【P1-QUAL-06 修复】同时检查中英文关键词和metadata.style
+      if (text.includes(cn) || text.includes(en) || (metadata.style && metadata.style.primary === cn) || (metadata.style && metadata.style.primary === en)) {
         emotion = cn;
         break;
       }

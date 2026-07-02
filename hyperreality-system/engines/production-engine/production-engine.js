@@ -483,12 +483,26 @@ class ProductionEngine {
       this.updateAgentConfig(runtimeAgentConfig);
     }
 
-    // === 全局时间预算 ===
-    // 【v2.1.4-fix11】增加总预算，确保Phase 3串行处理有足够时间
-    // 原预算：540s (9min) → 新预算：1200s (20min)
-    // Phase 1: ~90s | Phase 2: ~300s | Phase 3: ~570s (串行6镜头 × 90s)
-    // 总计需求：~960s，预留240s余量应对波动
+    // 【P1-ARCH-01 修复】动态预算分配：根据剩余镜头数和阶段动态调整预算
+    // 将总预算分为阶段预算池，前面节省的时间可流入后续阶段
     const HARD_BUDGET_MS = this.agentConfig.totalDeadlineMs || 1200000;
+    const HARD_BUDGET_MS = this.agentConfig.totalDeadlineMs || 1200000;
+    const PHASE_BUDGET_RATIOS = {
+      phase1: 0.12,   // Phase 1: 12% 总预算
+      phase2: 0.25,   // Phase 2: 25% 总预算
+      phase3: 0.55,   // Phase 3: 55% 总预算 (最重要，最耗时)
+      phase3_5: 0.08  // Phase 3.5: 8% 总预算
+    };
+    const phaseBudgets = {};
+    let accumulatedBudget = 0;
+    for (const [phase, ratio] of Object.entries(PHASE_BUDGET_RATIOS)) {
+      phaseBudgets[phase] = Math.floor(HARD_BUDGET_MS * ratio);
+      accumulatedBudget += phaseBudgets[phase];
+    }
+    // 剩余预算分配给 Phase 3
+    phaseBudgets.phase3 += (HARD_BUDGET_MS - accumulatedBudget);
+    
+    this.log('PRODUCE', `💰 动态预算分配: phase1=${phaseBudgets.phase1}ms phase2=${phaseBudgets.phase2}ms phase3=${phaseBudgets.phase3}ms phase3.5=${phaseBudgets.phase3_5}ms`);
     const SAFETY_MARGIN_MS = 60000; // 余量60s
     const globalDeadline = startTime + HARD_BUDGET_MS - SAFETY_MARGIN_MS;
     this._globalDeadline = globalDeadline;
