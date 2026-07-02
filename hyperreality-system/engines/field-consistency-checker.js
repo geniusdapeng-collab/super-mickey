@@ -20,6 +20,27 @@ class FieldConsistencyChecker {
     const fields = shot.fields || shot;
     const issues = [];
 
+    // ==================== 情绪相关四维映射 (1-3) ====================
+    issues.push(...this._checkMoodLighting(fields)); // 1. 情绪-灯光
+    issues.push(...this._checkMoodCamera(fields)); // 2. 情绪-运镜
+    issues.push(...this._checkMoodColor(fields)); // 3. 情绪-色彩
+
+    // ==================== 时间轴三维同步 (4-5) ====================
+    issues.push(...this._checkTimelineCamera(fields)); // 4. 时间轴-运镜同步
+    issues.push(...this._checkTimelineAction(fields)); // 5. 时间轴-动作同步
+
+    // ==================== 场景-灯光-明亮约束 (6) ====================
+    issues.push(...this._checkSceneLightingBright(fields));// 6. 场景-灯光-明亮
+
+    // ==================== 动作-运镜-构图-景深 (7-9) ====================
+    issues.push(...this._checkActionCamera(fields)); // 7. 动作-运镜同步
+    issues.push(...this._checkCompositionCamera(fields)); // 8. 构图-运镜景别
+    issues.push(...this._checkDepthOfFieldComposition(fields)); // 9. 景深-景别
+
+    // ==================== 节奏-运镜 (10) ====================
+    issues.push(...this._checkPacingCamera(fields)); // 10. 节奏-运镜速度
+
+    // ==================== v2.1.7新增10组校验 (11-20) ====================
     // 11. 场景-灯光一致性
     issues.push(...this._checkSceneLighting(fields));
     // 12. 动作-道具一致性

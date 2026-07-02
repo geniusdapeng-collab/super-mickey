@@ -126,6 +126,20 @@ class RuleRepairer {
       if (fieldEn === '_total') continue; // 总长度由LLM统一处理
       const current = repaired[fieldEn] || '';
 
+      // 【审计修复·P0】新增：MISSING 类型问题的智能默认值填充
+      if (issue.issueType === IssueType.MISSING && (!current || this._isEffectivelyEmpty(current))) {
+        const defaultValue = this._generateDefault(fieldEn, prd, repaired);
+        if (defaultValue && String(defaultValue).trim()) {
+          repaired[fieldEn] = defaultValue;
+          actions.push(new RepairAction({
+            fieldEn, method: 'rule', before: current || '(空)',
+            after: defaultValue,
+            reason: `规则修复：${fieldEn} 字段缺失，根据上下文填充默认值`
+          }));
+          continue; // 已修复，跳过后续对该字段的处理
+        }
+      }
+
       // 修复1：负面约束缺失基础词
       if (fieldEn === 'negative' && current && issue.issueType === IssueType.INCOMPLETE && /no text/.test(issue.description)) {
         let fixed = current;
@@ -218,6 +232,61 @@ class RuleRepairer {
     }
 
     return { repaired, actions };
+  }
+
+  /**
+   * 【审计修复·P0】判断值是否实际为空（支持字符串/数组/对象）
+   */
+  _isEffectivelyEmpty(value) {
+    if (!value) return true;
+    if (typeof value === 'string') return !value.trim();
+    if (Array.isArray(value)) return value.length === 0 || value.every(v => !v || (typeof v === 'string' && !v.trim()));
+    if (typeof value === 'object') return Object.keys(value).length === 0;
+    return false;
+  }
+
+  /**
+   * 【审计修复·P0】根据字段名和上下文生成智能默认值
+   */
+  _generateDefault(fieldEn, prd, shot) {
+    const defaults = {
+      director_instruction: prd?.styleDirection
+        ? `${prd.styleDirection}，超写实8K电影级，画面质感高级细腻`
+        : '好莱坞电影级超写实8K质感，画面细腻真实，光影层次分明',
+      constraint: 'Aspect ratio 16:9, Resolution 4K UHD, Format H.264 MP4, Frame rate 24fps, Color space Rec.709',
+      baseline: '8K超高清，电影级调色，真实物理光照，皮肤纹理细节完整，毛发渲染自然',
+      scene: prd?.scenes?.length
+        ? String(prd.scenes[0]).substring(0, 150)
+        : '写实风格室内场景，自然光线充足，材质细节丰富，空间层次分明',
+      lighting: '主光源：自然光5600K柔和漫射，补光：反光板柔化阴影，光质：柔和均匀无刺眼高光',
+      camera_movement: '开场固定机位2秒建立构图，中段缓慢推轨接近主体，收尾稳定定格1秒',
+      character: prd?.characters?.length
+        ? `${prd.characters[0].name || '主角'}，${prd.characters[0].appearance || '写实形象，自然神态，服装得体'}`
+        : '主角，写实形象，自然神态，服装得体，站姿放松自然',
+      action: '自然站立，双手自然摆放，眼神平视前方，呼吸平稳，身体微微放松',
+      dialogue: [{ speaker: '', text: '（无对白）' }],
+      negative: 'no text anywhere in frame, no watermark, no logo, no subtitle, no caption, no blur, no distortion, no extra limbs, no deformed, no cartoon style, no anime, no illustration',
+      portraits: prd?.characters?.length
+        ? [`/characters/${prd.characters[0].nameEn || prd.characters[0].name || 'default'}/portrait_v1.png`]
+        : ['/characters/default/portrait_v1.png'],
+      consistency: prd?.characters?.length
+        ? `保持${prd.characters[0].name || '角色'}形象跨镜头一致：发型、服装、面部特征、体型完全统一`
+        : '保持角色形象跨镜头一致：发型、服装、面部特征、体型完全统一',
+      composition: 'medium shot, subject positioned at left third intersection, balanced background, clear focal point',
+      color_palette: 'natural color palette, warm skin tones, neutral background, balanced saturation, cinematic color grading',
+      depth_of_field: 'moderate depth of field f/4, subject in sharp focus, soft background blur, cinematic separation',
+      timeline: 'T00:00-开场构图，建立场景氛围；T00:02-主体动作，叙事推进；T00:05-收尾定格，情绪沉淀',
+      mood: 'calm, professional, natural atmosphere',
+      bright_constraint: 'bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination, face clearly lit',
+      character_constraint: '只出现指定角色一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆',
+      costume: '日常便装，整洁得体，符合角色身份设定',
+      props: '符合场景逻辑的日常物品，与角色动作协调',
+      pacing: '整体：舒缓自然；开头：平稳引入；中段：自然推进；高潮：轻微加速；结尾：从容收尾',
+      audio: 'ambient environmental sound, subtle background atmosphere, natural room tone, no music',
+      makeup: 'natural makeup, no heavy cosmetics, realistic skin texture visible',
+      transition: 'hard cut, clean transition',
+    };
+    return defaults[fieldEn] || '';
   }
 }
 

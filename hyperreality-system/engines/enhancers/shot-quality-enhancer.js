@@ -51,36 +51,39 @@ class ShotQualityEnhancer {
       first3Seconds: 0
     };
 
+    // 【审计修复·P0】深拷贝输入数组，避免副作用
+    const enhancedShots = shots.map(s => ({ ...s }));
+
     // 1. 叙事目的推断
-    for (let i = 0; i < shots.length; i++) {
-      const purpose = this._inferNarrativePurpose(shots[i], i, shots.length);
-      shots[i]._narrativePurpose = purpose;
+    for (let i = 0; i < enhancedShots.length; i++) {
+      const purpose = this._inferNarrativePurpose(enhancedShots[i], i, enhancedShots.length);
+      enhancedShots[i]._narrativePurpose = purpose;
       report.narrativePurpose++;
     }
 
     // 2. 视觉钩子注入
-    for (const shot of shots) {
+    for (const shot of enhancedShots) {
       const hook = this._inferVisualHook(shot);
       shot._visualHook = hook;
       report.visualHook++;
     }
 
     // 3. 相邻镜头差异化
-    for (let i = 1; i < shots.length; i++) {
+    for (let i = 1; i < enhancedShots.length; i++) {
       const sim = this._simpleSimilarity(
-        `${shots[i - 1].scene || ''} ${shots[i - 1].action || ''} ${shots[i - 1].description || ''}`,
-        `${shots[i].scene || ''} ${shots[i].action || ''} ${shots[i].description || ''}`
+        `${enhancedShots[i - 1].scene || ''} ${enhancedShots[i - 1].action || ''} ${enhancedShots[i - 1].description || ''}`,
+        `${enhancedShots[i].scene || ''} ${enhancedShots[i].action || ''} ${enhancedShots[i].description || ''}`
       );
       if (sim > this.similarityThreshold) {
-        shots[i]._diversifyHint = 'Change shot scale, focal subject, and spatial emphasis from previous shot.';
-        shots[i].camera = shots[i].camera || 'cinematic reframing with different shot scale';
-        shots[i].mood = shots[i].mood || 'heightened contrast and fresh visual emphasis';
+        enhancedShots[i]._diversifyHint = 'Change shot scale, focal subject, and spatial emphasis from previous shot.';
+        enhancedShots[i].camera = enhancedShots[i].camera || 'cinematic reframing with different shot scale';
+        enhancedShots[i].mood = enhancedShots[i].mood || 'heightened contrast and fresh visual emphasis';
         report.diversify++;
       }
     }
 
     // 4. 角色行为逻辑
-    for (const shot of shots) {
+    for (const shot of enhancedShots) {
       const logic = this._inferBehaviorLogic(shot);
       if (logic) {
         shot._behaviorLogic = logic;
@@ -89,22 +92,32 @@ class ShotQualityEnhancer {
     }
 
     // 5. 高潮镜头升级
-    for (const shot of shots) {
+    for (const shot of enhancedShots) {
       const tension = Number(shot.tension || 0);
       const type = String(shot.type || '').toLowerCase();
       const isClimax = type.includes('climax') || type.includes('reveal') || tension >= 8;
       if (isClimax) {
         shot._climaxUpgrade = true;
-        shot.lighting = (shot.lighting || '') + ' hard contrast, strong rim separation, dramatic directional highlight';
-        shot.camera = (shot.camera || '') + ' decisive push-in or scale-reveal composition';
-        shot.mood = (shot.mood || '') + ' heightened tension, irreversible turning point';
+        // 【审计修复·P0】防止重复追加
+        const lightingAddon = ' hard contrast, strong rim separation, dramatic directional highlight';
+        const cameraAddon = ' decisive push-in or scale-reveal composition';
+        const moodAddon = ' heightened tension, irreversible turning point';
+        if (!shot.lighting || !shot.lighting.includes('strong rim separation')) {
+          shot.lighting = (shot.lighting || '') + lightingAddon;
+        }
+        if (!shot.camera || !shot.camera.includes('push-in')) {
+          shot.camera = (shot.camera || '') + cameraAddon;
+        }
+        if (!shot.mood || !shot.mood.includes('irreversible')) {
+          shot.mood = (shot.mood || '') + moodAddon;
+        }
         report.climaxUpgrade++;
       }
     }
 
     // 6. 片头钩子 + 前3秒杀手
-    for (let i = 0; i < Math.min(3, shots.length); i++) {
-      const shot = shots[i];
+    for (let i = 0; i < Math.min(3, enhancedShots.length); i++) {
+      const shot = enhancedShots[i];
       const type = String(shot.type || '').toLowerCase();
       const forbiddenTypes = ['establishing', 'establish', 'transition', 'explanation'];
       if (forbiddenTypes.some(f => type.includes(f))) {
@@ -129,33 +142,33 @@ class ShotQualityEnhancer {
     }
 
     // 7. 前景/中景/背景层次
-    for (const shot of shots) {
+    for (const shot of enhancedShots) {
       const depth = this._buildDepthPlan(shot);
       shot._depthPlan = depth;
       report.depthPlan++;
     }
 
     // 8. 第一视觉重点
-    for (const shot of shots) {
+    for (const shot of enhancedShots) {
       const focus = this._inferPrimaryFocus(shot);
       shot._primaryFocus = focus;
       report.primaryFocus++;
     }
 
     // 9. 可拍摄化约束
-    for (const shot of shots) {
+    for (const shot of enhancedShots) {
       shot._cinematicReadability = 'single clear focal point, readable subject separation, believable physical motion, no competing action layers';
       report.cinematicReadability++;
     }
 
-    enhancedCount = shots.length;
+    enhancedCount = enhancedShots.length;
 
     console.log(`   ✅ 镜头质量增强完成: ${enhancedCount}/${shots.length} 个镜头`);
     console.log(`      叙事目的: ${report.narrativePurpose} | 视觉钩子: ${report.visualHook}`);
     console.log(`      差异化: ${report.diversify} | 行为逻辑: ${report.behaviorLogic}`);
     console.log(`      高潮升级: ${report.climaxUpgrade} | 前3秒钩子: ${report.first3Seconds}`);
 
-    return { shots, enhancedCount, report };
+    return { shots: enhancedShots, enhancedCount, report };
   }
 
   // ========== 私有方法 ==========

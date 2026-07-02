@@ -105,13 +105,14 @@ function flattenShot(shot) {
   // 展开 shot.fields 对象
   if (shot.fields && typeof shot.fields === 'object') {
     for (const [key, value] of Object.entries(shot.fields)) {
-      // snake_case → camelCase
+      // 【审计修复·P0】只有目标字段真正不存在（undefined）时才赋值
+      // 空字符串 ''、null、0 等是合法的故意设置，不应被覆盖
       const camelKey = SNAKE_TO_CAMEL[key] || key;
-      if (!(camelKey in flat) || !flat[camelKey]) {
+      if (flat[camelKey] === undefined) {
         flat[camelKey] = value;
       }
       // 也保留 snake_case 版本（向后兼容）
-      if (!(key in flat) || !flat[key]) {
+      if (flat[key] === undefined) {
         flat[key] = value;
       }
     }

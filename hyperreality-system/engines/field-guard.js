@@ -68,15 +68,19 @@ class FieldGuard {
       console.warn(`${this.logPrefix} ${context} 已就地修复 ${failingIdx.length} 个镜头`);
     }
 
-    // 【P2-10 修复】扩大致命错误判定：除 "P0 Missing" 外，纳入负面约束缺失、禁词、片头缺 title 等致命模式
-    // 注意：移除过于宽泛的 /Final-Export/i 模式，避免误杀正常流程
+    // 【P2-10 修复】扩大致命错误判定：修复正则表达式以匹配实际错误格式
+    // 原正则有严重缺陷：/P0 Missing/i 无法匹配 "P0 字段【导演指令】缺失"
     const CRITICAL_PATTERNS = [
-      /P0 Missing/i,
+      /P0.*缺失/i, // P0字段缺失（匹配实际格式 "P0 字段【xx】缺失"）
+      /P0.*缺失.*required/i, // P0必填缺失
       /Missing critical negative constraint/i,
       /forbidden words/i,
       /missing: title/i,
       /missing: scene/i,
-      /Opening exclusive fields missing/i
+      /Opening exclusive fields missing/i,
+      /致命.*缺失/i, // 中文致命缺失
+      /FATAL.*MISSING/i, // 英文致命缺失
+      /字段.*缺失.*P0/i, // 反向格式
       // /Final-Export/i  // ❌ 已移除：过于宽泛，误杀正常流程
     ];
     const isCritical = e => CRITICAL_PATTERNS.some(p => p.test(e));
