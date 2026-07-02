@@ -1397,8 +1397,8 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
     const consistencyField = getField('consistency');
     if (consistencyField) parts.push(`【角色一致性】${consistencyField}`);
 
-    // 合并
-    let fullPrompt = parts.join(',');
+    // 【P1-PROMPT-05 修复】统一字段分隔符：使用' | '替代'，'，避免中英文标点混用
+    let fullPrompt = parts.join(' | ');
 
     // 截断
     if (this._countChars(fullPrompt) > this.maxPromptLength) {

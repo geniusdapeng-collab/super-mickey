@@ -102,12 +102,25 @@ function install(instanceId = 'default', options = {}) {
 
   // === uncaughtException 处理器 ===
   listeners.uncaughtException = (err) => {
+    // 【P1-QUAL-04 修复】扩充致命错误模式：堆栈溢出、V8堆限制、内存耗尽
     const FATAL_PATTERNS = [
+      // OOM / 内存耗尽
       /out of memory/i, /heap out of memory/i, /ENOMEM/i,
-      /allocation failed/i, /segfault/i, /SIGSEGV/i, /SIGABRT/i,
-      /RangeError: Maximum call stack size exceeded/i,
+      /allocation failed/i, /memory allocation failed/i,
+      /javascript heap out of memory/i, /v8::internal::v8::fatalprocessoutofmemory/i,
+      // V8 堆限制
       /FATAL ERROR: Reached heap limit/i,
       /FATAL ERROR: Ineffective mark-compacts/i,
+      /FATAL ERROR: Scavenger: semi-space copy/i,
+      /FATAL ERROR: Allocation failed - process out of memory/i,
+      // 堆栈溢出
+      /RangeError: Maximum call stack size exceeded/i,
+      /RangeError: Maximum call stack exceeded/i,
+      /stack overflow/i, /too much recursion/i,
+      // 段错误 / 信号
+      /segfault/i, /SIGSEGV/i, /SIGABRT/i, /SIGILL/i, /SIGBUS/i,
+      // 其他致命错误
+      /abort trap/i, /illegal instruction/i, /bus error/i,
     ];
     const isFatal = FATAL_PATTERNS.some(p => p.test(err.message));
 
