@@ -8,7 +8,15 @@
  * Step 5: 执行预生产链路
  * Step 6: 结果输出为 MD 文件 + 最终确认
  * 
- * 用法: node run-preproduction.js "用户输入"
+ * 用法: 
+ *   完整流程: node run-preproduction.js "用户输入"
+ *   分段执行: node run-preproduction.js --segmented "用户输入"
+ *   恢复执行: node run-preproduction.js --resume "用户输入"
+ * 
+ * 环境变量:
+ *   PREPRODUCTION_DURATION     - 时长(秒),默认30
+ *   PREPRODUCTION_AUTO_CONFIRM - 自动确认(true/false),默认true
+ *   PREPRODUCTION_USE_SEGMENT  - 使用分段执行(true/false),默认false
  */
 
 const path = require('path');
@@ -188,6 +196,48 @@ ${result.quality ? `- 总分: ${result.quality.score || 'N/A'}/100
 }
 
 async function main() {
+  // 检查是否使用分段执行
+  const args = process.argv.slice(2);
+  const useSegmented = args.includes('--segmented') || args.includes('-s') || process.env.PREPRODUCTION_USE_SEGMENT === 'true';
+  const resumeMode = args.includes('--resume') || args.includes('-r');
+  
+  if (useSegmented || resumeMode) {
+    // 使用分段执行引擎
+    const { SegmentRunner } = require('./segment-runner');
+    
+    const userInput = args.filter(a => !a.startsWith('--')).join(' ') || '环卫工人的一天，带有一点奇幻色彩';
+    const duration = parseInt(process.env.PREPRODUCTION_DURATION) || 30;
+    
+    console.log('');
+    console.log('╔══════════════════════════════════════════╗');
+    console.log('║     使用分段执行模式                     ║');
+    console.log('║     彻底解决 40 分钟超时问题            ║');
+    console.log('╚══════════════════════════════════════════╝');
+    console.log('');
+    
+    const runner = new SegmentRunner({
+      userInput,
+      duration,
+      autoConfirm: process.env.PREPRODUCTION_AUTO_CONFIRM !== 'false',
+      resume: resumeMode
+    });
+    
+    if (resumeMode) {
+      console.log('🔄 恢复模式: 从最后一个 checkpoint 继续');
+      console.log('');
+      
+      // 查看已完成的 segments
+      const completed = runner.getCompletedSegments();
+      console.log(`已完成的 Segments: ${completed.join(', ') || '无'}`);
+      console.log('');
+    }
+    
+    // 执行（全新或恢复）
+    await runner.runAll();
+    return;
+  }
+  
+  // 原有的完整流程执行
   // 获取用户输入
   const userInput = process.argv[2] !== undefined ? process.argv[2] : '';
   
@@ -196,10 +246,10 @@ async function main() {
     process.exit(1);
   }
   
-  // 检查是否自动确认模式
-  const autoConfirm = process.argv.includes('--auto-confirm');
+  // 检查是否自动确认模式（从过滤后的 args 中）
+  const autoConfirm = args.includes('--auto-confirm');
   // 【v2.1.8-fix】支持 --duration 参数指定时长
-  const durationArg = process.argv.find(arg => arg.startsWith('--duration='));
+  const durationArg = args.find(arg => arg.startsWith('--duration='));
   const durationMs = durationArg ? parseInt(durationArg.split('=')[1]) * 1000 : null;
   
   if (autoConfirm) {
