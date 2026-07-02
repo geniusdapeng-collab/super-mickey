@@ -20,26 +20,26 @@ class FieldConsistencyChecker {
     const fields = shot.fields || shot;
     const issues = [];
 
-    // 1. 情绪-灯光一致性
-    issues.push(...this._checkMoodLighting(fields));
-    // 2. 情绪-运镜一致性
-    issues.push(...this._checkMoodCamera(fields));
-    // 3. 情绪-色彩一致性
-    issues.push(...this._checkMoodColor(fields));
-    // 4. 时间轴-运镜同步
-    issues.push(...this._checkTimelineCamera(fields));
-    // 5. 时间轴-动作同步
-    issues.push(...this._checkTimelineAction(fields));
-    // 6. 场景-灯光-明亮约束时序一致
-    issues.push(...this._checkSceneLightingBright(fields));
-    // 7. 动作-运镜同步
-    issues.push(...this._checkActionCamera(fields));
-    // 8. 构图-运镜景别一致
-    issues.push(...this._checkCompositionCamera(fields));
-    // 9. 景深-景别一致
-    issues.push(...this._checkDepthOfFieldComposition(fields));
-    // 10. 节奏-运镜速度一致
-    issues.push(...this._checkPacingCamera(fields));
+    // 11. 场景-灯光一致性
+    issues.push(...this._checkSceneLighting(fields));
+    // 12. 动作-道具一致性
+    issues.push(...this._checkActionProps(fields));
+    // 13. 角色-服装一致性
+    issues.push(...this._checkCharacterCostume(fields));
+    // 14. 台词-音频一致性
+    issues.push(...this._checkDialogueAudio(fields));
+    // 15. 色彩-灯光一致性
+    issues.push(...this._checkColorLighting(fields));
+    // 16. 转场-节奏一致性
+    issues.push(...this._checkTransitionPacing(fields));
+    // 17. 导演意图-场景一致性
+    issues.push(...this._checkDirectorScene(fields));
+    // 18. 约束-负面约束一致性
+    issues.push(...this._checkConstraintNegative(fields));
+    // 19. 构图-色彩一致性
+    issues.push(...this._checkCompositionColor(fields));
+    // 20. 时间轴-音频同步
+    issues.push(...this._checkTimelineAudio(fields));
 
     const result = {
       shotId: shot.shotId,
@@ -705,6 +705,233 @@ class FieldConsistencyChecker {
       }
     }
 
+    return issues;
+  }
+
+  // ==================== 【P1-PROMPT-04 修复】新增10组校验规则 ====================
+
+  /**
+   * 11. 场景-灯光一致性
+   * 室内场景应有室内光源关键词，室外场景应有自然光关键词
+   */
+  _checkSceneLighting(fields) {
+    const issues = [];
+    const scene = String(fields.scene || '').toLowerCase();
+    const lighting = String(fields.lighting || '').toLowerCase();
+    if (!scene || !lighting) return issues;
+
+    const indoorKeywords = ['室内', '房间', '办公室', '走廊', '医院', '教室', 'inside', 'room', 'office', 'indoor'];
+    const outdoorKeywords = ['室外', '户外', '街道', '天空', '自然', 'outside', 'outdoor', 'street', 'nature'];
+    const isIndoor = indoorKeywords.some(k => scene.includes(k));
+    const isOutdoor = outdoorKeywords.some(k => scene.includes(k));
+
+    if (isIndoor && !['室内灯', '顶灯', '台灯', 'fluorescent', 'led', 'tungsten', 'incandescent'].some(k => lighting.includes(k))) {
+      issues.push({ severity: 'warning', fieldA: 'scene', fieldB: 'lighting', message: '室内场景但灯光没有室内光源描述', fixable: true, fix: (f) => ({ lighting: `indoor lighting, ${f.lighting}` }) });
+    }
+    if (isOutdoor && !['自然光', '日光', '阳光', 'sunlight', 'daylight', 'natural light'].some(k => lighting.includes(k))) {
+      issues.push({ severity: 'warning', fieldA: 'scene', fieldB: 'lighting', message: '室外场景但灯光没有自然光描述', fixable: true, fix: (f) => ({ lighting: `natural sunlight, ${f.lighting}` }) });
+    }
+    return issues;
+  }
+
+  /**
+   * 12. 动作-道具一致性
+   * 动作描述应引用道具字段中的道具
+   */
+  _checkActionProps(fields) {
+    const issues = [];
+    const action = String(fields.action || '').toLowerCase();
+    const props = String(fields.props || '').toLowerCase();
+    if (!action || !props) return issues;
+
+    // 提取道具关键词
+    const propItems = props.split(/[,，;；]/).map(p => p.trim()).filter(p => p.length > 1);
+    const unreferencedProps = propItems.filter(p => !action.includes(p.toLowerCase()));
+
+    if (unreferencedProps.length > 0 && unreferencedProps.length === propItems.length) {
+      issues.push({ severity: 'warning', fieldA: 'action', fieldB: 'props', message: `动作没有引用任何道具(${unreferencedProps.slice(0, 3).join(', ')})`, fixable: false });
+    }
+    return issues;
+  }
+
+  /**
+   * 13. 角色-服装一致性
+   * 角色描述中的服装应与服装字段一致
+   */
+  _checkCharacterCostume(fields) {
+    const issues = [];
+    const character = String(fields.character || '').toLowerCase();
+    const costume = String(fields.costume || '').toLowerCase();
+    if (!character || !costume) return issues;
+
+    // 检查角色描述是否包含服装字段的关键词
+    const costumeKeywords = costume.split(/[,，;；]/).map(c => c.trim()).filter(c => c.length > 1);
+    const hasCostumeRef = costumeKeywords.some(k => character.includes(k.toLowerCase()));
+
+    if (!hasCostumeRef) {
+      issues.push({ severity: 'warning', fieldA: 'character', fieldB: 'costume', message: '角色描述没有引用服装字段的内容', fixable: true, fix: (f) => ({ character: `${f.character}, 身着${f.costume}` }) });
+    }
+    return issues;
+  }
+
+  /**
+   * 14. 台词-音频一致性
+   * 有台词时音频应包含人声描述
+   */
+  _checkDialogueAudio(fields) {
+    const issues = [];
+    const dialogue = String(fields.dialogue || '').trim();
+    const audio = String(fields.audio || '').toLowerCase();
+    if (!dialogue || !audio) return issues;
+
+    const hasVoice = ['人声', 'voice', 'dialogue', 'speech', 'spoken', '对话'].some(k => audio.includes(k));
+    if (!hasVoice) {
+      issues.push({ severity: 'warning', fieldA: 'dialogue', fieldB: 'audio', message: '有台词但音频没有包含人声/对话描述', fixable: true, fix: (f) => ({ audio: `clear voice and dialogue, ${f.audio}` }) });
+    }
+    return issues;
+  }
+
+  /**
+   * 15. 色彩-灯光一致性
+   * 色温描述应匹配
+   */
+  _checkColorLighting(fields) {
+    const issues = [];
+    const color = String(fields.color_palette || '').toLowerCase();
+    const lighting = String(fields.lighting || '').toLowerCase();
+    if (!color || !lighting) return issues;
+
+    const warmColors = ['暖', 'warm', 'golden', 'orange', 'amber', 'yellow'];
+    const coolColors = ['冷', 'cool', 'blue', 'cyan', 'cold', 'teal'];
+    const warmLight = ['5600k', '暖', 'warm', 'tungsten', 'golden hour', 'sunset'];
+    const coolLight = ['冷', 'cool', 'blue', 'daylight', 'overcast', 'fluorescent'];
+
+    const isWarmColor = warmColors.some(k => color.includes(k));
+    const isCoolColor = coolColors.some(k => color.includes(k));
+    const isWarmLight = warmLight.some(k => lighting.includes(k));
+    const isCoolLight = coolLight.some(k => lighting.includes(k));
+
+    if (isWarmColor && isCoolLight) {
+      issues.push({ severity: 'warning', fieldA: 'color_palette', fieldB: 'lighting', message: '色彩偏暖但灯光描述偏冷，色温不一致', fixable: false });
+    }
+    if (isCoolColor && isWarmLight) {
+      issues.push({ severity: 'warning', fieldA: 'color_palette', fieldB: 'lighting', message: '色彩偏冷但灯光描述偏暖，色温不一致', fixable: false });
+    }
+    return issues;
+  }
+
+  /**
+   * 16. 转场-节奏一致性
+   * 快节奏应配快速转场，慢节奏应配柔和转场
+   */
+  _checkTransitionPacing(fields) {
+    const issues = [];
+    const transition = String(fields.transition || '').toLowerCase();
+    const pacing = String(fields.pacing || '').toLowerCase();
+    if (!transition || !pacing) return issues;
+
+    const fastPacing = ['fast', 'quick', 'rapid', 'tense'];
+    const slowPacing = ['slow', 'gentle', 'calm', 'relaxed'];
+    const isFast = fastPacing.some(p => pacing.includes(p));
+    const isSlow = slowPacing.some(p => pacing.includes(p));
+
+    const slowTransitions = ['淡入淡出', 'fade', 'dissolve', '渐变'];
+    const fastTransitions = ['硬切', 'cut', '闪切', 'whip'];
+    const hasSlowTrans = slowTransitions.some(t => transition.includes(t));
+    const hasFastTrans = fastTransitions.some(t => transition.includes(t));
+
+    if (isFast && hasSlowTrans) {
+      issues.push({ severity: 'warning', fieldA: 'transition', fieldB: 'pacing', message: '节奏快速但转场为柔和类型', fixable: true, fix: (f) => ({ transition: 'hard cut, quick transition' }) });
+    }
+    if (isSlow && hasFastTrans) {
+      issues.push({ severity: 'warning', fieldA: 'transition', fieldB: 'pacing', message: '节奏缓慢但转场为快速类型', fixable: true, fix: (f) => ({ transition: 'slow dissolve, gentle fade' }) });
+    }
+    return issues;
+  }
+
+  /**
+   * 17. 导演意图-场景一致性
+   * 导演风格应与场景类型匹配
+   */
+  _checkDirectorScene(fields) {
+    const issues = [];
+    const director = String(fields.director_instruction || '').toLowerCase();
+    const scene = String(fields.scene || '').toLowerCase();
+    if (!director || !scene) return issues;
+
+    const realisticScenes = ['医院', '办公室', '教室', '街道', '医院', 'clinic', 'office', 'street'];
+    const stylizedDirectors = ['动画', 'anime', 'cartoon', 'illustration', 'painting', '3d render'];
+    const isRealisticScene = realisticScenes.some(s => scene.includes(s));
+    const isStylizedDirector = stylizedDirectors.some(d => director.includes(d));
+
+    if (isRealisticScene && isStylizedDirector) {
+      issues.push({ severity: 'error', fieldA: 'director_instruction', fieldB: 'scene', message: '写实场景但导演意图包含非写实风格', fixable: true, fix: (f) => ({ director_instruction: 'photorealistic, cinematic, highly detailed, 8K resolution' }) });
+    }
+    return issues;
+  }
+
+  /**
+   * 18. 约束-负面约束一致性
+   * constraint和negative不应矛盾
+   */
+  _checkConstraintNegative(fields) {
+    const issues = [];
+    const constraint = String(fields.constraint || '').toLowerCase();
+    const negative = String(fields.negative || '').toLowerCase();
+    if (!constraint || !negative) return issues;
+
+    // 检查是否同时要求某特性又禁止它
+    const contradictions = [
+      { pos: 'text', neg: 'no text' },
+      { pos: 'subtitle', neg: 'no subtitle' },
+      { pos: 'watermark', neg: 'no watermark' }
+    ];
+
+    for (const c of contradictions) {
+      if (constraint.includes(c.pos) && negative.includes(c.neg)) {
+        issues.push({ severity: 'error', fieldA: 'constraint', fieldB: 'negative', message: `constraint和negative矛盾:同时涉及${c.pos}`, fixable: false });
+      }
+    }
+    return issues;
+  }
+
+  /**
+   * 19. 构图-色彩一致性
+   * 构图的留白/紧凑应与色彩饱和度匹配
+   */
+  _checkCompositionColor(fields) {
+    const issues = [];
+    const composition = String(fields.composition || '').toLowerCase();
+    const color = String(fields.color_palette || '').toLowerCase();
+    if (!composition || !color) return issues;
+
+    const isMinimal = ['留白', 'minimal', 'negative space', 'sparse', 'empty'].some(k => composition.includes(k));
+    const isHighSaturation = ['高饱和', 'vivid', 'saturated', 'bright', 'bold'].some(k => color.includes(k));
+
+    if (isMinimal && isHighSaturation) {
+      issues.push({ severity: 'warning', fieldA: 'composition', fieldB: 'color_palette', message: '极简构图但色彩高饱和，风格冲突', fixable: false });
+    }
+    return issues;
+  }
+
+  /**
+   * 20. 时间轴-音频同步
+   * 时间轴中的音频提示应与audio字段一致
+   */
+  _checkTimelineAudio(fields) {
+    const issues = [];
+    const timeline = String(fields.timeline || '').toLowerCase();
+    const audio = String(fields.audio || '').toLowerCase();
+    if (!timeline || !audio) return issues;
+
+    // 检查时间轴是否提到音频变化而audio字段没有对应描述
+    const timelineAudioRefs = ['音效', '音乐', '配乐', 'sound', 'music', 'audio'];
+    const hasTimelineAudio = timelineAudioRefs.some(r => timeline.includes(r));
+    const hasAudioDetail = audio.length > 50; // audio字段有详细描述
+
+    if (hasTimelineAudio && !hasAudioDetail) {
+      issues.push({ severity: 'warning', fieldA: 'timeline', fieldB: 'audio', message: '时间轴提到音频但audio字段描述过短', fixable: false });
+    }
     return issues;
   }
 
