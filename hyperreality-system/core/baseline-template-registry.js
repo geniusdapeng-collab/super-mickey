@@ -64,7 +64,7 @@ class BaselineTemplateRegistry {
       keys.sort((a, b) => {
         const va = this._extractVersion(a);
         const vb = this._extractVersion(b);
-        return vb.localeCompare(va); // 降序
+        return this._compareVersions(va, vb); // 【P1-DATA-06 修复】语义化版本比较
       });
       return this.baselines.get(keys[0]);
     }
@@ -77,7 +77,7 @@ class BaselineTemplateRegistry {
         keys.sort((a, b) => {
           const va = this._extractVersion(a);
           const vb = this._extractVersion(b);
-          return vb.localeCompare(va);
+          return this._compareVersions(va, vb); // 【P1-DATA-06 修复】语义化版本比较
         });
         console.log(`[BaselineRegistry] 模糊匹配: ${type} -> ${keys[0]}`);
         return this.baselines.get(keys[0]);
@@ -87,8 +87,29 @@ class BaselineTemplateRegistry {
   }
 
   _extractVersion(key) {
-    const match = key.match(/v(\d+\.\d+)$/);
+    const match = key.match(/v([\d.]+)$/);
     return match ? match[1] : '0.0';
+  }
+
+  /**
+   * 【P1-DATA-06 修复】语义化版本比较
+   * @param {string} versionA
+   * @param {string} versionB
+   * @returns {number} 正数表示A>B，负数表示A<B，0表示相等
+   */
+  _compareVersions(versionA, versionB) {
+    const partsA = versionA.split('.').map(Number);
+    const partsB = versionB.split('.').map(Number);
+
+    const maxLen = Math.max(partsA.length, partsB.length);
+    for (let i = 0; i < maxLen; i++) {
+      const numA = partsA[i] || 0;
+      const numB = partsB[i] || 0;
+      if (numA !== numB) {
+        return numB - numA; // 降序
+      }
+    }
+    return 0;
   }
 
   /**

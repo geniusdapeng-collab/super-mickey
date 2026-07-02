@@ -22,7 +22,18 @@ class DurationConstraintManager {
       return { scenes, adjustments: [], valid: true };
     }
 
-    const targetDuration = options.targetDuration || this._sumDurations(scenes);
+    // 【P1-PERF-04 修复】校验targetDuration必须为数字
+    let targetDuration = options.targetDuration;
+    if (targetDuration !== undefined && targetDuration !== null) {
+      if (typeof targetDuration !== 'number' || isNaN(targetDuration) || targetDuration < 0) {
+        throw new TypeError(
+          `[DurationManager] targetDuration必须是正数，收到: ${typeof targetDuration} = ${targetDuration}`
+        );
+      }
+    } else {
+      targetDuration = this._sumDurations(scenes);
+    }
+
     const rhythmType = options.rhythmType || 'standard';
     const forceAdjust = options.forceAdjust !== false;
 
@@ -34,7 +45,17 @@ class DurationConstraintManager {
 
     for (let i = 0; i < scenes.length; i++) {
       const scene = scenes[i];
-      const originalDuration = scene.timing?.duration || scene.duration || 0;
+      // 【P1-PERF-04 修复】校验scene.duration类型
+      let originalDuration = scene.timing?.duration ?? scene.duration;
+      if (originalDuration !== undefined && originalDuration !== null) {
+        if (typeof originalDuration !== 'number' || isNaN(originalDuration)) {
+          throw new TypeError(
+            `[DurationManager] scene[${i}].duration必须是数字，收到: ${typeof originalDuration} = ${originalDuration}`
+          );
+        }
+      }
+      originalDuration = originalDuration || 0;
+      
       const isClimax = scene.scene_type === 'emotional_climax' || scene.scene_function === 'climax';
       const maxDuration = isClimax
         ? Math.min(this.maxSingleShot, profile.shotRange[1] * profile.climaxRatio)
