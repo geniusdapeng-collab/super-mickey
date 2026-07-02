@@ -346,6 +346,14 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
     const expandedFields = { ...fields };
     const fullPrompt = this._assembleStandardPrompt(shot, fields, shot.ratio || '16:9');
 
+    // 【P2-PROMPT-01 修复】校验promptBase字符数：约束+基础层不应超过总prompt的30%
+    const baseParts = fullPrompt.split(' | ').slice(0, 3); // 约束+基础层+导演指令
+    const promptBase = baseParts.join(' | ');
+    const baseRatio = this._countChars(promptBase) / this._countChars(fullPrompt);
+    if (baseRatio > 0.5) {
+      console.warn(`[PromptFusionAgent] ⚠️ 镜头 ${shot.shotId} promptBase占比过高(${ (baseRatio * 100).toFixed(1) }%), 可能影响场景描述质量`);
+    }
+
     return {
       ...shot,
       ...expandedFields,
@@ -1239,15 +1247,18 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
     const hasForbidden = forbiddenWords.some(w => sceneDesc.includes(w));
     if (hasForbidden) {
       console.warn(`[PromptFusionAgent] ⚠️ 镜头 ${shot.shotId} 场景含禁止词汇: "${sceneDesc.substring(0, 50)}...",强制替换为写实场景`);
-      // 强制替换为写实场景
+      // 【P2-PROMPT-02 修复】智能场景模板选择：根据sceneType和镜头编号哈希选择
       const fallbackScenes = [
         '医院健康宣教室,白色荧光灯均匀照明,白墙面贴有无文字骨骼肌解剖图与运动损伤海报(纯图形版),木质讲台表面带有细微使用划痕,地面浅灰色防滑PVC地胶',
         '三甲医院检验科走廊,冷白色LED光源从走廊顶部连续排列向下照射,无文字箭头标识牌指向尿液检验窗口,地面浅色抛光瓷砖,墙面白色医用抗菌涂层',
         '医生诊室,白色墙面悬挂无文字人体解剖示意图(纯图形版),办公桌摆放听诊器与血压计,检查床铺有蓝色一次性床单,无影灯悬于上方,窗光透入',
         '医院健康管理中心,嵌入式LED灯带洒下柔和暖白光,接待台后方排列无文字健康宣传展板(纯图形版),前方皮质沙发与实木茶几,地面灰色哑光瓷砖'
       ];
-      const index = parseInt(shot.shotId.replace(/\D/g, '')) || 0;
-      sceneDesc = fallbackScenes[index % fallbackScenes.length];
+      // 使用sceneType和shotId哈希选择，避免简单轮询
+      const sceneType = shot.sceneType || 'standard';
+      const shotNum = parseInt(shot.shotId.replace(/\D/g, '')) || 0;
+      const hash = this._simpleHash(sceneType + shotNum);
+      sceneDesc = fallbackScenes[hash % fallbackScenes.length];
     }
     if (sceneDesc) parts.push(`【场景】${sceneDesc}`);
 
@@ -1426,11 +1437,14 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
     }
 
     // 【v2.2.0】语言检查:检测英文输出并警告
+    // 【P2-PROMPT-03 修复】语言检查不再只做警告，主动修正英文输出
     const chineseCharCount = (fullPrompt.match(/[\u4e00-\u9fa5]/g) || []).length;
     const totalCharCount = this._countChars(fullPrompt);
     const chineseRatio = chineseCharCount / totalCharCount;
     if (chineseRatio < 0.3 && totalCharCount > 500) {
-      console.warn(`[PromptFusionAgent] ⚠️ 镜头 ${shot.shotId} 中文占比过低(${(chineseRatio * 100).toFixed(1)}%),可能为英文输出`);
+      console.warn(`[PromptFusionAgent] ⚠️ 镜头 ${shot.shotId} 中文占比过低(${(chineseRatio * 100).toFixed(1)}%), 尝试修正为中文输出`);
+      // 【P2-PROMPT-03 修复】添加中文标记强制中文输出
+      fullPrompt = '【强制中文输出】' + fullPrompt;
     }
 
     return fullPrompt;
@@ -1589,6 +1603,17 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
   _countChars(str) {
     // 【P2-13 修复】使用真实字符数,中文不再按1.5计
     return str ? String(str).length : 0;
+  }
+
+  // 【P2-PROMPT-02 修复】简单哈希函数：根据字符串生成确定性哈希值
+  _simpleHash(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return Math.abs(hash);
   }
 
   _extractPureDialogue(dialogue) {

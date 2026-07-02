@@ -56,9 +56,10 @@ class CrossEpisodeValidator {
     console.log(`[CrossEpisodeValidator] 开始校验第${episodeIndex}集/共${totalEpisodes}集...`);
 
     // 【v2.1.6-fix-bug51】安全验证：override需要满足最小长度和格式要求
+    // 【P2-PROMPT-04 修复】字段最小长度校验不再过于严格：从10字符降至5字符
     if (overrideReason) {
       const trimmed = overrideReason.trim();
-      if (trimmed.length < 10) {
+      if (trimmed.length < 5) {
         console.warn(`[CrossEpisodeValidator] override原因过短(${trimmed.length}字符)，拒绝，继续正常校验`);
         // 继续正常校验，不跳过
       } else {

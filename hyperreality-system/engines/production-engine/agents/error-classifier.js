@@ -4,10 +4,12 @@
  */
 
 class ErrorClassifier {
-  static classify(error) {
-    if (!error) return { type: 'UNKNOWN', retryable: true, strategy: 'default' };
+  // 【P2-QUAL-02 修复】为错误分类添加上下文信息
+  static classify(error, context = {}) {
+    if (!error) return { type: 'UNKNOWN', retryable: true, strategy: 'default', context };
     
     const message = (error.message || error.toString()).toLowerCase();
+    const baseResult = { context };
     
     // 1. 鉴权/配置错误 → 不可重试，直接熔断
     if (message.includes('auth') || 
@@ -18,6 +20,7 @@ class ErrorClassifier {
         message.includes('401') ||
         message.includes('403')) {
       return { 
+        ...baseResult,
         type: 'AUTH', 
         retryable: false, 
         strategy: 'circuit-break',
@@ -32,6 +35,7 @@ class ErrorClassifier {
         message.includes('400') ||
         message.includes('schema')) {
       return { 
+        ...baseResult,
         type: 'PARAM', 
         retryable: false, 
         strategy: 'stop',
@@ -46,6 +50,7 @@ class ErrorClassifier {
         message.includes('throttle') ||
         message.includes('quota')) {
       return { 
+        ...baseResult,
         type: 'RATE_LIMIT', 
         retryable: true, 
         strategy: 'exponential-backoff',
@@ -58,6 +63,7 @@ class ErrorClassifier {
     // 必须先于通用TIMEOUT检查，避免"JSON parsing timeout"被误判
     if (message.includes('json') && (message.includes('timeout') || message.includes('timed out'))) {
       return {
+        ...baseResult,
         type: 'PARSE',
         retryable: true,
         strategy: 'shrink-prompt',
@@ -73,6 +79,7 @@ class ErrorClassifier {
         message.includes('abort') ||
         message.includes('socket hang up')) {
       return { 
+        ...baseResult,
         type: 'TIMEOUT', 
         retryable: true, 
         strategy: 'progressive-timeout',

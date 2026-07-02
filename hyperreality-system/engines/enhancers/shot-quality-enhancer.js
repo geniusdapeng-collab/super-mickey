@@ -21,6 +21,8 @@ class ShotQualityEnhancer {
   constructor(options = {}) {
     this.enabled = options.enabled !== false;
     this.intensity = options.intensity || 0.7; // 0.0-1.0，增强强度
+    // 【P2-QUAL-01 修复】阈值不再固定，可根据intensity动态调整
+    this.similarityThreshold = options.similarityThreshold || (0.6 + (1 - this.intensity) * 0.3); // intensity越高阈值越低（越敏感）
   }
 
   /**
@@ -69,7 +71,7 @@ class ShotQualityEnhancer {
         `${shots[i - 1].scene || ''} ${shots[i - 1].action || ''} ${shots[i - 1].description || ''}`,
         `${shots[i].scene || ''} ${shots[i].action || ''} ${shots[i].description || ''}`
       );
-      if (sim > 0.75) {
+      if (sim > this.similarityThreshold) {
         shots[i]._diversifyHint = 'Change shot scale, focal subject, and spatial emphasis from previous shot.';
         shots[i].camera = shots[i].camera || 'cinematic reframing with different shot scale';
         shots[i].mood = shots[i].mood || 'heightened contrast and fresh visual emphasis';
