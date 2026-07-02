@@ -31,6 +31,15 @@ class ScriptEngine {
     console.log(`[ScriptEngine v${this.version}] 开始处理: ${metadata.title || '未命名'}`);
 
     // 1. 解析意图
+    // 【v2.1.8-fix】如果 metadata 包含 CreativeTheme 信息，优先使用其类型/情绪
+    if (metadata._creativeTheme && metadata._creativeTheme.type) {
+      metadata.narrativeMode = metadata._creativeTheme.type.toLowerCase().replace(/[^a-z]/g, '');
+      metadata._creativeThemeTone = metadata._creativeTheme.tone;
+      metadata._creativeThemeVisualStyle = metadata._creativeTheme.visual_style;
+      metadata._creativeThemeTargetAudience = metadata._creativeTheme.target_audience;
+      metadata._creativeThemeDescription = metadata._creativeTheme.description;
+      console.log(`[ScriptEngine] 使用 CreativeTheme 类型: ${metadata._creativeTheme.type}`);
+    }
     const userIntent = this.intentParser.parse(rawInput, metadata);
     console.log(`[ScriptEngine] 意图解析完成: ${userIntent.parsed.primary_mode}`);
 
