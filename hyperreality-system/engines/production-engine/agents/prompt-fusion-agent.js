@@ -358,7 +358,7 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
     };
   }
 
-  async _fuseSingleShot(shot, ratio, characters, blueprint) {
+  async _fuseSingleShot(shot, ratio, characters, blueprint, shotBudget = null) {
     const prompt = this._buildBatchPrompt([shot], ratio, characters);
     // 【v2.1.4-fix10-P25-fix3】把空 schema 换成带 25 字段键名的完整模板
     // 【P1-4 修复】schema 加 required/requiredArrays/rejectEmptyArray,让质量门真正生效
@@ -369,9 +369,10 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
       shots: [buildFullSchema(shot.shotId)]
     };
 
+    // 【P1-PROMPT-08 修复】传递镜头级独立预算
     const llmResult = await this._callLLM(prompt, schema, () => {
       throw new Error('LLM fallback');
-    });
+    }, { shotBudget });
 
     const fusionEntry = llmResult.result?.shots?.find(s => s.shotId === shot.shotId);
     let fields = fusionEntry?.fields || {};
@@ -518,7 +519,9 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
     for (let attempt = 0; attempt <= 1; attempt++) {
       if (remainingMs() < 30000) throw new Error('预算不足');
       try {
-        return await this._fuseSingleShot(shot, ratio, characters, blueprint);
+        // 【P1-PROMPT-08 修复】计算并传递镜头级独立预算
+        const shotBudget = remainingMs();
+        return await this._fuseSingleShot(shot, ratio, characters, blueprint, shotBudget);
       } catch (e) {
         if (attempt === 0 && remainingMs() > 60000) {
           await new Promise(r => setTimeout(r, 2000));
@@ -1495,20 +1498,61 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
    */
   _truncateStandardPrompt(fullPrompt) {
     if (this._countChars(fullPrompt) <= this.maxPromptLength) return fullPrompt;
+    
     // 按字段标签切分
     const segments = fullPrompt.split(/(?=【)/);
     if (segments.length <= 1) return fullPrompt.substring(0, this.maxPromptLength);
-    // 计算每个字段当前字符数,等比压缩到目标长度
+    
+    // 【P1-PROMPT-07 修复】加权压缩：重要字段保留更多内容
+    const FIELD_WEIGHTS = {
+      '【导演意图】': 1.5,    // 最高权重：导演意图决定整体风格
+      '【场景】': 1.4,        // 高权重：场景是视觉基础
+      '【角色】': 1.4,        // 高权重：角色是叙事核心
+      '【动作】': 1.3,        // 高权重：动作推动叙事
+      '【灯光设计】': 1.2,    // 中高权重：灯光营造氛围
+      '【构图】': 1.2,        // 中高权重：构图决定画面结构
+      '【运镜】': 1.2,        // 中高权重：运镜影响动态感
+      '【色彩/色调】': 1.1,   // 中等权重：色彩辅助氛围
+      '【景深】': 1.1,        // 中等权重：景深辅助视觉层次
+      '【服装】': 1.0,        // 标准权重：服装细节
+      '【化妆】': 1.0,        // 标准权重：妆容细节
+      '【道具】': 1.0,        // 标准权重：道具细节
+      '【时间轴】': 1.0,      // 标准权重：时间调度
+      '【情绪】': 1.0,        // 标准权重：情绪基调
+      '【节奏】': 0.8,        // 较低权重：节奏可简化
+      '【转场】': 0.7,        // 低权重：转场可压缩
+      '【音频】': 0.6,        // 低权重：音频可大幅压缩
+      '【负面约束】': 0.5,    // 最低权重：负面约束可极简
+      '【角色约束】': 0.5,    // 最低权重：约束可极简
+      '【角色一致性】': 0.5,  // 最低权重：一致性可极简
+    };
+    
     const target = this.maxPromptLength;
     const totalNow = this._countChars(fullPrompt);
-    const ratio = target / totalNow;
-    const compressed = segments.map(seg => {
+    const baseRatio = target / totalNow;
+    
+    // 计算加权后的总需求长度
+    let totalWeighted = 0;
+    const segmentInfos = segments.map(seg => {
       const segLen = this._countChars(seg);
-      const want = Math.max(40, Math.floor(segLen * ratio)); // 每字段至少保留40字符
-      if (segLen <= want) return seg;
-      // 保留字段标签头,截断内容
+      // 提取字段标签
       const headMatch = seg.match(/^(【[^】]+】)/);
       const head = headMatch ? headMatch[1] : '';
+      const weight = FIELD_WEIGHTS[head] || 1.0;
+      const weightedLen = segLen * weight;
+      totalWeighted += weightedLen;
+      return { seg, segLen, head, weight, weightedLen };
+    });
+    
+    // 根据加权比例分配每个字段的目标长度
+    const compressed = segmentInfos.map(({ seg, segLen, head, weight }) => {
+      // 计算该字段的目标长度：基础比例 * 权重调整
+      const weightedRatio = (target / totalWeighted) * weight;
+      const want = Math.max(30, Math.floor(segLen * weightedRatio)); // 最低保留30字符
+      
+      if (segLen <= want) return seg;
+      
+      // 保留字段标签头，截断内容
       const body = seg.slice(head.length);
       let kept = body;
       while (this._countChars(head + kept) > want && kept.length > 20) {
@@ -1516,6 +1560,7 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
       }
       return head + kept;
     });
+    
     return compressed.join('').trim();
   }
 
