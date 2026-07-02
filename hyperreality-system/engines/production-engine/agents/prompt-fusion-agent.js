@@ -385,6 +385,13 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
     const fusionEntry = llmResult.result?.shots?.find(s => s.shotId === shot.shotId);
     let fields = fusionEntry?.fields || {};
 
+    // 【v2.1.8-fix】如果LLM返回的fields为空或所有值为空，直接走降级
+    const fieldValues = Object.values(fields).filter(v => v !== undefined && v !== null && String(v).trim() !== '');
+    if (fieldValues.length === 0) {
+      console.warn(`[PromptFusion] ${shot.shotId} LLM返回字段全空,直接降级`);
+      return this._fastFallback(shot, ratio);
+    }
+
     // 【v2.1.4-fix10】在 LLM 输出入口统一标准化为 snake_case
     fields = normalizeFields(fields);
 

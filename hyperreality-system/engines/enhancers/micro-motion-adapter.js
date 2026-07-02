@@ -183,7 +183,7 @@ class MicroMotionAdapter {
     if (promptObj._rhythm?.emotionStart) return promptObj._rhythm.emotionStart;
 
     // 从 prompt 文本中提取情绪关键词
-    const promptText = promptObj.prompt || promptObj;
+    const promptText = String(promptObj.prompt || promptObj || '');
     const emotionKeywords = {
       'joy': ['喜悦', '开心', '笑', '欢乐', '愉快'],
       'sadness': ['悲伤', '难过', '哭泣', '痛苦', '哀伤'],
@@ -302,13 +302,14 @@ class MicroMotionAdapter {
   }
 
   _injectMicroMotion(promptText, microMotion) {
+    const text = String(promptText || '');
     // 在 prompt 末尾添加微动作描述
     // 避免重复添加
-    if (promptText.includes('面部细节') || promptText.includes('微动作') || promptText.includes('表情：')) {
-      return promptText;
+    if (text.includes('面部细节') || text.includes('微动作') || text.includes('表情：')) {
+      return text;
     }
 
-    return `${promptText}\n\n【微动作】${microMotion}`;
+    return `${text}\n\n【微动作】${microMotion}`;
   }
 
   _saveReport(details, totalShots) {

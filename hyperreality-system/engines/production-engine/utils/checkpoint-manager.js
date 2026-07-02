@@ -71,6 +71,29 @@ class CheckpointManager {
       throw new Error(errMsg);
     }
   }
+
+  /**
+   * 【v2.1.8-fix】验证镜头数据基本结构
+   * @param {Array} shots - 镜头数组
+   * @returns {object} 验证报告
+   */
+  _validateShots(shots) {
+    if (!Array.isArray(shots)) {
+      return { valid: false, error: 'shots不是数组', count: 0 };
+    }
+    const issues = [];
+    for (let i = 0; i < shots.length; i++) {
+      const s = shots[i];
+      if (!s || typeof s !== 'object') {
+        issues.push({ index: i, error: '不是对象' });
+        continue;
+      }
+      if (!s.shotId && !s.shot_id) {
+        issues.push({ index: i, error: '缺少shotId' });
+      }
+    }
+    return { valid: issues.length === 0, count: shots.length, issues };
+  }
 }
 
 module.exports = { CheckpointManager };

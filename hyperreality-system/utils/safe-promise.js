@@ -38,6 +38,28 @@ class SafePromise {
     );
     return Promise.all(wrapped);
   }
-}
 
-module.exports = { SafePromise };
+  /**
+   * 【v2.1.8-fix】批量处理，限制并发数
+   * @param {Array} items - 待处理数组
+   * @param {Function} mapper - 映射函数 (item, index) => Promise
+   * @param {number} concurrency - 最大并发数
+   * @returns {Array} 结果数组
+   */
+  static async mapBatch(items, mapper, concurrency = 5) {
+    const results = [];
+    for (let i = 0; i < items.length; i += concurrency) {
+      const batch = items.slice(i, i + concurrency);
+      const batchPromises = batch.map((item, idx) => {
+        return Promise.resolve(mapper(item, i + idx)).catch((err) => {
+          console.warn(`[SafePromise.mapBatch] 索引 ${i + idx} 失败: ${err.message}`);
+          return { _failed: true, error: err.message, index: i + idx };
+        });
+      });
+      const batchResults = await Promise.all(batchPromises);
+      results.push(...batchResults);
+    }
+    return results;
+  }
+
+  module.exports = { SafePromise };

@@ -39,8 +39,14 @@ class SmartImageReferencer {
     const keywords = [];
     const textFields = [scene.setting, scene.description, scene.visual_notes, scene.scene_name, scene.scene_type];
     for (const field of textFields) {
-      if (field) {
+      if (field && typeof field === 'string') {
         keywords.push(...field.split(/[，,\s]+/).filter(k => k.length >= 2));
+      } else if (field && typeof field === 'object' && field !== null) {
+        // 对象类型字段，尝试提取文本内容
+        const text = field.text || field.description || field.content || JSON.stringify(field);
+        if (typeof text === 'string') {
+          keywords.push(...text.split(/[，,\s]+/).filter(k => k.length >= 2));
+        }
       }
     }
     return [...new Set(keywords)];
