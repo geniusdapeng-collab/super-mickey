@@ -179,23 +179,32 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
       const shotDeadline = shotStartTime + Math.min(PER_SHOT_BUDGET, this.MAX_DEGRADE_BUDGET_PER_SHOT);
       this._callBudget.set(shot.shotId, 5); // 单镜头最多5次LLM调用
 
-      // 每3个镜头检查一次内存，启发式GC（P0-PERF-04 修复）
+      // 每3个镜头检查一次内存,启发式GC(P0-PERF-04 修复)
       if (i % 3 === 0) {
         const mem = process.memoryUsage();
         const heapMB = Math.round(mem.heapUsed / 1024 / 1024);
         const heapTotalMB = Math.round(mem.heapTotal / 1024 / 1024);
         const heapLimitMB = Math.round(mem.heapTotalLimit / 1024 / 1024) || heapTotalMB * 1.5; // 兼容不同Node版本
         const usageRatio = heapMB / heapLimitMB;
-        
-        // 【P0-PERF-04 修复】动态阈值：80%堆限制时告警，不再强制GC（让V8自主管理）
+
+        // 【P0-PERF-04 修复】动态阈值:80%堆限制时告警,不再强制GC(让V8自主管理)
         if (usageRatio > 0.8) {
           console.warn(`[PromptFusionAgent] ⚠️ 内存告警: ${heapMB}MB / ${heapLimitMB}MB (${(usageRatio*100).toFixed(1)}%)`);
-          // 移除强制 global.gc()，避免停顿；只建议外部监控
+          // 移除强制 global.gc(),避免停顿;只建议外部监控
           if (usageRatio > 0.95) {
             console.error(`[PromptFusionAgent] 🔴 内存临界: 建议降低并发数或增加堆限制`);
           }
         }
       }
+
+      // 【P0-ARCH-03 修复】降级路径调用计数器,防止重试风暴
+      const callCounter = { count: 0, max: 8 }; // 单镜头最多8次LLM调用
+      const trackCall = () => {
+        callCounter.count++;
+        if (callCounter.count > callCounter.max) {
+          throw new Error(`RETRY_STORM: 单镜头LLM调用次数超过上限(${callCounter.max})`);
+        }
+      };
 
       console.log(`\n🎬 处理镜头 ${i + 1}/${shots.length}: ${shot.shotId} | 截止时间=${new Date(shotDeadline).toISOString()}`);
       try {
@@ -203,28 +212,37 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
         if (Date.now() > shotDeadline) {
           throw new Error('Shot deadline exceeded');
         }
-        const fused = await this._fuseSingleShotWithDeadline(shot, ratio, characters, blueprint, shotDeadline);
+        const fused = await this._fuseSingleShotWithDeadline(shot, ratio, characters, blueprint, shotDeadline, trackCall);
         results[i] = fused;
-        console.log(`  ✅ ${shot.shotId} 完成`);
+        console.log(`  ✅ ${shot.shotId} 完成 | 调用次数=${callCounter.count}`);
       } catch (e) {
         failed++;
         console.warn(`  ❌ ${shot.shotId} 融合失败: ${e.message}`);
+
+        // 【P0-ARCH-03 修复】重试风暴检测:如果已超过上限,直接兜底
+        if (callCounter.count >= callCounter.max) {
+          console.error(`  🔴 ${shot.shotId} 重试风暴保护触发,强制兜底`);
+          results[i] = this._fastFallback(shot, ratio);
+          results[i].degradeReason = `RETRY_STORM: ${callCounter.count}次调用后强制兜底`;
+          continue;
+        }
 
         // 【P0-PERF-01 修复】根据剩余预算决定降级路径
         const remainingBudget = shotDeadline - Date.now();
         if (remainingBudget < 30000) {
           console.warn(`  ⏰ 预算不足(${remainingBudget}ms),快速兜底`);
           results[i] = this._fastFallback(shot, ratio);
+          results[i].degradeReason = `BUDGET_EXHAUSTED: 剩余${remainingBudget}ms`;
           continue;
         }
 
-        // 【修复】有限重试:最多1次快速重试
+        // 【P0-PERF-01 修复】有限重试:最多1次快速重试
         let fused = null;
-        if (remainingBudget > 60000) {
+        if (remainingBudget > 60000 && callCounter.count < callCounter.max) {
           try {
             console.log(`  🔄 快速重试 1/1...`);
             await new Promise(r => setTimeout(r, 2000));
-            fused = await this._fuseSingleShotWithDeadline(shot, ratio, characters, blueprint, shotDeadline);
+            fused = await this._fuseSingleShotWithDeadline(shot, ratio, characters, blueprint, shotDeadline, trackCall);
             console.log(`  ✅ ${shot.shotId} 重试成功`);
           } catch (retryErr) {
             console.warn(`  ❌ 重试失败: ${retryErr.message}`);
@@ -242,9 +260,9 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
             throw new Error('Budget insufficient for fill');
           }
           console.log(`  🔄 尝试补全缺失字段...`);
-          const filled = await this._fillMissingFieldsWithRetry(shot, ratio, characters, shotDeadline);
+          const filled = await this._fillMissingFieldsWithRetry(shot, ratio, characters, shotDeadline, trackCall);
           results[i] = filled;
-          console.log(`  ✅ ${shot.shotId} 补全完成`);
+          console.log(`  ✅ ${shot.shotId} 补全完成 | 总调用=${callCounter.count}`);
         } catch (fillError) {
           console.warn(`  ❌ ${shot.shotId} 补全也失败: ${fillError.message}`);
           // 【修复】不直接规则兜底,而是尝试用已有数据组装
@@ -264,7 +282,12 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
       console.warn(`[PromptFusionAgent] ⚠️ ${failed}/${shots.length} 镜头需要补全/兜底`);
     }
     console.log(`[PromptFusionAgent] 完成 ✓ | 降级: ${failed}/${shots.length}`);
-    return { shots: results, degraded: failed > 0, degradeReason: null };
+    return {
+      shots: results,
+      degraded: failed > 0,
+      degradeReason: failed > 0 ? `${failed}个镜头降级(调用次数受限或预算耗尽)` : null,
+      stats: { total: shots.length, failed, success: shots.length - failed }
+    };
   }
 
   /**
@@ -422,7 +445,7 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
       // 【v2.1.8-fix4】批量 LLM 降级:一次调用补齐所有缺失字段
       if (stillNeedLLM.length > 0) {
         console.log(`[PromptFusion] ${shot.shotId} 批量降级 ${stillNeedLLM.length} 个字段 → 单次 LLM 调用`);
-        const batchValues = await this._batchMinimalLLMDegradation(stillNeedLLM, shot, ratio, characters);
+        const batchValues = await this._batchMinimalLLMDegradation(stillNeedLLM, shot, ratio, characters, trackCall);
         for (const f of stillNeedLLM) {
           fields[f] = batchValues[f] || this._defaultFieldValue(f, shot);
         }
@@ -436,8 +459,10 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
 
   /**
    * 【P0-PERF-01 修复】带截止时间的单镜头融合
+   * 【P0-ARCH-03 修复】trackCall: 降级路径调用计数器
    */
-  async _fuseSingleShotWithDeadline(shot, ratio, characters, blueprint, deadline) {
+  async _fuseSingleShotWithDeadline(shot, ratio, characters, blueprint, deadline, trackCall = null) {
+    if (trackCall) trackCall();
     const remainingMs = () => deadline - Date.now();
 
     // 主调用(仅1次重试,不再3次)
@@ -501,27 +526,29 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
 
   /**
    * 【v2.1.4-fix13-审计修复】降为1次重试,去掉指数退避等待,失败后直接规则兜底
+   * 【P0-ARCH-03 修复】trackCall: 降级路径调用计数器
    */
-  async _fillMissingFieldsWithRetry(shot, ratio, characters, deadline = null) {
-    // 【修复】从 1 次提升到 3 次,给补齐更多机会
+  async _fillMissingFieldsWithRetry(shot, ratio, characters, deadline = null, trackCall = null) {
+    if (trackCall) trackCall();
+    // 【修复】从 1 次提升到 2 次重试，但受全局计数器限制
     const maxRetries = 2; // 【P0-PERF-01 修复】减少重试次数
-
+    
     // 先从shot中提取已有数据
     const fields = {};
     const shotData = this._extractFieldsFromShot(shot);
     for (const f of REQUIRED_FIELDS) {
       fields[f] = shotData[f] || '';
     }
-
+    
     const fillDeadline = deadline || (Date.now() + 120000); // 默认2分钟补齐预算
-
+    
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       // 【P0-PERF-01 修复】检查截止时间
       if (Date.now() > fillDeadline - 10000) {
-        console.warn(`  ⏰ 补齐预算不足,中止重试`);
+        console.warn(`  ⏰ 补齐预算不足，中止重试`);
         break;
       }
-
+      
       const remaining = this._remainingMs();
       if (remaining < 10000) {
         console.warn(`  ⏰ 剩余预算不足(${remaining}ms),中止补全重试`);
@@ -530,6 +557,7 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
 
       try {
         console.log(`  🔄 补全尝试 ${attempt}/${maxRetries}...`);
+        if (trackCall) trackCall();
         const completeness = await this._ensureFieldCompleteness(shot, fields, ratio, characters);
 
         // 【审计修复】更新 fields,让下次重试基于最新状态
@@ -604,7 +632,8 @@ ${ctx}
    * 相比 v2.1.8-fix4 的全批量:字段间上下文更聚焦,质量接近逐个
    * 相比逐个:速度提升 5-6 倍(25 次 → 4-5 次调用)
    */
-  async _batchMinimalLLMDegradation(fields, shot, ratio, characters) {
+  async _batchMinimalLLMDegradation(fields, shot, ratio, characters, trackCall = null) {
+    if (trackCall) trackCall();
     if (fields.length === 0) return {};
 
     // 字段分组定义
