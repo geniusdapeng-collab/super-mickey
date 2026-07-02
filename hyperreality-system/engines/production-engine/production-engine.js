@@ -497,7 +497,6 @@ class ProductionEngine {
     // 【P1-ARCH-01 修复】动态预算分配：根据剩余镜头数和阶段动态调整预算
     // 将总预算分为阶段预算池，前面节省的时间可流入后续阶段
     const HARD_BUDGET_MS = this.agentConfig.totalDeadlineMs || 1200000;
-    const HARD_BUDGET_MS = this.agentConfig.totalDeadlineMs || 1200000;
     const PHASE_BUDGET_RATIOS = {
       phase1: 0.12,   // Phase 1: 12% 总预算
       phase2: 0.25,   // Phase 2: 25% 总预算

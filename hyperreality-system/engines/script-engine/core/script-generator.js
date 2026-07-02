@@ -883,7 +883,6 @@ ${meta._directorStyle}` : ''}
       return false; // 检测失败时不阻止解析
     }
   }
-  }
 
   // 【v2.1.6-fix14】增强JSON提取：从文本中智能提取JSON（支持markdown代码块、括号匹配等）
   // 【v2.1.6-fix15】增强JSON提取：支持markdown代码块、括号匹配、字符串截断补全、键值对清理
