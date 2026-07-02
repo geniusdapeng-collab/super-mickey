@@ -1600,6 +1600,20 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
     return this._truncateStandardPrompt(fullPrompt);
   }
 
+  // 【P2-PERF-02 修复】批量truncate：一次处理多个prompt，减少重复计算
+  _truncateBatch(prompts) {
+    return prompts.map(p => {
+      if (typeof p === 'string') {
+        return this._truncateStandardPrompt(p);
+      }
+      if (p && p.prompt) {
+        p.prompt = this._truncateStandardPrompt(p.prompt);
+        p.promptCharCount = this._countChars(p.prompt);
+      }
+      return p;
+    });
+  }
+
   _countChars(str) {
     // 【P2-13 修复】使用真实字符数,中文不再按1.5计
     return str ? String(str).length : 0;

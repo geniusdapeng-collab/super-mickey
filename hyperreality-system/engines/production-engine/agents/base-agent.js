@@ -111,6 +111,10 @@ class BaseAgent {
         settled = true; clearTimeout(timer);
         console.warn(`[${label}] ❌ 异常/超时退出: ${e.message} | 耗时≈${Date.now() - callStart}ms`);
         throw e;
+      })
+      .finally(() => {
+        // 【P2-PERF-01 修复】确保timer始终被清理，防止内存泄漏
+        if (timer) { clearTimeout(timer); timer = null; }
       });
   }
 

@@ -117,12 +117,29 @@ class ErrorClassifier {
     }
     
     // 7. 服务端错误 (5xx) → 渐进式重试
+    // 【P2-QUAL-03 修复】完整HTTP状态码映射：500/502/503/504/507/508/520/521/522/523/524/525/526/527/530/598/599
     if (message.includes('500') ||
         message.includes('502') ||
         message.includes('503') ||
         message.includes('504') ||
+        message.includes('507') ||
+        message.includes('508') ||
+        message.includes('520') ||
+        message.includes('521') ||
+        message.includes('522') ||
+        message.includes('523') ||
+        message.includes('524') ||
+        message.includes('525') ||
+        message.includes('526') ||
+        message.includes('527') ||
+        message.includes('530') ||
+        message.includes('598') ||
+        message.includes('599') ||
         message.includes('internal error') ||
-        message.includes('server error')) {
+        message.includes('server error') ||
+        message.includes('bad gateway') ||
+        message.includes('service unavailable') ||
+        message.includes('gateway timeout')) {
       return { 
         type: 'SERVER', 
         retryable: true, 
