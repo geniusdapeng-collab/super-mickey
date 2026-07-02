@@ -18,7 +18,7 @@ class CheckpointManager {
   }
 
   /**
-   * 保存检查点
+   * 保存检查点（P0-ARCH-04修复：深拷贝避免引用泄漏，错误不再静默忽略）
    * @param {string} phase - 阶段标识
    * @param {Array} shots - 镜头数据
    * @param {object} extra - 额外数据
@@ -33,14 +33,20 @@ class CheckpointManager {
       const file = path.join(this.baseDir, `checkpoint-${phase}.json`);
       const tmpFile = file + '.tmp';
 
-      const safeData = safeStringify({
+      // 【P0-ARCH-04 修复】深拷贝数据，避免引用泄漏
+      const dataToSave = {
         phase,
-        shots: shots || [],
-        opening: extra.opening || null,
-        llmStats: extra.llmStats || {},
+        shots: JSON.parse(JSON.stringify(shots || [])),
+        opening: extra.opening ? JSON.parse(JSON.stringify(extra.opening)) : null,
+        llmStats: extra.llmStats ? JSON.parse(JSON.stringify(extra.llmStats)) : {},
         blueprintFingerprint: extra.blueprintFingerprint || null,
         savedAt: new Date().toISOString()
-      });
+      };
+
+      const safeData = safeStringify(dataToSave);
+      if (!safeData) {
+        throw new Error(`safeStringify返回空值，phase=${phase}`);
+      }
 
       fs.writeFileSync(tmpFile, safeData, 'utf8');
       fs.renameSync(tmpFile, file);
@@ -57,8 +63,10 @@ class CheckpointManager {
       if (logFn) logFn('CHECKPOINT', `✅ ${phase} 已落盘 → ${path.basename(file)} (${stats.size} bytes)`);
       return { success: true, file, size: stats.size };
     } catch (e) {
-      if (logFn) logFn('CHECKPOINT', `保存失败(忽略): ${e.message}`);
-      return { success: false, error: e.message };
+      // 【P0-ARCH-04 修复】错误不再静默忽略，抛出异常让调用方处理
+      const errMsg = `Checkpoint保存失败: phase=${phase}, error=${e.message}`;
+      if (logFn) logFn('CHECKPOINT', `❌ ${errMsg}`);
+      throw new Error(errMsg);
     }
   }
 }
