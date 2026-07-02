@@ -110,7 +110,9 @@ class EventBus extends EventEmitter {
    */
   on(eventName, listener) {
     super.on(eventName, listener);
-    this._sessionListeners.push({ eventName, listener });
+    // 【P1-Bug7 修复】添加时间戳，便于定期清理过期监听器
+    this._sessionListeners.push({ eventName, listener, addedAt: Date.now() });
+    this._cleanupOldListeners(); // 定期清理
     return this;
   }
 
@@ -141,6 +143,25 @@ class EventBus extends EventEmitter {
     this._sessionListeners = this._sessionListeners.filter(
       (sl) => !(sl.eventName === eventName && sl.listener === listener)
     );
+  }
+
+  /**
+   * 【P1-Bug7 修复】定期清理过期的监听器引用，防止内存泄漏
+   */
+  _cleanupOldListeners(maxAgeMs = 3600000) {
+    const now = Date.now();
+    const beforeLen = this._sessionListeners.length;
+    this._sessionListeners = this._sessionListeners.filter(sl => {
+      if (now - (sl.addedAt || 0) > maxAgeMs) {
+        try { super.off(sl.eventName, sl.listener); } catch (_) {}
+        return false;
+      }
+      return true;
+    });
+    const removed = beforeLen - this._sessionListeners.length;
+    if (removed > 0) {
+      console.log(`[EventBus] 清理了 ${removed} 个过期监听器引用`);
+    }
   }
 
   /**
@@ -295,19 +316,25 @@ class EventBus extends EventEmitter {
 
   // ========== 私有方法 ==========
 
-  _sanitizePayload(payload) {
-    // 避免循环引用和大对象
+  _sanitizePayload(payload, options = {}) {
+    // 【P1-Bug7 修复】可配置截断+日志记录，避免静默数据丢失
+    const maxStringLength = options.maxStringLength || 10000; // 默认10KB
+    const shouldTruncate = options.truncate !== false;
     try {
       return JSON.parse(JSON.stringify(payload, (key, value) => {
         if (typeof value === 'function') return undefined;
         if (value instanceof Buffer) return '<Buffer>';
-        if (typeof value === 'string' && value.length > 1000) {
-          return value.substring(0, 1000) + '...';
+        if (typeof value === 'string' && value.length > maxStringLength) {
+          if (shouldTruncate) {
+            console.warn(`[EventBus] Payload字段 '${key}' 被截断: ${value.length} → ${maxStringLength} chars`);
+            return value.substring(0, maxStringLength) + `...[truncated:${value.length}]`;
+          }
         }
         return value;
       }));
     } catch (e) {
-      return { error: 'Payload serialization failed' };
+      console.error('[EventBus] Payload serialization failed:', e.message);
+      return { error: 'Payload serialization failed', originalError: e.message };
     }
   }
 
