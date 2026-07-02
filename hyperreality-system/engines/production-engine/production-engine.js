@@ -35,7 +35,7 @@ const DEFAULT_AGENT_CONFIG = {
   // 【v2.1.4-fix13-审计修复】从环境变量读取模型配置，消除硬编码
   llmModel: process.env.STORMAXE_LLM_MODEL || 'kimi-k2p6',
   fastModel: process.env.STORMAXE_LLM_FAST_MODEL || process.env.STORMAXE_LLM_MODEL || 'kimi-k2p6',
-  totalDeadlineMs: 2400000, // 【修复】从1050000提升至2400000(~40分钟)，实际测试需要30+分钟，预留余量避免globalDeadline过期导致强制降级
+  totalDeadlineMs: 1800000, // 【P1-PERF-05 修复】Phase2并行化后降至30分钟，覆盖20分钟实际耗时+10分钟余量
   memThresholdMB: 1800, // 【v2.1.4-fix10-P25-fix3】提升阈值，避免GC风暴
   promptFusionConcurrency: 2 // 【v2.1.4-fix10-P25-fix3】并发2，平衡速度与稳定性
 };
@@ -168,18 +168,29 @@ class ProductionEngine {
   /**
    * 【新增】运行时更新 Agent 配置
    * 修复:create() 中收到的 agentConfig 可在此应用到已实例化的引擎
+   * 【P1-ARCH-05 修复】添加配置锁，防止并发更新导致状态不一致
    */
   updateAgentConfig(agentConfig = {}) {
-    const before = this.agentConfig.enableLLMAgents;
-    this.agentConfig = {
-      ...this.agentConfig,
-      ...agentConfig,
-      maxPromptLength: this.config.maxPromptLength
-    };
-    // 重新初始化 Agent 以应用新配置
-    this._initAgents();
-    if (before !== this.agentConfig.enableLLMAgents) {
-      console.log(`[ProductionEngine] ⚠️ 运行时配置切换: enableLLMAgents ${before} → ${this.agentConfig.enableLLMAgents}`);
+    // 【P1-ARCH-05 修复】简单的配置锁：如果正在更新中，跳过重复更新
+    if (this._configUpdating) {
+      console.warn('[ProductionEngine] ⚠️ 配置更新冲突，跳过重复更新');
+      return;
+    }
+    this._configUpdating = true;
+    try {
+      const before = this.agentConfig.enableLLMAgents;
+      this.agentConfig = {
+        ...this.agentConfig,
+        ...agentConfig,
+        maxPromptLength: this.config.maxPromptLength
+      };
+      // 重新初始化 Agent 以应用新配置
+      this._initAgents();
+      if (before !== this.agentConfig.enableLLMAgents) {
+        console.log(`[ProductionEngine] ⚠️ 运行时配置切换: enableLLMAgents ${before} → ${this.agentConfig.enableLLMAgents}`);
+      }
+    } finally {
+      this._configUpdating = false;
     }
   }
 

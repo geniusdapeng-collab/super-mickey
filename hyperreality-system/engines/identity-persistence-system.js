@@ -79,12 +79,37 @@ class IdentityPersistenceSystem {
 
   _ensureCharacterIdentity(prompt, identityCards) {
     for (const card of identityCards) {
-      if (prompt.includes(card.name) && !prompt.includes(card.identityText.substring(0, 20))) {
+      // 【P1-DATA-04 修复】token-aware截断替代固定20字符
+      const maxTokens = 20; // 目标token数
+      const tokenLength = this._calculateTokenLength(card.identityText);
+      const truncateLen = tokenLength > maxTokens ? this._getTokenAwareTruncateLength(card.identityText, maxTokens) : card.identityText.length;
+      if (prompt.includes(card.name) && !prompt.includes(card.identityText.substring(0, truncateLen))) {
         const briefIdentity = `${card.name}(${card.role}${card.occupation ? '，' + card.occupation : ''})`;
         prompt = prompt.replace(card.name, briefIdentity);
       }
     }
     return prompt;
+  }
+
+  // 【P1-DATA-04 修复】token-aware截断辅助方法
+  _calculateTokenLength(text) {
+    let tokens = 0;
+    for (const char of String(text)) {
+      // 中文字符算2个token，英文/数字算1个token
+      tokens += (char.charCodeAt(0) > 127) ? 2 : 1;
+    }
+    return tokens;
+  }
+
+  _getTokenAwareTruncateLength(text, maxTokens) {
+    let tokens = 0;
+    let length = 0;
+    for (const char of String(text)) {
+      tokens += (char.charCodeAt(0) > 127) ? 2 : 1;
+      length++;
+      if (tokens >= maxTokens) break;
+    }
+    return length;
   }
 }
 

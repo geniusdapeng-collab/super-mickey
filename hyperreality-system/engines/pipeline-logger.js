@@ -23,6 +23,37 @@ class PipelineLogger {
     this.includeShots = options.includeShots !== false;
     this.includeReports = options.includeReports !== false;
     this.enabled = options.enabled !== false;
+    // 【P1-PERF-03 修复】批量写入队列，避免阻塞事件循环
+    this._writeQueue = [];
+    this._flushTimer = null;
+    this._batchSize = options.batchSize || 10;
+    this._flushInterval = options.flushInterval || 100; // ms
+  }
+
+  // 【P1-PERF-03 修复】异步批量写入：加入队列，定时刷新
+  async _queueWrite(filePath, data, isJSON = false) {
+    this._writeQueue.push({ filePath, data, isJSON });
+    if (this._writeQueue.length >= this._batchSize) {
+      await this._flushQueue();
+    } else if (!this._flushTimer) {
+      this._flushTimer = setTimeout(() => this._flushQueue(), this._flushInterval);
+    }
+  }
+
+  async _flushQueue() {
+    if (this._flushTimer) {
+      clearTimeout(this._flushTimer);
+      this._flushTimer = null;
+    }
+    if (this._writeQueue.length === 0) return;
+    const batch = this._writeQueue.splice(0, this._batchSize);
+    await Promise.all(batch.map(item => {
+      if (item.isJSON) {
+        return this._writeJSON(item.filePath, item.data);
+      } else {
+        return fs.writeFile(item.filePath, item.data, 'utf8');
+      }
+    }));
   }
 
   /**
@@ -48,7 +79,7 @@ class PipelineLogger {
     // 1. 保存完整结果 JSON
     if (this.includeReports) {
       const resultPath = path.join(sessionDir, 'result.json');
-      await this._writeJSON(resultPath, this._sanitizeResult(result));
+      await this._queueWrite(resultPath, this._sanitizeResult(result), true);
       saved.push('result.json');
     }
 
@@ -56,7 +87,7 @@ class PipelineLogger {
     if (this.format === 'markdown' || this.format === 'both') {
       const reportPath = path.join(sessionDir, 'report.md');
       const report = this._generateReport(result, meta);
-      await fs.writeFile(reportPath, report, 'utf8');
+      await this._queueWrite(reportPath, report, false);
       saved.push('report.md');
     }
 
@@ -64,26 +95,29 @@ class PipelineLogger {
     if (this.includePrompts && result.prompts) {
       const promptsPath = path.join(sessionDir, 'prompts.md');
       const promptsContent = this._generatePromptsMD(result.prompts);
-      await fs.writeFile(promptsPath, promptsContent, 'utf8');
+      await this._queueWrite(promptsPath, promptsContent, false);
       saved.push('prompts.md');
     }
 
     // 4. 保存 Shots
     if (this.includeShots && result.shots) {
       const shotsPath = path.join(sessionDir, 'shots.json');
-      await this._writeJSON(shotsPath, result.shots);
+      await this._queueWrite(shotsPath, result.shots, true);
       saved.push('shots.json');
     }
 
     // 5. 保存元数据
     const metaPath = path.join(sessionDir, 'meta.json');
-    await this._writeJSON(metaPath, {
+    await this._queueWrite(metaPath, {
       title,
       version,
       intent: meta.intent,
       timestamp,
       savedFiles: saved
-    });
+    }, true);
+
+    // 确保所有队列数据写入完成
+    await this._flushQueue();
 
     console.log(`✅ [PipelineLogger] 已保存 ${saved.length} 个文件`);
 

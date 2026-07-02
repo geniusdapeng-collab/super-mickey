@@ -394,6 +394,10 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
 
     // v2.1.7: 跨字段一致性校验 + 自动修复
     const shotWithBlueprint = { ...shot, fields, blueprint: shot.blueprint || blueprint };
+    // 【P1-ARCH-07 修复】清理blueprint引用，防止内存泄漏
+    if (shotWithBlueprint.blueprint) {
+      delete shotWithBlueprint.blueprint;
+    }
     const checkResult = this.consistencyChecker.check(shotWithBlueprint);
     if (!checkResult.valid || checkResult.warningCount > 0) {
       console.log(`[PromptFusionAgent] ${shot.shotId} 字段一致性: ${checkResult.issues.length} issues, 自动修复中...`);
@@ -456,8 +460,10 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
           let value = normalized[k];
           if (typeof value === 'object' && value !== null) {
             // timeline 支持结构化对象,需要特殊处理
-            if (k === 'timeline' && value.beats) {
-              value = this._renderStructuredTimeline(value);
+            // 【P1-DATA-01 修复】统一为对象数组格式，提取 beats 为文本格式
+            if (k === 'timeline' && value && value.beats) {
+              const beatsText = value.beats.map(b => `T${String(Math.floor(b.time / 60)).padStart(2, '0')}:${String(b.time % 60).padStart(2, '0')} - ${b.description || b.label || ''}`).join('; ');
+              value = beatsText || this._renderStructuredTimeline(value);
             } else {
               // 其他对象字段安全序列化
               try {
@@ -585,11 +591,22 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
     // 【修复】从 1 次提升到 2 次重试，但受全局计数器限制
     const maxRetries = 2; // 【P0-PERF-01 修复】减少重试次数
     
-    // 先从shot中提取已有数据
+    // 先从shot中提取已有数据，保留上游内容（【P1-ARCH-06 修复】降级时保留原始fields，仅补齐缺失）
+    // 【P1-DATA-02 修复】清理顶层冗余字段，统一使用fields对象
+    if (shot.fields && typeof shot.fields === 'object') {
+      for (const key of Object.keys(shot)) {
+        if (!['shotId', 'sceneType', 'timing', 'fields', 'blueprint'].includes(key)) {
+          delete shot[key]; // 删除顶层重复字段，统一使用fields
+        }
+      }
+    }
     const fields = {};
     const shotData = this._extractFieldsFromShot(shot);
+    // 优先保留shot中已有的原始字段，不覆盖
     for (const f of _getRequiredFieldsForShot(shot)) {
-      fields[f] = shotData[f] || '';
+      // 保留原始值：如果shot已有且非空，则保留；否则使用提取的shotData或空字符串
+      const originalValue = shot[f] || shotData[f] || '';
+      fields[f] = originalValue;
     }
     
     const fillDeadline = deadline || (Date.now() + 120000); // 默认2分钟补齐预算

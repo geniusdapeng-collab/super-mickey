@@ -33,12 +33,27 @@ class BaseAgent {
     this.llmTimeout = options.llmTimeout || 300000; // 单次调用上限 5 分钟（足以覆盖最慢的 VisualLanguage 258s）
     this.llmMaxRetries = options.llmMaxRetries ?? 2; // 重试收敛到 2 次（原 3 次是隐藏时间炸弹）
     this.llmModel = options.llmModel || DEFAULT_MODEL; // 修复：用环境变量
-    this.llmMaxTokens = options.llmMaxTokens || 32000; // 【v2.1.8-fix14】增加token预算覆盖reasoning
+    this.llmMaxTokens = options.llmMaxTokens || this._calculateDynamicMaxTokens(options); // 【P1-DATA-03 修复】动态计算token预算，不再固定32000
     this.enabled = options.enabled !== false;
 
     this._llmEngine = null;
     this._llmEngineLoaded = false;
     this._globalDeadline = null; // 全局截止时间戳（由 ProductionEngine 下发）
+  }
+
+  /**
+   * 【P1-DATA-03 修复】动态计算maxTokens：根据镜头数量和字段数计算
+   */
+  _calculateDynamicMaxTokens(options = {}) {
+    const shotCount = options.shotCount || 1;
+    const fieldCount = options.fieldCount || 25;
+    const avgFieldLength = options.avgFieldLength || 200;
+    // 基础token + 每个镜头的token需求
+    const baseTokens = 4096;
+    const perShotTokens = fieldCount * avgFieldLength * 1.5; // 1.5倍系数覆盖中文
+    const totalTokens = Math.min(64000, baseTokens + shotCount * perShotTokens);
+    // 对齐到最近的1024
+    return Math.ceil(totalTokens / 1024) * 1024;
   }
 
   /** 由 ProductionEngine 下发全局截止时间 */
