@@ -98,9 +98,13 @@ function _isEmptyScene(shot) {
   return noCharacters && hasEmptyKeyword;
 }
 
+// 25 字段标准名称列表(用于校验) - 前置定义，避免TDZ风险
+const REQUIRED_FIELDS = Object.keys(STANDARD_FIELDS_SCHEMA);
+
 /**
  * 获取镜头所需的必填字段
  * 【P1-PROMPT-02 修复】空景不需要character/costume/makeup等字段
+ * 【v2.1.8-审计修复】REQUIRED_FIELDS 已在上方定义，消除TDZ风险
  */
 function _getRequiredFieldsForShot(shot) {
   const baseFields = [...REQUIRED_FIELDS];
@@ -117,9 +121,6 @@ function _getRequiredFieldsForShot(shot) {
   // 从必填列表中移除可选字段
   return baseFields.filter(f => !optionalFields.includes(f));
 }
-
-// 25 字段标准名称列表(用于校验)
-const REQUIRED_FIELDS = Object.keys(STANDARD_FIELDS_SCHEMA);
 
 // 字段最低字符数要求
 const MIN_LEN = {
@@ -441,7 +442,7 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
    * 【v2.1.4-fix10-P25-fix3】字段完整性校验 + 定向补齐
    * 先校验,缺哪些就只让 LLM 补哪些,一次轻量调用搞定
    */
-  async _ensureFieldCompleteness(shot, fields, ratio, characters) {
+  async _ensureFieldCompleteness(shot, fields, ratio, characters, trackCall = null) {
     let usedRuleFallback = false;
     // 1. 找出缺失或过短字段
     const missing = _getRequiredFieldsForShot(shot).filter(f => {
@@ -608,19 +609,21 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
     
     // 先从shot中提取已有数据，保留上游内容（【P1-ARCH-06 修复】降级时保留原始fields，仅补齐缺失）
     // 【P1-DATA-02 修复】清理顶层冗余字段，统一使用fields对象
-    if (shot.fields && typeof shot.fields === 'object') {
-      for (const key of Object.keys(shot)) {
+    // 【v2.1.8-审计修复】深拷贝避免修改原始 shot
+    const shotClone = JSON.parse(JSON.stringify(shot));
+    if (shotClone.fields && typeof shotClone.fields === 'object') {
+      for (const key of Object.keys(shotClone)) {
         if (!['shotId', 'sceneType', 'timing', 'fields', 'blueprint'].includes(key)) {
-          delete shot[key]; // 删除顶层重复字段，统一使用fields
+          delete shotClone[key]; // 删除顶层重复字段，统一使用fields
         }
       }
     }
     const fields = {};
-    const shotData = this._extractFieldsFromShot(shot);
+    const shotData = this._extractFieldsFromShot(shotClone);
     // 优先保留shot中已有的原始字段，不覆盖
-    for (const f of _getRequiredFieldsForShot(shot)) {
+    for (const f of _getRequiredFieldsForShot(shotClone)) {
       // 保留原始值：如果shot已有且非空，则保留；否则使用提取的shotData或空字符串
-      const originalValue = shot[f] || shotData[f] || '';
+      const originalValue = shotClone[f] || shotData[f] || '';
       fields[f] = originalValue;
     }
     
@@ -633,7 +636,7 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
         break;
       }
       
-      const remaining = this._remainingMs();
+      const remaining = this._remainingMs ? this._remainingMs() : Infinity;
       if (remaining < 10000) {
         console.warn(`  ⏰ 剩余预算不足(${remaining}ms),中止补全重试`);
         break;
@@ -642,16 +645,17 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
       try {
         console.log(`  🔄 补全尝试 ${attempt}/${maxRetries}...`);
         if (trackCall) trackCall();
-        const completeness = await this._ensureFieldCompleteness(shot, fields, ratio, characters);
+        // 【v2.1.8-审计修复】传递 trackCall 到 _ensureFieldCompleteness
+        const completeness = await this._ensureFieldCompleteness(shotClone, fields, ratio, characters, trackCall);
 
         // 【审计修复】更新 fields,让下次重试基于最新状态
         Object.assign(fields, completeness.fields);
 
         // 检查是否还有空字段
-        const stillEmpty = _getRequiredFieldsForShot(shot).filter(f => !fields[f] || String(fields[f]).trim() === '');
+        const stillEmpty = _getRequiredFieldsForShot(shotClone).filter(f => !fields[f] || String(fields[f]).trim() === '');
         if (stillEmpty.length === 0) {
           console.log(`  ✅ 补全成功,所有字段已填充`);
-          return this._buildShotResult(shot, fields);
+          return this._buildShotResult(shotClone, fields);
         }
         console.log(`  ⚠️ 仍有 ${stillEmpty.length} 字段为空,继续重试...`);
       } catch (e) {
@@ -661,8 +665,8 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
 
     // 【修复】重试用完仍有缺失,返回当前已填充的字段(不强制兜底为默认值)
     // 原因:部分字段有值比全部模板化更好,保留 LLM 已生成的内容
-    console.warn(`  ⚠️ 补全重试耗尽,返回已有字段(${Object.keys(fields).filter(k => fields[k]).length}/${_getRequiredFieldsForShot(shot).length} 已填充)`);
-    return this._buildShotResult(shot, fields);
+    console.warn(`  ⚠️ 补全重试耗尽,返回已有字段(${Object.keys(fields).filter(k => fields[k]).length}/${_getRequiredFieldsForShot(shotClone).length} 已填充)`);
+    return this._buildShotResult(shotClone, fields);
   }
 
   // 【v2.1.0】最小 LLM 降级:用缩短的 prompt + 剧本上下文推断字段,保留创作灵气
