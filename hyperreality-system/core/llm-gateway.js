@@ -519,8 +519,23 @@ class LLMGateway {
     this.stats.avgLatency = ring.count > 0 ? Math.floor(ring.sum / ring.count) : 0;
   }
   
+  /**
+   * 【P2-D7 修复】统一指数退避策略：使用位运算替代Math.pow，避免精度漂移
+   * 公式：delay = baseMs * 2^(attempt-1)，上限maxMs
+   */
   _exponentialBackoff(attempt) {
-    const delay = Math.min(1000 * Math.pow(2, attempt), 30000); // 最大30秒
+    if (!Number.isInteger(attempt) || attempt < 1) {
+      console.warn(`[LLMGateway] attempt=${attempt}无效，使用默认退避`);
+      attempt = 1;
+    }
+    if (attempt > 30) {
+      console.warn(`[LLMGateway] attempt=${attempt}过大，退避可能不精确`);
+      return new Promise(resolve => setTimeout(resolve, 30000));
+    }
+    const baseMs = 1000;
+    const maxMs = 30000;
+    // 使用位运算：1 << (attempt-1) 等效于 2^(attempt-1)，精度更好
+    const delay = Math.min(baseMs * (1 << (attempt - 1)), maxMs);
     return new Promise(resolve => setTimeout(resolve, delay));
   }
   

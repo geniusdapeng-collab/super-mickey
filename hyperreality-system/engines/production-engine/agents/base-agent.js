@@ -89,26 +89,38 @@ class BaseAgent {
     const ms = (typeof timeoutMs === 'number' && timeoutMs > 0 && timeoutMs < 24 * 3600 * 1000)
       ? timeoutMs : 300000;
     let timer;
-    let settled = false;
+    // 【P2-D8 修复】使用Symbol替代布尔值settled，防止纳秒级竞态窗口
+    const RESOLVED = Symbol('resolved');
+    const REJECTED = Symbol('rejected');
+    let state = null; // null | RESOLVED | REJECTED
     const callStart = Date.now();
     const p = Promise.resolve(promise);
     // 立即挂 catch：标记 rejection 已被处理，防止超时后悬空 rejection 崩溃进程
     p.catch(() => {});
     const timeoutPromise = new Promise((_, reject) => {
       timer = setTimeout(() => {
-        if (settled) return;
-        settled = true;
+        // 【P2-D8 修复】使用严格相等检查替代布尔值
+        if (state !== null) return;
+        state = REJECTED;
         console.warn(`[${label}] ⏱️ 外层超时触发(${ms}ms)，强制降级`);
         reject(new Error(`${label}超时(${ms}ms)`));
       }, ms);
     });
     return Promise.race([p, timeoutPromise])
       .then(v => {
-        settled = true; clearTimeout(timer);
+        // 【P2-D8 修复】Symbol状态检查
+        if (state === REJECTED) return v;
+        if (state !== null) return v;
+        state = RESOLVED;
+        clearTimeout(timer);
         console.log(`[${label}] ✅ 正常完成，耗时≈${Date.now() - callStart}ms`);
         return v;
       }, e => {
-        settled = true; clearTimeout(timer);
+        // 【P2-D8 修复】Symbol状态检查
+        if (state === RESOLVED) throw e;
+        if (state !== null) throw e;
+        state = REJECTED;
+        clearTimeout(timer);
         console.warn(`[${label}] ❌ 异常/超时退出: ${e.message} | 耗时≈${Date.now() - callStart}ms`);
         throw e;
       })
