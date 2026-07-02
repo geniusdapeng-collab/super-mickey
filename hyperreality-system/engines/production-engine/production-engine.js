@@ -35,7 +35,7 @@ const DEFAULT_AGENT_CONFIG = {
   // 【v2.1.4-fix13-审计修复】从环境变量读取模型配置，消除硬编码
   llmModel: process.env.STORMAXE_LLM_MODEL || 'kimi-k2p6',
   fastModel: process.env.STORMAXE_LLM_FAST_MODEL || process.env.STORMAXE_LLM_MODEL || 'kimi-k2p6',
-  totalDeadlineMs: 1800000, // 【P1-PERF-05 修复】Phase2并行化后降至30分钟，覆盖20分钟实际耗时+10分钟余量
+  totalDeadlineMs: 2700000, // 【v2.1.8-fix】预生产总预算提升至45分钟，覆盖PromptFusion大量LLM调用开销
   memThresholdMB: 1800, // 【v2.1.4-fix10-P25-fix3】提升阈值，避免GC风暴
   promptFusionConcurrency: 2 // 【v2.1.4-fix10-P25-fix3】并发2，平衡速度与稳定性
 };
@@ -498,10 +498,10 @@ class ProductionEngine {
     // 将总预算分为阶段预算池，前面节省的时间可流入后续阶段
     const HARD_BUDGET_MS = this.agentConfig.totalDeadlineMs || 1200000;
     const PHASE_BUDGET_RATIOS = {
-      phase1: 0.12,   // Phase 1: 12% 总预算
-      phase2: 0.25,   // Phase 2: 25% 总预算
-      phase3: 0.55,   // Phase 3: 55% 总预算 (最重要，最耗时)
-      phase3_5: 0.08  // Phase 3.5: 8% 总预算
+      phase1: 0.08,   // Phase 1: 8% 总预算
+      phase2: 0.15,   // Phase 2: 15% 总预算 (并行化后耗时减少)
+      phase3: 0.70,   // Phase 3: 70% 总预算 (PromptFusion 最耗时，给予更多预算)
+      phase3_5: 0.07  // Phase 3.5: 7% 总预算
     };
     const phaseBudgets = {};
     let accumulatedBudget = 0;
