@@ -271,9 +271,9 @@ async function main() {
     // 【v2.1.8-fix】传递时长和约束参数
     const metadata = {};
     if (durationMs) {
-      metadata.target_duration = durationMs;
-      metadata.duration = durationMs;
-      metadata.maxScenes = Math.ceil(durationMs / 1000 / 5); // 每场景约5秒
+      metadata.target_duration = durationMs / 1000; // 转换为秒
+      metadata.duration = durationMs / 1000;
+      metadata.maxScenes = Math.ceil((durationMs / 1000) / 5); // 每场景约5秒
       metadata.maxCharacters = 2;
       metadata.style = 'CINE';
     }
