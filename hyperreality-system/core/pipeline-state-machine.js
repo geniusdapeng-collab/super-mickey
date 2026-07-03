@@ -243,6 +243,7 @@ class PipelineStateMachine {
     
     // 找到当前状态对应的索引
     const startIdx = this.stateIndex + 1; // 从下一个Stage开始
+    const errors = [];
     
     for (let i = startIdx; i < this.stages.length; i++) {
       const stage = this.stages[i];
@@ -253,11 +254,37 @@ class PipelineStateMachine {
         continue;
       }
       
-      await this.executeStage(stage.name, executor);
+      // 【v2.1.8-审计修复】每个Stage独立try-catch，单个失败不中断整体恢复
+      try {
+        await this.executeStage(stage.name, executor);
+      } catch (err) {
+        console.error(`[StateMachine] Stage ${stage.name} 执行失败(恢复模式下): ${err.message}`);
+        errors.push({ stage: stage.name, error: err.message, timestamp: Date.now() });
+
+        // 如果Stage可重试，记录到failureLog后继续下一个
+        if (stage.retryable) {
+          this.failureLog.push({
+            stage: stage.name,
+            error: err.message,
+            timestamp: Date.now(),
+            context: 'resume_mode'
+          });
+          // 保存中断状态checkpoint
+          await this._atomicCheckpoint(stage.name, {
+            resumeFailed: true,
+            error: err.message,
+            errors
+          });
+          continue; // 【关键】继续下一个Stage，而不是中断
+        } else {
+          // 不可重试的Stage失败，才中断
+          throw err;
+        }
+      }
     }
     
-    console.log(`[StateMachine] 项目完成: ${this.projectId}`);
-    return { completed: true, finalState: this.currentState };
+    console.log(`[StateMachine] 项目完成: ${this.projectId}${errors.length > 0 ? ` (有${errors.length}个Stage失败)` : ''}`);
+    return { completed: errors.length === 0, finalState: this.currentState, errors };
   }
   
   /**

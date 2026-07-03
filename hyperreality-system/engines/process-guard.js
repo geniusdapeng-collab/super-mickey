@@ -147,12 +147,45 @@ function install(instanceId = 'default', options = {}) {
     }
   };
 
+  // 【v2.1.8-审计修复】SIGTERM 处理器（系统终止信号）
+  listeners.sigterm = () => {
+    console.error(`[ProcessGuard:${instanceId}] 收到 SIGTERM，启动优雅关闭...`);
+    if (config.onGracefulShutdown) {
+      try {
+        config.onGracefulShutdown('SIGTERM');
+      } catch (e) {
+        console.error(`[ProcessGuard:${instanceId}] 优雅关闭回调失败: ${e.message}`);
+      }
+    }
+    setTimeout(() => {
+      console.error(`[ProcessGuard:${instanceId}] 优雅关闭超时，强制退出`);
+      process.exit(EXIT_CODES.OK);
+    }, config.gracefulShutdownTimeoutMs || 10000).unref();
+  };
+
+  // 【v2.1.8-审计修复】SIGINT 处理器（Ctrl+C）
+  listeners.sigint = () => {
+    console.error(`[ProcessGuard:${instanceId}] 收到 SIGINT，启动优雅关闭...`);
+    if (config.onGracefulShutdown) {
+      try {
+        config.onGracefulShutdown('SIGINT');
+      } catch (e) {
+        console.error(`[ProcessGuard:${instanceId}] 优雅关闭回调失败: ${e.message}`);
+      }
+    }
+    setTimeout(() => {
+      process.exit(EXIT_CODES.OK);
+    }, config.gracefulShutdownTimeoutMs || 10000).unref();
+  };
+
   // 注册监听器
   process.on('unhandledRejection', listeners.unhandledRejection);
   process.on('uncaughtException', listeners.uncaughtException);
+  process.on('SIGTERM', listeners.sigterm);
+  process.on('SIGINT', listeners.sigint);
 
   installations.set(instanceId, { config, listeners });
-  console.log(`[ProcessGuard] 实例 ${instanceId} 安装完成`);
+  console.log(`[ProcessGuard] 实例 ${instanceId} 安装完成（含SIGTERM/SIGINT处理）`);
 }
 
 /**
@@ -168,6 +201,13 @@ function uninstall(instanceId = 'default') {
   if (inst.listeners.uncaughtException) {
     process.off('uncaughtException', inst.listeners.uncaughtException);
   }
+  // 【v2.1.8-审计修复】卸载时也要清理信号处理器
+  if (inst.listeners.sigterm) {
+    process.off('SIGTERM', inst.listeners.sigterm);
+  }
+  if (inst.listeners.sigint) {
+    process.off('SIGINT', inst.listeners.sigint);
+  }
   installations.delete(instanceId);
   console.log(`[ProcessGuard] 实例 ${instanceId} 已卸载`);
 }
@@ -179,6 +219,28 @@ function getInstalledInstances() {
   return Array.from(installations.keys());
 }
 
-// 默认安装
-install();
+// 【v2.1.8-审计修复】默认安装时传入基本的 fatal 处理和优雅关闭回调
+install('default', {
+  onFatal: (errorInfo) => {
+    try {
+      const fs = require('fs');
+      const crashInfo = {
+        ...errorInfo,
+        processUptimeMs: process.uptime() * 1000,
+        memoryUsage: process.memoryUsage(),
+        crashDumpAt: new Date().toISOString()
+      };
+      fs.writeFileSync(
+        `./crash-dump-${Date.now()}.json`,
+        JSON.stringify(crashInfo, null, 2)
+      );
+    } catch (_) {
+      // 最后的努力也失败，静默退出
+    }
+  },
+  onGracefulShutdown: (signal) => {
+    console.error(`[ProcessGuard] 收到 ${signal}，尝试紧急保存...`);
+    process.emit('hyperreality:emergency-save', { signal, timestamp: Date.now() });
+  }
+});
 module.exports = { install, uninstall, getInstalledInstances, EXIT_CODES };

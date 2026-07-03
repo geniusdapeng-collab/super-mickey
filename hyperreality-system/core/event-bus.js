@@ -91,7 +91,8 @@ class EventBus {
           // 【P1-ARCH-03 修复】收集错误，不吞没
           handlerErrors.push({ 
             subscriber: subscriber.handler.name || 'anonymous', 
-            error: err.message 
+            error: err.message,
+            type: 'regular' // 【v2.1.8-审计修复】标记订阅者类型
           });
           console.error(`[EventBus] 事件处理失败: ${eventType} - ${err.message}`);
           
@@ -115,7 +116,12 @@ class EventBus {
         try {
           subscriber.handler(eventType, payload, event);
         } catch (err) {
-          handlerErrors.push({ subscriber: subscriber.handler.name || 'anonymous', error: err.message });
+          // 【v2.1.8-审计修复】通配符错误同样收集，标记类型为wildcard
+          handlerErrors.push({ 
+            subscriber: subscriber.handler.name || 'anonymous_wildcard', 
+            error: err.message,
+            type: 'wildcard'
+          });
           console.error(`[EventBus] 通配符处理失败: ${eventType} - ${err.message}`);
         }
       }
@@ -124,7 +130,9 @@ class EventBus {
     // 【P1-ARCH-03 修复】如果有handler错误且未注册错误处理器，抛出聚合错误
     if (handlerErrors.length > 0 && !this._errorHandlers.has(eventType)) {
       const aggregateError = new Error(
-        `EventBus: ${eventType} 有${handlerErrors.length}个handler失败: ` +
+        `EventBus: ${eventType} 有${handlerErrors.length}个handler失败(` +
+        `常规:${handlerErrors.filter(e => e.type === 'regular').length}, ` +
+        `通配符:${handlerErrors.filter(e => e.type === 'wildcard').length}): ` +
         handlerErrors.map(e => `${e.subscriber}(${e.error})`).join(', ')
       );
       aggregateError.eventType = eventType;

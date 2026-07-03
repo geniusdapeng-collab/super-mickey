@@ -30,14 +30,18 @@ const { globalNegativePromptInjector } = require('../../../systems/global-negati
 // v2.0.0-LLM-Agent: Agent配置
 const DEFAULT_AGENT_CONFIG = {
   enableLLMAgents: true,
-  llmTimeout: 450000, // 【v2.1.7-fix】从300000提升至450000(7.5分钟)，保质量前提下给LLM更充裕时间
-  llmMaxRetries: 2,
+  llmTimeout: 180000,        // 【v2.1.8-审计修复】从450000降至180000(3分钟)，适配35分钟总预算
+  llmMaxRetries: 1,          // 【v2.1.8-审计修复】从2降至1，减少重试时间开销
   // 【v2.1.4-fix13-审计修复】从环境变量读取模型配置，消除硬编码
   llmModel: process.env.STORMAXE_LLM_MODEL || 'kimi-k2p6',
   fastModel: process.env.STORMAXE_LLM_FAST_MODEL || process.env.STORMAXE_LLM_MODEL || 'kimi-k2p6',
-  totalDeadlineMs: 2700000, // 【v2.1.8-fix】预生产总预算提升至45分钟，覆盖PromptFusion大量LLM调用开销
-  memThresholdMB: 1800, // 【v2.1.4-fix10-P25-fix3】提升阈值，避免GC风暴
-  promptFusionConcurrency: 2 // 【v2.1.4-fix10-P25-fix3】并发2，平衡速度与稳定性
+  totalDeadlineMs: 2100000,  // 【v2.1.8-审计修复】与timeout-config一致：35分钟（40分钟硬杀 - 5分钟余量）
+  memThresholdMB: 1800,      // 【v2.1.4-fix10-P25-fix3】提升阈值，避免GC风暴
+  promptFusionConcurrency: 2, // 【v2.1.4-fix10-P25-fix3】并发2，平衡速度与稳定性
+  // 【v2.1.8-审计修复】每镜头最大耗时限制（用于分段执行决策）
+  maxMsPerShot: 180000,      // 3分钟/镜头
+  // 【v2.1.8-审计修复】启用分段执行模式（在总预算不足时自动拆分为多个进程）
+  enableSegmentedExecution: true,
 };
 // 注:实际部署时这些模块会从 systems/ 复制到 production-engine/modules/
 const SYSTEMS_PATH = path.join(__dirname, '../../../systems');
@@ -628,37 +632,60 @@ class ProductionEngine {
 
       // ===== Phase-3.5: 字段质量检查与修复（自适应预算）=====
       // v2.1.5-refactor: 使用新 Phase 架构
-      const phase35Result = await this.phase35.execute({ 
-        shots: currentShots, 
-        result, 
-        adaptedBlueprint 
-      });
-      if (phase35Result.success) {
-        currentShots = phase35Result.shots;
-      } else {
-        // 【审计修复】Phase 3.5 失败时，至少运行 field-guard 兜底
-        this.log('PHASE-3.5', '⚠️ 字段质量检查失败，运行 FieldGuard 兜底');
-        const { FieldGuard } = require('../field-guard');
-        const fg = new FieldGuard({ strict: false });
-        const check = fg.check(currentShots, 'Phase3.5-fallback');
-        if (!check.passed) {
-          this.log('PHASE-3.5', `⚠️ ${check.report.errors.length} 个字段问题未修复，已标记降级`);
-          currentShots = check.shots.map(s => {
-            if (check.report.details.find(d => d.shotId === s.shotId && !d.passed)) {
-              return { ...s, degraded: true, degradeReason: 'Phase3.5 字段检查失败' };
-            }
-            return s;
-          });
+      let phase35Success = false;
+      try {
+        const phase35Result = await this.phase35.execute({ 
+          shots: currentShots, 
+          result, 
+          adaptedBlueprint 
+        });
+        if (phase35Result.success) {
+          currentShots = phase35Result.shots;
+          phase35Success = true;
+        }
+      } catch (phase35Error) {
+        this.log('PHASE-3.5', `❌ Phase 3.5 异常: ${phase35Error.message}`);
+      }
+
+      // 【v2.1.8-审计修复】Phase 3.5 失败后使用隔离的降级逻辑，确保不抛异常到外层
+      if (!phase35Success) {
+        try {
+          this.log('PHASE-3.5', '⚠️ 字段质量检查失败，运行 FieldGuard 兜底');
+          const { FieldGuard } = require('../field-guard');
+          const fg = new FieldGuard({ strict: false });
+          const check = fg.check(currentShots, 'Phase3.5-fallback');
+          if (!check.passed) {
+            this.log('PHASE-3.5', `⚠️ ${check.report.errors.length} 个字段问题未修复，已标记降级`);
+            currentShots = check.shots.map(s => {
+              if (check.report.details.find(d => d.shotId === s.shotId && !d.passed)) {
+                return { ...s, degraded: true, degradeReason: 'Phase3.5 字段检查失败' };
+              }
+              return s;
+            });
+          }
+        } catch (fgError) {
+          this.log('PHASE-3.5', `⚠️ FieldGuard兜底也失败: ${fgError.message}，继续使用当前shots`);
+          // 【关键】标记降级但不中断流程
+          currentShots = currentShots.map(s => ({ ...s, degraded: true, degradeReason: 'Phase3.5 完全失败' }));
         }
       }
 
       // ===== 内容边界后处理(最终防线)=====
       // v2.1.5-refactor: 使用 ContentBoundaryGuard
-      currentShots = this.boundaryGuard.enforce(currentShots, adaptedBlueprint);
+      try {
+        currentShots = this.boundaryGuard.enforce(currentShots, adaptedBlueprint);
+      } catch (bgError) {
+        this.log('BOUNDARY-GUARD', `⚠️ 边界检查失败: ${bgError.message}，跳过`);
+      }
 
-    // ===== Quality Gate =====
+      // ===== Quality Gate =====
       // v2.1.5-refactor: 使用 QualityGate 模块
-      result.stages.qualityGate = await this._runStage('quality-gate', () => this.qualityGate.run(currentShots));
+      try {
+        result.stages.qualityGate = await this._runStage('quality-gate', () => this.qualityGate.run(currentShots));
+      } catch (qgError) {
+        this.log('QUALITY-GATE', `⚠️ QualityGate失败: ${qgError.message}，继续`);
+        result.stages.qualityGate = { passed: false, error: qgError.message, shots: currentShots };
+      }
 
       result.shots = currentShots;
       result.prompts = currentShots;

@@ -29,8 +29,12 @@ const DEFAULT_TIMEOUTS = {
   PARALLEL_BATCH: 300000, // 5分钟 - 并行批处理
   SUBMIT_RENDER: 300000,  // 5分钟 - 渲染提交
   
-  // 系统总预算（超级小香宝：30分钟 = 1800秒）
-  SYSTEM_BUDGET: 1800000, // 30分钟
+  // 系统总预算（40分钟硬杀 - 5分钟安全余量 = 35分钟实际可用）
+  SYSTEM_BUDGET: 2100000, // 35分钟
+  
+  // 【v2.1.8-审计修复】系统硬杀时间和安全余量
+  SYSTEM_HARD_KILL_MINUTES: 40, // 40分钟系统硬杀
+  SAFETY_MARGIN_MS: 300000, // 5分钟清理/收尾余量
 };
 
 // 【P0-D2 修复】Node.js setTimeout的32位安全上限
@@ -135,11 +139,23 @@ function getTimeout(key, fallback = 300000) {
   return Math.min(fallback, SET_TIMEOUT_MAX);
 }
 
+/**
+ * 【v2.1.8-审计修复】获取实际可用的系统预算（考虑硬杀限制）
+ * 返回：考虑硬杀时间和安全余量后的实际可用毫秒数
+ */
+function getEffectiveSystemBudget() {
+  const hardKillMs = (getTimeout('SYSTEM_HARD_KILL_MINUTES', 40) * 60 * 1000);
+  const safetyMs = getTimeout('SAFETY_MARGIN_MS', 300000);
+  const systemBudget = getTimeout('SYSTEM_BUDGET', 2100000);
+  return Math.min(systemBudget, hardKillMs - safetyMs);
+}
+
 module.exports = {
   DEFAULT_TIMEOUTS,
   SET_TIMEOUT_MAX,
   loadTimeouts,
   getTimeout,
   invalidateTimeoutCache,
-  _parseTimeoutValue
+  _parseTimeoutValue,
+  getEffectiveSystemBudget
 };

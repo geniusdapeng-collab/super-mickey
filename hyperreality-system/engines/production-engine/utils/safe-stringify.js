@@ -17,9 +17,25 @@ function safeStringify(obj) {
     }
     // 过滤函数
     if (typeof value === 'function') return undefined;
+
+    // 【v2.1.8-审计修复】Error 对象序列化为可读格式
+    if (value instanceof Error) {
+      return {
+        __type: 'Error',
+        message: value.message,
+        stack: value.stack,
+        name: value.name,
+        // 保留 Error 上可能附加的其他可枚举属性
+        ...Object.entries(value).reduce((acc, [k, v]) => {
+          if (typeof v !== 'function') acc[k] = v;
+          return acc;
+        }, {})
+      };
+    }
+
     // 过滤循环引用
     if (typeof value === 'object' && value !== null) {
-      if (seen.has(value)) return undefined;
+      if (seen.has(value)) return '[Circular]';
       seen.add(value);
     }
     return value;
