@@ -1,0 +1,25 @@
+{
+  "name": "super-mickey",
+  "version": "2.1.9",
+  "description": "超级小香宝 (SuperMickey) — AI驱动的电影级视频生成系统",
+  "main": "app/cli.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node app/cli.js",
+    "start:prod": "bash scripts/start-production.sh",
+    "preproduction": "node --expose-gc --max-old-space-size=2048 app/cli.js preproduction",
+    "preproduction:silent": "node run-taotie-silent.js",
+    "health": "node scripts/check-project-health.js",
+    "test": "node tests/module-load-test.js && node tests/panda-cineforge-integration-test.js",
+    "summary": "node scripts/generate-system-summary.js",
+    "release:verify": "node scripts/check-project-health.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "axios": "^1.18.0",
+    "form-data": "^4.0.1",
+    "node-fetch": "^2.7.0"
+  }
+}

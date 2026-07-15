@@ -1,0 +1,17 @@
+# Character Portrait Generator v1.0 — 生产版本
+版本: v1.0-release
+发布日期: 2026-06-01
+状态: 已发布，固化
+
+版本说明:
+- 基于40只异兽档案和角色设计的完整特征分类系统
+- 神兽: 11大分类 × 56个细分字段
+- 人类: 10大分类 × 45个细分字段
+- 支持模式A/B/C三种输入模式
+- 集成character-feature-extractor系统级提取器
+- 标准化4角度输出，强制纯白背景+影棚布光
+- Prompt长度控制：300汉字/600英文词上限
+
+文件:
+- 主文件: scripts/character-portrait-generator.js
+- 生产备份: scripts/character-portrait-generator-v1.0-release.js

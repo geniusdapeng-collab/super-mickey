@@ -1,0 +1,46 @@
+# 视频生成模型优先级配置
+# Seedance 模型自动切换策略
+# 当高位模型不可用时，自动降级到下一个顺位
+# 更新日期: 2026-05-12
+# 版本: v1.0
+
+MODEL_PRIORITY_LIST:
+  # 顺位 1：标准版，质量最佳，适合高质量输出
+  - name: "doubao-seedance-2.0"
+    id: "doubao-seedance-2-0-260128"
+    priority: 1
+    description: "标准版，最高画质，默认首选"
+    
+  # 顺位 2：快速版，速度优先，适合快速迭代
+  - name: "doubao-seedance-2.0-fast"
+    id: "doubao-seedance-2-0-fast-260128"
+    priority: 2
+    description: "快速版，渲染速度快"
+    
+  # 顺位 3：专业版，功能全面，兼容性好
+  - name: "doubao-seedance-1.5-pro"
+    id: "doubao-seedance-1-5-pro-250528"
+    priority: 3
+    description: "专业版，功能全面"
+    notes: "⚠️ 不支持联网搜索，不支持图片/视频/音频参考"
+    
+  # 顺位 4：旧版专业版，保底选项
+  - name: "doubao-seedance-1.0-pro"
+    id: "doubao-seedance-1-0-pro-250528"
+    priority: 4
+    description: "旧版专业版，保底选项"
+
+# 自动降级触发条件
+AUTO_FALLBACK:
+  enabled: true
+  trigger_errors:
+    - "QuotaExceeded"
+    - "TooManyRequests"
+    - "429"
+    - "ModelNotAvailable"
+    - "ServiceUnavailable"
+  max_retries_per_model: 2
+  retry_delay_ms: 5000
+
+# 当前默认模型（生产环境使用）
+CURRENT_DEFAULT: "doubao-seedance-2-0-fast-260128"

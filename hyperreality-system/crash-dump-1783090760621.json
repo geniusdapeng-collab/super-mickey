@@ -1,0 +1,17 @@
+{
+  "type": "uncaughtException",
+  "message": "Unexpected token 'catch'",
+  "stack": "/root/.openclaw/workspace/github-repos/super-mickey/hyperreality-system/engines/production-engine/phases/phase-3-prompt-fusion.js:97\n    } catch (e) {\n      ^^^^^\n\nSyntaxError: Unexpected token 'catch'\n    at wrapSafe (node:internal/modules/cjs/loader:1787:18)\n    at Module._compile (node:internal/modules/cjs/loader:1828:20)\n    at Object..js (node:internal/modules/cjs/loader:1985:10)\n    at Module.load (node:internal/modules/cjs/loader:1577:32)\n    at Module._load (node:internal/modules/cjs/loader:1379:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1600:12)\n    at require (node:internal/modules/helpers:153:16)\n    at ProductionEngine._initPhases (/root/.openclaw/workspace/github-repos/super-mickey/hyperreality-system/engines/production-engine/production-engine.js:99:36)\n    at new ProductionEngine (/root/.openclaw/workspace/github-repos/super-mickey/hyperreality-system/engines/production-engine/production-engine.js:88:10)",
+  "instanceId": "default",
+  "timestamp": "2026-07-03T14:59:20.621Z",
+  "fatal": false,
+  "processUptimeMs": 82.948542,
+  "memoryUsage": {
+    "rss": 68399104,
+    "heapTotal": 18006016,
+    "heapUsed": 11112776,
+    "external": 2270841,
+    "arrayBuffers": 29215
+  },
+  "crashDumpAt": "2026-07-03T14:59:20.621Z"
+}

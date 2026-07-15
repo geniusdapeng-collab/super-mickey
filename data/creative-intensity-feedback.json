@@ -1,0 +1,144 @@
+{
+  "schema": "creative-intensity-feedback-v1",
+  "entries": [
+    {
+      "id": "entry_1781393261264_ur8h0zxfx",
+      "videoType": "health_edu",
+      "intensity": 0.2,
+      "completionRate": 45,
+      "engagementRate": 30,
+      "videoId": "",
+      "timestamp": "2026-06-13T23:27:41.265Z",
+      "metadata": {}
+    },
+    {
+      "id": "entry_1781393261265_cjwcg9ews",
+      "videoType": "health_edu",
+      "intensity": 0.4,
+      "completionRate": 72,
+      "engagementRate": 55,
+      "videoId": "",
+      "timestamp": "2026-06-13T23:27:41.265Z",
+      "metadata": {}
+    },
+    {
+      "id": "entry_1781393261266_u4vpv9hwt",
+      "videoType": "health_edu",
+      "intensity": 0.6,
+      "completionRate": 58,
+      "engagementRate": 42,
+      "videoId": "",
+      "timestamp": "2026-06-13T23:27:41.266Z",
+      "metadata": {}
+    },
+    {
+      "id": "entry_1781393261267_xv4jqc021",
+      "videoType": "health_edu",
+      "intensity": 0.8,
+      "completionRate": 35,
+      "engagementRate": 25,
+      "videoId": "",
+      "timestamp": "2026-06-13T23:27:41.267Z",
+      "metadata": {}
+    },
+    {
+      "id": "entry_1781393261267_hk8dtn7hb",
+      "videoType": "drama",
+      "intensity": 0.5,
+      "completionRate": 55,
+      "engagementRate": 40,
+      "videoId": "",
+      "timestamp": "2026-06-13T23:27:41.267Z",
+      "metadata": {}
+    },
+    {
+      "id": "entry_1781393261268_b6n2ay97w",
+      "videoType": "drama",
+      "intensity": 0.7,
+      "completionRate": 78,
+      "engagementRate": 65,
+      "videoId": "",
+      "timestamp": "2026-06-13T23:27:41.268Z",
+      "metadata": {}
+    },
+    {
+      "id": "entry_1781393261269_vp47yu0kd",
+      "videoType": "drama",
+      "intensity": 0.9,
+      "completionRate": 62,
+      "engagementRate": 50,
+      "videoId": "",
+      "timestamp": "2026-06-13T23:27:41.269Z",
+      "metadata": {}
+    }
+  ],
+  "aggregated": {
+    "health_edu": {
+      "type": "医疗科普",
+      "samples": 4,
+      "intensity_distribution": {
+        "0.2": {
+          "count": 1,
+          "avg_completion": 45,
+          "avg_engagement": 30,
+          "total_completion": 45,
+          "total_engagement": 30
+        },
+        "0.4": {
+          "count": 1,
+          "avg_completion": 72,
+          "avg_engagement": 55,
+          "total_completion": 72,
+          "total_engagement": 55
+        },
+        "0.6": {
+          "count": 1,
+          "avg_completion": 58,
+          "avg_engagement": 42,
+          "total_completion": 58,
+          "total_engagement": 42
+        },
+        "0.8": {
+          "count": 1,
+          "avg_completion": 35,
+          "avg_engagement": 25,
+          "total_completion": 35,
+          "total_engagement": 25
+        }
+      },
+      "recommended": 0.4,
+      "confidence": 0.44,
+      "bestScore": 66.9
+    },
+    "drama": {
+      "type": "剧情短片",
+      "samples": 3,
+      "intensity_distribution": {
+        "0.5": {
+          "count": 1,
+          "avg_completion": 55,
+          "avg_engagement": 40,
+          "total_completion": 55,
+          "total_engagement": 40
+        },
+        "0.7": {
+          "count": 1,
+          "avg_completion": 78,
+          "avg_engagement": 65,
+          "total_completion": 78,
+          "total_engagement": 65
+        },
+        "0.9": {
+          "count": 1,
+          "avg_completion": 62,
+          "avg_engagement": 50,
+          "total_completion": 62,
+          "total_engagement": 50
+        }
+      },
+      "recommended": 0.7,
+      "confidence": 0.33,
+      "bestScore": 74.1
+    }
+  }
+}

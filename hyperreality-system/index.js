@@ -1,0 +1,2895 @@
+// hyperreality-system/index.js
+// SuperMickey - 超级小香宝统一入口
+// 深度融合:剧本引擎 → 适配层 → 制作引擎 → 完整镜头
+// 版本:v2.1.9 | 日期:2026-07-05
+
+require('./engines/process-guard'); // 【审计修复】全局崩溃防护,必须最先加载
+
+const { isOpeningShot } = require('./engines/field-standardizer');
+
+const { ScriptEngine } = require('./engines/script-engine');
+const { ProductionEngine } = require('./engines/production-engine/production-engine');
+const { RenderingEngine } = require('./engines/rendering-engine/rendering-engine');
+const { PostProductionEngine } = require('./engines/post-production-engine/post-production-engine');
+const { RequirementListBuilder } = require('./engines/script-engine/core/requirement-list-builder');
+// ⭐ v2.1.8: 需求洞察引擎（替代原 RequirementListBuilder 的 LLM 解析部分）
+const { RequirementDiscoveryEngine } = require('./engines/requirement-discovery-engine');
+// 🐼 [PandaCineForge] Phase 3: 影视技能引擎适配器
+const { PandaCineForgeAdapter } = require('./engines/panda-cineforge-adapter');
+const { CreativeIntensityEngine } = require('./engines/script-engine/core/creative-intensity-engine');
+const { OpeningTitleOptimizer } = require('./engines/production-engine/agents/opening-title-optimizer');
+const { routeAndEnhance } = require('./skills/hollywood-cinematography/cinematography-skill-router');
+const { FieldGuard } = require('./engines/field-guard');
+const ErrorCodes = require('./config/error-codes');
+const { StabilityShield } = require('./shields/stability-shield');
+
+// ⭐ v2.1.9: PRD 生成器（Step 3.5 - 产品需求文档）
+const { PRDGenerator } = require('./engines/prd-generator/prd-generator');
+
+// ===== Phase 1: 基础设施层注入 =====
+const { PromptGuardian } = require('./engines/prompt-guardian');
+const { RenderPipelineGuard } = require('./engines/render-pipeline-guard');
+const { EventBus } = require('./infrastructure/event-bus');
+const { PipelineLogger } = require('./engines/pipeline-logger');
+
+// ===== Phase 2: 增强引擎层注入 =====
+const { MicroMotionAdapter } = require('./engines/enhancers/micro-motion-adapter');
+const { NarrativeRhythmAdapter } = require('./engines/enhancers/narrative-rhythm-adapter');
+const { ShotQualityEnhancer } = require('./engines/enhancers/shot-quality-enhancer');
+const { RequirementAlignmentGate } = require('./engines/enhancers/requirement-alignment-gate');
+const { DirectorOptimizationAgent } = require('./engines/enhancers/director-optimization-agent');
+
+// ===== Phase 3: 情绪价值全链路注入 =====
+const { EmotionIntentParser } = require('./engines/emotion/emotion-intent-parser');
+const { EmotionArcDesigner } = require('./engines/emotion/emotion-arc-designer');
+const { EmotionShotSyntaxInjector } = require('./engines/emotion/emotion-shot-syntax');
+
+// ===== 审计修复：新增功能模块 =====
+const { CharacterCostumePrompter } = require('./engines/character-system/character-costume-prompter');
+const { DurationConstraintManager } = require('./engines/duration-constraint/duration-constraint-manager');
+const { BehaviorAnchorSystem } = require('./engines/behavior-system/behavior-anchor-system');
+
+// 【v2.1.10-hotfix】密码学验证模块——AI 无法伪造确认签名
+const { verifyConfirmation } = require('../scripts/confirmation-crypto');
+const { SmartImageReferencer } = require('./engines/smart-image-referencer');
+const { SceneNumberMapper } = require('./engines/scene-number-mapper');
+const { IdentityPersistenceSystem } = require('./engines/identity-persistence-system');
+// ⭐ v2.1.7: 创意主题生成器（全链路最开头）
+const { CreativeThemeGenerator } = require('./skills/creative-theme-generator');
+
+// ===== Phase 4: 垂直场景层注入 =====
+const { CommercialModeEnhancer } = require('./engines/scenarios/commercial-mode-enhancer');
+const { FPVModeEnhancer } = require('./engines/scenarios/fpv-mode-enhancer');
+
+const fs = require('fs');
+const path = require('path');
+
+// v2.1.5-fix: 日志级别控制
+const LOG_LEVEL = process.env.LOG_LEVEL || 'info';
+const LOG_LEVELS = { debug: 0, info: 1, warn: 2, error: 3 };
+const CURRENT_LOG_LEVEL = LOG_LEVELS[LOG_LEVEL] || 1;
+
+function log(level, ...args) {
+  if (LOG_LEVELS[level] >= CURRENT_LOG_LEVEL) {
+    const prefix = `[${level.toUpperCase()}]`;
+    if (level === 'error') console.error(prefix, ...args);
+    else if (level === 'warn') console.warn(prefix, ...args);
+    else console.log(prefix, ...args);
+  }
+}
+
+class HyperrealitySystem {
+  constructor(options = {}) {
+    // 【v2.1.6-fix】配置隔离：深拷贝配置防止多实例共享
+    const { ConfigIsolator } = require('./utils/config-isolator');
+    const isolatedOptions = ConfigIsolator.isolate(options);
+    this.options = isolatedOptions;
+
+    this.requirementListBuilder = new RequirementListBuilder(isolatedOptions.requirementListBuilder);
+    
+    // ⭐ v2.1.8: 需求洞察引擎 - 基于上游 12 字段进行深度业务洞察
+    this.requirementDiscoveryEngine = new RequirementDiscoveryEngine({
+      llmEngine: options.productionEngine?.agentConfig?.llmEngine || options.llmEngine || null,
+      timeoutMs: 720000, // 【v2.1.8-fix】12 分钟总预算
+      agentTimeoutMs: 180000 // 【v2.1.8-fix】180 秒/Agent
+    });
+    this.creativeIntensityEngine = new CreativeIntensityEngine(options.creativeIntensityEngine);
+    this.scriptEngine = new ScriptEngine({
+      ...options.scriptEngine,
+      charactersDir: options.scriptEngine?.charactersDir || path.join(__dirname, '../characters')
+    });
+    this.productionEngine = new ProductionEngine({
+      ...options.productionEngine,
+      charactersDir: options.productionEngine?.charactersDir || path.join(__dirname, '../characters')
+    });
+    this.renderingEngine = new RenderingEngine({
+      ...options.renderingEngine,
+      charactersDir: options.renderingEngine?.charactersDir || path.join(__dirname, '../characters')
+    });
+    this.postProductionEngine = new PostProductionEngine(options.postProductionEngine);
+    this.fieldGuard = new FieldGuard({ strict: true, logPrefix: '[Hyperreality]' });
+
+    // ⭐ v2.1.9: PRD 生成器 - Step 3.5 产品需求文档生成
+    this.prdGenerator = new PRDGenerator({
+      llmEngine: options.productionEngine?.agentConfig?.llmEngine || options.llmEngine || null,
+      timeoutMs: 600000, // 10 分钟总预算
+      agent2TimeoutMs: 120000, // Agent 2: 2 分钟
+      agent3TimeoutMs: 180000, // Agent 3: 3 分钟
+      budgetProfile: options.budgetProfile || null
+    });
+
+    // 🛡️ v2.1.5-shield: 三层稳定性护盾
+    this.stabilityShield = new StabilityShield({
+      baselineRegistryDir: options.baselineRegistryDir || path.join(__dirname, './shields/baseline-registry/templates'),
+      primaryModel: options.primaryModel || 'kimi-k2p6',
+      backupModel: options.backupModel || 'kimi-k2p5',
+      cacheEnabled: options.cacheEnabled !== false,
+      llmTimeout: options.llmTimeout || 300000
+    });
+
+    // 🐼 [PandaCineForge] Phase 3: 影视技能引擎适配器
+    this.pandaAdapter = new PandaCineForgeAdapter({
+      enabled: options.pandaCineForge?.enabled === true,
+      autoStart: options.pandaCineForge?.autoStart !== false,
+      endpoint: options.pandaCineForge?.endpoint || 'http://127.0.0.1:8765',
+      timeout: options.pandaCineForge?.timeout || 5000,
+    });
+
+    // 【v2.1.6-fix】AsyncInitGuard: 防止 PandaAdapter 异步初始化竞态
+    const { AsyncInitGuard } = require('./utils/async-init-guard');
+    this._pandaInitGuard = new AsyncInitGuard({ initTimeout: 10000, retryAttempts: 2 });
+    // 包装 recall 方法，确保初始化完成后再调用
+    const originalRecall = this.pandaAdapter.recall.bind(this.pandaAdapter);
+    this.pandaAdapter.recall = async (...args) => {
+      await this._pandaInitGuard._waitForInit().catch(() => {}); // 未初始化时静默降级
+      return originalRecall(...args);
+    };
+    // 触发初始化（如果 adapter 有 async init）
+    if (this.pandaAdapter.init && typeof this.pandaAdapter.init === 'function') {
+      this._pandaInitGuard.initialize(() => this.pandaAdapter.init());
+    } else {
+      this._pandaInitGuard._initialized = true; // 无初始化需求，直接标记完成
+    }
+
+    this.stabilityShield.initialize(this.productionEngine);
+
+    // ===== Phase 1: 基础设施层初始化 =====
+    // P1-1: Prompt Guardian - Prompt自动修复与防护
+    this.promptGuardian = new PromptGuardian({
+      strictMode: options.promptGuardian?.strictMode || false,
+      enabled: options.promptGuardian?.enabled !== false
+    });
+
+    // P1-2: Render Pipeline Guard - 渲染管线强制检查
+    this.pipelineGuard = new RenderPipelineGuard({
+      strictMode: options.pipelineGuard?.strictMode !== false,
+      enabled: options.pipelineGuard?.enabled !== false
+    });
+
+    // P1-4: EventBus - 全链路事件追踪
+    this.eventBus = new EventBus({
+      name: 'supermickey-bus',
+      enabled: options.eventBus?.enabled !== false,
+      maxEvents: options.eventBus?.maxEvents || 10000
+    });
+
+    // P1-5: Pipeline Logger - 全链路日志留档
+    this.pipelineLogger = new PipelineLogger({
+      outputDir: options.pipelineLogger?.outputDir || './output',
+      format: options.pipelineLogger?.format || 'markdown',
+      enabled: options.pipelineLogger?.enabled !== false
+    });
+
+    // ===== Phase 2: 增强引擎层初始化 =====
+    // P2-1: MicroMotion Adapter - 微动作增强系统
+    this.microMotionAdapter = new MicroMotionAdapter({
+      enabled: options.microMotion?.enabled !== false,
+      intensity: options.microMotion?.intensity || 0.5
+    });
+
+    // P2-2: Narrative Rhythm Adapter - 叙事节奏引擎
+    this.narrativeRhythmAdapter = new NarrativeRhythmAdapter({
+      enabled: options.narrativeRhythm?.enabled !== false,
+      intensity: options.narrativeRhythm?.intensity || 0.5
+    });
+
+    // P2-3: Shot Quality Enhancer - 镜头质量增强系统
+    this.shotQualityEnhancer = new ShotQualityEnhancer({
+      enabled: options.shotQuality?.enabled !== false,
+      intensity: options.shotQuality?.intensity || 0.7
+    });
+
+    // P2-4: Requirement Alignment Gate - 需求对齐闸机
+
+    // 🆕 【v2.1.6-fix】Prompt 长度同步器（所有修改 prompt 的模块共用）
+    const { PromptSync } = require('./utils/prompt-sync');
+    this.promptSync = new PromptSync({ maxLength: 12000 });
+
+    // 🆕 【v2.1.6-fix】台词时长计算器（已存在但未集成）
+    const { DialogueTimingCalculator } = require('./utils/dialogue-timing-calculator');
+    this.dialogueTimingCalc = new DialogueTimingCalculator({
+      autoAdjust: true,
+      adjustStrategy: 'smart'
+    });
+    this.requirementAlignmentGate = new RequirementAlignmentGate({
+      enabled: options.requirementAlignment?.enabled !== false,
+      threshold: options.requirementAlignment?.threshold || 0.7,
+      strictMode: options.requirementAlignment?.strictMode || false
+    });
+
+    // P2-5: Director Optimization Agent - 导演优化 Agent
+    this.directorOptimizationAgent = new DirectorOptimizationAgent({
+      enabled: options.directorOptimization?.enabled !== false,
+      threshold: options.directorOptimization?.threshold || 4.0,
+      maxIterations: options.directorOptimization?.maxIterations || 3
+    });
+
+    // ===== Phase 3: 情绪价值全链路 =====
+    // P3-1: Emotion Intent Parser - 情绪意图解析器
+    this.emotionIntentParser = new EmotionIntentParser({
+      enabled: options.emotion?.enabled !== false
+    });
+
+    // P3-2: Emotion Arc Designer - 情绪弧线设计器
+    this.emotionArcDesigner = new EmotionArcDesigner({
+      enabled: options.emotion?.enabled !== false
+    });
+
+    // P3-3: Emotion Shot Syntax Injector - 情绪镜头语法注入器
+    this.emotionShotSyntaxInjector = new EmotionShotSyntaxInjector({
+      enabled: options.emotion?.enabled !== false
+    });
+
+    // ===== Phase 4: 垂直场景层 =====
+    // P4-1: Commercial Mode Enhancer - 商业广告模式
+    this.commercialModeEnhancer = new CommercialModeEnhancer({
+      enabled: options.commercialMode?.enabled === true, // 严格默认关闭,必须显式启用
+      platform: options.commercialMode?.platform || 'douyin',
+      brandConfig: options.commercialMode?.brandConfig || null
+    });
+
+    // P4-2: FPV Mode Enhancer - 极限运动/FPV 模式
+    this.fpvModeEnhancer = new FPVModeEnhancer({
+      enabled: options.fpvMode?.enabled === true, // 严格默认关闭,必须显式启用
+      sportType: options.fpvMode?.sportType || 'auto'
+    });
+
+    // ===== 审计修复：初始化6个功能增强模块 =====
+    this.characterCostumePrompter = new CharacterCostumePrompter({
+      strictMode: options.characterCostume?.strictMode !== false,
+      enabled: options.characterCostume?.enabled !== false
+    });
+
+    this.durationConstraintManager = new DurationConstraintManager({
+      maxSingleShot: options.durationConstraint?.maxSingleShot || 15,
+      minSingleShot: options.durationConstraint?.minSingleShot || 5,
+      enabled: options.durationConstraint?.enabled !== false
+    });
+
+    this.behaviorAnchorSystem = new BehaviorAnchorSystem({
+      enabled: options.behaviorAnchor?.enabled !== false
+    });
+
+    this.smartImageReferencer = new SmartImageReferencer({
+      enabled: options.smartImageRef?.enabled !== false
+    });
+
+    this.sceneNumberMapper = new SceneNumberMapper({
+      enabled: options.sceneNumberMapper?.enabled !== false
+    });
+
+    this.identityPersistenceSystem = new IdentityPersistenceSystem({
+      enabled: options.identityPersistence?.enabled !== false
+    });
+
+    // ⭐ v2.1.7: 创意主题生成器（全链路最开头）
+    this.creativeThemeGenerator = new CreativeThemeGenerator({
+      eventBus: this.eventBus,
+      llmEngine: options.productionEngine?.agentConfig?.llmEngine || options.llmEngine || null
+    });
+
+    this.version = '2.0.0';
+    this._shutdownRequested = false; // 【v2.1.6-fix】优雅关闭标志
+    this._confirmationAbortController = null; // 【v2.1.6-fix】确认轮询中断控制器
+
+    // 【审计修复】进程信号处理，优雅关闭
+    this._setupSignalHandlers();
+  }
+
+  _setupSignalHandlers() {
+    const signals = ['SIGTERM', 'SIGINT', 'SIGHUP'];
+    
+    for (const signal of signals) {
+      process.on(signal, async () => {
+        console.log(`\n[HyperrealitySystem] 收到 ${signal}，开始优雅关闭...`);
+        this._shutdownRequested = true; // 【v2.1.6-fix】标记关闭请求
+        
+        // 1. 关闭长时间任务模式
+        if (this.stabilityShield) {
+          this.stabilityShield.setLongTaskMode('ProductionEngine', false);
+        }
+        
+        // 2. 销毁 EventBus
+        if (this.eventBus) {
+          this.eventBus.destroy();
+        }
+        
+        console.log('[HyperrealitySystem] 清理完成，退出');
+        process.exit(0);
+      });
+    }
+    
+    // 未捕获异常处理
+    process.on('uncaughtException', (err) => {
+      console.error('[HyperrealitySystem] 未捕获异常:', err.message);
+      console.error(err.stack);
+      
+      if (this.eventBus) {
+        this.eventBus.emit('system.fatal', { error: err.message, stack: err.stack });
+      }
+      
+      setTimeout(() => process.exit(1), 1000);
+    });
+    
+    process.on('unhandledRejection', (reason, promise) => {
+      console.error('[HyperrealitySystem] 未处理 rejection:', reason);
+      
+      if (this.eventBus) {
+        this.eventBus.emit('system.unhandledRejection', { reason: String(reason) });
+      }
+    });
+  }
+
+  /**
+   * 主创作流程(需求确认 → 提示词审核 → 渲染 → 后期制作)
+   * @param {string} intent - 用户意图
+   * @param {object} metadata - 元数据
+   * @param {object} options - { skipPromptReview, skipRender, skipPostProduction }
+   * 注意:需求清单确认不可跳过!已移除 skipRequirementConfirmation 选项。
+   * @returns {object} 完整创作结果
+   */
+  async create(intent, metadata = {}, options = {}) {
+    // 【v2.1.6-fix-bug39】metadata 深拷贝隔离，防止模块间状态污染
+    const { deepClone } = require('./utils/safe-clone');
+    metadata = deepClone(metadata);
+
+    console.log(`\n🔥 [HyperrealitySystem v${this.version}] 开始创作`);
+    console.log(`   意图: ${intent}`);
+    console.log(`   项目: ${metadata.title || '未命名'}`);
+    console.log(`   流程: 创意主题 → 需求确认 → ${options.skipPromptReview ? '跳过' : '含'}提示词审核 → ${options.skipRender ? '跳过' : '含'}渲染 → ${options.skipPostProduction ? '跳过' : '含'}后期`);
+    console.log('');
+
+    const result = {
+      success: false,
+      stages: {},
+      errors: [],
+      timing: {},
+      confirmations: {}, // 记录确认状态
+      totalWaitTimeMs: 0 // 【v2.1.10-hotfix】累计等待确认时间，不计入有效时间
+    };
+
+    const totalStart = Date.now();
+
+    // 【P0-4 修复】productionResult 声明提升到 try 块之前,避免块级作用域导致 finally 后死代码
+    let productionResult = null;
+
+    try {
+      // v2.1.7: 系统级修复:整个创作过程启用长时间任务模式,避免HealthMonitor误判
+      // 【v2.1.8-fix】60 分钟（3600000ms），支持环境变量覆盖
+      const totalDeadlineMs = parseInt(process.env.STORMAXE_TOTAL_DEADLINE_MS || '3600000');
+      this.stabilityShield.setLongTaskMode('ProductionEngine', true, totalDeadlineMs);
+
+      // ========== 🆕 Layer -1: 创意主题生成与确认 ==========
+      // 【v2.1.8-强制流程】Step 2: 创意主题生成 + 人工确认（不可跳过）
+      console.log('🎨 [Layer -1] 创意主题生成 - 解析用户意图...');
+      const stageNeg1Start = Date.now();
+
+      try {
+        const themeResult = await this.creativeThemeGenerator.generate(intent);
+        
+        result.stages.creativeTheme = {
+          data: themeResult,
+          timing: Date.now() - stageNeg1Start
+        };
+
+        console.log(`   ✅ 创意主题生成完成 (${result.stages.creativeTheme.timing}ms)`);
+        console.log(`      类型: ${themeResult.tasks[0].type} | 主题: ${themeResult.tasks[0].theme}`);
+        console.log(`      时长: ${themeResult.tasks[0].duration_sec}秒 | 难度: ${themeResult.tasks[0].difficulty}`);
+
+        // 生成确认摘要
+        const summary = this.creativeThemeGenerator.generateConfirmationSummary(themeResult);
+        console.log(summary);
+
+        // 【强制】等待用户确认
+        const themeConfirmation = await this._confirmCreativeTheme(themeResult);
+        result.confirmations.creativeTheme = themeConfirmation;
+        
+        // 【v2.1.10-hotfix】累加等待时间
+        if (themeConfirmation.waitTimeMs) {
+          result.totalWaitTimeMs += themeConfirmation.waitTimeMs;
+        }
+
+        if (!themeConfirmation.approved) {
+          console.log('   ❌ 创意主题未确认,流程中止');
+          result.success = false;
+          result.stages.creativeTheme.status = 'rejected';
+          result.stages.creativeTheme.reason = themeConfirmation.reason || '用户未确认创意主题';
+          return result;
+        }
+
+        console.log('   ✅ 创意主题已确认,继续创作');
+
+        // 将创意主题注入到 metadata 中，供后续链路使用
+        metadata._creativeTheme = themeResult.tasks[0];
+        
+        // 如果用户有调整，应用调整
+        if (themeConfirmation.adjustments) {
+          const adjusted = this.creativeThemeGenerator.adjustTask(themeResult, themeConfirmation.adjustments);
+          metadata._creativeTheme = adjusted.tasks[0];
+          console.log('   🔄 已应用用户调整');
+        }
+
+      } catch (err) {
+        console.warn(`   ⚠️ 创意主题生成失败: ${err.message}，继续原有链路`);
+        result.errors.push({ stage: 'CreativeThemeGenerator', message: err.message });
+      }
+
+      // ========== 🆕 Layer 0: 需求洞察 + 业务需求对齐清单 ==========
+      // 【v2.1.8-强制流程】Step 3: 需求洞察 + 人工确认（不可跳过）
+      console.log('📋 [Layer 0] 需求洞察 - 基于创意主题进行深度业务分析...');
+      const stage0Start = Date.now();
+
+      // 从上游 CreativeThemeGenerator 获取 12 字段
+      const upstreamFields = metadata._creativeTheme || {};
+      
+      // 调用需求洞察引擎
+      let discoveryResult;
+      try {
+        discoveryResult = await this.requirementDiscoveryEngine.discover(upstreamFields);
+        result.stages.requirementDiscovery = {
+          data: discoveryResult,
+          timing: Date.now() - stage0Start
+        };
+        console.log(`   ✅ 需求洞察完成 (${result.stages.requirementDiscovery.timing}ms)`);
+      } catch (err) {
+        console.warn(`   ⚠️ 需求洞察引擎失败: ${err.message}，使用兜底规则`);
+        discoveryResult = this.requirementDiscoveryEngine._fastMode(upstreamFields);
+        result.stages.requirementDiscovery = {
+          data: discoveryResult,
+          timing: Date.now() - stage0Start,
+          degraded: true,
+          error: err.message
+        };
+      }
+
+      // 同时保留原有的 RequirementListBuilder 输出（兼容下游）
+      // 将 discoveryResult 转换为 requirementList 格式
+      const requirementList = this._convertDiscoveryToRequirementList(discoveryResult, upstreamFields);
+
+      // 生成 Markdown 供人工确认 - 需求清单确认不可跳过!
+      console.log('\n📋 [业务需求对齐清单] 等待人工确认...');
+
+      const markdown = this.requirementDiscoveryEngine.generateMarkdown(discoveryResult);
+      const requirementConfirmation = await this._confirmRequirementList(markdown, requirementList);
+      result.confirmations.requirementList = requirementConfirmation;
+      
+      // 【v2.1.10-hotfix】累加等待时间
+      if (requirementConfirmation.waitTimeMs) {
+        result.totalWaitTimeMs += requirementConfirmation.waitTimeMs;
+      }
+
+      if (!requirementConfirmation.approved) {
+        console.log('   ❌ 业务需求对齐清单未确认,流程中止');
+        result.success = false;
+        result.stages.requirementReview = {
+          status: 'rejected',
+          reason: requirementConfirmation.reason || '用户未确认业务需求对齐清单',
+          suggestions: requirementConfirmation.suggestions || []
+        };
+        return result;
+      }
+
+      console.log('   ✅ 业务需求对齐清单已确认,继续创作');
+
+        // ========== P3-1: Emotion Intent Parser 情绪意图解析 ==========
+        if (this.emotionIntentParser.enabled) {
+          console.log('\n💫 [EmotionIntentParser] 情绪意图解析...');
+          try {
+            const emotionProfile = this.emotionIntentParser.parse(intent, metadata);
+            metadata._emotionProfile = emotionProfile;
+            requirementList.emotionProfile = emotionProfile;
+
+            console.log(`   ✅ 情绪解析完成: ${emotionProfile.primary}${emotionProfile.secondary ? ' + ' + emotionProfile.secondary : ''}`);
+            console.log(`      强度: ${(emotionProfile.intensity * 100).toFixed(0)}% | 触发器: ${emotionProfile.triggers.slice(0, 3).join(', ')}${emotionProfile.triggers.length > 3 ? '...' : ''}`);
+
+            result.stages.emotionIntent = {
+              primary: emotionProfile.primary,
+              secondary: emotionProfile.secondary,
+              intensity: emotionProfile.intensity,
+              triggers: emotionProfile.triggers,
+              confidence: emotionProfile.confidence
+            };
+          } catch (err) {
+            console.warn(`   ⚠️ EmotionIntentParser 失败: ${err.message}`);
+            result.errors.push({ stage: 'EmotionIntentParser', message: err.message });
+          }
+        }
+
+        // 如果用户提供了修改意见,重新生成
+        if (requirementConfirmation.suggestions?.length > 0) {
+          console.log(`   🔄 根据用户反馈重新生成...`);
+          requirementList.contentConstraints = requirementList.contentConstraints || [];
+          requirementList.contentConstraints.push(...requirementConfirmation.suggestions.map(s => `用户要求: ${s}`));
+        }
+
+        // 将需求清单转换为 ScriptEngine 可用的 metadata
+        // v1.2.6-fix4b: 确保 characters 正确传递(用户传入优先,否则用 requirementList 的)
+        const scriptEngineMeta = this.requirementListBuilder.toScriptEngineMetadata(requirementList);
+        const enhancedMetadata = {
+          ...metadata,
+          ...scriptEngineMeta,
+          // 显式保留 characters:用户传入的优先(含 portraitPaths 等详细信息)
+          characters: metadata.characters || scriptEngineMeta.characters || [],
+          // 【v2.1.4】保留原始metadata中的系列信息(用户传入的优先)
+          series: metadata.series || scriptEngineMeta.series || null,
+          seriesContentPlan: metadata.seriesContentPlan || scriptEngineMeta.seriesContentPlan || null
+        };
+        metadata = enhancedMetadata;
+
+        // 🐼 [PandaCineForge] F1: Layer 0 需求清单后 - 影视技能预召回
+        if (this.pandaAdapter.enabled) {
+          console.log('\n🐼 [PandaCineForge] F1 技能预召回...');
+          try {
+            const skillHints = await this.pandaAdapter.recall({
+              call_id: `pcf_f1_${Date.now()}`,
+              caller_agent: 'SceneDesign',
+              route_fields: {
+                module_target: ['MyStudio.SceneDesign'],
+                cinematic_role: 'scene_design',
+                deliverable_type: 'beat_sheet',
+                project_stage: 'preproduction',
+                sub_domain: requirementList.videoType || 'cinema'
+              },
+              context: {
+                project_id: metadata.projectId || 'default',
+                caller_agent: 'SceneDesign',
+                project_type: requirementList.videoType || 'feature_film'
+              },
+              query_text: `${requirementList.style.primary} ${requirementList.videoTypeName || '电影'} 剧本结构`,
+              recall_mode: 'fast',
+              topk: 2
+            });
+            if (skillHints.status === 'hit' || skillHints.status === 'forged') {
+              metadata._pandaSkillHints = skillHints;
+              console.log(`   ✅ 技能预召回: ${skillHints.skills?.length || 0} 个技能 | 来源: ${skillHints.source_layer}`);
+            } else {
+              console.log(`   ⚠️ 技能预召回降级: ${skillHints.reason || skillHints.status}`);
+            }
+          } catch (err) {
+            console.warn(`   ⚠️ PandaCineForge F1 失败: ${err.message}`);
+          }
+        }
+
+        // ========== 🆕 创意指数解析与配置注入 ==========
+        const intensity = this.creativeIntensityEngine.parse(requirementList);
+        const narrativeMode = requirementList.narrativeMode || 'dialogue';
+        const worldSetting = requirementList._analysis?.worldSetting || 'default';
+
+        console.log(`\n💡 [创意指数] 解析结果: ${intensity} (${this.creativeIntensityEngine.getLevel(intensity).name})`);
+        console.log(`   叙事模式: ${narrativeMode} | 世界设定: ${worldSetting}`);
+
+        const engineConfigs = this.creativeIntensityEngine.generateEngineConfigs(intensity, narrativeMode, worldSetting);
+
+        result.stages.creativeIntensity = {
+          intensity,
+          level: engineConfigs.level,
+          activeCapabilities: engineConfigs._metadata.activeCapabilities,
+          report: this.creativeIntensityEngine.generateReport(intensity, narrativeMode, worldSetting)
+        };
+
+        // 将创意指数配置注入到各引擎选项
+        metadata._creativeIntensity = {
+          intensity,
+          engineConfigs,
+          instructions: {
+            script: engineConfigs.scriptEngine?.creativeInstructions || '',
+            production: engineConfigs.productionEngine?.creativeInstructions || '',
+            rendering: engineConfigs.renderingEngine?.creativeInstructions || '',
+            postProduction: engineConfigs.postProductionEngine?.creativeInstructions || ''
+          }
+        };
+
+        console.log(`   ✅ 创意指数配置已生成,${engineConfigs._metadata.activeCapabilities}个能力激活`);
+        console.log(`      Layer 1: ${Object.keys(engineConfigs.scriptEngine).length > 0 ? '✅' : '❌'} 叙事结构配置`);
+        console.log(`      Layer 2: ${Object.keys(engineConfigs.productionEngine).length > 0 ? '✅' : '❌'} 视觉表现配置`);
+        console.log(`      Layer 3: ${Object.keys(engineConfigs.renderingEngine).length > 0 ? '✅' : '❌'} 渲染质感配置`);
+        console.log(`      Layer 4: ${Object.keys(engineConfigs.postProductionEngine).length > 0 ? '✅' : '❌'} 后期风格配置`);
+
+        // 🛡️ v2.1.5-shield: 基线热启动判断
+        const baselineMatch = this.stabilityShield.baselineRegistry.findBestMatch({
+          intent,
+          title: metadata.title,
+          characters: metadata.characters,
+          style: requirementList.style
+        });
+
+        if (baselineMatch.isHotStart && baselineMatch.template) {
+          console.log(`\n🛡️ [稳定性护盾] 热启动模式: 命中基线模板 ${baselineMatch.template.id}`);
+          console.log(`   题材: ${baselineMatch.category} | 已使用${baselineMatch.template.metadata.usageCount}次`);
+          metadata._baseline = baselineMatch.template;
+          metadata._baselineCategory = baselineMatch.category;
+        } else {
+          console.log(`\n🛡️ [稳定性护盾] 冷启动模式: 未命中基线,将全LLM生成`);
+          metadata._baseline = null;
+          metadata._baselineCategory = baselineMatch.category;
+        }
+
+      // ========== 🆕 v2.1.9: Step 3.5 PRD 生成 ==========
+      // 【v2.1.9-强制流程】PRD 生成 - 从业务需求转为产品制作需求
+      let prdResult;
+      try {
+        console.log('\n📋 [Step 3.5] PRD 生成 - 产品需求文档...');
+        const prdStart = Date.now();
+
+        // 注入用户修改意见到 discoveryResult
+        if (requirementConfirmation.suggestions?.length > 0) {
+          discoveryResult.userModifications = requirementConfirmation.suggestions;
+        }
+
+        // 生成 PRD
+        prdResult = await this.prdGenerator.generate(discoveryResult);
+        result.stages.prdGeneration = {
+          data: prdResult,
+          timing: Date.now() - prdStart,
+          summary: prdResult.prdSummary
+        };
+        console.log(`   ✅ PRD 生成完成 (${result.stages.prdGeneration.timing}ms)`);
+        console.log(`   📄 ${prdResult.prdSummary?.humanReadable || 'PRD 已生成'}`);
+
+        // 生成 Markdown 供人工确认
+        const prdMarkdown = this.prdGenerator.generateMarkdown(prdResult);
+        const prdConfirmation = await this._confirmPRD(prdMarkdown, prdResult);
+        result.confirmations.prd = prdConfirmation;
+        
+        // 【v2.1.10-hotfix】累加等待时间
+        if (prdConfirmation.waitTimeMs) {
+          result.totalWaitTimeMs += prdConfirmation.waitTimeMs;
+        }
+
+        if (!prdConfirmation.approved) {
+          console.log('   ❌ PRD 未确认,流程中止');
+          result.success = false;
+          result.stages.prdReview = {
+            status: 'rejected',
+            reason: prdConfirmation.reason || '用户未确认 PRD',
+            suggestions: prdConfirmation.suggestions || []
+          };
+          return result;
+        }
+
+        console.log('   ✅ PRD 已确认,继续创作');
+
+        // 将 PRD 注入到 metadata，供下游消费
+        metadata._prd = prdResult;
+
+        // 如果用户修改了 PRD，重新生成
+        if (prdConfirmation.suggestions?.length > 0) {
+          console.log(`   🔄 根据用户反馈重新生成 PRD...`);
+          discoveryResult.userModifications = [
+            ...(discoveryResult.userModifications || []),
+            ...prdConfirmation.suggestions
+          ];
+          prdResult = await this.prdGenerator.generate(discoveryResult);
+          result.stages.prdGeneration.regenerated = true;
+          result.stages.prdGeneration.data = prdResult;
+          metadata._prd = prdResult;
+        }
+
+      } catch (err) {
+        console.warn(`   ⚠️ PRD 生成失败: ${err.message},使用兜底模式`);
+        result.errors.push({ stage: 'PRDGeneration', message: err.message });
+        
+        // 生成最小可用 PRD（fallback）
+        prdResult = this._generateMinimalPRD(discoveryResult);
+        metadata._prd = prdResult;
+        result.stages.prdGeneration = {
+          data: prdResult,
+          timing: 0,
+          degraded: true,
+          error: err.message
+        };
+      }
+
+      // ========== Layer 1: 剧本引擎 ==========
+      let scriptResult;
+      try {
+        console.log('📖 [Layer 1] 剧本引擎 - 生成结构化剧本...');
+        const stage1Start = Date.now();
+
+        // 🐼 [PandaCineForge] F2: Layer 1 前 - 剧本设计技能注入
+        if (this.pandaAdapter.enabled && metadata._pandaSkillHints?.skills?.length > 0) {
+          console.log('\n🐼 [PandaCineForge] F2 剧本技能注入...');
+          try {
+            const scriptSkills = await this.pandaAdapter.recall({
+              call_id: `pcf_f2_${Date.now()}`,
+              caller_agent: 'SceneDesign',
+              route_fields: {
+                module_target: ['MyStudio.SceneDesign'],
+                cinematic_role: 'scene_design',
+                deliverable_type: 'beat_sheet',
+                project_stage: 'preproduction',
+                sub_domain: metadata.videoType || 'cinema'
+              },
+              context: {
+                project_id: metadata.projectId || 'default',
+                upstream_deliverable: (metadata._pandaSkillHints?.skills || [])[0]?.deliverable_type
+              },
+              query_text: `${(metadata._pandaSkillHints?.skills || [])[0]?.name || '剧本结构'} 叙事设计`,
+              recall_mode: 'fast',
+              topk: 2
+            });
+            if (scriptSkills.status === 'hit' || scriptSkills.status === 'forged') {
+              metadata._pandaScriptSkills = scriptSkills;
+              console.log(`   ✅ 剧本技能注入: ${scriptSkills.skills?.length || 0} 个技能 | 来源: ${scriptSkills.source_layer}`);
+            }
+          } catch (err) {
+            console.warn(`   ⚠️ PandaCineForge F2 失败: ${err.message}`);
+          }
+        }
+
+        scriptResult = await this.scriptEngine.process(intent, metadata);
+
+        // 【审计修复·P0】校验 adapted 存在且非空
+        if (!scriptResult || !scriptResult.adapted) {
+          const err = new Error('scriptEngine 未产出 adapted Blueprint');
+          err.code = ErrorCodes.DATA_MISSING;
+          throw err;
+        }
+        if (!Array.isArray(scriptResult.adapted.scenes) || scriptResult.adapted.scenes.length === 0) {
+          const err = new Error('Blueprint scenes 为空,无法继续生产');
+          err.code = ErrorCodes.DATA_MISSING;
+          throw err;
+        }
+
+        result.stages.scriptEngine = {
+          blueprint: scriptResult.blueprint?.meta,
+          validation: scriptResult.validation,
+          report: scriptResult.report
+        };
+        result.stages.scriptEngine.timing = Date.now() - stage1Start;
+
+        console.log(`   ✅ 剧本生成完成 (${result.stages.scriptEngine.timing}ms)`);
+        console.log(`      场景: ${scriptResult.report.scenes_count} | 角色: ${scriptResult.report.characters_count} | 台词: ${scriptResult.report.dialogues_count}`);
+        console.log(`      校验: ${scriptResult.validation.passed ? '通过' : '失败'} (${scriptResult.validation.overall_score}分)`);
+        console.log('   ✅ 剧本生成完成,直接进入制作环节');
+
+        // 剧本确认已移除:需求确认后直接跑完整预生产
+        result.confirmations.script = { approved: true, skipped: true, reason: '剧本确认环节已移除,需求确认后直接生产' };
+
+        // ========== P3-2: Emotion Arc Designer 情绪弧线设计 ==========
+        if (this.emotionArcDesigner.enabled && metadata._emotionProfile) {
+          console.log('\n🎼 [EmotionArcDesigner] 情绪弧线设计...');
+          try {
+            // 🐼 [PandaCineForge] F5: 情绪弧线设计前 - 情绪/叙事技能注入
+            if (this.pandaAdapter.enabled) {
+              console.log('\n🐼 [PandaCineForge] F5 情绪技能注入...');
+              try {
+                const emotionSkills = await this.pandaAdapter.recall({
+                  call_id: `pcf_f5_${Date.now()}`,
+                  caller_agent: 'SceneDesign',
+                  route_fields: {
+                    module_target: ['MyStudio.SceneDesign'],
+                    cinematic_role: 'scene_design',
+                    deliverable_type: 'beat_sheet',
+                    project_stage: 'preproduction',
+                    sub_domain: metadata.videoType || 'cinema'
+                  },
+                  context: {
+                    project_id: metadata.projectId || 'default',
+                    caller_agent: 'SceneDesign',
+                    upstream_deliverable: 'beat_sheet_v1'
+                  },
+                  query_text: `${metadata._emotionProfile?.primary || '情绪'} 叙事节奏 情绪曲线设计`,
+                  recall_mode: 'fast',
+                  topk: 2
+                });
+                if (emotionSkills.status === 'hit' || emotionSkills.status === 'forged') {
+                  metadata._pandaEmotionSkills = emotionSkills;
+                  console.log(`   ✅ 情绪技能注入: ${emotionSkills.skills?.length || 0} 个技能 | 来源: ${emotionSkills.source_layer}`);
+                }
+              } catch (err) {
+                console.warn(`   ⚠️ PandaCineForge F5 失败: ${err.message}`);
+              }
+            }
+
+            const sceneCount = scriptResult.adapted.scenes.length;
+            const emotionArc = this.emotionArcDesigner.design(metadata._emotionProfile, {
+              duration: metadata.targetDuration || 10,
+              sceneCount,
+              narrativeMode: metadata.narrativeMode || 'dialogue'
+            });
+
+            metadata._emotionArc = emotionArc;
+            scriptResult.adapted._emotionArc = emotionArc;
+
+            console.log(`   ✅ 情绪弧线设计完成`);
+            console.log(`      曲线类型: ${emotionArc.curveType} | ${emotionArc.description}`);
+            console.log(`      场景情绪目标: ${emotionArc.targets.map(t => t.emotion).join(' → ')}`);
+
+            result.stages.emotionArc = {
+              curveType: emotionArc.curveType,
+              description: emotionArc.description,
+              targets: emotionArc.targets.map(t => ({
+                sceneIndex: t.sceneIndex,
+                emotion: t.emotion,
+                intensity: t.intensity,
+                descriptor: t.descriptor
+              }))
+            };
+          } catch (err) {
+            console.warn(`   ⚠️ EmotionArcDesigner 失败: ${err.message}`);
+            result.errors.push({ stage: 'EmotionArcDesigner', message: err.message });
+          }
+        }
+
+      } catch (error) {
+        result.success = false;
+        result.errors.push({ layer: 'script-engine', error: error.message });
+        console.error(`\n❌ [Layer 1 失败] ${error.message}`);
+        return result;
+      }
+
+      // ========== 适配层 ==========
+      console.log('\n🔗 [Adapter] 适配层 - 转换数据格式...');
+      const adapted = scriptResult.adapted;
+
+      // ========== P2-2: 叙事节奏增强 ==========
+      if (this.narrativeRhythmAdapter.enabled) {
+        console.log('\n🎼 [NarrativeRhythm] 叙事节奏增强...');
+        try {
+          const rhythmResult = this.narrativeRhythmAdapter.enhance(adapted, metadata);
+
+          // 将增强后的蓝图替换原 adapted
+          if (rhythmResult.blueprint && rhythmResult.blueprint !== adapted) {
+            // 更新 adapted 的 scenes 和 rhythmProfile
+            adapted.scenes = rhythmResult.blueprint.scenes || adapted.scenes;
+            adapted._rhythmProfile = rhythmResult.blueprint._rhythmProfile;
+
+            console.log(`   ✅ 叙事节奏增强完成`);
+            console.log(`      情绪曲线: ${rhythmResult.blueprint._rhythmProfile?.curveType || 'default'}`);
+            console.log(`      场景节奏: ${rhythmResult.blueprint.scenes?.length || 0} 个场景已注入`);
+
+            result.stages.narrativeRhythm = {
+              curveType: rhythmResult.blueprint._rhythmProfile?.curveType,
+              dynamicMode: rhythmResult.blueprint._rhythmProfile?.dynamicMode,
+              beatInterval: rhythmResult.blueprint._rhythmProfile?.beatInterval,
+              rhythmProfile: rhythmResult.rhythmProfile
+            };
+
+            // P1-4: EventBus 记录
+            this.eventBus.emit('narrativeRhythm.completed', {
+              layerId: 'layer-1-rhythm',
+              curveType: rhythmResult.blueprint._rhythmProfile?.curveType,
+              timing: Date.now()
+            });
+          }
+        } catch (err) {
+          console.warn(`   ⚠️ 叙事节奏增强失败: ${err.message}`);
+          result.errors.push({ stage: 'NarrativeRhythm', message: err.message });
+
+          this.eventBus.emit('narrativeRhythm.failed', {
+            layerId: 'layer-1-rhythm',
+            error: err.message,
+            timing: Date.now()
+          });
+        }
+      }
+
+      // ========== Layer 2: 制作引擎 ==========
+      console.log('\n🎬 [Layer 2] 制作引擎 - 生成镜头...');
+      const stage2Start = Date.now();
+
+      // 🐼 [PandaCineForge] F3: Layer 2 前 - 视觉语言技能注入
+      if (this.pandaAdapter.enabled) {
+        console.log('\n🐼 [PandaCineForge] F3 视觉技能注入...');
+        try {
+          const visualSkills = await this.pandaAdapter.recall({
+            call_id: `pcf_f3_${Date.now()}`,
+            caller_agent: 'VisualLanguage',
+            route_fields: {
+              module_target: ['MyStudio.VisualLanguage'],
+              cinematic_role: 'visual_language',
+              deliverable_type: 'shotlist',
+              project_stage: 'production',
+              sub_domain: metadata.videoType || 'cinema'
+            },
+            context: {
+              project_id: metadata.projectId || 'default',
+              caller_agent: 'VisualLanguage',
+              upstream_deliverable: 'beat_sheet_v1'
+            },
+            query_text: `${(metadata._pandaScriptSkills?.skills || [])[0]?.name || '镜头语言'} 分镜设计 运镜`,
+            recall_mode: 'fast',
+            topk: 2
+          });
+          if (visualSkills.status === 'hit' || visualSkills.status === 'forged') {
+            metadata._pandaVisualSkills = visualSkills;
+            console.log(`   ✅ 视觉技能注入: ${visualSkills.skills?.length || 0} 个技能 | 来源: ${visualSkills.source_layer}`);
+          }
+        } catch (err) {
+          console.warn(`   ⚠️ PandaCineForge F3 失败: ${err.message}`);
+        }
+      }
+
+      // 【修复】应用运行时 agentConfig(解决配置不生效问题)
+      if (options.productionEngine?.agentConfig) {
+        this.productionEngine.updateAgentConfig(options.productionEngine.agentConfig);
+      }
+
+      productionResult = await this.productionEngine.produce(adapted, options.productionEngine?.agentConfig);
+
+      // 【v2.1.6-fix-bug36+38】分离 shots↔prompts 引用 + 建立 O(1) 索引
+      const { DualArraySync } = require('./utils/dual-array-sync');
+      this.dualSync = new DualArraySync();
+      const detached = this.dualSync.detach(productionResult.shots, productionResult.prompts);
+      productionResult.shots = detached.shots;
+      productionResult.prompts = detached.prompts;
+
+      result.stages.productionEngine = {
+        shots: productionResult.shots.map(s => {
+          const clean = {};
+          for (const [k, v] of Object.entries(s)) {
+            if (k.startsWith('_')) continue; // 跳过内部字段
+            if (typeof v === 'function') continue;
+            clean[k] = v;
+          }
+          return clean;
+        }),
+        prompts: productionResult.prompts,
+        quality: productionResult.stages.qualityGate,
+        // 【v2.1.4】跨集边界校验报告
+        boundaryReport: productionResult.stages.boundaryReport || null
+      };
+      result.stages.productionEngine.timing = Date.now() - stage2Start;
+
+      console.log(`   ✅ 制作完成 (${result.stages.productionEngine.timing}ms)`);
+      console.log(`      镜头: ${productionResult.shots.length} | Prompts: ${productionResult.prompts.length}`);
+      console.log(`      质量门: ${productionResult.stages.qualityGate?.passed ? '通过' : '失败'}`);
+
+      // ========== 🆕 审计修复：6个功能增强模块注入 ==========
+      
+      // 1. 时长约束（必须在制作引擎后第一个执行，约束基础数据）
+      if (this.durationConstraintManager.enabled && scriptResult?.adapted?.scenes) {
+        console.log('\n⏱️ [DurationManager] 时长约束检查...');
+        try {
+          const rhythmType = metadata.rhythmType ||
+            (metadata.target_duration <= 30 ? 'fast' :
+             metadata.target_duration >= 120 ? 'slow' : 'standard');
+          
+          const constrainResult = this.durationConstraintManager.constrain(
+            scriptResult.adapted.scenes,
+            { targetDuration: metadata.target_duration, rhythmType, forceAdjust: true }
+          );
+          
+          if (constrainResult.adjustments.length > 0) {
+            console.log(`   ⚠️ 时长调整: ${constrainResult.adjustments.length} 处`);
+          } else {
+            console.log('   ✅ 时长约束通过');
+          }
+        } catch (err) {
+          console.warn(`   ⚠️ DurationManager 失败: ${err.message}`);
+        }
+      }
+
+      // 2. 场景编号映射（建立 shotId ↔ 内容映射表）
+      if (this.sceneNumberMapper.enabled && productionResult?.shots) {
+        console.log('\n🗺️ [SceneMapper] 场景编号映射...');
+        try {
+          const mapResult = this.sceneNumberMapper.map(
+            productionResult.shots,
+            scriptResult?.adapted?.scenes || [],
+            scriptResult?.adapted?.dialogues || []
+          );
+          result.stages.sceneNumberMap = mapResult.mappings;
+          console.log(`   ✅ 场景映射完成: ${mapResult.mappings.length} 条映射`);
+        } catch (err) {
+          console.warn(`   ⚠️ SceneMapper 失败: ${err.message}`);
+        }
+      }
+
+      // 3. 角色服装锁定（在情绪注入前，确保服装稳定）
+      if (this.characterCostumePrompter.enabled && metadata.characters?.length > 0 && productionResult?.shots) {
+        console.log('\n👔 [CharacterCostume] 角色服装锁定注入...');
+        try {
+          const enhancedShots = this.characterCostumePrompter.enhance(
+            productionResult.shots,
+            metadata.characters
+          );
+          productionResult.shots = enhancedShots;
+          for (const p of productionResult.prompts) {
+            const shot = enhancedShots.find(s => s.shotId === p.shotId);
+            if (shot) { p.prompt = shot.prompt; p.promptCharCount = shot.promptCharCount; }
+          }
+          console.log('   ✅ 角色服装锁定注入完成');
+        } catch (err) {
+          console.warn(`   ⚠️ CharacterCostume 失败: ${err.message}`);
+        }
+      }
+
+      // 4. 身份持续提示（确保角色身份跨镜头一致）
+      if (this.identityPersistenceSystem.enabled && metadata.characters?.length > 0 && productionResult?.shots) {
+        console.log('\n🆔 [IdentityPersist] 身份持续提示注入...');
+        try {
+          productionResult.shots = this.identityPersistenceSystem.persist(
+            productionResult.shots,
+            metadata.characters,
+            scriptResult?.adapted?.scenes || []
+          );
+          console.log('   ✅ 身份持续提示注入完成');
+        } catch (err) {
+          console.warn(`   ⚠️ IdentityPersist 失败: ${err.message}`);
+        }
+      }
+
+      // 5. 行为锚定（确保姿态自然过渡）
+      if (this.behaviorAnchorSystem.enabled && productionResult?.shots) {
+        console.log('\n🚶 [BehaviorAnchor] 行为锚定注入...');
+        try {
+          productionResult.shots = this.behaviorAnchorSystem.anchor(
+            productionResult.shots,
+            scriptResult?.adapted?.scenes || []
+          );
+          console.log('   ✅ 行为锚定注入完成');
+        } catch (err) {
+          console.warn(`   ⚠️ BehaviorAnchor 失败: ${err.message}`);
+        }
+      }
+
+      // 6. 智能引用（绑定场景引用图）
+      if (this.smartImageReferencer.enabled && productionResult?.shots) {
+        console.log('\n🖼️ [SmartImageRef] 智能引用绑定...');
+        try {
+          productionResult.shots = await this.smartImageReferencer.bind(
+            productionResult.shots,
+            scriptResult?.adapted?.scenes || [],
+            metadata.referenceImages || []
+          );
+          console.log('   ✅ 智能引用绑定完成');
+        } catch (err) {
+          console.warn(`   ⚠️ SmartImageRef 失败: ${err.message}`);
+        }
+      }
+
+      // 🆕 【v2.1.6-fix】Prompt 长度同步：所有增强模块完成后统一同步
+      if (productionResult?.shots) {
+        this.promptSync.syncAll(productionResult.shots, 'PostEnhancement');
+      }
+
+      // 🆕 【v2.1.6-fix】台词时长校验（已有工具，集成到主流程）
+      if (this.dialogueTimingCalc && scriptResult?.adapted?.scenes && metadata.target_duration) {
+        console.log('\n🗣️ [DialogueTiming] 台词时长校验...');
+        try {
+          const dialogueShots = scriptResult.adapted.scenes.map((scene) => ({
+            shot_id: scene.scene_id,
+            duration: scene.timing?.duration || scene.duration || 0,
+            emotion: scene.emotion || scene.mood || 'normal',
+            dialogue: scene.dialogue
+          }));
+          const validation = this.dialogueTimingCalc.validateShots(dialogueShots);
+          if (validation.criticalCount > 0) {
+            console.warn(`   ⚠️ 发现 ${validation.criticalCount} 个台词溢出问题！`);
+            for (const issue of validation.results.filter((r) => r.severity === 'critical')) {
+              console.warn(`   • ${issue.shotId}: ${issue.suggestion}`);
+              if (issue.autoFix) {
+                const scene = scriptResult.adapted.scenes.find((s) => s.scene_id === issue.shotId);
+                if (scene && issue.autoFix.type === 'extend_shot') {
+                  const newDuration = issue.autoFix.suggestedDuration;
+                  if (scene.timing) scene.timing.duration = newDuration;
+                  scene.duration = newDuration;
+                  console.log(`   ✅ 已自动延长 ${issue.shotId} 至 ${newDuration}秒`);
+                }
+              }
+            }
+          }
+          if (validation.warningCount > 0) {
+            console.warn(`   ℹ️ ${validation.warningCount} 个台词占比警告`);
+          }
+          if (validation.valid) {
+            console.log('   ✅ 台词时长校验通过');
+          }
+        } catch (err) {
+          console.warn(`   ⚠️ DialogueTiming 校验失败: ${err.message}`);
+        }
+      }
+
+      // ========== P3-3: Emotion Shot Syntax Injection 情绪镜头语法注入 ==========
+      if (this.emotionShotSyntaxInjector.enabled && metadata._emotionArc) {
+        console.log('\n💫 [EmotionShotSyntax] 情绪镜头语法注入...');
+        try {
+          const injectedShots = this.emotionShotSyntaxInjector.inject(productionResult.shots, metadata._emotionArc);
+          const oldShots = productionResult.shots; // 【v2.1.6-fix-bug37】保存旧 shots 用于元数据保留
+          productionResult.shots = injectedShots;
+
+          // 【v2.1.6-fix-bug37】不可变更新保留元数据
+          productionResult.shots = this.dualSync.immutableUpdate(oldShots, productionResult.shots);
+
+          // 同步 prompts（使用 DualArraySync O(1) 查找）
+          this.dualSync.syncShotsToPrompts('EmotionShotSyntax', productionResult.shots, productionResult.prompts, ['_emotionInjected']);
+
+          console.log(`   ✅ 情绪镜头语法注入完成`);
+          result.stages.emotionShotSyntax = {
+            injectedCount: injectedShots.filter(s => s._emotionInjected).length
+          };
+
+          // P1-4: EventBus 记录
+          this.eventBus.emit('emotionShotSyntax.completed', {
+            layerId: 'layer-2-emotion',
+            injectedCount: injectedShots.filter(s => s._emotionInjected).length,
+            timing: Date.now()
+          });
+        } catch (err) {
+          console.warn(`   ⚠️ EmotionShotSyntax 失败: ${err.message}`);
+          result.errors.push({ stage: 'EmotionShotSyntax', message: err.message });
+
+          this.eventBus.emit('emotionShotSyntax.failed', {
+            layerId: 'layer-2-emotion',
+            error: err.message,
+            timing: Date.now()
+          });
+        }
+      }
+
+      // ========== P2-3: Shot Quality Enhancer 镜头质量增强 ==========
+      if (this.shotQualityEnhancer.enabled) {
+        console.log('\n✨ [ShotQualityEnhancer] 镜头质量增强...');
+        try {
+          const sqResult = this.shotQualityEnhancer.enhance(productionResult.shots, {
+            duration: metadata.targetDuration,
+            intent,
+            style: metadata.style
+          });
+
+          productionResult.shots = sqResult.shots;
+
+          // 同步 prompts
+          for (const p of productionResult.prompts) {
+            // 同步 prompts（使用 DualArraySync O(1) 查找）
+            this.dualSync.syncShotsToPrompts('ShotQuality', productionResult.shots, productionResult.prompts, [
+              '_qualityEnhanced', '_narrativePurpose', '_visualHook', '_primaryFocus'
+            ]);
+          }
+
+          console.log(`   ✅ 镜头质量增强完成: ${sqResult.enhancedCount}/${productionResult.shots.length} 个镜头`);
+          result.stages.shotQuality = {
+            enhancedCount: sqResult.enhancedCount,
+            report: sqResult.report
+          };
+
+          // P1-4: EventBus 记录
+          this.eventBus.emit('shotQuality.completed', {
+            layerId: 'layer-2-quality',
+            enhancedCount: sqResult.enhancedCount,
+            timing: Date.now()
+          });
+        } catch (err) {
+          console.warn(`   ⚠️ ShotQualityEnhancer 失败: ${err.message}`);
+          result.errors.push({ stage: 'ShotQualityEnhancer', message: err.message });
+
+          this.eventBus.emit('shotQuality.failed', {
+            layerId: 'layer-2-quality',
+            error: err.message,
+            timing: Date.now()
+          });
+        }
+      }
+
+      // ========== 🆕 字段标准化与守门(专家诊断建议)==========
+      console.log('\n🛡️ [FieldGuard] Layer 2 输出标准化与校验...');
+      try {
+        const normalized = this.fieldGuard.normalizeAndValidate(productionResult.shots, 'Layer2-Production');
+        productionResult.shots = normalized.shots;
+
+        // 【v2.1.4-fix10-P25-fix3】关键修复:标准化后用完整的 25 字段重算 prompt,消除"假完整"
+        for (const shot of productionResult.shots) {
+          if (shot.fields && this.productionEngine.assemblePromptFromFields) {
+            const rebuilt = this.productionEngine.assemblePromptFromFields(shot, shot.fields, shot.ratio || '16:9');
+            shot.prompt = rebuilt;
+            shot.promptCharCount = this.productionEngine.countChars ? this.productionEngine.countChars(rebuilt) : rebuilt.length;
+          }
+        }
+        // prompts 数组同步（使用 DualArraySync O(1) 查找）
+        this.dualSync.syncShotsToPrompts('FieldGuard', productionResult.shots, productionResult.prompts, ['prompt', 'promptCharCount']);
+
+        // v1.2.6-fix5: 不再用 normalized.shots 覆盖 prompts(prompts 已是标准输出对象,标准化会破坏结构)
+        // productionResult.prompts = normalized.shots; // ❌ 删除此行
+        console.log(`   ✅ 字段标准化通过 (${normalized.report.warnings.length} 警告),prompt 已按 25 字段重算`);
+        this.fieldGuard.printShotSummary(normalized.shots, 'Layer2-Production');
+      } catch (err) {
+        console.error(`   ❌ 字段校验失败: ${err.message}`);
+        if (err.report) {
+          console.error(`      错误: ${err.report.errors.join(' | ')}`);
+        }
+        // 非严格模式下继续,但记录错误
+        result.errors.push({ stage: 'FieldGuard-Layer2', message: err.message });
+      }
+
+      // ========== Phase 4: 垂直场景层（可选模式） ==========
+
+      // 🐼 [PandaCineForge] F6: 垂直场景前 — 商业/短视频/FPV 技能注入
+      if (this.pandaAdapter.enabled) {
+        console.log('\n🐼 [PandaCineForge] F6 垂直场景技能注入...');
+        try {
+          const verticalSkills = await this.pandaAdapter.recall({
+            call_id: `pcf_f6_${Date.now()}`,
+            caller_agent: 'SceneDesign',
+            route_fields: {
+              module_target: ['MyStudio.SceneDesign'],
+              cinematic_role: 'scene_design',
+              deliverable_type: 'shotlist',
+              project_stage: 'production',
+              sub_domain: metadata.videoType === 'short_video' ? 'short_video' : 'cinema'
+            },
+            context: {
+              project_id: metadata.projectId || 'default',
+              caller_agent: 'SceneDesign',
+              upstream_deliverable: 'shotlist_v1'
+            },
+            query_text: `${metadata.videoType === 'short_video' ? '短视频钩子 投流策略' : '商业广告 品牌一致性'}`,
+            recall_mode: 'fast',
+            topk: 2
+          });
+          if (verticalSkills.status === 'hit' || verticalSkills.status === 'forged') {
+            metadata._pandaVerticalSkills = verticalSkills;
+            console.log(`   ✅ 垂直场景技能注入: ${verticalSkills.skills?.length || 0} 个技能 | 来源: ${verticalSkills.source_layer}`);
+          }
+        } catch (err) {
+          console.warn(`   ⚠️ PandaCineForge F6 失败: ${err.message}`);
+        }
+      }
+
+      // P4-1: Commercial Mode 商业广告模式
+      if (this.commercialModeEnhancer.enabled || options.commercialMode?.enabled) {
+        console.log('\n📺 [CommercialMode] 商业广告模式增强...');
+        try {
+          const commercialResult = this.commercialModeEnhancer.enhance(productionResult.shots, {
+            platform: options.commercialMode?.platform || this.commercialModeEnhancer.platform,
+            brandConfig: options.commercialMode?.brandConfig || this.commercialModeEnhancer.brandConfig
+          });
+
+          const oldShots = productionResult.shots; // 【v2.1.6-fix-bug37】保存旧 shots 用于元数据保留
+          productionResult.shots = commercialResult.shots;
+
+          // 【v2.1.6-fix-bug37+41】不可变更新保留元数据 + 同步 prompts
+          productionResult.shots = this.dualSync.immutableUpdate(oldShots, productionResult.shots);
+          this.dualSync.syncShotsToPrompts('CommercialMode', productionResult.shots, productionResult.prompts);
+
+          console.log(`   ✅ 商业广告模式增强完成`);
+          if (!commercialResult.complianceReport.passed) {
+            console.warn(`   ⚠️ 合规警告: ${commercialResult.complianceReport.issues.length} 项`);
+          }
+
+          result.stages.commercialMode = {
+            platform: this.commercialModeEnhancer.platform,
+            enhancements: commercialResult.enhancements.length,
+            compliancePassed: commercialResult.complianceReport.passed,
+            complianceIssues: commercialResult.complianceReport.issues.length
+          };
+
+          // P1-4: EventBus 记录
+          this.eventBus.emit('commercialMode.completed', {
+            layerId: 'layer-2-commercial',
+            platform: this.commercialModeEnhancer.platform,
+            compliancePassed: commercialResult.complianceReport.passed,
+            timing: Date.now()
+          });
+        } catch (err) {
+          console.warn(`   ⚠️ CommercialMode 失败: ${err.message}`);
+          result.errors.push({ stage: 'CommercialMode', message: err.message });
+
+          this.eventBus.emit('commercialMode.failed', {
+            layerId: 'layer-2-commercial',
+            error: err.message,
+            timing: Date.now()
+          });
+        }
+      }
+
+      // P4-2: FPV Mode 极限运动模式
+      if (this.fpvModeEnhancer.enabled || options.fpvMode?.enabled) {
+        console.log('\n🎬 [FPVMode] 极限运动模式检测...');
+        try {
+          const fpvResult = this.fpvModeEnhancer.enhance(productionResult.shots, intent);
+
+          if (fpvResult.fpvEnabled) {
+            const oldShots = productionResult.shots; // 【v2.1.6-fix-bug37】保存旧 shots 用于元数据保留
+            productionResult.shots = fpvResult.shots;
+
+            // 【v2.1.6-fix-bug37+41】不可变更新保留元数据 + 同步 prompts
+            productionResult.shots = this.dualSync.immutableUpdate(oldShots, productionResult.shots);
+            this.dualSync.syncShotsToPrompts('FPVMode', productionResult.shots, productionResult.prompts);
+
+            console.log(`   ✅ FPV 模式增强完成: ${fpvResult.enhancements.length} 个镜头`);
+            console.log(`      运动类型: ${fpvResult.sportType}`);
+
+            result.stages.fpvMode = {
+              enabled: true,
+              sportType: fpvResult.sportType,
+              enhancements: fpvResult.enhancements.length
+            };
+
+            // P1-4: EventBus 记录
+            this.eventBus.emit('fpvMode.completed', {
+              layerId: 'layer-2-fpv',
+              sportType: fpvResult.sportType,
+              timing: Date.now()
+            });
+          } else {
+            console.log(`   i️ 未检测到极限运动内容,跳过 FPV 模式`);
+          }
+        } catch (err) {
+          console.warn(`   ⚠️ FPVMode 失败: ${err.message}`);
+          result.errors.push({ stage: 'FPVMode', message: err.message });
+
+          this.eventBus.emit('fpvMode.failed', {
+            layerId: 'layer-2-fpv',
+            error: err.message,
+            timing: Date.now()
+          });
+        }
+      }
+
+      // ========== 🆕 好莱坞导演技能注入 ==========
+      console.log('\n🎬 [Director Skills] 好莱坞导演技能注入...');
+      try {
+        const { enhancedShots, report } = routeAndEnhance(productionResult.shots, {
+          minScore: 5,
+          maxSkillsPerShot: 2
+        });
+
+        // 更新 shots
+        const oldShots = productionResult.shots; // 【v2.1.6-fix-bug37】保存旧 shots 用于元数据保留
+        productionResult.shots = enhancedShots;
+
+        // 【v2.1.6-fix-bug37+38】不可变更新保留元数据 + O(1) 同步 prompts
+        productionResult.shots = this.dualSync.immutableUpdate(oldShots, productionResult.shots);
+        this.dualSync.syncShotsToPrompts('DirectorSkills', productionResult.shots, productionResult.prompts, [
+          'directorStyle', '_appliedSkills'
+        ]);
+
+        console.log(`   ✅ 导演技能注入完成`);
+        console.log(`      增强镜头: ${report.enhancedShots}/${report.totalShots}`);
+        console.log(`      使用技能: ${report.skillsUsed.length}个`);
+        if (report.skillsUsed.length > 0) {
+          console.log(`      技能列表: ${report.skillsUsed.slice(0, 5).join(', ')}${report.skillsUsed.length > 5 ? '...' : ''}`);
+        }
+
+        result.stages.directorSkills = {
+          enhancedShots: report.enhancedShots,
+          totalShots: report.totalShots,
+          skillsUsed: report.skillsUsed,
+          details: report.details
+        };
+      } catch (err) {
+        console.warn(`   ⚠️ 导演技能注入失败: ${err.message}`);
+        result.errors.push({ stage: 'DirectorSkills', message: err.message });
+      }
+
+      // ========== P2-5: Director Optimization Agent 导演优化 ==========
+      if (this.directorOptimizationAgent.enabled) {
+        console.log('\n🎬 [DirectorOptimizationAgent] 导演优化...');
+        try {
+          // 🐼 [PandaCineForge] F4: 导演优化前 - 导演技能注入
+          if (this.pandaAdapter.enabled) {
+            console.log('\n🐼 [PandaCineForge] F4 导演技能注入...');
+            try {
+              const directorSkills = await this.pandaAdapter.recall({
+                call_id: `pcf_f4_${Date.now()}`,
+                caller_agent: 'VisualLanguage',
+                route_fields: {
+                  module_target: ['MyStudio.VisualLanguage'],
+                  cinematic_role: 'visual_language',
+                  deliverable_type: 'color_script',
+                  project_stage: 'production',
+                  sub_domain: metadata.videoType || 'cinema'
+                },
+                context: {
+                  project_id: metadata.projectId || 'default',
+                  caller_agent: 'VisualLanguage',
+                  upstream_deliverable: 'shotlist_v1'
+                },
+                query_text: `${(metadata._pandaVisualSkills?.skills || [])[0]?.name || '导演技巧'} 视觉设计 镜头语言`,
+                recall_mode: 'fast',
+                topk: 2
+              });
+              if (directorSkills.status === 'hit' || directorSkills.status === 'forged') {
+                metadata._pandaDirectorSkills = directorSkills;
+                console.log(`   ✅ 导演技能注入: ${directorSkills.skills?.length || 0} 个技能 | 来源: ${directorSkills.source_layer}`);
+              }
+            } catch (err) {
+              console.warn(`   ⚠️ PandaCineForge F4 失败: ${err.message}`);
+            }
+          }
+
+          const optResult = await this.directorOptimizationAgent.optimize(productionResult.shots, metadata);
+
+          if (optResult.improved) {
+            const oldShots = productionResult.shots; // 【v2.1.6-fix-bug37】保存旧 shots 用于元数据保留
+            productionResult.shots = optResult.shots;
+
+            // 【v2.1.6-fix-bug37】不可变更新保留元数据
+            productionResult.shots = this.dualSync.immutableUpdate(oldShots, productionResult.shots);
+            console.log(`   ✅ 导演优化完成: ${optResult.score.toFixed(2)}/5.0 (迭代 ${optResult.iterations} 次)`);
+          } else {
+            console.log(`   ✅ 导演优化检查通过: ${optResult.score.toFixed(2)}/5.0`);
+          }
+
+          result.stages.directorOptimization = {
+            score: optResult.score,
+            iterations: optResult.iterations,
+            improved: optResult.improved,
+            threshold: this.directorOptimizationAgent.threshold
+          };
+
+          // P1-4: EventBus 记录
+          this.eventBus.emit('directorOptimization.completed', {
+            layerId: 'layer-2-director',
+            score: optResult.score,
+            improved: optResult.improved,
+            timing: Date.now()
+          });
+        } catch (err) {
+          console.warn(`   ⚠️ DirectorOptimizationAgent 失败: ${err.message}`);
+          result.errors.push({ stage: 'DirectorOptimizationAgent', message: err.message });
+
+          this.eventBus.emit('directorOptimization.failed', {
+            layerId: 'layer-2-director',
+            error: err.message,
+            timing: Date.now()
+          });
+        }
+      }
+
+      // ========== P2-1: MicroMotion 微动作增强 ==========
+      if (this.microMotionAdapter.enabled) {
+        console.log('\n🎭 [MicroMotion] 微动作增强...');
+        try {
+          const mmResult = this.microMotionAdapter.enhance(productionResult.prompts, {
+            characters: metadata.characters || [],
+            emotionArc: metadata._emotionArc || null
+          });
+
+          productionResult.prompts = mmResult.prompts;
+
+          // 同步 shots（使用 DualArraySync O(1) 查找）
+          this.dualSync.syncPromptsToShots('MicroMotion', productionResult.shots, productionResult.prompts, ['_microMotion']);
+
+          console.log(`   ✅ 微动作增强完成: ${mmResult.enhancedCount}/${productionResult.prompts.length} 镜头`);
+          result.stages.microMotion = {
+            enhancedCount: mmResult.enhancedCount,
+            details: mmResult.details
+          };
+
+          // P1-4: EventBus 记录
+          this.eventBus.emit('micromotion.completed', {
+            layerId: 'layer-2-enhancer',
+            enhancedCount: mmResult.enhancedCount,
+            timing: Date.now()
+          });
+        } catch (err) {
+          console.warn(`   ⚠️ MicroMotion 失败: ${err.message}`);
+          result.errors.push({ stage: 'MicroMotion', message: err.message });
+
+          this.eventBus.emit('micromotion.failed', {
+            layerId: 'layer-2-enhancer',
+            error: err.message,
+            timing: Date.now()
+          });
+        }
+      }
+
+      // ========== P1-1: Prompt Guardian 自动修复 ==========
+      if (this.promptGuardian.enabled) {
+        console.log('\n🔍 [PromptGuardian] 启动 Prompt 自动修复...');
+        try {
+          const guardianResult = this.promptGuardian.guard(productionResult.prompts, {
+            characters: metadata.characters || []
+          });
+
+          if (guardianResult.fixes.length > 0) {
+            console.log(`   ✅ 自动修复 ${guardianResult.fixes.length} 处问题:`);
+            for (const fix of guardianResult.fixes.slice(0, 5)) {
+              console.log(`      • ${fix.type}: ${fix.action}`);
+            }
+            if (guardianResult.fixes.length > 5) {
+              console.log(`      ... 等 ${guardianResult.fixes.length} 处修复`);
+            }
+
+            productionResult.prompts = guardianResult.prompts;
+
+            // 同步 shots 中的 prompt
+            for (const p of productionResult.prompts) {
+              // 同步 shots（使用 DualArraySync O(1) 查找）
+              this.dualSync.syncPromptsToShots('PromptGuardian', productionResult.shots, productionResult.prompts, ['prompt', 'promptCharCount']);
+            }
+
+            result.stages.promptGuardian = {
+              fixes: guardianResult.fixes,
+              safe: guardianResult.safe,
+              fixCount: guardianResult.fixes.length
+            };
+
+            // P1-4: EventBus 记录 Prompt Guardian 事件
+            this.eventBus.emit('guardian.completed', {
+              layerId: 'layer-2-guardian',
+              fixCount: guardianResult.fixes.length,
+              safe: guardianResult.safe,
+              timing: Date.now()
+            });
+          } else {
+            console.log('   ✅ Prompt Guardian 检查通过,无需修复');
+            result.stages.promptGuardian = {
+              fixes: [],
+              safe: true,
+              fixCount: 0
+            };
+          }
+        } catch (err) {
+          console.warn(`   ⚠️ PromptGuardian 失败: ${err.message}`);
+          result.errors.push({ stage: 'PromptGuardian', message: err.message });
+
+          // P1-4: EventBus 记录失败事件
+          this.eventBus.emit('guardian.failed', {
+            layerId: 'layer-2-guardian',
+            error: err.message,
+            timing: Date.now()
+          });
+        }
+      }
+
+      // ========== 🆕 提示词审核确认环节 ==========
+      if (!options.skipPromptReview) {
+        console.log('\n📝 [提示词审核] 等待人工确认...');
+
+        const promptConfirmation = await this._confirmPrompts(productionResult.prompts);
+        result.confirmations.prompts = promptConfirmation;
+
+        if (!promptConfirmation.approved) {
+          console.log('   ❌ 提示词未确认,流程中止');
+          result.success = false;
+          result.stages.promptReview = {
+            status: 'rejected',
+            reason: promptConfirmation.reason || '用户未确认',
+            issues: promptConfirmation.issues || []
+          };
+          return result;
+        }
+
+        console.log('   ✅ 提示词已确认,继续渲染');
+      } else {
+        console.log('\n⚠️ [提示词审核] 跳过(调试模式)');
+        result.confirmations.prompts = { approved: true, skipped: true };
+      }
+
+      // ========== P1-2: Render Pipeline Guard 强制检查 ==========
+      if (this.pipelineGuard.enabled) {
+        console.log('\n🛡️ [PipelineGuard] 启动渲染管线检查...');
+        try {
+          const guardResult = this.pipelineGuard.check(productionResult.prompts, {
+            strictMode: this.pipelineGuard.strictMode
+          });
+
+          result.stages.pipelineGuard = {
+            pass: guardResult.pass,
+            errorCount: guardResult.errors.length,
+            warningCount: guardResult.warnings.length,
+            errors: guardResult.errors,
+            warnings: guardResult.warnings
+          };
+
+          if (!guardResult.pass) {
+            console.error(`   ❌ 检查失败: ${guardResult.errors.length} 错误, ${guardResult.warnings.length} 警告`);
+            for (const err of guardResult.errors.slice(0, 3)) {
+              console.error(`      • [${err.ruleName}] ${err.promptId}: ${err.message}`);
+              console.error(`        修复: ${err.fix}`);
+            }
+            if (guardResult.errors.length > 3) {
+              console.error(`      ... 等 ${guardResult.errors.length} 个错误`);
+            }
+
+            if (this.pipelineGuard.strictMode) {
+              console.error('   ⛔ 严格模式已启用,渲染被阻止');
+              result.success = false;
+              result.errors.push({ stage: 'PipelineGuard', message: `渲染管线检查未通过: ${guardResult.errors.length} 错误` });
+              return result;
+            } else {
+              console.warn('   ⚠️ 非严格模式,继续渲染(可能产生问题)');
+            }
+          } else {
+            if (guardResult.warnings.length > 0) {
+              console.log(`   ✅ 检查通过 (${guardResult.warnings.length} 警告)`);
+              for (const warn of guardResult.warnings) {
+                console.log(`      🟡 [${warn.ruleName}] ${warn.promptId}: ${warn.message}`);
+              }
+            } else {
+              console.log('   ✅ 检查通过,无错误无警告');
+            }
+          }
+
+          // P1-4: EventBus 记录 Pipeline Guard 事件
+          this.eventBus.emit('pipelineGuard.completed', {
+            layerId: 'layer-3-guard',
+            pass: guardResult.pass,
+            errorCount: guardResult.errors.length,
+            warningCount: guardResult.warnings.length,
+            timing: Date.now()
+          });
+        } catch (err) {
+          console.warn(`   ⚠️ PipelineGuard 失败: ${err.message}`);
+          result.errors.push({ stage: 'PipelineGuard', message: err.message });
+
+          // P1-4: EventBus 记录失败事件
+          this.eventBus.emit('pipelineGuard.failed', {
+            layerId: 'layer-3-guard',
+            error: err.message,
+            timing: Date.now()
+          });
+        }
+      }
+
+      // ========== Layer 3: 渲染引擎 ==========
+      let renderResult = null;
+
+      if (!options.skipRender) {
+        try {
+          console.log('\n🎨 [Layer 3] 渲染引擎 - 提交 Seedance...');
+          const stage3Start = Date.now();
+
+          renderResult = await this.renderingEngine.render(productionResult.prompts, {
+            // 【P0-9 修复】dryRun 仅由显式选项控制,不再因缺 apiKey 强制开启
+            // 无 apiKey 时让渲染引擎自己抛错,暴露配置问题
+            dryRun: options.dryRun === true
+          });
+
+          result.stages.renderingEngine = {
+            render: renderResult,
+            report: this.renderingEngine.generateReport(renderResult)
+          };
+          result.stages.renderingEngine.timing = Date.now() - stage3Start;
+
+          console.log(`   ✅ 渲染完成 (${result.stages.renderingEngine.timing}ms)`);
+          console.log(`      提交: ${renderResult.submitted}/${renderResult.results.length} | 失败: ${renderResult.failed}`);
+        } catch (error) {
+          result.errors.push({ layer: 'rendering-engine', error: error.message });
+          console.warn(`\n⚠️ [Layer 3 失败] ${error.message}`);
+          result.stages.renderingEngine = { error: error.message, skipped: false };
+        }
+      } else {
+        console.log('\n⚠️ [渲染] 跳过(调试模式)');
+        result.stages.renderingEngine = { skipped: true };
+      }
+
+      // ========== Layer 4: 后期引擎 ==========
+
+      // 🐼 [PandaCineForge] F7: Layer 4 前 - 调色/混音/后期技能注入
+      if (this.pandaAdapter.enabled) {
+        console.log('\n🐼 [PandaCineForge] F7 后期技能注入...');
+        try {
+          const postSkills = await this.pandaAdapter.recall({
+            call_id: `pcf_f7_${Date.now()}`,
+            caller_agent: 'AudioDesign',
+            route_fields: {
+              module_target: ['MyStudio.AudioDesign'],
+              cinematic_role: 'audio_design',
+              deliverable_type: 'mix_plan',
+              project_stage: 'postproduction',
+              sub_domain: metadata.videoType || 'cinema'
+            },
+            context: {
+              project_id: metadata.projectId || 'default',
+              caller_agent: 'AudioDesign',
+              upstream_deliverable: 'shotlist_v1'
+            },
+            query_text: `${(metadata._pandaVisualSkills?.skills || [])[0]?.name || '后期制作'} 调色 混音 剪辑`,
+            recall_mode: 'fast',
+            topk: 2
+          });
+          if (postSkills.status === 'hit' || postSkills.status === 'forged') {
+            metadata._pandaPostSkills = postSkills;
+            console.log(`   ✅ 后期技能注入: ${postSkills.skills?.length || 0} 个技能 | 来源: ${postSkills.source_layer}`);
+          }
+        } catch (err) {
+          console.warn(`   ⚠️ PandaCineForge F7 失败: ${err.message}`);
+        }
+      }
+
+      if (!options.skipPostProduction) {
+        try {
+          console.log('\n🎬 [Layer 4] 后期引擎 - 字幕/音乐/弹幕/多版本...');
+          const stage4Start = Date.now();
+
+          const postResult = await this.postProductionEngine.postProduce(
+            productionResult,
+            scriptResult,
+            renderResult || { success: false, results: [] }
+          );
+
+          result.stages.postProductionEngine = {
+            success: postResult.success,
+            versions: postResult.versions,
+            stages: postResult.stages,
+            report: this.postProductionEngine.generateReport(postResult)
+          };
+          result.stages.postProductionEngine.timing = Date.now() - stage4Start;
+
+        console.log(`   ✅ 后期制作完成 (${result.stages.postProductionEngine.timing}ms)`);
+        console.log(`      版本: ${Object.keys(postResult.versions).join(', ')}`);
+        console.log(`      字幕: ${postResult.stages.subtitles?.count || 0}条 | 音乐: ${postResult.stages.music?.count || 0}段 | 弹幕: ${postResult.stages.danmaku?.count || 0}条`);
+        } catch (error) {
+          result.errors.push({ layer: 'post-production', error: error.message });
+          console.warn(`\n⚠️ [Layer 4 失败] ${error.message}`);
+          result.stages.postProductionEngine = { error: error.message, skipped: false };
+        }
+      } else {
+        console.log('\n⚠️ [后期制作] 跳过(调试模式)');
+        result.stages.postProductionEngine = { skipped: true };
+      }
+
+      // ========== 汇总 ==========
+      // 【P0-8 修复】result.success 不再无条件置 true,基于各阶段实际状态聚合
+      const hasRenderError = result.stages.renderingEngine?.error || (result.stages.renderingEngine?.render?.success === false && !result.stages.renderingEngine?.skipped);
+      const hasPostProdError = result.stages.postProductionEngine?.error || (result.stages.postProductionEngine?.success === false && !result.stages.postProductionEngine?.skipped);
+      const hasProductionError = productionResult?.success === false;
+      result.success = result.errors.length === 0 && !hasRenderError && !hasPostProdError && !hasProductionError;
+      if (result.errors.length > 0 || hasRenderError || hasPostProdError || hasProductionError) {
+        result.degraded = true;
+      }
+      result.timing.total = Date.now() - totalStart;
+      result.timing.effective = result.timing.total - result.totalWaitTimeMs; // 【v2.1.10-hotfix】有效时间 = 总时间 - 等待时间
+
+      console.log(`\n🏁 [完成] 总耗时: ${result.timing.total}ms`);
+      console.log(`   ⏱️ 等待确认时间: ${result.totalWaitTimeMs}ms (${Math.round(result.totalWaitTimeMs/60000)}分钟) — 不计入有效时间`);
+      console.log(`   ⏱️ 有效处理时间: ${result.timing.effective}ms (${Math.round(result.timing.effective/60000)}分钟)`);
+      console.log(`   状态: ${result.success ? '✅ 成功' : '❌ 失败'}`);
+
+      // 生成最终报告
+      result.finalReport = this._generateFinalReport(scriptResult, productionResult, result.stages.renderingEngine, result.stages.postProductionEngine, result.timing.total, result.confirmations);
+
+      // ========== 🆕 最终导出前字段标准化(专家诊断建议)==========
+      if (productionResult && productionResult.shots) {
+        // v2.0.6: 先在FieldGuard之前处理片头字段(避免校验失败阻断)
+        const adapter = result.stages?.adapter || {};
+        // 【审计修复】统一片头判定,兼容 SC00/S00
+        let openingShot = productionResult.shots.find(s => isOpeningShot(s));
+        const openingShotId = openingShot ? (openingShot.shotId || openingShot.shot_id) : null; // 【v2.1.6-fix-bug40】缓存片头shotId
+        if (openingShot) {
+          // 如果片头缺少title/subtitle,先用adapter标题兜底
+          if (!openingShot.title || openingShot.title === '未命名') {
+            openingShot.title = adapter.title || '未命名';
+          }
+          if (!openingShot.subtitle) {
+            const epNum = adapter._metadata?.episodeNumber || adapter._metadata?.series?.currentEpisode || 1;
+            openingShot.subtitle = `第${epNum}集`;
+          }
+        }
+
+        console.log('\n🛡️ [FieldGuard] 最终导出前标准化...');
+        try {
+          // 【v2.1.4-fix11-F】最终导出前严格检查:标记上下文
+          productionResult.shots.forEach(s => s._context = 'Final-Export');
+
+          // 【v2.1.4-fix11-G】片头优化必须在FieldGuard之前执行,确保片头字段被正确添加
+          // 【审计修复】统一片头判定,兼容 SC00/S00
+          // 【v2.1.6-fix-bug40】使用缓存的shotId重新查找，避免FieldGuard修改sceneType后选中不同shot
+          openingShot = openingShotId
+            ? productionResult.shots.find(s => (s.shotId || s.shot_id) === openingShotId)
+            : productionResult.shots.find(s => isOpeningShot(s));
+          if (openingShot) {
+            console.log('\n🎬 [OpeningTitleOptimizer] 片头专属字段优化...');
+            try {
+              const optimizer = new OpeningTitleOptimizer({
+                llmTimeout: 120000,
+                llmMaxRetries: 2,
+                llmModel: process.env.STORMAXE_LLM_FAST_MODEL || process.env.STORMAXE_LLM_MODEL || 'kimi-k2p6'
+              });
+              // 【P2-10 修复】下发 deadline,防止不受控挂起
+              optimizer.setDeadline(Date.now() + 180000); // 3分钟总体预算
+              const blueprint = result.stages?.adapter || { title: result.title || '未命名' };
+              const optimized = await optimizer.optimize(openingShot, blueprint);
+
+              if (!optimized.degraded) {
+                // 【v2.1.4-fix12】直接修改 openingShot 的顶层属性(standardOutput 是扁平结构)
+                openingShot.title_content = optimized.title_content;
+                openingShot.subtitle_content = optimized.subtitle_content;
+                openingShot.title_animation = optimized.title_animation;
+                openingShot.title_font_design = optimized.title_font_design;
+                openingShot.opening_audio_design = optimized.opening_audio_design;
+
+                openingShot.title = optimized.title_content || openingShot.title;
+                openingShot.subtitle = optimized.subtitle_content || openingShot.subtitle;
+
+                // v2.1.5-fix: 同步到 prompts[0],确保双数组一致
+                if (productionResult.prompts && productionResult.prompts.length > 0) {
+                  const promptOpening = productionResult.prompts.find(p => isOpeningShot(p));
+                  if (promptOpening) {
+                    promptOpening.title_content = optimized.title_content;
+                    promptOpening.subtitle_content = optimized.subtitle_content;
+                    promptOpening.title_animation = optimized.title_animation;
+                    promptOpening.title_font_design = optimized.title_font_design;
+                    promptOpening.opening_audio_design = optimized.opening_audio_design;
+                    promptOpening.title = optimized.title_content || promptOpening.title;
+                    promptOpening.subtitle = optimized.subtitle_content || promptOpening.subtitle;
+                  }
+                }
+
+                console.log('   ✅ 片头优化完成');
+                console.log('   主标题:', optimized.title_content);
+                console.log('   副标题:', optimized.subtitle_content);
+              } else {
+                // 【v2.1.4-fix13】降级时也要补全全部 5 个字段(用 optimized 返回的 fallback 值)
+                console.warn('   ⚠️ 片头优化降级,使用 fallback 值补全全部5字段');
+                openingShot.title_content = optimized.title_content || openingShot.title_content || result.title || '未命名';
+                openingShot.subtitle_content = optimized.subtitle_content || openingShot.subtitle_content || '第1集';
+                // 【v2.1.4-fix13】补全剩余 3 个字段(之前被丢弃)
+                openingShot.title_animation = optimized.title_animation || '主标题淡入入场,副标题延迟0.5秒跟随淡入,整体2秒';
+                openingShot.title_font_design = optimized.title_font_design || '粗体无衬线字体,白色,带微阴影';
+                openingShot.opening_audio_design = optimized.opening_audio_design || '环境音渐起,配合标题入场';
+
+                openingShot.title = openingShot.title_content;
+                openingShot.subtitle = openingShot.subtitle_content;
+
+                // v2.1.5-fix: 降级分支也同步到 prompts
+                if (productionResult.prompts && productionResult.prompts.length > 0) {
+                  const promptOpening = productionResult.prompts.find(p => isOpeningShot(p));
+                  if (promptOpening) {
+                    promptOpening.title_content = openingShot.title_content;
+                    promptOpening.subtitle_content = openingShot.subtitle_content;
+                    promptOpening.title_animation = openingShot.title_animation;
+                    promptOpening.title_font_design = openingShot.title_font_design;
+                    promptOpening.opening_audio_design = openingShot.opening_audio_design;
+                    promptOpening.title = openingShot.title;
+                    promptOpening.subtitle = openingShot.subtitle;
+                  }
+                }
+              }
+            } catch (e) {
+              console.warn('   ⚠️ 片头优化失败:', e.message);
+              // 【v2.1.4-fix13】异常时也要补全全部 5 个字段,不能留空
+              openingShot.title_content = openingShot.title_content || result.title || '未命名';
+              openingShot.subtitle_content = openingShot.subtitle_content || '第1集';
+              openingShot.title_animation = openingShot.title_animation || '主标题淡入入场,副标题延迟0.5秒跟随淡入,整体2秒';
+              openingShot.title_font_design = openingShot.title_font_design || '粗体无衬线字体,白色,带微阴影';
+              openingShot.opening_audio_design = openingShot.opening_audio_design || '环境音渐起,配合标题入场';
+
+              // v2.1.5-fix: 异常分支也同步到 prompts
+              if (productionResult.prompts && productionResult.prompts.length > 0) {
+                const promptOpening = productionResult.prompts.find(p => isOpeningShot(p));
+                if (promptOpening) {
+                  promptOpening.title_content = openingShot.title_content;
+                  promptOpening.subtitle_content = openingShot.subtitle_content;
+                  promptOpening.title_animation = openingShot.title_animation;
+                  promptOpening.title_font_design = openingShot.title_font_design;
+                  promptOpening.opening_audio_design = openingShot.opening_audio_design;
+                }
+              }
+            }
+          }
+
+          // 【审计修复】无论优化成功/降级/异常,进入 FieldGuard 前强制确保5字段非空,防止严格校验 throw 丢字段
+          if (openingShot) {
+            const openingDefaults = {
+              title_content: openingShot.title_content || openingShot.title || result.title || '未命名',
+              subtitle_content: openingShot.subtitle_content || openingShot.subtitle || '第1集',
+              title_animation: openingShot.title_animation || '主标题淡入入场,副标题延迟0.5秒跟随淡入,整体2秒',
+              title_font_design: openingShot.title_font_design || '粗体无衬线字体,白色,带微阴影',
+              opening_audio_design: openingShot.opening_audio_design || '环境音渐起,配合标题入场'
+            };
+            Object.assign(openingShot, openingDefaults);
+            // 同步 title/subtitle 顶层字段
+            openingShot.title = openingShot.title || openingShot.title_content;
+            openingShot.subtitle = openingShot.subtitle || openingShot.subtitle_content;
+            openingShot.sceneType = openingShot.sceneType || 'opening'; // 兜底 sceneType
+          }
+
+          // v1.2.6-fix5: 只对 shots 做标准化,不要用 normalized.shots 覆盖 prompts          // v1.2.6-fix5: 只对 shots 做标准化,不要用 normalized.shots 覆盖 prompts          // v1.2.6-fix5: 只对 shots 做标准化,不要用 normalized.shots 覆盖 prompts
+          const normalized = this.fieldGuard.normalizeAndValidate(productionResult.shots, 'Final-Export');
+          productionResult.shots = normalized.shots;
+
+          // v1.2.6-fix5: prompts 保持原样(它们已经是标准输出对象),不再被 shots 覆盖
+          // productionResult.prompts = normalized.shots; // ❌ 删除此行
+
+          // v1.2.6-fix5: shots 摘要改用标准输出字段(duration 而非 timing)
+          // v2.0.6: 包含片头专属字段
+          result.stages.productionEngine.shots = normalized.shots.map(s => ({
+            shotId: s.shotId,
+            sceneType: s.sceneType || '',
+            duration: s.duration || s.timing?.duration || 0,
+            promptLength: typeof s.prompt === 'string' ? s.prompt.length : (s.promptCharCount || 0),
+            status: s.status || 'completed',
+            // v2.0.6: 片头专属字段(从顶层属性提取,OpeningTitleOptimizer写入)
+            ...(s.title_content ? {
+              title_content: s.title_content,
+              subtitle_content: s.subtitle_content,
+              title_animation: s.title_animation,
+              title_font_design: s.title_font_design,
+              opening_audio_design: s.opening_audio_design
+            } : {}),
+            // v2.0.6: 包含fields中的标准字段
+            ...(s.fields || {})
+          }));
+          console.log('   ✅ 最终导出字段标准化通过');
+          this.fieldGuard.printShotSummary(normalized.shots, 'Final-Export');
+
+        } catch (err) {
+          console.error(`   ❌ 最终字段校验失败: ${err.message}`);
+          result.errors.push({ stage: 'FieldGuard-Final', message: err.message });
+        }
+      }
+
+    } catch (error) {
+      result.success = false;
+      result.errors.push({
+        stage: 'HYPERREALITY_SYSTEM',
+        message: error.message,
+        stack: error.stack
+      });
+      console.error(`\n❌ [系统错误] ${error.message}`);
+    } finally {
+      // 【v2.1.6-fix】关闭长时间任务模式
+      this.stabilityShield.setLongTaskMode('ProductionEngine', false);
+      // 【v2.1.6-fix】清理 EventBus 会话监听器，防止内存泄漏
+      if (this.eventBus && typeof this.eventBus.clearSessionListeners === 'function') {
+        this.eventBus.clearSessionListeners();
+      }
+    }
+
+    // 【v2.1.4-fix13-审计修复】将完整 shots/prompts/opening 挂到 result,供调用方获取完整数据
+    if (typeof productionResult !== 'undefined' && productionResult) {
+      result.shots = productionResult.shots || [];
+      result.prompts = productionResult.prompts || [];
+      result.opening = productionResult.opening || null;
+      result.degraded = productionResult.degraded || false;
+    }
+
+    // ========== P1-5: Pipeline Logger 全链路日志留档 ==========
+    if (this.pipelineLogger.enabled) {
+      try {
+        const sessionDir = this.pipelineLogger.save(result, {
+          title: metadata.title || 'untitled',
+          version: this.version,
+          intent,
+          timestamp: new Date().toISOString()
+        });
+        console.log(`\n💾 [PipelineLogger] 结果已保存: ${sessionDir}`);
+        result._sessionDir = sessionDir;
+      } catch (err) {
+        console.warn(`   ⚠️ PipelineLogger 失败: ${err.message}`);
+        result.errors.push({ stage: 'PipelineLogger', message: err.message });
+      }
+    }
+
+    // ========== P2-4: Requirement Alignment Gate 需求对齐闸机 ==========
+    if (this.requirementAlignmentGate.enabled) {
+      console.log('\n🔍 [RequirementAlignmentGate] 需求对齐验证...');
+      try {
+        const alignmentResult = this.requirementAlignmentGate.validate(intent, metadata, result);
+
+        result.stages.requirementAlignment = {
+          pass: alignmentResult.pass,
+          score: alignmentResult.score,
+          missing: alignmentResult.missing,
+          report: alignmentResult.report
+        };
+
+        if (!alignmentResult.pass) {
+          console.warn(`   ⚠️ 需求对齐未通过: ${(alignmentResult.score * 100).toFixed(0)}%`);
+          if (alignmentResult.missing.length > 0) {
+            console.warn(`   缺失: ${alignmentResult.missing.slice(0, 3).join(' | ')}`);
+          }
+
+          if (this.requirementAlignmentGate.strictMode) {
+            console.error('   ⛔ 严格模式已启用,阻止最终返回');
+            result.success = false;
+            result.errors.push({ stage: 'RequirementAlignmentGate', message: `需求对齐未通过: ${(alignmentResult.score * 100).toFixed(0)}%` });
+          }
+        } else {
+          console.log(`   ✅ 需求对齐通过: ${(alignmentResult.score * 100).toFixed(0)}%`);
+        }
+
+        // P1-4: EventBus 记录
+        this.eventBus.emit('requirementAlignment.completed', {
+          layerId: 'final-gate',
+          pass: alignmentResult.pass,
+          score: alignmentResult.score,
+          timing: Date.now()
+        });
+      } catch (err) {
+        console.warn(`   ⚠️ RequirementAlignmentGate 失败: ${err.message}`);
+        result.errors.push({ stage: 'RequirementAlignmentGate', message: err.message });
+
+        this.eventBus.emit('requirementAlignment.failed', {
+          layerId: 'final-gate',
+          error: err.message,
+          timing: Date.now()
+        });
+      }
+    }
+
+    // 🐼 [PandaCineForge] Phase 5: 反馈飞轮 — 驱动技能成熟度进化
+    if (this.pandaAdapter.enabled) {
+      try {
+        const outcome = result.success ? 'success' : 'failed';
+        const qualityScore = result.success ? 85 : 40;
+        const failureReasons = result.errors.length > 0 ? result.errors.map(e => e.message || e.error || String(e)) : undefined;
+        
+        // 对本次注入的技能进行反馈回传
+        const skillsToFeedback = [
+          (metadata._pandaSkillHints?.skills || [])[0]?.skill_id,
+          (metadata._pandaScriptSkills?.skills || [])[0]?.skill_id,
+          (metadata._pandaVisualSkills?.skills || [])[0]?.skill_id,
+          (metadata._pandaPostSkills?.skills || [])[0]?.skill_id,
+          (metadata._pandaDirectorSkills?.skills || [])[0]?.skill_id,
+          (metadata._pandaEmotionSkills?.skills || [])[0]?.skill_id,
+          (metadata._pandaVerticalSkills?.skills || [])[0]?.skill_id,
+        ].filter(Boolean);
+
+        if (skillsToFeedback.length > 0) {
+          console.log(`\n🐼 [PandaCineForge] 反馈飞轮: ${skillsToFeedback.length} 个技能`);
+          for (const skillId of skillsToFeedback) {
+            // 【v2.1.6-fix】包装为 Promise 防止同步抛出未被捕获
+            Promise.resolve()
+              .then(() => this.pandaAdapter.reportFeedback(skillId, outcome, qualityScore, failureReasons))
+              .then(fb => {
+                if (fb.status === 'feedback_recorded') {
+                  console.log(`   ✅ 技能反馈: ${skillId.substring(0, 20)}... | maturity: ${fb.maturity}`);
+                }
+              })
+              .catch(err => {
+                // 静默失败，不影响主流程
+              });
+          }
+        }
+      } catch (err) {
+        // 反馈失败不影响主流程
+      }
+    }
+
+    // 清除长时间任务模式
+    this.stabilityShield.setLongTaskMode('ProductionEngine', false);
+
+    return result;
+  }
+
+  /**
+   * ⭐ v2.1.7: 创意主题确认环节(Layer -1)
+   * 类似需求清单确认，但针对创意主题
+   */
+  async _confirmCreativeTheme(themeResult) {
+    console.log('\n--- 🎨 创意主题确认 ---');
+    
+    const task = themeResult.tasks[0];
+    const summary = this.creativeThemeGenerator.generateConfirmationSummary(themeResult);
+    console.log(summary);
+    console.log('\n---');
+
+    // 写入文件并等待外部确认
+    const confirmPath = await this._waitForExternalConfirmation('creative-theme', summary);
+
+    if (confirmPath.approved) {
+      console.log('   ✅ 创意主题已确认');
+    } else {
+      console.log('   ❌ 创意主题被拒绝:', confirmPath.reason);
+    }
+
+    return {
+      approved: confirmPath.approved,
+      reviewedAt: new Date().toISOString(),
+      theme: task,
+      reason: confirmPath.reason,
+      suggestions: confirmPath.suggestions,
+      adjustments: confirmPath.adjustments,
+      waitTimeMs: confirmPath.waitTimeMs // 【v2.1.10-hotfix】传递等待时间
+    };
+  }
+
+  /**
+   * 🆕 v2.1.8: 将需求洞察结果转换为 RequirementList 格式（兼容下游）
+   */
+  _convertDiscoveryToRequirementList(discoveryResult, upstreamFields) {
+    const { audienceProfile, sceneStructure, riskAssessment, referenceCases } = discoveryResult;
+    
+    // 类型映射
+    const typeMapping = {
+      '硬科幻': 'CINE', '赛博朋克': 'CINE', '武侠动作': 'CINE',
+      '恐怖悬疑': 'DRAMA', '自然纪录片': 'DOC', '商业广告': 'MARKETING',
+      '科普教育': 'EDU', '音乐MV': 'MV', '家庭温情': 'FAMILY',
+      '浪漫爱情': 'DRAMA', '喜剧荒诞': 'DRAMA', '历史战争': 'CINE',
+      '社会现实': 'DOC', '艺术实验': 'ART', '运动竞技': 'CINE',
+      '美食文化': 'FOOD', '文化遗产': 'DOC', '旅游推广': 'TRAVEL'
+    };
+    
+    const videoType = typeMapping[upstreamFields.type] || 'EDU';
+    
+    return {
+      videoType: videoType,
+      videoTypeName: upstreamFields.type || '通用主题',
+      title: upstreamFields.theme || '未命名项目',
+      targetDuration: upstreamFields.duration_sec || 45,
+      durationRange: [Math.round((upstreamFields.duration_sec || 45) * 0.8), Math.round((upstreamFields.duration_sec || 45) * 1.2)],
+      style: {
+        primary: 'CINE',
+        secondary: [],
+        description: upstreamFields.visual_style || '电影级质感'
+      },
+      aspectRatio: '16:9',
+      platform: '视频号/抖音',
+      creativeIntensity: upstreamFields.creative_style || 0.72,
+      narrativeMode: 'dialogue',
+      characters: [],
+      structure: {
+        opening: sceneStructure?.opening?.purpose || '开场引入',
+        scenes: sceneStructure?.scenes?.map(s => s.purpose) || ['主体内容'],
+        ending: sceneStructure?.ending?.purpose || '总结收尾'
+      },
+      keyPoints: [
+        upstreamFields.description || '',
+        upstreamFields.special_notes || ''
+      ].filter(Boolean),
+      contentConstraints: riskAssessment?.businessConstraints || [],
+      uncertainties: [],
+      _analysis: {
+        confidence: 0.8,
+        source: 'requirementDiscoveryEngine'
+      }
+    };
+  }
+
+  /**
+   * 🆕 需求清单确认(Layer 0)
+   * v1.2.5: 支持外部确认--输出文件后等待队长确认
+   */
+  async _confirmRequirementList(markdown, requirementList) {
+    console.log('\n--- 📋 需求清单确认 ---');
+    console.log(markdown);
+    console.log('\n---');
+
+    // v1.2.5: 写入文件并等待外部确认
+    const confirmPath = await this._waitForExternalConfirmation('requirement', markdown);
+
+    if (confirmPath.approved) {
+      console.log('   ✅ 需求清单已确认');
+    } else {
+      console.log('   ❌ 需求清单被拒绝:', confirmPath.reason);
+    }
+
+    return {
+      approved: confirmPath.approved,
+      reviewedAt: new Date().toISOString(),
+      requirementList: requirementList,
+      reason: confirmPath.reason,
+      suggestions: confirmPath.suggestions,
+      waitTimeMs: confirmPath.waitTimeMs // 【v2.1.10-hotfix】传递等待时间
+    };
+  }
+
+  /**
+   * PRD 产品需求文档确认环节
+   * v2.1.9: 新增 Step 3.5 确认
+   */
+  async _confirmPRD(markdown, prd) {
+    console.log('\n--- 📋 PRD 产品需求文档确认 ---');
+    console.log(markdown);
+    console.log('\n---');
+
+    // 写入文件并等待外部确认
+    const confirmPath = await this._waitForExternalConfirmation('prd', markdown);
+
+    if (confirmPath.approved) {
+      console.log('   ✅ PRD 已确认');
+    } else {
+      console.log('   ❌ PRD 被拒绝:', confirmPath.reason);
+    }
+
+    return {
+      approved: confirmPath.approved,
+      reviewedAt: new Date().toISOString(),
+      prd: prd,
+      reason: confirmPath.reason,
+      suggestions: confirmPath.suggestions,
+      waitTimeMs: confirmPath.waitTimeMs // 【v2.1.10-hotfix】传递等待时间
+    };
+    };
+  }
+
+  /**
+   * 提示词确认环节
+   * v1.2.5: 支持外部确认
+   */
+
+  /**
+   * 生成最小可用 PRD(fallback)
+   * v2.1.9: 当 PRD 生成失败时提供兜底
+   */
+  _generateMinimalPRD(discoveryResult) {
+    const { upstreamFields } = discoveryResult;
+    const type = upstreamFields?.type || '通用';
+    const theme = upstreamFields?.theme || '未指定';
+    const duration = upstreamFields?.duration_sec || 52;
+    
+    return {
+      projectDefinition: {
+        projectId: 'fallback_' + Date.now(),
+        projectName: theme,
+        version: '1.0.0',
+        createdAt: new Date().toISOString(),
+        sourceIntent: theme
+      },
+      productPositioning: {
+        productType: '剧情短片',
+        genre: type,
+        targetPlatform: '通用',
+        targetDuration: duration,
+        aspectRatio: '16:9',
+        resolution: '1080p',
+        frameRate: 24
+      },
+      creativeCore: {
+        coreTheme: theme,
+        creativeHook: `${theme} - 前3秒视觉抓眼`,
+        emotionalArc: 'setup→rising→climax→falling→resolution',
+        keyMessages: ['核心信息'],
+        twistPoint: '',
+        endingType: '闭合式'
+      },
+      visualSpecification: {
+        primaryStyle: '电影级写实',
+        colorPalette: { dominant: '自然色调', accent: '暖色', mood: '中性' },
+        lightingDirection: '自然光',
+        cameraLanguage: '稳定运镜',
+        visualReferences: [theme],
+        textureQuality: '写实',
+        specialVisualEffects: []
+      },
+      audioSpecification: {
+        musicStyle: '环境音乐',
+        soundDesign: '环境音效',
+        voicePolicy: '环境音为主',
+        audioMood: '中性',
+        audioReferences: []
+      },
+      characterSystem: { characters: [] },
+      scenePlan: { scenes: [], shotMapping: [] },
+      productionConstraints: {
+        technicalConstraints: ['保持视觉一致性'],
+        businessConstraints: ['符合平台规范'],
+        forbiddenElements: ['低质量'],
+        qualityThresholds: { visual: 0.75, audio: 0.70, narrative: 0.75, consistency: 0.70 },
+        modelCapabilityBounds: {
+          maxPromptComplexity: 'moderate',
+          supportedEffects: ['基础调色'],
+          consistencyStrategy: 'textual-description'
+        }
+      },
+      audienceProfile: {
+        primaryAudience: { ageRange: '25-30', gender: 'all', interests: ['通用'], consumptionLevel: 'medium' },
+        emotionTriggers: ['好奇心'],
+        contentExpectations: ['高质量内容']
+      },
+      referenceCases: {
+        filmReferences: [theme],
+        adReferences: [],
+        styleReferences: ['通用风格']
+      },
+      deliveryStandard: {
+        deliverables: [{ item: 'video_master', spec: 'MP4/H.264, 1080p', priority: 'required' }],
+        acceptanceCriteria: { visual: 0.75, audio: 0.70, narrative: 0.75, consistency: 0.70 },
+        outputFormat: { videoCodec: 'H.264', audioCodec: 'AAC', container: 'MP4' },
+        revisionPolicy: { maxRevisions: 1, revisionScope: ['visual'] },
+        fallbackPlan: { trigger: '质量低于阈值', action: '降低复杂度', expectedOutput: '保证可交付' },
+        continuityCheckpoints: [{ checkpoint: 'scene-logic', validationMethod: '场景逻辑检查' }]
+      },
+      budgetProfile: {
+        qualityTier: 'standard',
+        computeBudget: { maxCalls: 5, estimatedCost: 1.0 },
+        tokenBudget: { maxTokens: 5000, allocatedAgents: { creativeDirection: 1000, productionSpecification: 2000, promptFusion: 1500, qualityCheck: 500 } },
+        apiCallBudget: { totalCalls: 8, services: [{ service: 'video_generation', maxCalls: 5 }, { service: 'llm_text', maxCalls: 3 }] },
+        degradationPath: [{ trigger: '算力超支', action: '降低质量', impact: '视觉下降15%' }]
+      },
+      prdSummary: {
+        title: theme,
+        type: '剧情短片 | ' + type,
+        duration: duration + '秒',
+        scenes: '0 场景 / 0 预估镜头',
+        characters: '无角色',
+        qualityTier: 'standard',
+        keyHook: theme.slice(0, 30) + '...',
+        deliverables: ['video_master'],
+        humanReadable: `${theme} (剧情短片/${type}, ${duration}秒) - 0场景/0镜头, 0角色, 品质档:standard, 核心钩子:${theme.slice(0, 30)}...`
+      }
+    };
+  }
+  async _confirmPrompts(prompts) {
+    // 生成提示词报告供审阅
+    const promptReport = this._generatePromptsReport(prompts);
+
+    // v1.2.5: 写入文件并等待外部确认
+    const confirmPath = await this._waitForExternalConfirmation('prompt', promptReport);
+
+    if (confirmPath.approved) {
+      console.log('   ✅ 提示词已确认');
+    } else {
+      console.log('   ❌ 提示词被拒绝:', confirmPath.reason);
+    }
+
+    return {
+      approved: confirmPath.approved,
+      reviewedAt: new Date().toISOString(),
+      report: promptReport,
+      reason: confirmPath.reason,
+      suggestions: confirmPath.suggestions
+    };
+  }
+
+  /**
+   * v1.2.5: 等待外部确认
+   * 将内容写入文件,轮询等待确认文件
+   * 【v2.1.8-强制流程】禁止预置确认文件，必须等待真实人工确认
+   */
+  async _waitForExternalConfirmation(type, content) {
+    // 【v2.1.7-fix】使用绝对路径，避免工作目录不同导致确认文件位置错乱
+    const outputDir = path.join(__dirname, 'output', 'confirmations');
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir, { recursive: true });
+    }
+
+    // 写入待确认内容
+    const contentPath = path.join(outputDir, `confirmation-${type}.md`);
+    fs.writeFileSync(contentPath, content, 'utf8');
+
+    const confirmPath = path.join(outputDir, `confirmation-${type}.json`);
+
+    // 【v2.1.8-强制流程】删除预置确认文件检查，禁止绕过人工确认
+    // 之前此处有漏洞：允许预置 JSON 文件跳过确认
+    // 现在必须等待真实的人工确认
+
+    // 【v2.1.10-hotfix】立即通知标记：外部系统可通过此标记检测到确认文件已生成
+    console.log('');
+    console.log('╔══════════════════════════════════════════════════════════════════════╗');
+    console.log(`║ 🔔 NOTIFICATION: confirmation-${type}.md 已生成 ║`);
+    console.log('╠══════════════════════════════════════════════════════════════════════╣');
+    console.log(`║ 文件路径: ${contentPath.substring(contentPath.length - 50).padStart(50)} ║`);
+    console.log(`║ 查看命令: cat ${contentPath} ║`);
+    console.log('║                                                                      ║');
+    console.log('║ 请审阅内容后，运行以下命令确认:                                      ║');
+    console.log(`║   node scripts/human-confirm.js ${type} approve "你的理由"           ║`);
+    console.log('║ 或拒绝:                                                              ║');
+    console.log(`║   node scripts/human-confirm.js ${type} reject "调整原因"           ║`);
+    console.log('║                                                                      ║');
+    console.log('║ ⚠️  AI 不得创建 confirmation-*.json，必须等待人类确认               ║');
+    console.log('║ ⏱️  等待时间不计入流程有效时间                                       ║');
+    console.log('╚══════════════════════════════════════════════════════════════════════╝');
+    console.log('');
+
+    // 【v2.1.10-hotfix】等待确认逻辑改进：等待时间不计入总超时
+    // 原因：用户可能因忙碌、消息延迟等原因未能及时确认，此时间不应消耗流程配额
+    // 改为：长等待+阶段提醒机制，不设强制超时
+    const maxWait = 2 * 60 * 60 * 1000; // 2小时（仅作为提醒节点，不强制终止）
+    const checkInterval = 5000; // 5秒检查一次（减少CPU占用）
+    const reminderIntervals = [15, 30, 45, 60, 90, 120]; // 分钟节点提醒
+    let lastReminderIndex = -1;
+    let startTime = Date.now(); // 重置计时器：每次提醒后重置，避免累计超时
+    let totalWaitMs = 0; // 累计等待时间（用于统计，但不影响流程）
+
+    while (true) {
+      const elapsed = Date.now() - startTime;
+      const elapsedMins = Math.floor(elapsed / 60000);
+      const totalElapsedMins = Math.floor(totalWaitMs / 60000) + elapsedMins;
+      
+      // 检查是否需要发送提醒
+      const currentReminderIndex = reminderIntervals.findIndex(m => totalElapsedMins >= m && totalElapsedMins < m + 5);
+      if (currentReminderIndex !== -1 && currentReminderIndex !== lastReminderIndex) {
+        lastReminderIndex = currentReminderIndex;
+        const reminderMin = reminderIntervals[currentReminderIndex];
+        console.log('');
+        console.log('🔄 '.repeat(15));
+        console.log(`   📢 提醒: 已等待 ${reminderMin} 分钟，确认文件仍在等待中...`);
+        console.log(`      请查看: ${contentPath}`);
+        console.log(`      确认命令: node scripts/human-confirm.js ${type} approve "你的理由"`);
+        console.log('      ⚠️ 等待时间不计入流程有效时间');
+        console.log('🔄 '.repeat(15));
+        console.log('');
+      }
+      
+      // 2小时节点：提醒用户，重置计时器，继续等待（不强制终止）
+      if (elapsed >= maxWait) {
+        totalWaitMs += elapsed;
+        startTime = Date.now(); // 重置计时器
+        console.log('');
+        console.log('⏰ '.repeat(15));
+        console.log('   ⏰ 等待已超2小时，流程仍继续等待...');
+        console.log('   原因：等待确认的时间不计入流程有效时间');
+        console.log('   如需确认，请运行上述命令');
+        console.log('   如需终止，请发送关闭信号');
+        console.log('⏰ '.repeat(15));
+        console.log('');
+      }
+      // 【v2.1.6-fix】收到关闭信号，立即中断轮询
+      if (this._shutdownRequested) {
+        console.log('   ⏰ 收到关闭信号，中断等待');
+        return { approved: false, reason: 'shutdown' };
+      }
+
+      if (fs.existsSync(confirmPath)) {
+        try {
+          const confirmData = JSON.parse(fs.readFileSync(confirmPath, 'utf8'));
+          
+          // 【v2.1.10-hotfix】密码学签名验证——AI 无法伪造
+          // 确认文件必须包含有效的 HMAC-SHA256 签名
+          // 签名由 human-confirm.js 工具生成，密钥仅人类知晓
+          if (!verifyConfirmation(confirmData, type)) {
+            console.log(`   ⛔ 拒绝非法确认文件: 签名验证失败`);
+            console.log(`   ⛔ 仅人类可通过 human-confirm.js 工具生成有效签名`);
+            console.log(`   ⛔ AI 不得擅自创建 confirmation-*.json`);
+            // 删除非法确认文件，防止继续被读取
+            fs.unlinkSync(confirmPath);
+            continue;
+          }
+          
+          console.log(`   ✅ 收到有效人类确认: approved=${confirmData.approved}`);
+          const waitTimeMs = Date.now() - startTime + totalWaitMs;
+          console.log(`   ⏱️ 本次等待确认耗时: ${Math.round(waitTimeMs/1000)}秒 (${Math.round(waitTimeMs/60000)}分钟)`);
+          console.log(`   ⏱️ 等待时间不计入流程有效时间`);
+          return {
+            approved: confirmData.approved === true || confirmData.approved === 'true' || confirmData.approved === 1,
+            reason: confirmData.reason || '',
+            suggestions: confirmData.suggestions || [],
+            waitTimeMs: waitTimeMs // 【v2.1.10-hotfix】记录总等待时间，用于排除统计
+          };
+        } catch (e) {
+          console.log('   ⚠️ 确认文件解析失败,继续等待...');
+        }
+      }
+
+      // 每5秒检查一次，但只在特定时间打印状态（减少日志噪音）
+      if (elapsed % 300000 < checkInterval) { // 每5分钟打印一次简短状态
+        console.log(`   ⏳ 等待确认中... (${elapsedMins}分钟) — 等待时间不计入流程总时间`);
+      }
+
+      await new Promise(resolve => setTimeout(resolve, checkInterval));
+    }
+  }
+
+  /**
+   * 生成提示词报告(供审阅)
+   */
+  /**
+   * 【v2.1.4-fix13-队长优化】格式化提示词:序号+换行+情绪增强
+   */
+  _formatPromptWithSequenceNumbers(promptText, isOpening = false) {
+    if (!promptText || typeof promptText !== 'string') return '(空)';
+
+    // 情绪关键词扩展映射
+    const emotionMap = {
+      'neutral': '情绪克制内敛,面无多余表情,眼神沉稳专注,面部肌肉放松自然,传递专业冷静的气场',
+      'calm': '神态安详从容,呼吸平稳,眉头舒展,嘴角自然闭合,整体氛围宁静平和,无焦虑紧张感',
+      'positive': '面部微微放松,眼神温和带光,嘴角自然上扬约5度,传递乐观自信与亲和感',
+      'high energy': '精神状态饱满,眼神明亮有神,身体姿态挺拔舒展,动作利落有力,充满积极活力',
+      'serene': '神态宁静悠远,目光柔和涣散,面部线条放松,仿佛沉浸在平和的思绪中',
+      'professional': '表情严肃专注,目光坚定直视,肩背挺直,手势精准克制,展现职业权威感',
+      'hopeful': '眼神向上微抬,瞳孔有光,嘴角轻微上扬,面部肌肉放松,传递对未来的期许',
+      'concerned': '眉头微蹙,眼神专注关切,嘴角微微下沉,面部肌肉轻微紧绷,传递担忧与责任感',
+      'tense': '眉头紧锁,眼神锐利聚焦,下颌微收,面部肌肉紧绷,身体姿态僵硬,传递紧张压迫感',
+      'warm': '面部柔和放松,眼神温和亲切,嘴角自然上扬,传递温暖关怀与信任感'
+    };
+
+    // 解析字段
+    const fields = [];
+    const regex = /【([^】]+)】([^【]*)/g;
+    let match;
+    const safeRegex = require('./utils/safe-regex');
+    const safeText = promptText.length > 10000 ? promptText.substring(0, 10000) : promptText;
+    while ((match = regex.exec(safeText)) !== null) {
+      fields.push({ name: match[1], content: match[2].trim() });
+    }
+
+    // 如果没有解析到字段,返回原文
+    if (fields.length === 0) return promptText;
+
+    // 格式化输出
+    const lines = [];
+    let seq = 1;
+
+    for (const field of fields) {
+      const seqStr = String(seq).padStart(2, '0');
+
+      // 情绪字段增强
+      if (field.name === '情绪') {
+        let enhanced = field.content;
+        // 如果已经有面部/眼神详细描述,不再增强
+        if (!enhanced.includes('面部') && !enhanced.includes('眼神') && !enhanced.includes('神态')) {
+          const keywords = enhanced.split(/[,,]/).map(k => k.trim().toLowerCase()).filter(k => k);
+          const details = [];
+          for (const kw of keywords) {
+            for (const [key, detail] of Object.entries(emotionMap)) {
+              if (kw.includes(key.toLowerCase()) && !details.includes(detail)) {
+                details.push(detail);
+              }
+            }
+          }
+          if (details.length > 0) {
+            enhanced = details.join(',');
+          } else if (enhanced.length < 30) {
+            // 无匹配关键词且太短,补充默认描述
+            enhanced = `情绪基调为${enhanced},面部微表情自然真实,眼神聚焦有神采,符合场景氛围与角色身份`;
+          }
+        }
+        lines.push(`${seqStr}.【${field.name}】${enhanced}`);
+      } else {
+        lines.push(`${seqStr}.【${field.name}】${field.content}`);
+      }
+
+      seq++;
+    }
+
+    // 片头额外字段(如果是片头)
+    if (isOpening) {
+      const openingFields = [
+        { name: 'title_content', label: '主标题内容' },
+        { name: 'subtitle_content', label: '副标题内容' },
+        { name: 'title_animation', label: '标题动画设计' },
+        { name: 'title_font_design', label: '标题字体设计' },
+        { name: 'opening_audio_design', label: '开场音频设计' }
+      ];
+      for (const of of openingFields) {
+        const seqStr = String(seq).padStart(2, '0');
+        lines.push(`${seqStr}.【${of.label}】(片头专属字段,需单独配置)`);
+        seq++;
+      }
+    }
+
+    return lines.join('\n');
+  }
+
+  _generatePromptsReport(prompts) {
+    const lines = [];
+
+    lines.push('# 📝 提示词审核报告');
+    lines.push('');
+    lines.push(`**镜头数**: ${prompts.length}`);
+    // v2.0.4-fix: 使用 promptCharCount 替代 prompt.length,确保中英文混合计数准确
+    const totalLen = prompts.reduce((s, p) => s + (p.promptCharCount || (typeof p.prompt === 'string' ? p.prompt.length : 0)), 0);
+    lines.push(`**平均长度**: ${prompts.length > 0 ? Math.round(totalLen / prompts.length) : 0} 字符`);
+    lines.push('');
+    lines.push('## 镜头总览');
+    lines.push('');
+    // v2.0.4-fix: 增加时间轴字符串和字符数统计列
+    lines.push('| 镜头 | 时长 | 字符数 | 字段数 | 有定妆照 | 有时间轴 | 有约束 |');
+    lines.push('|------|------|--------|--------|----------|----------|--------|');
+
+    for (const p of prompts) {
+      const hasImages = p.characterRef && p.characterRef !== 'NONE';
+      // v2.0.4-fix: 检查 timelineString 是否存在
+      const hasTimeline = !!(p.timelineString && p.timelineString.length > 3);
+      const hasConstraints = typeof p.prompt === 'string' && p.prompt.includes('角色一致性') || false;
+      const charCount = p.promptCharCount || (typeof p.prompt === 'string' ? p.prompt.length : 0);
+      // 【v2.1.4-fix13】统计字段数
+      const fieldCount = (p.prompt?.match(/【/g) || []).length;
+      const isOpening = p.shotId === 'SC00' || p.sceneType === 'opening';
+      const expectedFields = isOpening ? 30 : 25;
+      const fieldStatus = fieldCount >= expectedFields ? '✅' : (fieldCount >= expectedFields - 3 ? '⚠️' : '❌');
+      lines.push(`| ${p.shotId} | ${p.duration || '?'}s | ${charCount} | ${fieldStatus} ${fieldCount}/${expectedFields} | ${hasImages ? '✓' : '✗'} | ${hasTimeline ? '✓' : '✗'} | ${hasConstraints ? '✓' : '✗'} |`);
+    }
+
+    lines.push('');
+    lines.push('## 完整提示词');
+    lines.push('');
+
+    for (const p of prompts) {
+      const isOpening = p.shotId === 'SC00' || p.sceneType === 'opening';
+      lines.push(`### ${p.shotId}${isOpening ? '(片头·30字段)' : '(内容·25字段)'}`);
+      const charCount = p.promptCharCount || (typeof p.prompt === 'string' ? p.prompt.length : 0);
+      lines.push(`**长度**: ${charCount} 字符 | **定妆照**: ${p.characterRef && p.characterRef !== 'NONE' ? '有' : '无'} | **时间轴**: ${p.timelineString || '无'}`);
+      lines.push('');
+      // v2.0.4-fix: 显示人物介绍卡片
+      if (p.characterCards && p.characterCards.length > 0) {
+        lines.push('**人物卡片**:');
+        for (const card of p.characterCards) {
+          lines.push(`- ${card.name} (${card.role}): ${card.description || '无描述'}`);
+        }
+        lines.push('');
+      }
+      // 【v2.1.4-fix13】使用新格式:序号+换行+情绪增强
+      lines.push('```markdown');
+      lines.push(this._formatPromptWithSequenceNumbers(p.prompt, isOpening));
+      lines.push('```');
+      lines.push('');
+      lines.push('---');
+      lines.push('');
+    }
+
+    lines.push('## ⚠️ 审核须知');
+    lines.push('');
+    lines.push('1. 【内容镜头】确认有 25 个字段(序号01-25)');
+    lines.push('2. 【片头镜头】确认有 30 个字段(序号01-30,含5个片头专属字段)');
+    lines.push('3. 确认【情绪】字段有具体面部/眼神描述,不是简单关键词');
+    lines.push('4. 确认角色定妆照引用正确');
+    lines.push('5. 确认负面约束(暗黑风/金属光泽)已包含');
+    lines.push('6. 确认角色一致性约束已包含');
+    lines.push('7. 确认 Prompt 长度在限制以内');
+    lines.push('');
+    lines.push('**请回复 "确认" 继续渲染,或 "修改" 并指出问题**');
+    lines.push('');
+
+    return lines.join('\n');
+  }
+
+  /**
+   * 生成最终报告(含确认环节 + 渲染结果 + 后期制作)
+   */
+  _generateFinalReport(scriptResult, productionResult, renderResult, postResult, totalTime, confirmations) {
+    const blueprint = scriptResult.blueprint;
+    const validation = scriptResult.validation;
+    const report = scriptResult.report;
+    const production = productionResult;
+    const render = renderResult?.render || { submitted: 0, failed: 0 };
+
+    const lines = [];
+
+    lines.push('# 超级小香宝 - 生产报告');
+    lines.push(`**版本**: v${this.version}  |  **总耗时**: ${totalTime}ms`);
+    lines.push('');
+
+    // 确认状态
+    lines.push('## ✅ 确认状态');
+    lines.push('');
+    lines.push(`| 环节 | 状态 | 时间 |`);
+    lines.push(`|------|------|------|`);
+    if (confirmations?.prompts) {
+      lines.push(`| 提示词审核 | ${confirmations.prompts.approved ? '✅ 通过' : '❌ 未通过'} ${confirmations.prompts.skipped ? '(跳过)' : ''} | ${confirmations.prompts.reviewedAt || 'N/A'} |`);
+    }
+    lines.push('');
+
+    // 项目信息
+    lines.push('## 📋 项目信息');
+    lines.push(`| 字段 | 值 |`);
+    lines.push(`|------|------|`);
+    lines.push(`| 标题 | ${blueprint.meta.title || '未命名'} |`);
+    lines.push(`| 叙事模式 | ${blueprint.meta.narrative_mode || 'default'} |`);
+    lines.push(`| 目标时长 | ${blueprint.meta.target_duration || 120}s |`);
+    lines.push(`| 场景数 | ${report.scenes_count} |`);
+    lines.push(`| 角色数 | ${report.characters_count} |`);
+    lines.push(`| 台词数 | ${report.dialogues_count} |`);
+    lines.push('');
+
+    // 剧本校验
+    lines.push('## ✅ 剧本校验');
+    lines.push(`**状态**: ${validation.passed ? '通过 ✓' : '未通过 ✗'} | **综合评分**: ${validation.overall_score}/100`);
+    lines.push('');
+    lines.push(`| 维度 | 评分 |`);
+    lines.push(`|------|------|`);
+    for (const [dim, score] of Object.entries(validation.scores?.detailed || {})) {
+      lines.push(`| ${dim} | ${score} |`);
+    }
+    lines.push('');
+
+    // 镜头总览
+    lines.push('## 🎬 镜头总览');
+    // v2.0.4-fix: 增加时间轴和字符数统计列
+    lines.push(`| 镜头ID | 类型 | 时长 | 字符数 | 时间轴 | 状态 |`);
+    lines.push(`|--------|------|------|--------|--------|------|`);
+    for (const shot of production.shots) {
+      const charCount = shot.promptCharCount || (typeof shot.prompt === 'string' ? shot.prompt.length : 0);
+      const timelineStr = shot.timelineString || '无';
+      lines.push(`| ${shot.shotId} | ${shot.sceneType} | ${shot.duration || shot.timing?.duration || 0}s | ${charCount} | ${timelineStr} | ${shot.status || 'ok'} |`);
+    }
+    lines.push('');
+
+    // 渲染结果
+    if (renderResult && !renderResult.skipped) {
+      lines.push('## 🎨 渲染结果');
+      lines.push(`| 提交 | 成功 | 失败 | 成功率 |`);
+      lines.push(`|------|------|------|--------|`);
+      lines.push(`| ${render.results.length} | ${render.submitted} | ${render.failed} | ${render.results.length > 0 ? Math.round((render.submitted / render.results.length) * 100) : 0}% |`);
+      lines.push('');
+    }
+
+    // 完整 Prompts
+    lines.push('## 📝 完整 Prompts');
+    lines.push('');
+    for (const p of production.prompts) {
+      lines.push(`### ${p.shotId}`);
+      const charCount = p.promptCharCount || (typeof p.prompt === 'string' ? p.prompt.length : 0);
+      lines.push(`**长度**: ${charCount} 字符 | **定妆照**: ${p.characterRef && p.characterRef !== 'NONE' ? p.characterRef : '无'} | **时间轴**: ${p.timelineString || '无'}`);
+      lines.push('');
+      // v2.0.4-fix: 显示人物介绍卡片
+      if (p.characterCards && p.characterCards.length > 0) {
+        lines.push('**人物卡片**:');
+        for (const card of p.characterCards) {
+          lines.push(`- ${card.name} (${card.role}): ${card.description || '无描述'}`);
+        }
+        lines.push('');
+      }
+      lines.push('```');
+      lines.push(p.prompt);
+      lines.push('```');
+      lines.push('');
+    }
+
+    // 质量门
+    const qg = production.stages?.qualityGate;
+    if (qg) {
+      lines.push('## 🛡️ 质量门检查');
+      lines.push(`**状态**: ${qg.passed ? '通过 ✓' : '失败 ✗'} (${qg.passedCount}/${qg.totalPrompts})`);
+      lines.push('');
+      lines.push(`| 镜头 | 有镜头时间轴 | 有角色 | 长度合规 | 状态 |`);
+      lines.push(`|------|------------|--------|----------|------|`);
+      for (const check of (qg.checks || [])) {
+        lines.push(`| ${check.shotId} | ${check.hasTimeline ? '✓' : '✗'} | ${check.hasCharacters ? '✓' : '✗'} | ${check.withinLimit ? '✓' : '✗'} | ${check.passed ? '✓' : '✗'} |`);
+      }
+      lines.push('');
+    }
+
+    // 后期制作结果
+    if (postResult && !postResult.skipped) {
+      const post = postResult;
+      lines.push('## 🎬 后期制作');
+      lines.push(`**状态**: ${post.success ? '通过 ✓' : '未通过 ✗'}`);
+      lines.push('');
+
+      // 版本列表
+      lines.push('### 输出版本');
+      lines.push(`| 版本 | 字幕 | 音乐 | 弹幕 | 转场 | 片头 |`);
+      lines.push(`|------|------|------|------|------|------|`);
+      for (const [version, data] of Object.entries(post.versions || {})) {
+        const f = data.features || {};
+        lines.push(`| ${version} | ${f.subtitles ? '✓' : '✗'} | ${f.music ? '✓' : '✗'} | ${f.danmaku ? '✓' : '✗'} | ${f.transitions ? '✓' : '✗'} | ${f.titleCard ? '✓' : '✗'} |`);
+      }
+      lines.push('');
+
+      // 字幕预览
+      if (post.stages?.subtitles?.tracks?.length > 0) {
+        lines.push('### 身份介绍字幕');
+        lines.push(`| 角色 | 场景 | 时长 | 内容 |`);
+        lines.push(`|------|------|------|------|`);
+        for (const sub of post.stages.subtitles.tracks.slice(0, 3)) {
+          lines.push(`| ${sub.characterName} | ${sub.sceneId} | ${sub.duration}s | ${sub.content.title} |`);
+        }
+        lines.push('');
+      }
+
+      // 音乐预览
+      if (post.stages?.music?.tracks?.length > 0) {
+        lines.push('### 无版权音乐配置');
+        lines.push(`| 场景 | 风格 | 情绪 | 音量 |`);
+        lines.push(`|------|------|------|------|`);
+        for (const track of post.stages.music.tracks.slice(0, 3)) {
+          lines.push(`| ${track.sceneId} | ${track.searchParams.genre} | ${track.searchParams.mood} | ${track.config.volume} |`);
+        }
+        lines.push('');
+      }
+
+      // 弹幕预览
+      if (post.stages?.danmaku?.list?.length > 0) {
+        lines.push('### 弹幕预览');
+        lines.push(`| 内容 | 场景 | 颜色 |`);
+        lines.push(`|------|------|------|`);
+        for (const dm of post.stages.danmaku.list.slice(0, 3)) {
+          lines.push(`| ${dm.text} | ${dm.sceneId} | ${dm.color} |`);
+        }
+        lines.push('');
+      }
+    }
+
+    // 时序分析
+    lines.push('## ⏱️ 时序分析');
+    lines.push('');
+    lines.push(`| 阶段 | 耗时 | 占比 |`);
+    lines.push(`|------|------|------|`);
+    lines.push(`| 剧本引擎 | ${scriptResult.timing || 'N/A'} | - |`);
+    lines.push(`| 制作引擎 | ${production.timing?.total || 'N/A'} | - |`);
+    lines.push(`| 渲染引擎 | ${renderResult?.timing?.total || 'N/A'} | - |`);
+    lines.push(`| 后期引擎 | ${postResult?.timing?.total || 'N/A'} | - |`);
+    lines.push(`| 总耗时 | ${totalTime}ms | 100% |`);
+    lines.push('');
+
+    lines.push('---');
+    lines.push(`*生成时间: ${new Date().toISOString()}*`);
+
+    return lines.join('\n');
+  }
+
+  /**
+   * 保存完整结果到文件
+   */
+  async save(result, outputDir) {
+    const fs = require('fs').promises;
+    const fsSync = require('fs');
+    const path = require('path');
+
+    await fs.mkdir(outputDir, { recursive: true });
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const basePath = path.join(outputDir, `super-mickey-${timestamp}`);
+
+    // v2.1.5-fix: 安全写入函数(带验证)
+    const safeWrite = async (filePath, content, label) => {
+      await fs.writeFile(filePath, content);
+      // 写入验证
+      if (!fsSync.existsSync(filePath)) {
+        throw new Error(`${label} 写入后文件不存在: ${filePath}`);
+      }
+      const stats = fsSync.statSync(filePath);
+      if (stats.size === 0) {
+        throw new Error(`${label} 写入后文件大小为0: ${filePath}`);
+      }
+    };
+
+    // 保存完整结果 JSON
+    await safeWrite(
+      `${basePath}-result.json`,
+      JSON.stringify(result, null, 2),
+      '结果JSON'
+    );
+
+    // 保存 Markdown 报告
+    if (result.finalReport) {
+      await safeWrite(
+        `${basePath}-report.md`,
+        result.finalReport,
+        '报告MD'
+      );
+    }
+
+    // 保存提示词审核报告
+    if (result.confirmations?.prompts?.report) {
+      await safeWrite(
+        `${basePath}-prompt-review.md`,
+        result.confirmations.prompts.report,
+        '提示词审核'
+      );
+    }
+
+    // 保存后期制作报告
+    if (result.stages?.postProductionEngine?.report) {
+      await safeWrite(
+        `${basePath}-post-production.md`,
+        result.stages.postProductionEngine.report,
+        '后期制作报告'
+      );
+    }
+
+    // 保存 Prompts 单独文件
+    if (result.stages?.productionEngine?.prompts) {
+      const promptsMD = this._generatePromptsOnlyMD(result.stages.productionEngine.prompts);
+      await safeWrite(
+        `${basePath}-prompts.md`,
+        promptsMD,
+        'Prompts清单'
+      );
+    }
+
+    console.log(`\n💾 结果已保存到: ${outputDir}`);
+    return outputDir;
+  }
+
+  /**
+   * 生成纯 Prompts MD
+   */
+  _generatePromptsOnlyMD(prompts) {
+    const lines = [];
+    lines.push('# 镜头 Prompts 清单');
+    lines.push('');
+
+    for (const p of prompts) {
+      lines.push(`## ${p.shotId}`);
+      lines.push('');
+      lines.push(p.prompt);
+      lines.push('');
+      lines.push('---');
+      lines.push('');
+    }
+
+    return lines.join('\n');
+  }
+}
+
+module.exports = { HyperrealitySystem };

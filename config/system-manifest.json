@@ -1,0 +1,66 @@
+{
+  "systemName": "nirath-master-pipeline",
+  "version": "v6.5.0",
+  "currentMode": "nirath",
+  "entrypoints": {
+    "cli": "app/cli.js",
+    "preproduction": "app/commands/preproduction.js",
+    "legacyPreproduction": "run-taotie-preproduction.js"
+  },
+  "coreConfigs": [
+    "config/prompt-length.js",
+    "config/runtime-standard.js",
+    "config/llm-policy.js",
+    "config/render-policy.js",
+    "config/quality-dimensions.js",
+    "config/mode-profile.js",
+    "config/stage-map.js"
+  ],
+  "coreSystems": [
+    "systems/env.js",
+    "systems/logger.js",
+    "systems/errors.js",
+    "systems/output-cleaner.js",
+    "systems/report-writer.js",
+    "systems/preproduction-service.js",
+    "systems/prompt-resolver.js",
+    "systems/portrait-resolver.js",
+    "systems/render-request-builder.js",
+    "systems/render-submitter.js",
+    "systems/quality-reporter.js",
+    "systems/quality-gate.js",
+    "systems/stage-context.js",
+    "systems/stage-result.js",
+    "systems/stage-runner.js",
+    "systems/capability-registry.js",
+    "systems/release-manifest.js"
+  ],
+  "stageServices": [
+    "systems/stages/stage-script.js",
+    "systems/stages/stage-duration.js",
+    "systems/stages/stage-storyboard.js",
+    "systems/stages/stage-camera.js",
+    "systems/stages/stage-render-prep.js"
+  ],
+  "requiredDirectories": [
+    "app",
+    "app/commands",
+    "config",
+    "systems",
+    "systems/stages",
+    "stories",
+    "scripts",
+    "output"
+  ],
+  "keyCapabilities": [
+    "cli-entry",
+    "preproduction-service",
+    "unified-render-submitter",
+    "unified-quality-gate",
+    "stage-runner",
+    "stage-services",
+    "capability-registry",
+    "mode-profile",
+    "stage-map"
+  ]
+}

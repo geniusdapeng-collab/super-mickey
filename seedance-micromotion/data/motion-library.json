@@ -1,0 +1,413 @@
+{
+  "version": "1.0.0-Peng",
+  "description": "MicroMotion 内置数据资产库",
+  "lastUpdated": "2026-05-13",
+  
+  "facialMicroExpressions": {
+    "anger": {
+      "macro": "愤怒——皱眉、瞪眼、咬牙",
+      "micro": {
+        "eyebrow": "双眉向中线聚拢，左眉略高于右眉（不对称显示内心冲突）",
+        "forehead": "眉心出现三道竖纹，中间那道最深",
+        "eyes": "上眼睑轻微下压，下眼睑微微上抬，眼白露出增多",
+        "nose": "鼻孔微张，鼻翼轻轻翕动",
+        "mouth": "嘴角向下撇2-3毫米，下唇比上唇更紧",
+        "jaw": "咬肌可见轻微鼓起，下颌有微不可察的侧向移动",
+        "skin": "面部血管扩张，颧骨处微微泛红"
+      },
+      "intensityLevels": {
+        "1": "仅眉心微蹙，嘴角略沉",
+        "2": "眉头紧锁，鼻翼微动",
+        "3": "眉头紧锁，鼻翼翕动，咬肌微鼓",
+        "4": "眉心竖纹清晰可见，咬肌鼓起，面部微红",
+        "5": "眉心竖纹清晰可见，下颌颤抖，面部泛红"
+      }
+    },
+    "sadness": {
+      "macro": "悲伤——下垂的嘴角，湿润的眼睛",
+      "micro": {
+        "eyebrow": "眉头内侧向上扬起，形成'八'字，外侧保持平直",
+        "eyes": "下眼睑轻微肿胀感，眼结膜微红，瞳孔放大",
+        "tears": "Level 1: 眼眶湿润反光 / Level 2: 泪珠在眼角聚集但未滑落 / Level 3: 泪痕划过面颊",
+        "mouth": "嘴角下撇呈倒U型，下唇微微前突",
+        "chin": "下巴有轻微颤抖，频率约3Hz"
+      },
+      "intensityLevels": {
+        "1": "眼眶湿润",
+        "3": "泪珠在眼角聚集",
+        "5": "泪痕划过面颊，下巴颤抖"
+      }
+    },
+    "joy": {
+      "macro": "喜悦——笑容、眼睛弯起",
+      "micro": {
+        "eyes": "眼角挤出鱼尾纹，下眼睑微微上抬形成弯月",
+        "mouth": "嘴角上扬至颧骨高度，左侧嘴角比右侧高1-2毫米（自然笑容不对称）",
+        "cheeks": "苹果肌隆起，面部光泽感增强",
+        "authenticityCheck": "真笑时眼睛参与——假笑时只有嘴动"
+      },
+      "intensityLevels": {
+        "1": "嘴角上扬，眼角微弯",
+        "3": "苹果肌隆起，鱼尾纹可见",
+        "5": "灿烂笑容，面部光泽，眼睛弯成月牙"
+      }
+    },
+    "fear": {
+      "macro": "恐惧——睁大的眼睛，张开的嘴",
+      "micro": {
+        "eyebrow": "双眉平直向上升起，额头出现横向皱纹",
+        "eyes": "瞳孔急剧放大（战斗或逃跑反应），上眼睑大幅提升，眼白全面暴露",
+        "mouth": "嘴角向后拉（不是向下），下唇轻微张开",
+        "skin": "面部血色退去，呈现苍白，可能伴有细微汗珠"
+      },
+      "intensityLevels": {
+        "1": "瞳孔微扩，额头微汗",
+        "3": "瞳孔放大，面部苍白，嘴唇微张",
+        "5": "瞳孔极大，眼白全露，面部惨白，汗珠明显"
+      }
+    },
+    "disgust": {
+      "macro": "厌恶——皱鼻、撇嘴",
+      "micro": {
+        "nose": "鼻根皱起，上唇微抬，露出上排牙齿",
+        "mouth": "单侧嘴角上扬（轻蔑型厌恶），或双角下沉（生理性厌恶）",
+        "eyes": "半眯状态，眼睑微垂"
+      },
+      "intensityLevels": {
+        "1": "鼻根微皱",
+        "3": "皱鼻撇嘴，半眯眼",
+        "5": "明显厌恶表情，上唇大幅抬起"
+      }
+    },
+    "contempt": {
+      "macro": "轻蔑——单侧嘴角上扬",
+      "micro": {
+        "mouth": "单侧嘴角上扬，另一侧保持平直——不对称是关键",
+        "eyes": "半眯，眼神看向别处，避免对视",
+        "head": "头部微微后仰，下巴微抬"
+      },
+      "intensityLevels": {
+        "1": "单侧嘴角微扬",
+        "3": "明显不对称笑容，眼神回避",
+        "5": "高傲轻蔑，头部后仰"
+      }
+    },
+    "surprise": {
+      "macro": "惊讶——挑眉、张嘴",
+      "micro": {
+        "eyebrow": "双眉弓形上扬，额头出现横向纹路",
+        "eyes": "圆睁，瞳孔瞬间放大",
+        "mouth": "嘴唇微张成O型，下颌轻微下垂",
+        "duration": "微表情持续不到0.5秒——真正的惊讶转瞬即逝"
+      },
+      "intensityLevels": {
+        "1": "眉毛微挑，瞳孔微扩",
+        "3": "双眉上扬，眼睛圆睁，嘴微张",
+        "5": "极度惊讶，眉毛弓形上扬，嘴大张"
+      }
+    }
+  },
+
+  "bodyMicroLanguage": {
+    "defensive": {
+      "name": "防御性微动作",
+      "triggers": ["感到威胁", "不信任", "准备战斗"],
+      "movements": {
+        "shoulders": "微微耸起，向耳朵靠近约1厘米",
+        "torso": "轻微后仰，重心移到脚跟",
+        "hands": "无意识地握拳又松开，或护在胸前",
+        "feet": "站姿变宽，一只脚后撤半步"
+      }
+    },
+    "vulnerable": {
+      "name": "脆弱性微动作",
+      "triggers": ["受伤", "需要保护", "暴露真实情感"],
+      "movements": {
+        "shoulders": "下垂，向内收拢",
+        "torso": "轻微前弓，像是要把自己藏起来",
+        "hands": "无意识地触摸自己的伤口/胸口/脖子",
+        "head": "微微低垂，下巴收向锁骨",
+        "feet": "站姿收窄，双脚并拢"
+      }
+    },
+    "dominant": {
+      "name": "支配性微动作",
+      "triggers": ["自信", "掌控局面", "威慑"],
+      "movements": {
+        "shoulders": "向后展开，胸腔打开",
+        "torso": "轻微前倾，侵入对方空间",
+        "hands": "叉腰、撑在桌上、或手指张开按在桌面",
+        "head": "微仰，下巴抬高",
+        "feet": "站姿宽阔，一只脚前伸"
+      }
+    },
+    "deceptive": {
+      "name": "欺骗性微动作",
+      "triggers": ["说谎", "隐瞒", "不自在"],
+      "movements": {
+        "hands": "触摸鼻子、嘴唇或脖子（自我安抚）",
+        "eyes": "视线飘移，避免对视",
+        "feet": "脚尖指向出口方向",
+        "posture": "身体微微远离对话对象"
+      }
+    },
+    "attraction": {
+      "name": "吸引性微动作",
+      "triggers": ["喜欢", "被吸引", "想亲近"],
+      "movements": {
+        "torso": "无意识地向对方倾斜",
+        "feet": "脚尖指向对方",
+        "hands": "无意识地整理头发/衣服",
+        "head": "微微侧倾"
+      }
+    },
+    "suppressedEmotion": {
+      "name": "压抑情绪微动作",
+      "triggers": ["强忍泪水", "强压愤怒", "隐藏恐惧"],
+      "movements": {
+        "hands": "用力握紧又松开，指节发白",
+        "jaw": "咬紧，咬肌鼓起",
+        "breathing": "深呼吸但只吸不吐（屏息）",
+        "skin": "颈部血管微微凸起",
+        "voice": "说话时喉咙有细微的紧缩"
+      }
+    }
+  },
+
+  "eyeMicroMovements": {
+    "theLock": {
+      "name": "锁定凝视",
+      "description": "直视对方眼睛，不眨眼",
+      "duration": "2-5秒",
+      "psychology": "威慑、真诚、或挑战",
+      "seedanceCue": "眼神直视前方, 瞳孔聚焦, 不眨眼"
+    },
+    "theBreak": {
+      "name": "突然移开",
+      "description": "原本对视，突然移开视线",
+      "psychology": "隐瞒、不安、或心动",
+      "seedanceCue": "眼神突然移向下方偏右, 睫毛快速颤动一次"
+    },
+    "theScan": {
+      "name": "扫描",
+      "description": "快速扫视对方面部",
+      "psychology": "评估、说谎前的观察",
+      "seedanceCue": "眼神快速在对方眉眼和嘴部之间移动"
+    },
+    "theGlaze": {
+      "name": "失焦",
+      "description": "眼睛看着前方但没有焦点",
+      "psychology": "走神、陷入回忆、或震惊后的空白",
+      "seedanceCue": "眼神失焦, 瞳孔扩散, 视线穿过前方物体"
+    },
+    "theWet": {
+      "name": "湿润",
+      "description": "眼眶湿润但没有流泪",
+      "psychology": "强忍情感、感动",
+      "seedanceCue": "眼眶湿润有反光, 下眼睑微微肿胀, 但不流泪"
+    },
+    "theBlink": {
+      "name": "意味深长的眨眼",
+      "description": "比正常更慢的眨眼",
+      "psychology": "疲惫、释放压力、或'我懂'",
+      "seedanceCue": "缓慢眨眼, 眼睑闭合时间比正常长0.5秒"
+    },
+    "theDart": {
+      "name": "快速闪动",
+      "description": "视线快速扫视然后回到原处",
+      "psychology": "警觉、寻找威胁",
+      "seedanceCue": "眼神快速左右扫视然后回到焦点"
+    }
+  },
+
+  "eyeDirectionPsychology": {
+    "up-left": "回忆过去的视觉记忆",
+    "up-right": "构建未来的视觉想象（可能在编造）",
+    "left": "回忆过去的声音",
+    "right": "构建未来的声音（可能在编造）",
+    "down-left": "内心独白",
+    "down-right": "感受身体感觉（触觉）",
+    "straight": "真诚、专注、或刻意隐藏"
+  },
+
+  "breathPatterns": {
+    "calm": {
+      "rate": "12-16次/分钟",
+      "depth": "深而均匀",
+      "chestMovement": "胸部起伏幅度约2厘米",
+      "shoulderMovement": "几乎不动",
+      "visualCue": "胸部平缓起伏, 腹部微微鼓动"
+    },
+    "angry": {
+      "rate": "20-24次/分钟",
+      "depth": "深但急促",
+      "chestMovement": "大幅起伏",
+      "shoulderMovement": "每次呼气肩膀微沉",
+      "visualCue": "鼻息粗重可见, 胸部大幅起伏, 肩膀随呼吸微颤"
+    },
+    "fearful": {
+      "rate": "24-30次/分钟",
+      "depth": "浅而快",
+      "chestMovement": "小幅快速起伏",
+      "shoulderMovement": "轻微耸动",
+      "visualCue": "呼吸急促, 胸腹快速小幅起伏, 喉结上下移动"
+    },
+    "sad": {
+      "rate": "8-12次/分钟",
+      "depth": "深浅不一，常有叹息",
+      "chestMovement": "大起大伏后突然停顿",
+      "shoulderMovement": "叹息时肩膀大幅起落",
+      "visualCue": "呼吸沉重, 偶尔深叹息, 肩膀随叹息起伏"
+    },
+    "exertion": {
+      "rate": "30+次/分钟",
+      "depth": "极深",
+      "chestMovement": "大幅剧烈起伏",
+      "visualCue": "大口喘气, 汗水滴落, 胸部剧烈起伏"
+    },
+    "anticipation": {
+      "rate": "16-20次/分钟",
+      "depth": "深浅交替",
+      "chestMovement": "中等起伏",
+      "visualCue": "呼吸加快, 偶尔屏息, 胸部起伏不均匀"
+    }
+  },
+
+  "worldBreathElements": {
+    "temperatureEffects": {
+      "coldBreath": {
+        "description": "寒冷天气呼出的白气",
+        "seedanceCue": "角色口鼻呼出白色雾气, 在冷空气中迅速消散",
+        "duration": "持续, 呼吸越重雾气越多"
+      },
+      "heatShimmer": {
+        "description": "炎热地面的热浪扭曲",
+        "seedanceCue": "地面热浪上升造成空气扭曲, 远处景物轻微晃动",
+        "triggers": ["沙漠", "火山", "夏天正午"]
+      },
+      "steam": {
+        "description": "热水/热食冒出的蒸汽",
+        "seedanceCue": "杯口/食物上方白色蒸汽缓缓上升, 在空气中飘散"
+      }
+    },
+    "windEffects": {
+      "clothingFlutter": {
+        "description": "衣物在风中飘动",
+        "seedanceCue": "衣角/披风/头发被风吹起, 飘动方向与风向一致, 幅度随风力变化",
+        "parameters": { "windSpeed": "低速柔软/高速剧烈", "direction": "风向决定飘动方向" }
+      },
+      "grassWave": {
+        "description": "草浪",
+        "seedanceCue": "草地随风形成波浪状起伏, 草叶摇摆",
+        "distance": "中景/远景最有效"
+      },
+      "dustParticles": {
+        "description": "风中的微尘",
+        "seedanceCue": "空气中漂浮的微尘颗粒在阳光下闪烁, 随风缓缓飘移"
+      }
+    },
+    "naturalElements": {
+      "fallingLeaves": {
+        "description": "树叶飘落",
+        "seedanceCue": "单片树叶从画面上方缓缓飘落, 旋转下落, 最终落在地面",
+        "symbolism": "时间流逝、离别、秋天"
+      },
+      "floatingPetals": {
+        "description": "花瓣飘落",
+        "seedanceCue": "粉色花瓣在空中飘舞, 有的落在角色头发/肩膀上",
+        "symbolism": "美好但短暂、爱情"
+      },
+      "waterRipples": {
+        "description": "水波纹",
+        "seedanceCue": "水面波纹从中心向外扩散, 阳光在水面形成闪烁光斑",
+        "triggers": ["雨滴落下", "脚踩入水", "石头投入"]
+      },
+      "rain": {
+        "description": "雨水",
+        "seedanceCue": "雨丝从不同角度落下, 打在地面溅起水花, 在角色皮肤表面形成水珠",
+        "intensityLevels": { "light": "细雨如丝", "medium": "雨线清晰可见", "heavy": "雨幕如帘" }
+      },
+      "fireSparks": {
+        "description": "火星飞溅",
+        "seedanceCue": "篝火/火焰中飞出细小火星, 在空中划出弧线后熄灭",
+        "dangerLevel": "安全距离外观赏"
+      }
+    },
+    "lightEffects": {
+      "goldenHourGlow": {
+        "description": "黄金时刻的光线",
+        "seedanceCue": "夕阳金色光芒穿透发丝边缘形成轮廓光, 面部被温暖侧光照亮, 皮肤呈现金色光泽"
+      },
+      "candleFlicker": {
+        "description": "烛光摇曳",
+        "seedanceCue": "烛光在角色面部投下摇曳的阴影, 明暗交替, 瞳孔随光线变化大小",
+        "rhythm": "不规则闪烁, 偶尔轻微爆火花"
+      },
+      "fireLightDance": {
+        "description": "火光在脸上的舞动",
+        "seedanceCue": "篝火的光芒在角色面部投下动态光影, 明暗不断变化, 眼睛反射火焰光芒"
+      }
+    },
+    "atmosphere": {
+      "morningMist": {
+        "description": "晨雾",
+        "seedanceCue": "地面薄雾缓缓流动, 高度到脚踝, 角色走动时雾气被扰动分开"
+      },
+      "dustMotes": {
+        "description": "阳光中的尘埃",
+        "seedanceCue": "阳光光束中漂浮的微尘颗粒, 缓慢漂移, 光线穿透形成丁达尔效应"
+      },
+      "smoke": {
+        "description": "烟雾",
+        "seedanceCue": "烟雾缓缓上升并在空气中扩散, 形态不断柔化变形",
+        "sources": ["香烟", "香炉", "燃烧", "炊烟"]
+      }
+    }
+  },
+
+  "sceneAtmosphereRecipes": {
+    "诀别场景": {
+      "elements": ["fallingLeaves", "goldenHourGlow", "dustMotes"],
+      "mood": "时间凝固在最后一秒，美好而悲伤",
+      "seedancePrompt": "夕阳金色光芒穿透角色发丝形成轮廓光, 单片树叶从画面上方缓缓飘落, 空气中微尘在光线中飘浮, 远处天际被染成橙红色"
+    },
+    "雨夜诀别": {
+      "elements": ["rain-heavy", "coldBreath", "waterRipples"],
+      "mood": "冰冷、孤独、无法挽回",
+      "seedancePrompt": "大雨如帘, 雨丝清晰可见, 打在角色身上形成水珠滑落, 口鼻呼出白气, 地面积水被雨滴打出密集涟漪"
+    },
+    "篝火夜谈": {
+      "elements": ["fireSparks", "fireLightDance", "candleFlicker"],
+      "mood": "温暖但脆弱，光明与黑暗的边界",
+      "seedancePrompt": "篝火光芒在角色面部投下动态光影明暗交替, 火星从火中飞出划出弧线, 眼睛反射火焰橙红色光芒, 周围黑暗吞噬光线"
+    },
+    "清晨独处": {
+      "elements": ["morningMist", "dustMotes", "goldenHourGlow"],
+      "mood": "宁静、希望、新的开始",
+      "seedancePrompt": "清晨薄雾在地面缓缓流动, 阳光穿透雾气形成光束, 微尘在光线中漂浮, 远处天际泛出柔和的金色"
+    }
+  },
+
+  "mergeRules": {
+    "priority": {
+      "characterPrompt": ["face", "body", "eye", "breath"],
+      "sceneDescription": ["worldBreath"],
+      "actionDescription": ["body", "breath"],
+      "cameraDescription": ["eyeDirection"],
+      "specialEffects": ["worldBreath"]
+    },
+    "format": {
+      "enhancementMarker": "**增强内容**",
+      "seedanceCompatible": true,
+      "maxPromptLength": 500,
+      "injectionStyle": "将微动作描述自然融入原有描述，不破坏原有结构"
+    },
+    "conflictResolution": {
+      "rule": "如果 Face Sculptor 和 Body Language 对同一部位有冲突描述，优先 Face Sculptor（面部特写时）或 Body Language（中远景时）",
+      "cameraDistanceWeight": {
+        "closeUp": { "face": 0.7, "body": 0.3 },
+        "medium": { "face": 0.3, "body": 0.7 }
+      }
+    }
+  }
+}

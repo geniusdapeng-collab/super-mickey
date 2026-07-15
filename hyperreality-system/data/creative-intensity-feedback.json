@@ -1,0 +1,53 @@
+{
+  "schema": "creative-intensity-feedback-v1",
+  "entries": [
+    {
+      "id": "entry_1781796388154_yf47i5cui",
+      "videoType": "EDU",
+      "intensity": 0.3,
+      "completionRate": 75,
+      "engagementRate": 0,
+      "timestamp": "2026-06-18T15:26:28.154Z"
+    },
+    {
+      "id": "entry_1781796388155_lqk8iq0tc",
+      "videoType": "EDU",
+      "intensity": 0.5,
+      "completionRate": 82,
+      "engagementRate": 0,
+      "timestamp": "2026-06-18T15:26:28.155Z"
+    },
+    {
+      "id": "entry_1781796388155_f67l0kuis",
+      "videoType": "EDU",
+      "intensity": 0.7,
+      "completionRate": 68,
+      "engagementRate": 0,
+      "timestamp": "2026-06-18T15:26:28.155Z"
+    }
+  ],
+  "aggregated": {
+    "EDU": {
+      "samples": 3,
+      "intensity_distribution": {
+        "0.3": {
+          "count": 1,
+          "avg_completion": 75,
+          "total_completion": 75
+        },
+        "0.5": {
+          "count": 1,
+          "avg_completion": 82,
+          "total_completion": 82
+        },
+        "0.7": {
+          "count": 1,
+          "avg_completion": 68,
+          "total_completion": 68
+        }
+      },
+      "recommended": 0.5,
+      "confidence": 0.3
+    }
+  }
+}

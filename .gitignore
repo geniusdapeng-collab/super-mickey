@@ -1,0 +1,196 @@
+# SuperMickey Open Source .gitignore
+# 详见开源清理文档
+
+# ============================================
+# 1. 敏感信息与个人数据
+# ============================================
+.env
+.env.*
+!.env.example
+.gitconfig
+.openclaw/
+USER.md
+IDENTITY.md
+SOUL.md
+SOUL-*.md
+AGENTS.md
+AGENTS-*.md
+MEMORY.md
+MEMORY_APPEND.md
+HEARTBEAT.md
+CODED_MODE.md
+memory/
+memory_*/
+memorized_diary/
+memory-*.md
+
+# ============================================
+# 2. API 密钥与凭证
+# ============================================
+*.key
+*.pem
+*.p12
+*.pfx
+secrets/
+credentials/
+
+# ============================================
+# 3. 运行时产出与输出
+# ============================================
+output/
+productions/
+productions-*/
+videos/
+checkpoints/
+debug_llm/
+logs/
+*.log
+running-status.json
+episodes.json
+
+# ============================================
+# 4. 大型代码转储文件
+# ============================================
+ALL-SYSTEMS-FULL-CODE-PACKAGE.md
+hyperreality-system-*-code*.md
+hyperreality-system-*-complete*.md
+hyperreality-system-*-full*.md
+hyperreality-system-*-export*.md
+hyperreality-system-all-code.txt
+hyperreality-system-complete*.txt
+HyperrealitySystem-*.md
+
+# ============================================
+# 5. 媒体文件（图片/视频）
+# ============================================
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.wmv
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.psd
+*.tif
+*.tiff
+*.raw
+!docs/assets/*.png
+!docs/assets/*.jpg
+!assets/*.png
+!assets/*.jpg
+
+# ============================================
+# 6. 测试执行脚本（含硬编码内容）
+# ============================================
+test-*.js
+!tests/*.js
+run-*.js
+generate-*.js
+export-*.js
+export-*.sh
+pack-*.js
+pack-*.sh
+submit-*.sh
+run-*.sh
+tmp-*.js
+test-*.sh
+test-*.json
+
+# ============================================
+# 7. 诊断与报告文件
+# ============================================
+*-diagnosis-*.md
+*-diagnostic-*.md
+*-analysis-*.md
+*-report-*.md
+*-fix-*.md
+audit-fix-*.md
+system-issue-*.md
+oom-analysis-*.md
+v*-technical-analysis-*.md
+v*-patch*-release.md
+v*-patch*-fix-*.md
+v*-patch*-report.md
+verify-*.js
+IMPLEMENTATION_REPORT.md
+health-edu-*.md
+module-router-*.md
+nirath-*.md
+v6.*.md
+修改记录-*.md
+超现实系统问题诊断报告-*.md
+
+# ============================================
+# 8. 旧版本发布说明（仅保留最新）
+# ============================================
+RELEASE-v1.*
+RELEASE-v3.*
+RELEASE-v4.*
+RELEASE-v5.*
+RELEASE-v6.*
+RELEASE-v7.*
+RELEASE-v8.*
+RELEASE_v6.*
+RELEASE-v20.*
+RELEASE-v23.*
+!RELEASE-v2.1.0.md
+seedance-agent/RELEASE-*.md
+
+# ============================================
+# 9. 备份与临时文件
+# ============================================
+backup/
+.trash/
+*.tmp
+*.temp
+*~
+.DS_Store
+Thumbs.db
+systems/deprecated/
+hyperreality-system/examples/
+
+# ============================================
+# 10. Node.js
+# ============================================
+node_modules/
+
+# ============================================
+# 11. 大型文档导出
+# ============================================
+*.txt
+!requirements.txt
+!LICENSE.txt
+
+# ============================================
+# 12. 生产过程数据（保留本地，不进入仓库）
+# ============================================
+characters/
+products/
+projects/
+stories/
+debug_llm/
+
+# 检查完成标记
+# open-source-check: passed
+products/
+projects/
+.openclaw/config/volcengine.json
+preproduction/
+
+# 过程数据（不应提交到 git）
+systems-backup-*/
+hyperreality-system/*.log
+hyperreality-system/test-*.js
+hyperreality-system/debug_*.json
+hyperreality-system/analyze-*.js
+hyperreality-system/debug_llm/
+hyperreality-system/checkpoints/*.json
+hyperreality-system/output/preproduction/*
+hyperreality-system/output/confirmations/*
+hyperreality-system/_deprecated_scripts/
+
+# 确认机制 nonce 存储（安全敏感，不提交）
+.nonce-store.json

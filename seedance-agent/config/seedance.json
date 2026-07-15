@@ -1,0 +1,96 @@
+{
+  "version": "9.2.0-Peng",
+  "description": "Seedance v9.2 — Agent Loop based video production harness",
+  "permissionMode": "semi-auto",
+  "maxTurns": 50,
+  "renderBudgetUSD": 10.0,
+  "maxConcurrentAgents": 7,
+  "legacyFallback": true,
+  "featureFlags": {
+    "HISTORY_SNIP": true,
+    "CACHED_MICROCOMPACT": true,
+    "CONTEXT_COLLAPSE": true,
+    "COMPLIANCE_AGENT_V2": true,
+    "PROMPT_OPTIMIZER": true,
+    "KAIROS_DAEMON": false,
+    "COORDINATOR_MODE": false
+  },
+  "resolutionPipeline": {
+    "levels": ["proxy", "edit", "color", "fine", "master"],
+    "defaultPreview": "proxy",
+    "defaultEdit": "edit",
+    "defaultFinal": "master"
+  },
+  "security": {
+    "denyRules": [
+      {
+        "id": "no-delete-original",
+        "pattern": { "tool": "cleanup", "action": "delete-original" },
+        "reason": "原始素材为不可再生资产，禁止删除"
+      },
+      {
+        "id": "no-overwrite-export",
+        "pattern": { "tool": "delivery-engine", "action": "overwrite" },
+        "reason": "已交付文件具有法律效力，禁止覆盖"
+      }
+    ],
+    "maxConsecutiveFailures": 3,
+    "approvalTimeoutSeconds": 300
+  },
+  "contextManager": {
+    "maxCacheSizeMB": 5000,
+    "cacheTTLHours": 24,
+    "enableVirtualProjection": true,
+    "proxyScale": "iw/4:ih/4",
+    "proxyCodec": "libx264",
+    "proxyPreset": "ultrafast",
+    "proxyCRF": 28
+  },
+  "stateMachine": {
+    "maxSnapshots": 50,
+    "autoSaveInterval": 60000,
+    "transcriptFormat": "jsonl"
+  },
+  "notifications": {
+    "enabled": true,
+    "channel": "feishu",
+    "onPause": true,
+    "onBudgetWarning": true,
+    "onError": true,
+    "budgetWarningThreshold": 0.8
+  },
+  "logging": {
+    "level": "info",
+    "auditEnabled": true,
+    "outputDir": "./logs"
+  },
+  "styleDNA": {
+    "enabled": true,
+    "libraryPath": "./config/style-dna-library.json",
+    "recipeWeights": {
+      "base": 0.6,
+      "accent": 0.3,
+      "contrast": 0.1
+    },
+    "conflictDetection": {
+      "hardThreshold": 0.4,
+      "softThreshold": 0.2
+    },
+    "driftDetection": {
+      "colorTempTolerance": 300,
+      "contrastTolerance": 2,
+      "saturationTolerance": 0.2,
+      "shadowDensityTolerance": 15
+    },
+    "series": {
+      "coreGeneLockRate": 0.7,
+      "variableGeneFloatRate": 0.3,
+      "inheritanceThreshold": 0.95
+    },
+    "SRS": {
+      "blindTestEnabled": false,
+      "targetScore": 75,
+      "minSampleSize": 30
+    }
+  }
+}

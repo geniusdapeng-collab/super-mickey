@@ -1,0 +1,93 @@
+{
+  "version": "1.0",
+  "source": "Nirath原创世界观",
+  "description": "Nirath季节配置数据 — 从pipeline.js提取",
+  "extractedAt": "2026-05-19T16:07:31.112Z",
+  "seasonConfig": {
+    "seasonId": "shanhai-s1",
+    "name": "Nirath原创世界观：异兽志 第一季",
+    "totalEpisodes": 10,
+    "episodes": [
+      {
+        "id": 1,
+        "title": "守光巨兽睁眼",
+        "beastId": "zhulong",
+        "location": "章尾山",
+        "template": "origin_myth",
+        "duration": 720
+      },
+      {
+        "id": 2,
+        "title": "九尾的赌局",
+        "beastId": "jiuweihu",
+        "location": "青丘",
+        "template": "encounter_fable",
+        "duration": 720
+      },
+      {
+        "id": 3,
+        "title": "晶齿萌兽盛宴",
+        "beastId": "taotie",
+        "location": "虹脉深渊",
+        "template": "encounter_fable",
+        "duration": 720
+      },
+      {
+        "id": 4,
+        "title": "光翼游天兽之翼",
+        "beastId": "yinglong",
+        "location": "浮空晶簇山山",
+        "template": "divine_conflict",
+        "duration": 720
+      },
+      {
+        "id": 5,
+        "title": "虹羽焰灵涅槃",
+        "beastId": "fenghuang",
+        "location": "蓬莱",
+        "template": "transformation_journey",
+        "duration": 720
+      },
+      {
+        "id": 6,
+        "title": "麒麟降世",
+        "beastId": "qilin",
+        "location": "大荒东经",
+        "template": "chorus_harmony",
+        "duration": 720
+      },
+      {
+        "id": 7,
+        "title": "猬毛凶兽之怒",
+        "beastId": "qiongqi",
+        "location": "大荒西经",
+        "template": "divine_conflict",
+        "duration": 720
+      },
+      {
+        "id": 8,
+        "title": "雪白智兽解惑",
+        "beastId": "baize",
+        "location": "浮空晶簇山山",
+        "template": "encounter_fable",
+        "duration": 720
+      },
+      {
+        "id": 9,
+        "title": "鲲化鹏",
+        "beastId": "kun_peng",
+        "location": "北海",
+        "template": "transformation_journey",
+        "duration": 720
+      },
+      {
+        "id": 10,
+        "title": "山海一岁",
+        "beastId": "zhulong",
+        "location": "章尾山",
+        "template": "chorus_harmony",
+        "duration": 720
+      }
+    ]
+  }
+}

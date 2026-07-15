@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ShotPrompt",
+  "description": "Seedance Pro 单镜头提示词输出 Schema v5.1-Peng",
+  "type": "object",
+  "required": ["shotId", "prompt", "model", "aspectRatio"],
+  "properties": {
+    "shotId": { "type": "string", "pattern": "^S\\d+-\\d+$", "description": "镜头编号" },
+    "prompt": { "type": "string", "minLength": 10, "description": "完整的 Seedance 2.0 提示词" },
+    "model": { "type": "string", "description": "使用的模型ID" },
+    "aspectRatio": { "type": "string", "enum": ["16:9", "9:16", "1:1", "4:3", "3:4"], "description": "画幅比例" },
+    "duration": { "type": "number", "minimum": 3, "maximum": 10, "description": "镜头时长（秒）" },
+    "charactersPresent": { "type": "array", "items": { "type": "string" }, "description": "出镜角色列表" },
+    "skinTextureApplied": { "type": "boolean", "default": false, "description": "是否已注入皮肤质感" },
+    "audio": {
+      "type": "object",
+      "properties": {
+        "dialogue": { "type": "string", "description": "对白文本" },
+        "voiceId": { "type": "string", "description": "VoiceCraft 声纹ID" },
+        "soundEffects": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "seed": { "type": "integer", "description": "统一随机种子" },
+    "taskId": { "type": "string", "description": "Seedance 渲染任务ID" },
+    "status": { "type": "string", "enum": ["pending", "submitted", "rendering", "completed", "failed"], "default": "pending" },
+    "videoUrl": { "type": "string", "format": "uri", "description": "渲染完成后视频URL" }
+  }
+}

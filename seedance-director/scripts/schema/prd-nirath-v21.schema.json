@@ -1,0 +1,298 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "NirathPRD",
+  "description": "Nirath Master Pipeline PRD Schema v21 - Aligned with PRD_TEMPLATE",
+  "type": "object",
+  "required": ["meta", "core", "world", "characters", "structure", "positive", "negative", "calibrationRules"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["title", "codename", "version", "genre", "targetDuration", "targetShots", "createdAt"],
+      "properties": {
+        "title": { "type": "string", "minLength": 1, "description": "故事标题" },
+        "codename": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "内部代号，仅限小写字母/数字/横线" },
+        "version": { "type": "string", "pattern": "^v\\d+\\.\\d+$", "description": "PRD版本号" },
+        "genre": { "type": "string", "description": "类型标签" },
+        "targetDuration": { "type": "number", "minimum": 5, "maximum": 300, "description": "目标时长（秒）" },
+        "targetShots": { "type": "integer", "minimum": 1, "maximum": 100, "description": "目标镜头数" },
+        "createdAt": { "type": "string", "format": "date", "description": "创建日期 YYYY-MM-DD" },
+        "author": { "type": "string", "default": "引擎生成" }
+      }
+    },
+    "core": {
+      "type": "object",
+      "required": ["synopsis", "theme", "emotionalArc"],
+      "properties": {
+        "synopsis": { "type": "string", "minLength": 10, "maxLength": 500, "description": "一句话梗概" },
+        "theme": { "type": "string", "description": "核心主题" },
+        "emotionalArc": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "type": "object",
+            "required": ["phase", "emotion", "intensity"],
+            "properties": {
+              "phase": { 
+                "type": "string", 
+                "enum": ["opening", "establishing", "rising", "building", "climax", "resolve", "hook", "falling"],
+                "description": "情绪阶段"
+              },
+              "emotion": { "type": "string", "description": "情绪名称" },
+              "intensity": { "type": "number", "minimum": 0, "maximum": 1, "description": "强度 0-1" }
+            }
+          }
+        },
+        "moral": { "type": "string", "description": "价值观/道德内核" },
+        "usp": { "type": "string", "description": "独特卖点" },
+        "references": { 
+          "type": "array", 
+          "items": { "type": "string" },
+          "description": "对标作品（风格参考）"
+        }
+      }
+    },
+    "world": {
+      "type": "object",
+      "required": ["setting", "atmosphere", "visualStyle"],
+      "properties": {
+        "setting": { "type": "string", "description": "环境设定一句话" },
+        "atmosphere": { "type": "string", "description": "氛围基调标签" },
+        "visualStyle": { "type": "string", "description": "视觉风格描述" },
+        "timeSpace": {
+          "type": "object",
+          "properties": {
+            "era": { "type": "string", "description": "时代" },
+            "location": { "type": "string", "description": "地点" },
+            "season": { "type": "string", "description": "季节" },
+            "timeOfDay": { "type": "string", "description": "时间（如双恒星黄昏）" }
+          }
+        },
+        "culturalElements": { 
+          "type": "array", 
+          "items": { "type": "string" },
+          "description": "允许的文化元素"
+        },
+        "forbiddenCulturalElements": { 
+          "type": "array", 
+          "items": { "type": "string" },
+          "description": "禁止的文化元素（如中国风、水墨、仙侠）"
+        }
+      }
+    },
+    "characters": {
+      "type": "object",
+      "required": ["protagonist"],
+      "properties": {
+        "protagonist": { "$ref": "#/definitions/character" },
+        "antagonist": { 
+          "oneOf": [{ "$ref": "#/definitions/character" }, { "type": "null" }]
+        },
+        "supporting": { 
+          "type": "array", 
+          "items": { "$ref": "#/definitions/character" }
+        },
+        "creatures": { 
+          "type": "array", 
+          "items": { "$ref": "#/definitions/character" }
+        }
+      }
+    },
+    "structure": {
+      "type": "object",
+      "required": ["acts"],
+      "properties": {
+        "acts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["act", "name", "shots"],
+            "properties": {
+              "act": { "type": "integer", "minimum": 1, "description": "幕序号" },
+              "name": { "type": "string", "description": "幕名称（如铺垫/发展/高潮/结局）" },
+              "purpose": { "type": "string", "description": "幕的目的" },
+              "emotionalGoal": { "type": "string", "description": "情绪目标" },
+              "shots": {
+                "type": "array",
+                "items": { "$ref": "#/definitions/shot" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "positive": {
+      "type": "object",
+      "properties": {
+        "visualStyle": { 
+          "type": "array", 
+          "items": { "type": "string" },
+          "description": "视觉风格词（如cinematic lighting, volumetric fog）"
+        },
+        "actions": { 
+          "type": "array", 
+          "items": { "type": "string" },
+          "description": "动作词（如slow push-in, dramatic reveal）"
+        },
+        "emotions": { 
+          "type": "array", 
+          "items": { "type": "string" },
+          "description": "情绪关键词"
+        },
+        "sceneElements": { 
+          "type": "array", 
+          "items": { "type": "string" },
+          "description": "场景元素（如floating spores, magnetic silk trees）"
+        },
+        "materials": { 
+          "type": "array", 
+          "items": { "type": "string" },
+          "description": "材质/质感"
+        },
+        "lighting": { 
+          "type": "array", 
+          "items": { "type": "string" },
+          "description": "光影效果"
+        }
+      }
+    },
+    "negative": {
+      "type": "object",
+      "properties": {
+        "forbiddenActions": { 
+          "type": "array", 
+          "items": { "type": "string" },
+          "description": "角色不能做的行为"
+        },
+        "forbiddenVisuals": { 
+          "type": "array", 
+          "items": { "type": "string" },
+          "description": "不能出现的视觉元素"
+        },
+        "forbiddenThemes": { 
+          "type": "array", 
+          "items": { "type": "string" },
+          "description": "不能涉及的主题"
+        },
+        "cliches": { 
+          "type": "array", 
+          "items": { "type": "string" },
+          "description": "避免的陈词滥调"
+        },
+        "overusedWords": { 
+          "type": "array", 
+          "items": { "type": "string" },
+          "description": "过度使用的词"
+        },
+        "deprecatedElements": { 
+          "type": "array", 
+          "items": { "type": "string" },
+          "description": "前版本已废弃的设定"
+        }
+      }
+    },
+    "calibrationRules": {
+      "type": "object",
+      "properties": {
+        "character": { "type": "array", "items": { "type": "string" } },
+        "world": { "type": "array", "items": { "type": "string" } },
+        "narrative": { "type": "array", "items": { "type": "string" } },
+        "emotional": { "type": "array", "items": { "type": "string" } },
+        "visual": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  },
+  "definitions": {
+    "character": {
+      "type": "object",
+      "required": ["name", "codename", "visualAnchors"],
+      "properties": {
+        "name": { "type": "string", "description": "角色名" },
+        "codename": { 
+          "type": "string", 
+          "pattern": "^[a-zA-Z][a-zA-Z0-9]*$",
+          "description": "代号（用于Prompt中引用）"
+        },
+        "age": { "type": "integer", "description": "年龄" },
+        "gender": { 
+          "type": "string", 
+          "enum": ["male", "female", "nonbinary", "unknown"]
+        },
+        "personality": { 
+          "type": "array", 
+          "items": { "type": "string" },
+          "description": "性格特征"
+        },
+        "canDo": { 
+          "type": "array", 
+          "items": { "type": "string" },
+          "description": "能力边界（能做）"
+        },
+        "cannotDo": { 
+          "type": "array", 
+          "items": { "type": "string" },
+          "description": "能力边界（不能做）"
+        },
+        "visualAnchors": {
+          "type": "object",
+          "required": ["required"],
+          "properties": {
+            "required": { 
+              "type": "array", 
+              "items": { "type": "string" },
+              "minItems": 1,
+              "description": "必须出现在Prompt中的视觉特征"
+            },
+            "preferred": { 
+              "type": "array", 
+              "items": { "type": "string" },
+              "description": "建议出现的视觉特征"
+            },
+            "forbidden": { 
+              "type": "array", 
+              "items": { "type": "string" },
+              "description": "禁止出现的视觉特征"
+            }
+          }
+        },
+        "emotionReactions": { 
+          "type": "object", 
+          "additionalProperties": { 
+            "type": "array", 
+            "items": { "type": "string" } 
+          },
+          "description": "情绪→期望动作映射（如{exhausted: ['slumped shoulders']}）"
+        },
+        "arc": {
+          "type": "object",
+          "properties": {
+            "startingState": { "type": "string", "description": "初始状态" },
+            "endingState": { "type": "string", "description": "最终状态" },
+            "keyTransformation": { "type": "string", "description": "关键转变" }
+          }
+        }
+      }
+    },
+    "shot": {
+      "type": "object",
+      "required": ["shotId", "purpose", "emotion"],
+      "properties": {
+        "shotId": { 
+          "type": "string", 
+          "pattern": "^S\\d{2,3}$",
+          "description": "镜头编号（如S01, S02）"
+        },
+        "purpose": { "type": "string", "description": "镜头目的" },
+        "emotion": { "type": "string", "description": "镜头情绪" },
+        "keyAction": { "type": "string", "description": "关键动作" },
+        "visualFocus": { "type": "string", "description": "视觉焦点" },
+        "narrativeBeat": { "type": "string", "description": "叙事节拍" },
+        "duration": { "type": "number", "description": "镜头时长（秒）" },
+        "transition": { 
+          "type": "string", 
+          "enum": ["cut", "fade", "dissolve", "wipe", "match-cut", "morph"],
+          "description": "转场类型"
+        }
+      }
+    }
+  }
+}

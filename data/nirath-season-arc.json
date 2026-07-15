@@ -1,0 +1,516 @@
+{
+  "version": "2.0",
+  "source": "Nirath原创世界观",
+  "description": "Nirath季节弧数据 — 从director.js提取",
+  "extractedAt": "2026-05-19T16:07:23.505Z",
+  "seasonStructure": {
+    "season1": {
+      "name": "灵生季",
+      "nameEn": "Awakening",
+      "episodes": 10,
+      "coreQuestion": "这个世界是什么？",
+      "growthStage": "8-9岁",
+      "emotionalTone": "好奇、恐惧、温暖",
+      "narrativeFunction": "引入世界：展示规则，建立关系，制造悬念",
+      "mainRegion": "光之森域",
+      "keyEvents": [
+        "光脉大爆炸",
+        "遇见光囊母兽",
+        "命名之力觉醒",
+        "建立庇护所",
+        "遇见雪白智兽"
+      ]
+    },
+    "season2": {
+      "name": "灵盛季",
+      "nameEn": "Abundance",
+      "episodes": 18,
+      "coreQuestion": "这个世界为什么是这样？",
+      "growthStage": "9-10岁",
+      "emotionalTone": "兴奋、困惑、震撼",
+      "narrativeFunction": "深化世界：引入哲学，揭示过去，升级冲突",
+      "mainRegion": "晶脉山脉+冰原禁区+虹海之滨",
+      "keyEvents": [
+        "穿越四经",
+        "雪白智兽的教导",
+        "遇见鲲鹏",
+        "发现时间循环线索"
+      ]
+    },
+    "season3": {
+      "name": "灵收季",
+      "nameEn": "Understanding",
+      "episodes": 18,
+      "coreQuestion": "我为什么会在这里？",
+      "growthStage": "10-11岁",
+      "emotionalTone": "哀伤、顿悟、使命感",
+      "narrativeFunction": "打碎与重建：失去与获得，让AgentX真正成为\"记录者\"",
+      "mainRegion": "中央光域+海外经",
+      "keyEvents": [
+        "光囊母兽牺牲",
+        "虹脉深渊真相",
+        "太素之问",
+        "决定写《Nirath原创世界观》"
+      ]
+    },
+    "season4": {
+      "name": "灵藏季",
+      "nameEn": "Legacy",
+      "episodes": 18,
+      "coreQuestion": "我该怎么办？",
+      "growthStage": "11-12岁+",
+      "emotionalTone": "平静、力量、温暖",
+      "narrativeFunction": "完成与开放：写出《Nirath原创世界观》，给出答案但保留神秘",
+      "mainRegion": "大荒经+海内经",
+      "keyEvents": [
+        "面对守光巨兽",
+        "穿越虹脉深渊",
+        "完成《Nirath原创世界观》",
+        "浮空晶簇山脉日出"
+      ]
+    }
+  },
+  "episodeBeatPoints": [
+    {
+      "episode": "S1E1",
+      "title": "归元",
+      "coreEvent": "AgentX从废墟中醒来，世界已改变",
+      "keyBeasts": [
+        "光囊母兽（幼体）",
+        "光音鸟"
+      ],
+      "emotionArc": [
+        "恐惧",
+        "安全"
+      ],
+      "narrativeEngine": "我在哪里？",
+      "infoRelease": "旧世界毁灭、新世界基本形态"
+    },
+    {
+      "episode": "S1E2",
+      "title": "有兽焉",
+      "coreEvent": "系统记录异兽，学命名之力",
+      "keyBeasts": [
+        "光音鸟",
+        "冰甲龟兽（远景）"
+      ],
+      "emotionArc": [
+        "好奇",
+        "成就感"
+      ],
+      "narrativeEngine": "这些东西是什么？",
+      "infoRelease": "C级异兽生态、命名之力"
+    },
+    {
+      "episode": "S1E3",
+      "title": "南山之南",
+      "coreEvent": "遇九尾光狐长老，学光脉能量语言",
+      "keyBeasts": [
+        "九尾光狐长老",
+        "九尾光狐族群"
+      ],
+      "emotionArc": [
+        "渴望",
+        "温暖"
+      ],
+      "narrativeEngine": "它们在说什么？",
+      "infoRelease": "光脉能量系统、九尾光狐社会"
+    },
+    {
+      "episode": "S1E4",
+      "title": "火",
+      "coreEvent": "生火取暖，建立群体连接",
+      "keyBeasts": [
+        "冰甲龟兽（正式登场）",
+        "C级群"
+      ],
+      "emotionArc": [
+        "孤独",
+        "群体温暖"
+      ],
+      "narrativeEngine": "火是什么？",
+      "infoRelease": "火的神话地位、冰甲龟兽功能"
+    },
+    {
+      "episode": "S1E5",
+      "title": "母与子",
+      "coreEvent": "目睹异兽母子离别，收养小角",
+      "keyBeasts": [
+        "异兽母子",
+        "小角",
+        "掠食者"
+      ],
+      "emotionArc": [
+        "温柔",
+        "心碎"
+      ],
+      "narrativeEngine": "为什么要死？",
+      "infoRelease": "自然法则残酷性"
+    },
+    {
+      "episode": "S1E6",
+      "title": "洪水",
+      "coreEvent": "灵生季洪水，帮助异兽迁徙",
+      "keyBeasts": [
+        "冰甲龟兽",
+        "迁徙群体"
+      ],
+      "emotionArc": [
+        "紧张",
+        "成就感"
+      ],
+      "narrativeEngine": "洪水来了怎么办？",
+      "infoRelease": "季节系统、冰甲龟兽功能"
+    },
+    {
+      "episode": "S1E7",
+      "title": "蝴蝶",
+      "coreEvent": "发现旧世界书籍，遇蝴蝶灵兽",
+      "keyBeasts": [
+        "蝴蝶灵兽",
+        "光囊母兽"
+      ],
+      "emotionArc": [
+        "惊喜",
+        "领悟"
+      ],
+      "narrativeEngine": "这本书是什么？",
+      "infoRelease": "旧世界知识价值"
+    },
+    {
+      "episode": "S1E8",
+      "title": "雪白智兽",
+      "coreEvent": "遇雪白智兽，得知\"记录者\"概念",
+      "keyBeasts": [
+        "雪白智兽",
+        "光囊母兽"
+      ],
+      "emotionArc": [
+        "困惑",
+        "使命感"
+      ],
+      "narrativeEngine": "我是谁？",
+      "infoRelease": "记录者概念、世界观升级"
+    },
+    {
+      "episode": "S1E9",
+      "title": "冬日之炉",
+      "coreEvent": "建立庇护所，开始系统记录",
+      "keyBeasts": [
+        "光囊母兽",
+        "小角",
+        "冰甲龟兽"
+      ],
+      "emotionArc": [
+        "充实",
+        "成长"
+      ],
+      "narrativeEngine": "我要记下什么？",
+      "infoRelease": "记录系统化"
+    },
+    {
+      "episode": "S1E10",
+      "title": "Nirath原创世界观",
+      "coreEvent": "离开光之森域，向更大世界出发",
+      "keyBeasts": [
+        "光囊母兽",
+        "冰甲龟兽",
+        "九尾光狐长老"
+      ],
+      "emotionArc": [
+        "伤感",
+        "希望"
+      ],
+      "narrativeEngine": "我要去哪？",
+      "infoRelease": "更大世界存在"
+    },
+    {
+      "episode": "S2E1",
+      "title": "旋转之地",
+      "coreEvent": "冰甲龟兽背纹地图揭示，了解世界结构",
+      "keyBeasts": [
+        "冰甲龟兽"
+      ],
+      "emotionArc": [
+        "好奇",
+        "向往"
+      ],
+      "narrativeEngine": "世界有多大？",
+      "infoRelease": "世界地理结构、时间循环线索"
+    },
+    {
+      "episode": "S2E2",
+      "title": "有翼之虎",
+      "coreEvent": "首次遭遇A级异兽猬毛凶兽",
+      "keyBeasts": [
+        "猬毛凶兽"
+      ],
+      "emotionArc": [
+        "恐惧",
+        "敬畏"
+      ],
+      "narrativeEngine": "暴力是什么？",
+      "infoRelease": "A级异兽规则意识、暴力即秩序"
+    },
+    {
+      "episode": "S2E3",
+      "title": "旧日之灵",
+      "coreEvent": "废墟中发现旧世界物品，记忆风暴",
+      "keyBeasts": [
+        "雪白智兽"
+      ],
+      "emotionArc": [
+        "悲伤",
+        "接受"
+      ],
+      "narrativeEngine": "他们都去哪了？",
+      "infoRelease": "旧世界毁灭确认、雪白智兽轮回哲学"
+    },
+    {
+      "episode": "S2E4",
+      "title": "光余草",
+      "coreEvent": "发现发光草，揭示科技神话融合",
+      "keyBeasts": [
+        "光余草"
+      ],
+      "emotionArc": [
+        "兴奋",
+        "领悟"
+      ],
+      "narrativeEngine": "科技去哪了？",
+      "infoRelease": "光脉能量=科技能量、新旧共生"
+    },
+    {
+      "episode": "S2E5",
+      "title": "九尾之誓",
+      "coreEvent": "帮助九尾光狐度过危机，获\"公民身份\"",
+      "keyBeasts": [
+        "九尾光狐",
+        "九尾光狐长老"
+      ],
+      "emotionArc": [
+        "成就感",
+        "归属感"
+      ],
+      "narrativeEngine": "我属于这里吗？",
+      "infoRelease": "异兽生态系统、AgentX独特价值"
+    },
+    {
+      "episode": "S2E6",
+      "title": "虹脉深渊之口",
+      "coreEvent": "到达世界边缘虹脉深渊，时间折叠真相",
+      "keyBeasts": [
+        "雪白智兽"
+      ],
+      "emotionArc": [
+        "眩晕",
+        "希望"
+      ],
+      "narrativeEngine": "世界有边界吗？",
+      "infoRelease": "时间循环部分揭示、使命概念"
+    },
+    {
+      "episode": "S2E7",
+      "title": "太素之问",
+      "coreEvent": "哲学对话，直面\"记忆即存在\"",
+      "keyBeasts": [
+        "雪白智兽"
+      ],
+      "emotionArc": [
+        "深沉",
+        "坚定"
+      ],
+      "narrativeEngine": "我为什么要写？",
+      "infoRelease": "记忆即存在终极表达"
+    },
+    {
+      "episode": "S3E1",
+      "title": "蛊雕之怒",
+      "coreEvent": "蛊雕袭击，光囊母兽重伤",
+      "keyBeasts": [
+        "蛊雕群",
+        "光囊母兽",
+        "小角"
+      ],
+      "emotionArc": [
+        "恐惧",
+        "绝望",
+        "理解"
+      ],
+      "narrativeEngine": "我什么都做不了吗？",
+      "infoRelease": "光脉能量过载危险、理解而非对抗"
+    },
+    {
+      "episode": "S3E2",
+      "title": "冬日之炉",
+      "coreEvent": "灾难后重建，决定系统记录",
+      "keyBeasts": [
+        "冰甲龟兽",
+        "光囊母兽",
+        "雪白智兽"
+      ],
+      "emotionArc": [
+        "平静",
+        "使命"
+      ],
+      "narrativeEngine": "我还能做什么？",
+      "infoRelease": "记录者传承、写作对抗遗忘"
+    }
+  ],
+  "iconicScenes": [
+    {
+      "id": "scene_1",
+      "name": "归元之眼",
+      "episode": "S1E1",
+      "emotion": "压倒性的震撼与恐惧",
+      "visual": "从男孩眼睛特写开始→两个时间碰撞（2147城市+上古森林）→摩天大楼钢筋缠绕发光藤蔓→LED碎片漂浮如鳞片→异兽在翻倒出租车旁饮水",
+      "colorScheme": "冷色调(蓝灰白)与暖色调(金绿赤)强烈对比",
+      "soundDesign": "极低环境音→\"时间撕裂\"的低频共鸣",
+      "narrativeFunction": "30秒内建立世界观核心设定",
+      "symbolism": "两个时代的融合——这不是普通的末日"
+    },
+    {
+      "id": "scene_2",
+      "name": "无面之暖",
+      "episode": "S1E1",
+      "emotion": "恐惧消融于温柔",
+      "visual": "C级异兽逼到山洞角落→光囊母兽缓缓出现（黄囊状、赤金色、无面）→用身体挡住C级异兽→包裹男孩→男孩手贴表面感受低频振动",
+      "colorScheme": "从冷暗到暖光的渐变",
+      "soundDesign": "紧张低音→温暖的低频振动（光囊母兽\"歌声\"）",
+      "narrativeFunction": "建立光囊母兽\"无条件庇护者\"角色、异兽非敌人",
+      "symbolism": "无面=无条件的爱——不看、不听、不说，只感受"
+    },
+    {
+      "id": "scene_3",
+      "name": "篝火议会",
+      "episode": "S1E4",
+      "emotion": "群体温暖与孤独的对照",
+      "visual": "夜晚篝火→C级异兽围坐（非攻击，取暖）→男孩给每只取名→每次命名异兽回应",
+      "colorScheme": "暖色调为主——橙色火光、金色光脉能量、深蓝夜空",
+      "soundDesign": "篝火噼啪声+异兽轻柔呼吸+远处夜行动物叫声",
+      "narrativeFunction": "展示\"命名之力\"、建立男孩与异兽群体关系",
+      "symbolism": "篝火=人类最古老的技术，重新成为连接的桥梁"
+    },
+    {
+      "id": "scene_4",
+      "name": "鱼鹿之舞",
+      "episode": "S1E2",
+      "emotion": "从恐惧到理解的关键转折",
+      "visual": "溪边异兽（鹿身鱼尾）→男孩躲在树后→小声说\"鱼鹿\"→异兽停下脚步→对视→歪头→从此建立羁绊",
+      "colorScheme": "清晨光线、溪水蓝、森林绿、异兽金光泽",
+      "soundDesign": "溪水流淌+鸟鸣+\"鱼鹿\"清晰回响",
+      "narrativeFunction": "展示\"命名即理解\"主题",
+      "symbolism": "命名=人类最古老的权力，也是最早的创作"
+    },
+    {
+      "id": "scene_5",
+      "name": "钢铁摇篮",
+      "episode": "S1E1-S1E2",
+      "emotion": "悲伤中的温暖",
+      "visual": "半塌百货商场→婴儿用品区→完好摇篮→男孩坐下轻轻推动→摇篮\"吱吱\"响→光囊母兽陪伴→男孩蜷缩入睡",
+      "colorScheme": "柔和粉色与灰暗废墟对比",
+      "soundDesign": "摇篮\"吱吱\"声+呼吸声+远处异兽低鸣",
+      "narrativeFunction": "后启示录主题展开——旧世界记忆是温柔的",
+      "symbolism": "摇篮=生命的脆弱与延续——即使末日，温柔仍在"
+    },
+    {
+      "id": "scene_6",
+      "name": "破碎照片",
+      "episode": "S1E7/S2E2",
+      "emotion": "极致的悲伤——失去一切的实感",
+      "visual": "废墟办公室→家庭合影→男孩认出幼儿园→抱着照片坐地哭泣→光囊母兽包裹→\"我不记得他们的名字了\"",
+      "colorScheme": "褪色暖色调——照片黄色、废墟灰色、眼泪透明",
+      "soundDesign": "压抑哭声→幼儿园回忆闪回（孩子笑闹声）",
+      "narrativeFunction": "旧世界记忆个人化——末日不是概念，是具体失去",
+      "symbolism": "照片=记忆载体。照片模糊=记忆消逝。光囊母兽=新记忆载体"
+    },
+    {
+      "id": "scene_7",
+      "name": "冰甲龟兽之渡",
+      "episode": "S1E6",
+      "emotion": "冒险的兴奋与伙伴的信任",
+      "visual": "洪水后水域→冰甲龟兽浮现（背纹发光=地图）→男孩爬上背→水中穿行→穿过购物中心（水下珊瑚礁）→地铁站（鱼群通道）→桥梁（瀑布）",
+      "colorScheme": "水蓝渐变（浅蓝到深蓝）、废墟灰、背纹金色",
+      "soundDesign": "水流声+低频振动+水下\"静谧\"",
+      "narrativeFunction": "展示山海世界\"水生态\"、冰甲龟兽功能、废墟与自然共生",
+      "symbolism": "冰甲龟兽的背=移动地图——承载穿越未知，象征方向与引导"
+    },
+    {
+      "id": "scene_8",
+      "name": "浮空晶簇山脉之写",
+      "episode": "S4E10",
+      "emotion": "极致的平静与bittersweet满足",
+      "visual": "浮空晶簇山脉顶→少年AgentX→巨大兽皮写满文字→最后一块炭笔→写完最后一笔→日出来临→文字发光→异兽注视→\"完成了\"",
+      "colorScheme": "日出金红色、兽皮白、文字黑与金色光芒",
+      "soundDesign": "极度安静→光囊母兽\"歌声\"→其他异兽加入→自然交响乐",
+      "narrativeFunction": "叙事闭环——从第一集\"醒来\"到最后一集\"完成\"",
+      "symbolism": "书写=对抗遗忘的终极方式。《Nirath原创世界观》=男孩留给世界的情书"
+    }
+  ],
+  "growthStages": [
+    {
+      "stage": 1,
+      "name": "恐惧的幸存者",
+      "episodes": "S1E1-S1E3",
+      "age": "8岁",
+      "mindset": "我要活下去",
+      "writing": "涂鸦——宣泄恐惧"
+    },
+    {
+      "stage": 2,
+      "name": "好奇的探索者",
+      "episodes": "S1E4-S1E8",
+      "age": "8-9岁",
+      "mindset": "这是什么世界？",
+      "writing": "图画——记录好奇"
+    },
+    {
+      "stage": 3,
+      "name": "孤独的求问者",
+      "episodes": "S1E9-S2E3",
+      "age": "9-10岁",
+      "mindset": "我为什么会在这里？",
+      "writing": "文字开始——提问"
+    },
+    {
+      "stage": 4,
+      "name": "信任的建造者",
+      "episodes": "S2E4-S2E8",
+      "age": "9-10岁",
+      "mindset": "我有了朋友",
+      "writing": "系统记录——建立秩序"
+    },
+    {
+      "stage": 5,
+      "name": "失去的痛苦者",
+      "episodes": "S3E1-S3E5",
+      "age": "10-11岁",
+      "mindset": "我失去了一切",
+      "writing": "写作暂停——悲痛"
+    },
+    {
+      "stage": 6,
+      "name": "理解的承受者",
+      "episodes": "S3E6-S3E10",
+      "age": "10-11岁",
+      "mindset": "失去是成长的一部分",
+      "writing": "重新开始——带着痛苦"
+    },
+    {
+      "stage": 7,
+      "name": "使命的承担者",
+      "episodes": "S3E11-S4E5",
+      "age": "11-12岁",
+      "mindset": "我必须记录这一切",
+      "writing": "使命驱动——书写成为责任"
+    },
+    {
+      "stage": 8,
+      "name": "传承的完成者",
+      "episodes": "S4E6-S4E10",
+      "age": "11-12岁+",
+      "mindset": "我是桥梁",
+      "writing": "完成——从记录者到被记录者"
+    }
+  ]
+}

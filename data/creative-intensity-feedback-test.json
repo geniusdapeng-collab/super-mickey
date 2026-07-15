@@ -1,0 +1,247 @@
+{
+  "schema": "creative-intensity-feedback-v1",
+  "entries": [
+    {
+      "id": "entry_1781393279460_nmrbhtjua",
+      "videoType": "health_edu",
+      "intensity": 0.2,
+      "completionRate": 45,
+      "engagementRate": 30,
+      "videoId": "",
+      "timestamp": "2026-06-13T23:27:59.460Z",
+      "metadata": {}
+    },
+    {
+      "id": "entry_1781393279460_kjmjpfnd4",
+      "videoType": "health_edu",
+      "intensity": 0.4,
+      "completionRate": 72,
+      "engagementRate": 55,
+      "videoId": "",
+      "timestamp": "2026-06-13T23:27:59.460Z",
+      "metadata": {}
+    },
+    {
+      "id": "entry_1781393279461_tz485vuli",
+      "videoType": "health_edu",
+      "intensity": 0.6,
+      "completionRate": 58,
+      "engagementRate": 42,
+      "videoId": "",
+      "timestamp": "2026-06-13T23:27:59.461Z",
+      "metadata": {}
+    },
+    {
+      "id": "entry_1781393279462_ftkw0jn1m",
+      "videoType": "health_edu",
+      "intensity": 0.2,
+      "completionRate": 47,
+      "engagementRate": 32,
+      "videoId": "",
+      "timestamp": "2026-06-13T23:27:59.462Z",
+      "metadata": {}
+    },
+    {
+      "id": "entry_1781393279463_blbezx8bc",
+      "videoType": "health_edu",
+      "intensity": 0.4,
+      "completionRate": 74,
+      "engagementRate": 57,
+      "videoId": "",
+      "timestamp": "2026-06-13T23:27:59.463Z",
+      "metadata": {}
+    },
+    {
+      "id": "entry_1781393279463_2q0iibrm5",
+      "videoType": "health_edu",
+      "intensity": 0.6,
+      "completionRate": 60,
+      "engagementRate": 44,
+      "videoId": "",
+      "timestamp": "2026-06-13T23:27:59.463Z",
+      "metadata": {}
+    },
+    {
+      "id": "entry_1781393279464_x03stkulq",
+      "videoType": "health_edu",
+      "intensity": 0.2,
+      "completionRate": 49,
+      "engagementRate": 34,
+      "videoId": "",
+      "timestamp": "2026-06-13T23:27:59.464Z",
+      "metadata": {}
+    },
+    {
+      "id": "entry_1781393279465_f55zedck5",
+      "videoType": "health_edu",
+      "intensity": 0.4,
+      "completionRate": 76,
+      "engagementRate": 59,
+      "videoId": "",
+      "timestamp": "2026-06-13T23:27:59.465Z",
+      "metadata": {}
+    },
+    {
+      "id": "entry_1781393279465_z99o80lwp",
+      "videoType": "health_edu",
+      "intensity": 0.6,
+      "completionRate": 62,
+      "engagementRate": 46,
+      "videoId": "",
+      "timestamp": "2026-06-13T23:27:59.465Z",
+      "metadata": {}
+    },
+    {
+      "id": "entry_1781393279466_lj8xlwtcn",
+      "videoType": "drama",
+      "intensity": 0.5,
+      "completionRate": 55,
+      "engagementRate": 40,
+      "videoId": "",
+      "timestamp": "2026-06-13T23:27:59.466Z",
+      "metadata": {}
+    },
+    {
+      "id": "entry_1781393279467_3as2bbzpn",
+      "videoType": "drama",
+      "intensity": 0.7,
+      "completionRate": 78,
+      "engagementRate": 65,
+      "videoId": "",
+      "timestamp": "2026-06-13T23:27:59.467Z",
+      "metadata": {}
+    },
+    {
+      "id": "entry_1781393279467_13tmin0j3",
+      "videoType": "drama",
+      "intensity": 0.9,
+      "completionRate": 62,
+      "engagementRate": 50,
+      "videoId": "",
+      "timestamp": "2026-06-13T23:27:59.467Z",
+      "metadata": {}
+    },
+    {
+      "id": "entry_1781393279468_qcdzf57dp",
+      "videoType": "drama",
+      "intensity": 0.5,
+      "completionRate": 57,
+      "engagementRate": 42,
+      "videoId": "",
+      "timestamp": "2026-06-13T23:27:59.468Z",
+      "metadata": {}
+    },
+    {
+      "id": "entry_1781393279468_hs5c9wv64",
+      "videoType": "drama",
+      "intensity": 0.7,
+      "completionRate": 80,
+      "engagementRate": 67,
+      "videoId": "",
+      "timestamp": "2026-06-13T23:27:59.468Z",
+      "metadata": {}
+    },
+    {
+      "id": "entry_1781393279469_vn1rer0pa",
+      "videoType": "drama",
+      "intensity": 0.9,
+      "completionRate": 64,
+      "engagementRate": 52,
+      "videoId": "",
+      "timestamp": "2026-06-13T23:27:59.469Z",
+      "metadata": {}
+    },
+    {
+      "id": "entry_1781393279470_1sjc905i8",
+      "videoType": "drama",
+      "intensity": 0.5,
+      "completionRate": 59,
+      "engagementRate": 44,
+      "videoId": "",
+      "timestamp": "2026-06-13T23:27:59.470Z",
+      "metadata": {}
+    },
+    {
+      "id": "entry_1781393279471_6fzxvba3d",
+      "videoType": "drama",
+      "intensity": 0.7,
+      "completionRate": 82,
+      "engagementRate": 69,
+      "videoId": "",
+      "timestamp": "2026-06-13T23:27:59.471Z",
+      "metadata": {}
+    },
+    {
+      "id": "entry_1781393279471_hjjmtk6ic",
+      "videoType": "drama",
+      "intensity": 0.9,
+      "completionRate": 66,
+      "engagementRate": 54,
+      "videoId": "",
+      "timestamp": "2026-06-13T23:27:59.471Z",
+      "metadata": {}
+    }
+  ],
+  "aggregated": {
+    "health_edu": {
+      "type": "医疗科普",
+      "samples": 9,
+      "intensity_distribution": {
+        "0.2": {
+          "count": 3,
+          "avg_completion": 47,
+          "avg_engagement": 32,
+          "total_completion": 141,
+          "total_engagement": 96
+        },
+        "0.4": {
+          "count": 3,
+          "avg_completion": 74,
+          "avg_engagement": 57,
+          "total_completion": 222,
+          "total_engagement": 171
+        },
+        "0.6": {
+          "count": 3,
+          "avg_completion": 60,
+          "avg_engagement": 44,
+          "total_completion": 180,
+          "total_engagement": 132
+        }
+      },
+      "recommended": 0.4,
+      "confidence": 1,
+      "bestScore": 68.9
+    },
+    "drama": {
+      "type": "剧情短片",
+      "samples": 9,
+      "intensity_distribution": {
+        "0.5": {
+          "count": 3,
+          "avg_completion": 57,
+          "avg_engagement": 42,
+          "total_completion": 171,
+          "total_engagement": 126
+        },
+        "0.7": {
+          "count": 3,
+          "avg_completion": 80,
+          "avg_engagement": 67,
+          "total_completion": 240,
+          "total_engagement": 201
+        },
+        "0.9": {
+          "count": 3,
+          "avg_completion": 64,
+          "avg_engagement": 52,
+          "total_completion": 192,
+          "total_engagement": 156
+        }
+      },
+      "recommended": 0.7,
+      "confidence": 1,
+      "bestScore": 76.1
+    }
+  }
+}

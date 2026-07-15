@@ -1,0 +1,19 @@
+{
+  "name": "seedance-agent",
+  "version": "11.4.0-Peng",
+  "description": "Seedance v9.2 — Agent Loop based video production harness",
+  "main": "core/agent-loop.js",
+  "type": "module",
+  "scripts": {
+    "director": "node core/agent-loop.js",
+    "test": "node --test tests/**/*.test.js",
+    "legacy": "node ../seedance-director/scripts/director.js"
+  },
+  "dependencies": {
+    "fs-extra": "^11.1.1",
+    "chokidar": "^3.5.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

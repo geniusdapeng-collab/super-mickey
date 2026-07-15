@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CharacterAsset",
+  "description": "Seedance Pro 角色资产 Schema v5.1-Peng",
+  "type": "object",
+  "required": ["name", "species", "features"],
+  "properties": {
+    "name": { "type": "string", "minLength": 1, "description": "角色名称" },
+    "species": { "type": "string", "description": "物种/类型" },
+    "features": { 
+      "oneOf": [
+        { "type": "array", "items": { "type": "string" }, "description": "特征列表（字符串数组）" },
+        { "type": "object", "description": "特征对象（键值对）" }
+      ],
+      "description": "角色特征"
+    },
+    "signature": { "type": "string", "description": "标志性元素" },
+    "style": { "type": "string", "description": "视觉风格标签" },
+    "isRealisticHuman": { "type": "boolean", "default": false, "description": "是否为写实人类（决定皮肤质感注入）" },
+    "skinTexture": { "type": "string", "description": "皮肤质感描述" },
+    "referenceImages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "view": { "type": "string", "enum": ["正面全身", "侧面全身", "背面全身", "面部表情", "动作姿态"] },
+          "url": { "type": "string", "format": "uri" },
+          "filePath": { "type": "string" }
+        }
+      }
+    },
+    "voice": {
+      "type": "object",
+      "properties": {
+        "voiceId": { "type": "string", "description": "VoiceCraft 声纹ID" },
+        "gender": { "type": "string", "enum": ["male", "female", "neutral"] },
+        "ageGroup": { "type": "string", "enum": ["child", "teen", "adult", "senior"] },
+        "toneDescription": { "type": "string", "description": "语气描述" }
+      }
+    },
+    "colorPalette": { "type": "array", "items": { "type": "string" }, "description": "角色配色方案" }
+  }
+}

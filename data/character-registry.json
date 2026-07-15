@@ -1,0 +1,30 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-05-22",
+  "characters": [
+    {
+      "id": "xiaoG",
+      "name": "AgentX",
+      "displayName": "AgentX（主角）",
+      "status": "active",
+      "onboardedAt": "2026-05-18",
+      "appearances": 12
+    },
+    {
+      "id": "nuanNuan",
+      "name": "暖暖",
+      "displayName": "暖暖（帝江）",
+      "status": "active",
+      "onboardedAt": "2026-05-20",
+      "appearances": 5
+    },
+    {
+      "id": "baiZe",
+      "name": "老师",
+      "displayName": "老师（白泽）",
+      "status": "active",
+      "onboardedAt": "2026-05-21",
+      "appearances": 3
+    }
+  ]
+}
