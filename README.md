@@ -92,6 +92,14 @@ User Intent → Script Blueprint → Scene Cards → Shot Cards → Prompts → 
 
 Each stage produces **structured, reviewable artifacts** — not black-box outputs. Every shot is defined by 25 fields. Every shot passes a 6-question director review. Every prompt is optimized through an 8-step pipeline with smart compression.
 
+<p align="center">
+  <img src="./assets/user-workflow.png" alt="SuperMickey User Workflow" width="100%"/>
+</p>
+
+<p align="center">
+  <i>From Story Input to Final Video — A Complete Production Pipeline</i>
+</p>
+
 ---
 
 ## System Architecture
