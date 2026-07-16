@@ -5,8 +5,8 @@
 </p>
 
 <p align="center">
-  <b>Production-Grade AI Video Pipeline — From Script to Screen</b><br/>
-  <i>4 Specialized Agents · 25-Field Shot Standard · 5-Dimension Quality Framework</i>
+  <b>🎯 We Don't Sell Tools. We Deliver Business Results.</b><br/>
+  <i>AI Video Content That Drives GMV, Traffic, and Brand Growth — Not Just Pretty Frames</i>
 </p>
 
 <p align="center">
@@ -18,7 +18,11 @@
   <a href="#"><img src="https://img.shields.io/badge/Render-Seedance%202.0-FF6B35" alt="Render"/></a>
 </p>
 
-> ⚠️ **限时内测版** — 当前版本为限时开放测试，未来可能转为付费版本或调整功能范围。建议及时 Star 和 Fork 以锁定当前版本。
+> ⚠️ **Limited Beta** — Current version is time-limited open beta. Future versions may transition to paid or adjusted scope. Star and Fork now to lock in current version.
+>
+> 📈 **Want to see how SuperMickey drives real business growth?** Read our [**Business Value & Results Delivery Manifesto** →](./BUSINESS-VALUE.md)
+>
+> *Technology is not the destination. Business results are.*
 
 ---
 
@@ -26,6 +30,7 @@
 
 - [What is SuperMickey?](#what-is-supermickey)
 - [Why SuperMickey?](#why-supermickey)
+- [🎯 Business Value: Results, Not Tools](#-business-value-results-not-tools)
 - [System Architecture](#system-architecture)
 - [The Four Production Agents](#the-four-production-agents)
 - [25-Field Shot Card Standard](#25-field-shot-card-standard)
@@ -46,9 +51,19 @@
 
 ## What is SuperMickey?
 
-**SuperMickey** is a production-grade AI video generation system that transforms creative storytelling into automated, cinema-quality video production. Built on a **4-layer architecture** with **4 specialized AI agents**, it treats video production as a software engineering problem — with strict quality gates, versioned checkpoints, automated reviews, and structured data contracts between every pipeline stage.
+**SuperMickey** is a production-grade AI video generation system. But here's what that actually means:
+
+> **We don't just generate videos. We deliver business results.**
+>
+> For e-commerce sellers, that means **3-5x conversion rate improvement** and **30%+ GMV growth**.
+> For MCN agencies, that means **doubling matrix traffic** and **10x content output**.
+> For brands, that means **Campaign ROI jumping from 1:3 to 1:8**.
+
+Under the hood, SuperMickey is built on a **4-layer architecture** with **4 specialized AI agents**, treating video production as a software engineering problem — with strict quality gates, versioned checkpoints, automated reviews, and structured data contracts between every pipeline stage.
 
 The system currently powers the **Nirath** cinematic universe (a hyper-realistic sci-fi world inspired by ancient mythology) and supports **11 thematic genres** ranging from cinematic drama to educational content, commercial marketing, travel vlogs, and more.
+
+### 📖 Read the full business value proposition: [BUSINESS-VALUE.md](./BUSINESS-VALUE.md)
 
 ### At a Glance
 
@@ -99,6 +114,57 @@ Each stage produces **structured, reviewable artifacts** — not black-box outpu
 <p align="center">
   <i>From Story Input to Final Video — A Complete Production Pipeline</i>
 </p>
+
+---
+
+## 🎯 Business Value: Results, Not Tools
+
+**The fundamental shift in the AI era: Nobody buys tools. They buy outcomes.**
+
+SuperMickey is not just open-source software. It is the foundation of a **results-delivery business** that helps customers achieve measurable growth.
+
+### What Results Do We Deliver?
+
+| Customer Segment | The Result They Want | The Result We Deliver |
+|-----------------|---------------------|----------------------|
+| **Cross-border E-commerce** | Sell more products | 300 product videos/month, 3-5x conversion rate improvement |
+| **MCN / Agencies** | More traffic & revenue | 500 videos/day, matrix traffic doubled |
+| **Enterprise Brands** | Brand awareness & ROI | Campaign ROI improved from 1:3 to 1:8 |
+| **Content Creators** | More fans & higher ad rates | Content quality breakthrough, 3x ad rate increase |
+
+### Three Results-Delivery Models
+
+```
+┌────────────────────────────────────────────────────────────────┐
+│  Model A: Fully-Managed Growth Service                         │
+│  ├── We handle: Strategy → Content → Operations → Optimization │
+│  ├── You handle: Brief, review data, payment                   │
+│  └── Pricing: Base fee + performance share (1-10% of results)  │
+├────────────────────────────────────────────────────────────────┤
+│  Model B: Semi-Managed Content Supply                          │
+│  ├── We handle: Bulk video production per your brief           │
+│  ├── You handle: Operations, distribution, strategy            │
+│  └── Pricing: Per video ($5-50) or monthly subscription        │
+├────────────────────────────────────────────────────────────────┤
+│  Model C: Performance Guarantee                                │
+│  ├── We promise: Specific business metrics (GMV, traffic, ROI) │
+│  ├── You handle: Data access, coordination                     │
+│  └── Pricing: Pay only when results are achieved               │
+└────────────────────────────────────────────────────────────────┘
+```
+
+### Example: E-commerce Growth
+
+**Client**: Bluetooth earphone seller, monthly GMV $80K  
+**Our Delivery**:
+- Month 1: 200 product videos → GMV grows to $95K (+18%)
+- Month 2: 300 videos + optimization → GMV grows to $110K (+37%)
+- Month 3: Full SKU coverage → GMV grows to $125K (+56%)
+
+**Pricing**: $3,000 base + 2% of incremental GMV = $4,000/month  
+**Client ROI**: $4K input → $45K incremental GMV = **1:11.25**
+
+👉 **Read the complete business value document:** [BUSINESS-VALUE.md](./BUSINESS-VALUE.md)
 
 ---
 
@@ -752,24 +818,34 @@ We welcome all forms of contribution! See [CONTRIBUTING.md](CONTRIBUTING.md) for
 
 ---
 
-## 💰 商业价值与前景
+## 💰 Business Value & Commercial Prospects
 
-### 解决的行业痛点
+> **Technology is not the destination. Business results are.**
+>
+> SuperMickey is not just open-source code. It is the foundation of a **results-delivery business** that helps customers achieve measurable growth.
 
-| 场景 | 痛点 | 价值 |
-|------|------|------|
-| **独立创作者** | 缺乏专业团队，无法承担电影级制作成本 | 单人即可产出影院级短片 |
-| **MCN 机构** | 内容产量瓶颈，人力成本居高不下 | 自动化流水线，产量提升 10x+ |
-| **品牌广告** | 制作周期长，无法快速响应热点 | 从创意到成片缩短至小时级 |
-| **影视教育** | 学生缺乏实践机会 | 低成本反复练习完整制片流程 |
+### Industry Pain Points We Solve
 
-### 市场前景
+| Segment | Pain Point | Value Delivered |
+|---------|-----------|----------------|
+| **E-commerce Sellers** | Low video coverage → low conversion | 300 videos/month, 3-5x conversion improvement |
+| **MCN Agencies** | Content bottleneck, stagnant growth | 10x output increase, matrix traffic doubled |
+| **Brands** | Slow production, can't respond to trends | Campaign ROI from 1:3 to 1:8 |
+| **Film Education** | Students lack practice opportunities | Zero-cost professional training |
 
-- AI 视频生成正处于技术奇点，2025-2027 年预计增长率超过 300%
-- 多智能体编排（Multi-Agent Orchestration）将成为视频生产的标准范式
-- 早期进入者将定义行业标准，建立生态壁垒
+### Market Opportunity
 
-> **限时内测版** — 抢先体验完整功能，锁定开源版本。
+- AI video generation is at an inflection point, with 300%+ projected growth 2025-2027
+- Multi-Agent orchestration is becoming the standard paradigm for video production
+- Early movers will define industry standards and build ecosystem moats
+
+### 📖 Full Business Value Document
+
+For our complete results-delivery framework, pricing models, case studies, and revenue projections, see:
+
+👉 **[BUSINESS-VALUE.md](./BUSINESS-VALUE.md)** — *We Don't Sell Tools. We Deliver Results.*
+
+> **Limited Beta** — Experience full capabilities now. Lock in the open-source version by Starring and Forking.
 
 ---
 
