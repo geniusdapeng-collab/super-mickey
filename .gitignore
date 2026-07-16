@@ -137,13 +137,21 @@ RELEASE_v6.*
 RELEASE-v20.*
 RELEASE-v23.*
 !RELEASE-v2.1.0.md
+RELEASE-v2.1.0.md
+systems/story-craft-engine/RELEASE-v2.0.md
 seedance-agent/RELEASE-*.md
 
 # 小写版本
 release-v*.md
 release-*.md
+*-release-*.md
 REPAIR_WORKFLOW.md
 REMAINING_FIXES_PLAN.md
+TEST-REPORT-*.md
+.current-version
+CHANGELOG.md
+**/CHANGELOG.md
+scripts/character-portrait-generator-v1.0-release.js
 systems/release-manifest.js
 
 # ============================================
