@@ -253,7 +253,7 @@ Step 7: Sound & Dialogue      (LOWER — first to compress)
 Step 8: Closing Anchor        (HIGH — NEVER compressed)
 ```
 
-**Smart Compression Pipeline** (triggered when > 988 chars):
+**Smart Compression Pipeline** (triggered when exceeding subsystem max):
 1. Remove sound/dialogue
 2. Simplify lighting/material
 3. Simplify camera language
@@ -266,15 +266,12 @@ Step 8: Closing Anchor        (HIGH — NEVER compressed)
 - **Cinematography Core** — Composition rules, color theory, lighting recommendations
 - **Realism Enhancement** — Film grain, physical light simulation, natural skin texture
 
-**Prompt Length Configuration:**
+**Prompt Length Configuration** (by subsystem):
 
-```javascript
-{
-  TARGET_MIN: 300,    // Sweet spot for detail
-  TARGET_MAX: 850,    // Optimal range
-  HARD_MAX: 988       // Absolute ceiling with smart truncation
-}
-```
+| Subsystem | TARGET_MIN | TARGET_MAX | HARD_MAX | Use Case |
+|-----------|-----------|-----------|---------|---------|
+| **SuperMickey** | 2,470 | 3,000 | 3,000 | Cinematic production, max detail |
+| **Short-Video** | 1,400 | 1,500 | 1,500 | Short-form content, fast generation |
 
 ---
 
