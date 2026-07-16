@@ -139,6 +139,13 @@ RELEASE-v23.*
 !RELEASE-v2.1.0.md
 seedance-agent/RELEASE-*.md
 
+# 小写版本
+release-v*.md
+release-*.md
+REPAIR_WORKFLOW.md
+REMAINING_FIXES_PLAN.md
+systems/release-manifest.js
+
 # ============================================
 # 9. 备份与临时文件
 # ============================================
