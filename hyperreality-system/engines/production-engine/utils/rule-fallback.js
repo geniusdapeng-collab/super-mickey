@@ -7,7 +7,7 @@
  * - 极简 Prompt 拼接
  */
 
-const { FALLBACK_SCENES, FALLBACK_ACTIONS } = require('../../config/neutral-fallbacks');
+const { FALLBACK_SCENES, FALLBACK_ACTIONS } = require('../../../config/neutral-fallbacks');
 
 class RuleFallbackEngine {
   constructor(options = {}) {
@@ -55,15 +55,19 @@ class RuleFallbackEngine {
 
   /**
    * 极简 Prompt 拼接(最后兜底)
-   * 【v2.1.4-fix9-P12】兜底路径也强制写实场景和动作
+   * 【v2.1.11-重构】按 visual_register 分级写实校验
    */
-  assemblePromptSimple(shot) {
+  assemblePromptSimple(shot, options = {}) {
     const parts = [];
     
-    // 场景强制写实检查
+    // 【v2.1.11-重构】写实校验强度分级
+    const { getRealismForbidden } = require('../../config/production-profile');
+    const visualRegister = options.visualRegister || shot.visual_register || 'realistic';
+    const forbiddenWords = getRealismForbidden(visualRegister);
+    
+    // 场景写实检查（分级）
     let sceneDesc = shot.scene || '';
-    const sceneForbidden = ['全息', '虚拟', '投影', '抽象', '光影场域', '数据空间', '元宇宙', '时间操控', '霓虹', '微观世界', '宏观', '抽象几何', '流动光影', '交织光影', '色彩对冲'];
-    if (sceneForbidden.some(w => sceneDesc.includes(w))) {
+    if (forbiddenWords.scene.some(w => sceneDesc.includes(w))) {
       // 【修复 P0-3】领域中立兜底场景：从唯一真源读取
       const fallbackScenes = FALLBACK_SCENES;
       const idx = parseInt(shot.shotId?.replace(/\D/g, '') || '0') || 0;
@@ -75,10 +79,9 @@ class RuleFallbackEngine {
     if (shot.lighting) parts.push(shot.lighting);
     if (shot.camera_movement) parts.push(shot.camera_movement);
     
-    // 动作强制写实检查
+    // 动作写实检查（分级）
     let actionDesc = shot.action || '';
-    const actionForbidden = ['全息', '虚拟', '投影', '空间扭曲', '时间残影', '霓虹', '数据流', '光即角色', '抽象构图', '梦境流动性', '手绘动画', '湿版摄影', '黑色电影'];
-    if (actionForbidden.some(w => actionDesc.includes(w))) {
+    if (forbiddenWords.action.some(w => actionDesc.includes(w))) {
       // 【修复 P0-3】领域中立兜底动作：从唯一真源读取
       const fallbackActions = FALLBACK_ACTIONS;
       const idx = parseInt(shot.shotId?.replace(/\D/g, '') || '0') || 0;

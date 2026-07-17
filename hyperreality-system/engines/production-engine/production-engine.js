@@ -1658,28 +1658,31 @@ class ProductionEngine {
     const prompts = [];
     const engineeredShots = [];
     
-    // 【v2.1.4-fix9-P13】兜底路径(_engineerPrompts)也强制写实场景和动作
-    const sceneForbidden = ['全息', '虚拟', '投影', '抽象', '光影场域', '数据空间', '元宇宙', '时间操控', '霓虹', '微观世界', '宏观', '抽象几何', '流动光影', '交织光影', '色彩对冲'];
+    // 【v2.1.11-重构】写实校验强度分级：按 visual_register 决定禁用词范围
+    const { getRealismForbidden } = require('../../config/production-profile');
+    const visualRegister = blueprint?.productionProfile?.visual_register 
+      || blueprint?.requirementList?.productionProfile?.visual_register 
+      || 'realistic';
+    const forbiddenWords = getRealismForbidden(visualRegister);
     // 【修复 P0-2】领域中立兜底场景：从唯一真源读取
     const fallbackScenes = FALLBACK_SCENES;
-    const actionForbidden = ['全息', '虚拟', '投影', '空间扭曲', '时间残影', '霓虹', '数据流', '光即角色', '抽象构图', '梦境流动性', '手绘动画', '湿版摄影', '黑色电影'];
     // 【修复 P0-2】领域中立兜底动作：从唯一真源读取
     const fallbackActions = FALLBACK_ACTIONS;
 
     for (const shot of shots) {
-      // 【v2.1.4-fix9-P13】强制写实过滤
+      // 【v2.1.11-重构】按 visual_register 分级强制写实过滤
       let filteredScene = shot.scene || '';
-      if (sceneForbidden.some(w => filteredScene.includes(w))) {
+      if (forbiddenWords.scene.some(w => filteredScene.includes(w))) {
         const idx = parseInt(shot.shotId?.replace(/\D/g, '') || '0') || 0;
         filteredScene = fallbackScenes[idx % fallbackScenes.length];
-        console.warn(`[ProductionEngine] ⚠️ 镜头 ${shot.shotId} 场景含禁止词汇，兜底替换为写实场景`);
+        console.warn(`[ProductionEngine] ⚠️ 镜头 ${shot.shotId} 场景含禁止词汇(校验强度=${visualRegister})，兜底替换为写实场景`);
       }
       
       let filteredAction = shot.action || '';
-      if (actionForbidden.some(w => filteredAction.includes(w))) {
+      if (forbiddenWords.action.some(w => filteredAction.includes(w))) {
         const idx = parseInt(shot.shotId?.replace(/\D/g, '') || '0') || 0;
         filteredAction = fallbackActions[idx % fallbackActions.length];
-        console.warn(`[ProductionEngine] ⚠️ 镜头 ${shot.shotId} 动作含禁止词汇，兜底替换为写实动作`);
+        console.warn(`[ProductionEngine] ⚠️ 镜头 ${shot.shotId} 动作含禁止词汇(校验强度=${visualRegister})，兜底替换为写实动作`);
       }
       
       const filteredShot = {

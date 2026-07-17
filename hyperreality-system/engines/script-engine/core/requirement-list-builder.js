@@ -672,7 +672,12 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
     
     // 补全类型名称（如果只有类型ID）
     if (completed.videoType && !completed.videoTypeName) {
-      completed.videoTypeName = ThemeConfig.getTypeName(completed.videoType);
+      // 【v2.1.11-重构】优先使用 genre（开放文本），无 genre 才回退 theme-config 预设名
+      if (completed.productionProfile?.genre) {
+        completed.videoTypeName = completed.productionProfile.genre;
+      } else {
+        completed.videoTypeName = ThemeConfig.getTypeName(completed.videoType);
+      }
     }
 
     // 补全时长 - 【v2.1.11-重构】由 productionProfile 驱动；无 profile 时才回退 theme-config 预设

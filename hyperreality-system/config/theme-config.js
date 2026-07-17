@@ -1,11 +1,20 @@
 'use strict';
 
 /**
- * 主题类型配置模块
- * Hyperreality System v2.2.0
+ * 主题类型配置模块 —— 【v2.1.11 已降级为预设模板库】
  * 
- * 核心7大类型 + 4个扩展类型
- * 配置化设计：新增类型无需修改源码，只需在此添加配置
+ * 警告：此文件不再驱动生产决策。所有生产决策已迁移至 production-profile.js。
+ * 本文件保留目的：
+ * 1. 向后兼容（旧代码仍可使用 getType/getContentSafety 等方法）
+ * 2. 提供预设类型的默认配置（时长范围、风格等）作为参考模板
+ * 3. 开发调试时查看类型定义
+ * 
+ * 生产链路应优先使用：
+ * - 时长 → productionProfile.duration_target
+ * - 事实核查 → productionProfile.factual_accuracy (factualConfig 推导)
+ * - 写实校验 → productionProfile.visual_register (getRealismForbidden 推导)
+ * - 内容安全 → productionProfile.safety_level (safetyConfig 推导)
+ * - 台词策略 → productionProfile.dialogue_density (dialogueStrategy 推导)
  */
 
 const ThemeConfig = {
@@ -564,6 +573,7 @@ const ThemeConfig = {
 
   /**
    * 获取内容安全配置
+   * 【已降级】生产链路请使用 production-profile.js 的 safetyConfig() / factualConfig()
    */
   getContentSafety(typeId) {
     const config = this.getType(typeId);

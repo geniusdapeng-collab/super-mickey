@@ -101,6 +101,39 @@ function closestPreset(profile) {
   return 'CINE';
 }
 
+/**
+ * 写实校验词表（按 visual_register 分级）
+ * full: 写实 — 最严格，所有科幻/抽象词汇禁用
+ * core: 风格化 — 仅禁用真正的科幻/抽象概念，允许风格化元素（霓虹、抽象几何等）
+ * skip: 抽象 — 不做检查
+ */
+const REALISM_FORBIDDEN = {
+  full: {
+    scene: ['全息', '虚拟', '投影', '抽象', '光影场域', '数据空间', '元宇宙', '时间操控', '霓虹', '微观世界', '宏观', '抽象几何', '流动光影', '交织光影', '色彩对冲'],
+    action: ['全息', '虚拟', '投影', '空间扭曲', '时间残影', '霓虹', '数据流', '光即角色', '抽象构图', '梦境流动性', '手绘动画', '湿版摄影', '黑色电影']
+  },
+  core: {
+    // 风格化允许：霓虹、抽象几何、流动光影、手绘动画、湿版摄影、黑色电影
+    // 仅禁用真正打破物理/现实边界的核心科幻概念
+    scene: ['元宇宙', '时间操控', '数据空间', '光影场域'],
+    action: ['空间扭曲', '时间残影', '光即角色', '梦境流动性']
+  },
+  skip: {
+    scene: [],
+    action: []
+  }
+};
+
+/**
+ * 获取分级后的写实禁用词表
+ * @param {string|object} profileOrLevel - profile 对象或 level 字符串 ('full'/'core'/'skip')
+ * @returns {{scene: string[], action: string[]}}
+ */
+function getRealismForbidden(profileOrLevel) {
+  const level = typeof profileOrLevel === 'string' ? profileOrLevel : realismCheckLevel(profileOrLevel);
+  return REALISM_FORBIDDEN[level] || REALISM_FORBIDDEN.full;
+}
+
 module.exports = {
   PROFILE_SCHEMA,
   normalizeProfile,
@@ -108,5 +141,6 @@ module.exports = {
   safetyConfig,
   factualConfig,
   realismCheckLevel,
+  getRealismForbidden,
   closestPreset
 };

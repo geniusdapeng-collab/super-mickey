@@ -156,6 +156,9 @@ class PromptFusionAgent extends BaseAgent {
     // v2.1.7: 新增跨字段一致性校验器
     this.consistencyChecker = new FieldConsistencyChecker({ strict: true, logLevel: 'warn' });
 
+    // 【v2.1.11-重构】保存生产画像，用于写实校验强度分级
+    this.productionProfile = options.productionProfile || null;
+
     // 【P0-PERF-01 修复】单镜头降级预算控制,防止降级螺旋
     this.MAX_DEGRADE_BUDGET_PER_SHOT = options.maxDegradeBudgetPerShot || 600000; // 10分钟硬上限
     this.DEGRADE_BUDGET_RATIOS = {
@@ -1398,12 +1401,14 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
     parts.push(`【导演意图】${directorIntentParts.join('。')}`);
 
     // 【场景】
-    // 【v2.1.4-fix9-P5】场景强制写实:禁止科幻/抽象词汇
+    // 【v2.1.11-重构】写实校验强度分级：按 visual_register 决定禁用词范围
+    const { getRealismForbidden } = require('../../../config/production-profile');
+    const visualRegister = this.productionProfile?.visual_register || 'realistic';
+    const forbiddenWords = getRealismForbidden(visualRegister);
     let sceneDesc = fields.scene || shot.scene || '';
-    const forbiddenWords = ['全息', '虚拟', '投影', '抽象', '光影场域', '数据空间', '元宇宙', '时间操控', '霓虹', '微观世界', '宏观', '抽象几何', '流动光影', '交织光影', '色彩对冲'];
-    const hasForbidden = forbiddenWords.some(w => sceneDesc.includes(w));
+    const hasForbidden = forbiddenWords.scene.some(w => sceneDesc.includes(w));
     if (hasForbidden) {
-      console.warn(`[PromptFusionAgent] ⚠️ 镜头 ${shot.shotId} 场景含禁止词汇: "${sceneDesc.substring(0, 50)}...",强制替换为写实场景`);
+      console.warn(`[PromptFusionAgent] ⚠️ 镜头 ${shot.shotId} 场景含禁止词汇(校验强度=${visualRegister}): "${sceneDesc.substring(0, 50)}...",强制替换为写实场景`);
       // 【修复 P0-1】领域中立兜底场景：从唯一真源读取，不含任何项目特定元素
       const fallbackScenes = FALLBACK_SCENES;
       // 使用sceneType和shotId哈希选择，避免简单轮询
@@ -1472,12 +1477,11 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
     if (makeupField) parts.push(`【化妆】${makeupField}`);
 
     // 【动作】
-    // 【v2.1.4-fix9-P9】动作强制写实:禁止科幻/抽象词汇
+    // 【v2.1.11-重构】写实校验强度分级：按 visual_register 决定禁用词范围
     let actionDesc = getField('action') || shot.action || '';
-    const actionForbidden = ['全息', '虚拟', '投影', '空间扭曲', '时间残影', '霓虹', '数据流', '光即角色', '抽象构图', '梦境流动性', '手绘动画'];
-    const actionHasForbidden = actionForbidden.some(w => actionDesc.includes(w));
+    const actionHasForbidden = forbiddenWords.action.some(w => actionDesc.includes(w));
     if (actionHasForbidden) {
-      console.warn(`[PromptFusionAgent] ⚠️ 镜头 ${shot.shotId} 动作含禁止词汇: "${actionDesc.substring(0, 50)}...",强制替换为写实动作`);
+      console.warn(`[PromptFusionAgent] ⚠️ 镜头 ${shot.shotId} 动作含禁止词汇(校验强度=${visualRegister}): "${actionDesc.substring(0, 50)}...",强制替换为写实动作`);
       // 提取角色名
       const charName = shot.character?.name || '示例角色';
       // 【修复 P0-1】领域中立兜底动作：从唯一真源读取，不含任何项目特定元素
@@ -1614,10 +1618,10 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
     if (fusionText) {
       parts.push(fusionText);
     } else {
-      // 【v2.1.4-fix9-P11】降级路径也强制写实场景和动作
+      // 【v2.1.11-重构】降级路径按 visual_register 分级校验
       let sceneDesc = shot.scene || '';
-      const sceneForbidden = ['全息', '虚拟', '投影', '抽象', '光影场域', '数据空间', '元宇宙', '时间操控', '霓虹', '微观世界', '宏观', '抽象几何', '流动光影', '交织光影', '色彩对冲'];
-      if (sceneForbidden.some(w => sceneDesc.includes(w))) {
+      const forbiddenWords = getRealismForbidden(visualRegister);
+      if (forbiddenWords.scene.some(w => sceneDesc.includes(w))) {
         // 【修复 P0-1】领域中立兜底场景：从唯一真源读取
         const fallbackScenes = FALLBACK_SCENES;
         const idx = parseInt(shot.shotId?.replace(/\D/g, '') || '0') || 0;
@@ -1628,8 +1632,7 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
       if (shot.character && shot.character !== 'NONE') parts.push(shot.character);
 
       let actionDesc = shot.action || '';
-      const actionForbidden = ['全息', '虚拟', '投影', '空间扭曲', '时间残影', '霓虹', '数据流', '光即角色', '抽象构图', '梦境流动性', '手绘动画', '湿版摄影', '黑色电影'];
-      if (actionForbidden.some(w => actionDesc.includes(w))) {
+      if (forbiddenWords.action.some(w => actionDesc.includes(w))) {
         // 【修复 P0-1】领域中立兜底动作：从唯一真源读取
         const fallbackActions = FALLBACK_ACTIONS;
         const idx = parseInt(shot.shotId?.replace(/\D/g, '') || '0') || 0;
