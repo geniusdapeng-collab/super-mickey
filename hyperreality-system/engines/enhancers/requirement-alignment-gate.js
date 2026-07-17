@@ -17,6 +17,19 @@ class RequirementAlignmentGate {
     this.threshold = options.threshold || 0.7; // 对齐评分阈值
     this.strictMode = options.strictMode || false; // 严格模式：低于阈值阻止渲染
 
+    // 道具误匹配排除列表（中文自然语言中的常见假阳性）
+    this.propFalsePositives = [
+      // 成语/固定搭配中的"元素字"
+      '风采', '当年的风', '当年风', '的风', '之波', '云里', '雾里',
+      // 非道具语境
+      '风光', '风景', '风格', '风云', '风雨', '风暴', '风气',
+      '水面', '水里', '水上', '水中',
+      '光线', '光明', '光彩', '目光',
+      '电影', '电视', '电话', '电脑', '电流', '电路',
+      '天气', '空气', '氧气', '气温',
+      '声音', '音乐', '音响'
+    ];
+
     // 动作关键词库
     this.actionKeywords = [
       '大战', '对决', '激战', '交锋', '碰撞', '追逐', '逃亡', '变身',
@@ -154,7 +167,8 @@ class RequirementAlignmentGate {
       let match;
       while ((match = pattern.exec(text)) !== null) {
         const prop = match[1].trim();
-        if (prop.length >= 2 && !props.includes(prop)) {
+        // 【v2.1.11 修复】过滤自然语言中的假阳性道具
+        if (prop.length >= 2 && !props.includes(prop) && !this._isFalsePositiveProp(prop, text)) {
           props.push(prop);
         }
       }
@@ -274,6 +288,28 @@ class RequirementAlignmentGate {
     if (!style) return true;
     const allText = [...prompts.map(p => p.prompt || ''), ...shots.map(s => s.description || s.prompt || '')].join(' ');
     return allText.includes(style);
+  }
+
+  /**
+   * 【v2.1.11 修复】检查道具是否为自然语言中的假阳性
+   * 中文自然语言中"风/云/水"等元素字常出现在成语/固定搭配中，
+   * 并非真实道具（如"不减当年的风采"中的"风"）
+   */
+  _isFalsePositiveProp(prop, fullText) {
+    // 1. 直接匹配已知假阳性列表
+    if (this.propFalsePositives.includes(prop)) return true;
+
+    // 2. 如果包含结构词"的/是/在/当"，大概率是自然语言而非道具
+    if (/[的是在当]/g.test(prop)) return true;
+
+    // 3. 如果"元素字"前面是常见非修饰字（如"年/月/日/天"），排除
+    const elementChars = /(火|水|风|雷|电|光|影|雾|云|气|波)$/;
+    if (elementChars.test(prop)) {
+      const prefix = prop.replace(elementChars, '');
+      if (prefix.length >= 1 && /[年月日天年当]/g.test(prefix)) return true;
+    }
+
+    return false;
   }
 }
 
