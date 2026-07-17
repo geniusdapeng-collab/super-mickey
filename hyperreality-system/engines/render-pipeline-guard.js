@@ -76,15 +76,16 @@ class RenderPipelineGuard {
         name: '服装锁定检查',
         check: (prompt) => {
           const text = prompt.prompt || '';
-          const hasCharacter = /protagonist|角色|character|孙悟空|杨戬|二郎神|猴王/i.test(text);
+          const hasCharacter = /protagonist|角色|character|主角|人物/i.test(text);
           if (!hasCharacter) return { pass: true };
           // v6.5.60-fix: 支持古装/神话服装 + 现代职业服装
-          // 【修复】增加更多服装描述匹配模式，支持直接描述服装名词（无需"身穿"前缀）
-          const hasCostumeLock = /穿[警护白][服大褂]|身穿|wearing|dressed in|in a|锁子黄金甲|凤翅紫金冠|藕丝步云履|虎皮裙|飞凤帽|战甲|古装|仙衣|道袍|铠甲|armor|龙纹铠甲|银白铠甲|金色铠甲|铠甲|甲胄|战袍|道服/i.test(text);
+          // 【修复 P1-1】服装检查去领域化：不绑定特定项目角色
+          const hasCostumeLock = /身穿|wearing|dressed in|in a|古装|战甲|铠甲|armor|甲胄|战袍|道服|职业装|正装/i.test(text);
           return {
             pass: hasCostumeLock,
             message: hasCostumeLock ? null : 'Prompt未明确锁定角色服装',
-            fix: '在角色描述前添加服装描述（如"身穿锁子黄金甲、凤翅紫金冠"或"穿警服的"）'
+            // 【修复 P1-1】修复建议去领域化：不指定特定项目服装
+            fix: '在角色描述前添加服装描述（与角色档案一致的完整服装锚定，如"身穿[角色档案服装]"）'
           };
         }
       },
@@ -93,16 +94,17 @@ class RenderPipelineGuard {
         name: '外观特征锚定',
         check: (prompt) => {
           const text = prompt.prompt || '';
-          // v6.5.60-fix: 古装场景检查神话特征，现代场景检查职业特征
-          const hasAncient = /锁子黄金甲|凤翅紫金冠|藕丝步云履|天眼|火眼金睛|猴毛/i.test(text);
+          // 【修复 P1-1】外观锚定检查泛化：不绑定特定神话角色的特征词
+          const hasAncient = /古装|战甲|铠甲|仙衣|道袍/i.test(text);
           const hasPolice = /穿警服/.test(text);
           if (!hasAncient && !hasPolice) return { pass: true };
           if (hasAncient) {
-            const hasAnchor = /天眼|火眼金睛|金箍棒|三尖两刃刀/i.test(text);
+            const hasAnchor = /头戴|佩戴|手持|额前|腰间/i.test(text);
             return {
               pass: hasAnchor,
-              message: hasAnchor ? null : '古装角色但未描述标志性特征（天眼、火眼金睛等）',
-              fix: '添加标志性特征描述（如"额前天眼开启"、"火眼金睛闪烁"）',
+              message: hasAnchor ? null : '古装角色但未描述标志性配饰（头饰/手持物等）',
+              // 【修复 P1-1】修复建议去领域化
+              fix: '添加与角色档案一致的标志性配饰描述（如头饰、手持物）',
               severity: 'warning'
             };
           }

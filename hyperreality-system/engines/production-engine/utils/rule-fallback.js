@@ -7,6 +7,8 @@
  * - 极简 Prompt 拼接
  */
 
+const { FALLBACK_SCENES, FALLBACK_ACTIONS } = require('../../config/neutral-fallbacks');
+
 class RuleFallbackEngine {
   constructor(options = {}) {
     this.log = options.logFn || console.log;
@@ -62,12 +64,8 @@ class RuleFallbackEngine {
     let sceneDesc = shot.scene || '';
     const sceneForbidden = ['全息', '虚拟', '投影', '抽象', '光影场域', '数据空间', '元宇宙', '时间操控', '霓虹', '微观世界', '宏观', '抽象几何', '流动光影', '交织光影', '色彩对冲'];
     if (sceneForbidden.some(w => sceneDesc.includes(w))) {
-      const fallbackScenes = [
-        '医院健康宣教室，白色荧光灯均匀照明，白墙面贴有无文字骨骼肌解剖图与运动损伤海报（纯图形版），木质讲台表面带有细微使用划痕，地面浅灰色防滑PVC地胶',
-        '三甲医院检验科走廊，冷白色LED光源从走廊顶部连续排列向下照射，无文字箭头标识牌指向尿液检验窗口，地面浅色抛光瓷砖，墙面白色医用抗菌涂层',
-        '医生诊室，白色墙面悬挂无文字人体解剖示意图（纯图形版），办公桌摆放听诊器与血压计，检查床铺有蓝色一次性床单，无影灯悬于上方，窗光透入',
-        '医院健康管理中心，嵌入式LED灯带洒下柔和暖白光，接待台后方排列无文字健康宣传展板（纯图形版），前方皮质沙发与实木茶几，地面灰色哑光瓷砖'
-      ];
+      // 【修复 P0-3】领域中立兜底场景：从唯一真源读取
+      const fallbackScenes = FALLBACK_SCENES;
       const idx = parseInt(shot.shotId?.replace(/\D/g, '') || '0') || 0;
       sceneDesc = fallbackScenes[idx % fallbackScenes.length];
     }
@@ -81,13 +79,8 @@ class RuleFallbackEngine {
     let actionDesc = shot.action || '';
     const actionForbidden = ['全息', '虚拟', '投影', '空间扭曲', '时间残影', '霓虹', '数据流', '光即角色', '抽象构图', '梦境流动性', '手绘动画', '湿版摄影', '黑色电影'];
     if (actionForbidden.some(w => actionDesc.includes(w))) {
-      const fallbackActions = [
-        '镜头缓慢推近，示例角色站立讲台前，自然手势讲解，眼神注视镜头，警服在荧光灯下轮廓清晰',
-        '稳定机位中景，示例角色沿走廊缓步前行，侧头指向检验窗口，白大褂医生从背景走过',
-        '手持微晃跟拍，示例角色靠近检查床，手指轻触医学挂图，无影灯在头顶形成柔和光晕',
-        '固定机位中景，示例角色坐于沙发边缘，双手交叠置于膝上，LED灯带在身后形成均匀轮廓光',
-        '缓慢后拉全景，示例角色站立检验窗口前，转身面向镜头，不锈钢台面反射冷白色光源'
-      ];
+      // 【修复 P0-3】领域中立兜底动作：从唯一真源读取
+      const fallbackActions = FALLBACK_ACTIONS;
       const idx = parseInt(shot.shotId?.replace(/\D/g, '') || '0') || 0;
       actionDesc = fallbackActions[idx % fallbackActions.length];
     }
@@ -95,11 +88,13 @@ class RuleFallbackEngine {
     
     if (shot.mood) parts.push(`atmosphere: ${shot.mood}`);
     
-    // v6.6.10-fix: 极简路径使用全局模块，区分片头/内容镜
     // 【P2-9 修复】动态 require 加 try/catch，缺失时用内联默认值
+    // 【修复 P0-3】require 路径修正：指向真实存在的全局负面提示词模块
     let globalNegativePromptInjector = null;
-    try { globalNegativePromptInjector = require('../../prompt-negative'); } catch (_) {
-      globalNegativePromptInjector = { generateForOpeningShot: () => 'no text, no watermark, no logo', generateForContentShot: () => 'no text, no watermark, no logo, no blurry' };
+    try { globalNegativePromptInjector = require('../../../systems/global-negative-prompts.js').globalNegativePromptInjector; } catch (_) {
+      try { globalNegativePromptInjector = require('../../../systems/global-negative-prompts.js'); } catch (__) {
+        globalNegativePromptInjector = { generateForOpeningShot: () => 'no text, no watermark, no logo', generateForContentShot: () => 'no text, no watermark, no logo, no blurry' };
+      }
     }
     const isOpeningSimple = shot.type === 'opening' || shot.sceneType === 'opening';
     const negativeSimple = isOpeningSimple
