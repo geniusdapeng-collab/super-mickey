@@ -10,7 +10,9 @@
  */
 class CreativeIntensityParser {
   constructor(options = {}) {
-    this.defaultValue = options.defaultValue || 0.2;
+    // 【2026-07-17 修复】默认 0.2 激活 0 个能力（所有阈值 ≥0.30），等于关闭创意指数
+    // 改为 0.5（L2 平衡档）：默认即激活 10 个基础能力
+    this.defaultValue = options.defaultValue || 0.5;
     this.maxValue = options.maxValue || 1.0;
     this.minValue = options.minValue || 0.0;
   }
@@ -95,6 +97,11 @@ class CreativeIntensityParser {
     };
 
     const lowerText = text.toLowerCase();
+    // 【2026-07-17 修复】否定语境保护：'不要/别/少/无需' + 创意词 → 保守值
+    // 原实现子串取最高值，"别搞太有创意"会被误判为 0.5-0.75
+    if (/不\s*要|别|少|无\s*需|不\s*用|不需要/.test(text) && /创意|花哨|炫|特效|夸张/.test(text)) {
+      return 0.25;
+    }
     let matchedValue = null;
 
     // 精确匹配

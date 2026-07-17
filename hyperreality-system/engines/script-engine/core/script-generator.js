@@ -668,6 +668,8 @@ ${meta._directorStyle}` : ''}
           seriesContentPlan: userIntent.metadata?.seriesContentPlan || null,
           // 【脱节2 修复】透传 PRD 完整内容到剧本生成
           _prd: userIntent.metadata?._prd || null,
+          // 【2026-07-17 修复】创意指数透传（SceneDesign 读 _metadata.creativeIntensity）
+          creativeIntensity: userIntent.metadata?._creativeIntensity?.intensity ?? userIntent.metadata?.creativeIntensity ?? null,
           ...userIntent.metadata?._metadata
         }
       };

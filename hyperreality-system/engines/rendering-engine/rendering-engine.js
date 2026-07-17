@@ -125,6 +125,15 @@ class RenderingEngine {
       }
       this.log('RENDER', `🛡️ 已注入全局负面提示词 (${shots.length} 镜头)`);
 
+      // 【2026-07-17 修复】Layer 3 创意指数 → 渲染质感后缀（色彩/质感/特效/氛围）
+      const creativeStyleSuffix = this._buildCreativeStyleSuffix(options.creativeIntensity);
+      if (creativeStyleSuffix) {
+        for (const shot of shots) {
+          if (shot.prompt) shot.prompt = `${shot.prompt}\n${creativeStyleSuffix}`;
+        }
+        this.log('RENDER', `🎨 创意指数 ${options.creativeIntensity.intensity} 质感后缀已注入 (${shots.length} 镜头)`);
+      }
+
       if (options.dryRun) {
         // 模拟模式:只验证不提交
         this.log('RENDER', '⚠️ 模拟模式:验证数据但不提交 API');
@@ -238,6 +247,24 @@ class RenderingEngine {
     const truncated = prompt.slice(0, cutPoint);
     this.log('RENDER', `⚠️ prompt 超限(${prompt.length}>${hardMax})，句边界截断至 ${truncated.length} 字符`);
     return truncated;
+  }
+
+  /**
+   * 【2026-07-17 新增】把创意指数的渲染层配置编译为 prompt 质感后缀
+   */
+  _buildCreativeStyleSuffix(ci) {
+    const r = ci?.engineConfigs?.renderingEngine;
+    if (!r) return '';
+    const parts = [];
+    if (r.colorGrading === 'cinematic') parts.push('电影级色彩分级，冷暖对比，电影LUT质感');
+    if (r.textureQuality === 'filmic') parts.push('胶片颗粒质感，光学柔光');
+    if (r.vfxLevel === 'enhanced') parts.push('适度光效粒子，环境互动光斑');
+    if (r.atmosphereLevel === 'rich') parts.push('丰富氛围层次，体积光与空气感');
+    // 附带引擎生成的指令文本（去标签，截断防爆长度）
+    if (r.creativeInstructions) {
+      parts.push(String(r.creativeInstructions).replace(/\[\[?|\]\]?/g, '').slice(0, 200));
+    }
+    return parts.length ? `【风格质感】${parts.join('，')}` : '';
   }
 
   /**

@@ -99,6 +99,17 @@ class PostProductionEngine {
     };
 
     try {
+      // 【2026-07-17 修复】Layer 4 创意指数 → 剪辑节奏与声音设计（此前无人消费）
+      const ci = productionResult._creativeIntensity;
+      const ppCfg = ci?.engineConfigs?.postProductionEngine;
+      if (ppCfg) {
+        this._creativeConfig = ppCfg;
+        // editingStyle: artistic → 允许更激进的节奏切换与转场；standard → 保守
+        this.config.editingStyle = ppCfg.editingStyle || 'standard';
+        this.config.soundDesign = ppCfg.soundDesign || 'standard';
+        this.log('POST-PROD', `🎨 创意指数 ${ci.intensity} 已生效: 剪辑=${this.config.editingStyle} 声音=${this.config.soundDesign}`);
+      }
+
       // ========== Stage 1: 字幕生成（身份介绍式）==========
       this.log('POST-PROD', '\n🎬 [Stage 1] 字幕生成 - 身份介绍式字幕');
       const stage1Start = Date.now();

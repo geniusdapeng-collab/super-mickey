@@ -760,7 +760,7 @@ class FieldCompleter {
     
     // creative_style
     if (result.creative_style === undefined) {
-      result.creative_style = this._deriveCreativeStyle(result.type, result.difficulty);
+      result.creative_style = this._deriveCreativeStyle(result.type, result.difficulty, result.theme || input);
     }
     
     // tone
@@ -1092,7 +1092,7 @@ class FieldCompleter {
     return base;
   }
   
-  _deriveCreativeStyle(type, difficulty) {
+  _deriveCreativeStyle(type, difficulty, seedText = '') {
     const ranges = {
       '医疗急救': [0.35, 0.60], '硬科幻': [0.70, 0.98], '赛博朋克': [0.65, 0.90],
       '武侠动作': [0.55, 0.80], '恐怖悬疑': [0.50, 0.75], '自然纪录片': [0.55, 0.80],
@@ -1102,7 +1102,15 @@ class FieldCompleter {
       '社会现实': [0.40, 0.65], '运动竞技': [0.50, 0.75], '文化遗产': [0.45, 0.70]
     };
     const [min, max] = ranges[type] || [0.4, 0.8];
-    let csc = min + Math.random() * (max - min);
+    // 【2026-07-17 修复】去随机化：同一 (类型+难度+主题) 永远得到同一指数
+    // 原实现 Math.random() 导致每次运行指数漂移，不可复现、无法 A/B
+    const seed = `${type}|${difficulty || ''}|${seedText}`;
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) {
+      hash = ((hash << 5) - hash + seed.charCodeAt(i)) | 0;
+    }
+    const ratio = (Math.abs(hash) % 1000) / 1000; // 0-1 确定性落点
+    let csc = min + ratio * (max - min);
     if (difficulty === '极高') csc = Math.min(1.0, csc + 0.1);
     if (difficulty === '中') csc = Math.max(0.2, csc - 0.05);
     return parseFloat(csc.toFixed(2));

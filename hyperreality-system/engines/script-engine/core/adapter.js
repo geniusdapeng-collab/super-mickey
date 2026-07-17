@@ -70,6 +70,8 @@ class ScriptBlueprintAdapter {
       
       // v1.2.5: 传递系列和平台元数据
       aspectRatio: meta._metadata?.aspectRatio || meta.aspectRatio || '16:9',
+      // 【2026-07-17 修复】创意指数挂到 config 顶层（PromptFusion 读 blueprint.config?.creativeIntensity）
+      creativeIntensity: meta._metadata?.creativeIntensity ?? null,
       _metadata: meta._metadata || {},
       
       // 【v2.1.4-fix9-P1】传递导演上下文信息

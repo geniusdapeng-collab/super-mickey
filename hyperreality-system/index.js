@@ -17,6 +17,7 @@ const { RequirementDiscoveryEngine } = require('./engines/requirement-discovery-
 // 🐼 [PandaCineForge] Phase 3: 影视技能引擎适配器
 const { PandaCineForgeAdapter } = require('./engines/panda-cineforge-adapter');
 const { CreativeIntensityEngine } = require('./engines/script-engine/core/creative-intensity-engine');
+const { CreativeIntensityRecommender } = require('./engines/script-engine/core/creative-intensity-engine');
 const { OpeningTitleOptimizer } = require('./engines/production-engine/agents/opening-title-optimizer');
 const { routeAndEnhance } = require('./skills/hollywood-cinematography/cinematography-skill-router');
 const { FieldGuard } = require('./engines/field-guard');
@@ -97,6 +98,11 @@ class HyperrealitySystem {
       agentTimeoutMs: 180000 // 【v2.1.8-fix】180 秒/Agent
     });
     this.creativeIntensityEngine = new CreativeIntensityEngine(options.creativeIntensityEngine);
+    // 【2026-07-17 修复】创意指数推荐器（历史完播率反馈闭环）
+    this.creativeRecommender = new CreativeIntensityRecommender({
+      dataPath: process.env.CREATIVE_FEEDBACK_PATH
+        || path.join(process.cwd(), 'data', 'creative-intensity-feedback.json')
+    });
     this.scriptEngine = new ScriptEngine({
       ...options.scriptEngine,
       charactersDir: options.scriptEngine?.charactersDir || path.join(__dirname, '../characters')
@@ -474,6 +480,13 @@ class HyperrealitySystem {
       // 将 discoveryResult 转换为 requirementList 格式
       const requirementList = this._convertDiscoveryToRequirementList(discoveryResult, upstreamFields);
 
+      // 【2026-07-17 修复】创意指数优先级：用户直传 > 主题确认值 > 默认
+      // 原实现只读 upstreamFields.creative_style，metadata.creativeIntensity 直传被丢弃
+      if (metadata.creativeIntensity !== undefined && metadata.creativeIntensity !== null) {
+        requirementList.creativeIntensity = Math.max(0, Math.min(1, Number(metadata.creativeIntensity)));
+        console.log(` 💡 创意指数采用用户直传值: ${requirementList.creativeIntensity}`);
+      }
+
       // 生成 Markdown 供人工确认 - 需求清单确认不可跳过!
       console.log('\n📋 [业务需求对齐清单] 等待人工确认...');
 
@@ -579,9 +592,18 @@ class HyperrealitySystem {
         }
 
         // ========== 🆕 创意指数解析与配置注入 ==========
-        const intensity = this.creativeIntensityEngine.parse(requirementList);
+        // 【2026-07-17 修复】指数来源三级优先：用户约定 > 历史推荐 > 解析默认
+        const userSpecifiedIntensity =
+          (requirementList.creativeIntensity !== undefined && requirementList.creativeIntensity !== null) ||
+          (upstreamFields.creative_style !== undefined && upstreamFields.creative_style !== null);
+        let intensity = this.creativeIntensityEngine.parse(requirementList);
+        if (!userSpecifiedIntensity) {
+          const rec = this.creativeRecommender.recommend(requirementList.videoType || requirementList.genre || 'unknown');
+          intensity = rec.intensity;
+          console.log(` 🤖 创意指数采用推荐值: ${intensity}（${rec.reason} | 来源:${rec.source} 置信度:${rec.confidence}）`);
+        }
         const narrativeMode = requirementList.narrativeMode || 'dialogue';
-        const worldSetting = requirementList._analysis?.worldSetting || 'default';
+        const worldSetting = requirementList.worldSetting || requirementList._analysis?.worldSetting || 'default';
 
         console.log(`\n💡 [创意指数] 解析结果: ${intensity} (${this.creativeIntensityEngine.getLevel(intensity).name})`);
         console.log(`   叙事模式: ${narrativeMode} | 世界设定: ${worldSetting}`);
@@ -1725,7 +1747,9 @@ class HyperrealitySystem {
           renderResult = await this.renderingEngine.render(productionResult.prompts, {
             // 【P0-9 修复】dryRun 仅由显式选项控制,不再因缺 apiKey 强制开启
             // 无 apiKey 时让渲染引擎自己抛错,暴露配置问题
-            dryRun: options.dryRun === true
+            dryRun: options.dryRun === true,
+            // 【2026-07-17 修复】Layer 3 创意指数配置下发（此前生成后无人消费）
+            creativeIntensity: metadata._creativeIntensity || null
           });
 
           result.stages.renderingEngine = {
@@ -1784,6 +1808,9 @@ class HyperrealitySystem {
         try {
           console.log('\n🎬 [Layer 4] 后期引擎 - 字幕/音乐/弹幕/多版本...');
           const stage4Start = Date.now();
+
+          // 【2026-07-17 修复】Layer 4 创意指数配置下发（postProduce 无 options 参数，随 productionResult 携带）
+          productionResult._creativeIntensity = metadata._creativeIntensity || null;
 
           const postResult = await this.postProductionEngine.postProduce(
             productionResult,
@@ -2223,6 +2250,8 @@ class HyperrealitySystem {
         const hits = ['抖音', 'B站', '小红书', '视频号', '快手', 'YouTube'].filter(p => tags.includes(p));
         return hits.length ? hits.join('/') : '视频号/抖音';
       })(),
+      // 【2026-07-17 修复】worldSetting 显式透传（原只藏在 _analysis 且该键不存在，桥接恒失效）
+      worldSetting: resolved.profile?.world_setting || upstreamFields.world_setting || 'default',
       creativeIntensity: upstreamFields.creative_style || 0.72,
       // 【审计修复】narrativeMode 此前硬编码 'dialogue', 无台词类主题会被误导
       narrativeMode: resolved.profile.dialogue_density === 'none' || /无台词|无对白|旁白|纯画面|narration|voiceover/i.test(upstreamFields.dialogue_requirement || '')
@@ -3000,6 +3029,14 @@ class HyperrealitySystem {
     }
 
     return lines.join('\n');
+  }
+
+  /**
+   * 【2026-07-17 新增】回填生产结果，形成创意指数反馈闭环
+   * 用法：视频发布后拿到完播率/互动率，调用 system.recordCreativeFeedback({...})
+   */
+  recordCreativeFeedback({ videoType, intensity, completionRate, engagementRate }) {
+    return this.creativeRecommender.record({ videoType, intensity, completionRate, engagementRate });
   }
 }
 

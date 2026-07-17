@@ -47,19 +47,41 @@ class ScriptEngine {
     console.log(`[ScriptEngine] 意图解析完成: ${userIntent.parsed.primary_mode}`);
 
     // 【P0-7 修复】接入 CreativeIntensityEngine，创意指数影响"怎么拍"
-    const ciValue = metadata.creativeIntensity || metadata.creative_intensity || 0.7;
+    // 【2026-07-17 修复】统一唯一真源结构，不再用变形结构覆盖上游结果：
+    // 原实现把 metadata._creativeIntensity 覆盖为 { instructions: Layer1返回对象 }，
+    // 导致 script-generator 读取 instructions.script/production/rendering 全部为空。
+    // 统一唯一真源结构：
+    // { intensity, level, engineConfigs, instructions: {script,production,rendering,postProduction} }
     try {
-      const creativeEngine = new CreativeIntensityEngine();
-      const engineConfigs = creativeEngine.generateEngineConfigs(ciValue, userIntent.parsed?.narrative_mode || 'dialogue');
-      const layerInstructions = creativeEngine.generateLayerInstructions('Layer 1', ciValue, userIntent.parsed?.narrative_mode || 'dialogue');
+      const ciEngine = new CreativeIntensityEngine();
+      let ci = metadata._creativeIntensity;
+      const ciValue = (ci && typeof ci.intensity === 'number' ? ci.intensity : null)
+        ?? metadata.creativeIntensity
+        ?? metadata.creative_intensity
+        ?? 0.7;
+
+      if (!ci || typeof ci.intensity !== 'number' || !ci.instructions?.script) {
+        // 上游未计算或结构不完整 → 本地重建（与上游完全同构）
+        const narrativeMode = userIntent.parsed?.narrative_mode || 'dialogue';
+        const worldSetting = metadata.world_setting || metadata._metadata?.world_setting || 'default';
+        const engineConfigs = ciEngine.generateEngineConfigs(ciValue, narrativeMode, worldSetting);
+        ci = {
+          intensity: ciValue,
+          level: ciEngine.getLevel(ciValue).key,
+          engineConfigs,
+          instructions: {
+            script: engineConfigs.scriptEngine?.creativeInstructions || '',
+            production: engineConfigs.productionEngine?.creativeInstructions || '',
+            rendering: engineConfigs.renderingEngine?.creativeInstructions || '',
+            postProduction: engineConfigs.postProductionEngine?.creativeInstructions || ''
+          }
+        };
+      }
+
       userIntent.metadata = userIntent.metadata || {};
-      userIntent.metadata._creativeIntensity = {
-        intensity: ciValue,
-        instructions: layerInstructions,
-        configs: engineConfigs
-      };
-      userIntent.metadata.creativeIntensity = ciValue; // camelCase 兜底
-      console.log(`[ScriptEngine] CreativeIntensity 接入完成: intensity=${ciValue}`);
+      userIntent.metadata._creativeIntensity = ci;
+      userIntent.metadata.creativeIntensity = ci.intensity; // camelCase 兜底
+      console.log(`[ScriptEngine] CreativeIntensity 接入完成: intensity=${ci.intensity} (${ci.level || 'unknown'})`);
     } catch (e) {
       console.warn('[ScriptEngine] CreativeIntensity 接入失败:', e.message);
     }
