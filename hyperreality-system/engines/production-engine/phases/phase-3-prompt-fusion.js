@@ -108,12 +108,18 @@ class Phase3PromptFusion extends PhaseExecutor {
       return { success: false, shots, result, timing: Date.now() - startTime, error: e.message };
     } finally {
       // 【v2.1.8-fix3-专家方案】延迟关闭，避免刚完成checkpoint合并时被心跳检查误判
+      // 【修复 P3-2】存储 timer handle + unref，防止进程被悬空 timer 吊住 60s
       if (this.healthMonitor) {
-        setTimeout(() => {
+        const delayMs = Number(process.env.STORMAXE_LONG_TASK_CLOSE_DELAY_MS || 60000);
+        this._longTaskCloseTimer = setTimeout(() => {
           try {
             this.healthMonitor.setLongTaskMode('ProductionEngine', false);
           } catch (_) {}
-        }, Number(process.env.STORMAXE_LONG_TASK_CLOSE_DELAY_MS || 60000)); // 默认延迟60s
+          this._longTaskCloseTimer = null;
+        }, delayMs);
+        if (typeof this._longTaskCloseTimer.unref === 'function') {
+          this._longTaskCloseTimer.unref();
+        }
       }
     }
   }

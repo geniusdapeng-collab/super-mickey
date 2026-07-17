@@ -23,6 +23,9 @@ const { FieldGuard } = require('./engines/field-guard');
 const ErrorCodes = require('./config/error-codes');
 const { StabilityShield } = require('./shields/stability-shield');
 
+// 【修复 P3-3】引入优雅关闭工具，统一 SIGTERM/SIGINT 清理逻辑
+const { gracefulShutdown } = require('./utils/graceful-shutdown');
+
 // ⭐ v2.1.9: PRD 生成器（Step 3.5 - 产品需求文档）
 const { PRDGenerator } = require('./engines/prd-generator/prd-generator');
 
@@ -298,28 +301,26 @@ class HyperrealitySystem {
 
   _setupSignalHandlers() {
     const signals = ['SIGTERM', 'SIGINT', 'SIGHUP'];
-    
+    this._shuttingDown = false; // 【修复 P3-3】防重入 guard
+
     for (const signal of signals) {
-      process.on(signal, async () => {
-        console.log(`\n[HyperrealitySystem] 收到 ${signal}，开始优雅关闭...`);
-        this._shutdownRequested = true; // 【v2.1.6-fix】标记关闭请求
-        
-        // 1. 关闭长时间任务模式
-        if (this.stabilityShield) {
-          this.stabilityShield.setLongTaskMode('ProductionEngine', false);
-        }
-        
-        // 2. 销毁 EventBus
-        if (this.eventBus) {
-          this.eventBus.destroy();
-        }
-        
-        console.log('[HyperrealitySystem] 清理完成，退出');
-        process.exit(0);
+      process.on(signal, () => {
+        // 【修复 P3-3】统一走 gracefulShutdown，避免 inline 清理与外部工具逻辑分叉
+        if (this._shuttingDown) return;
+        this._shuttingDown = true;
+        this._shutdownRequested = true;
+        console.log(`\n[HyperrealitySystem] 收到 ${signal}，启动 gracefulShutdown...`);
+
+        // fire-and-forget：gracefulShutdown 自带 timeout guard 和 process.exit
+        gracefulShutdown({
+          healthMonitor: this.productionEngine?.healthMonitor || null,
+          agents: [this.productionEngine, this.scriptEngine, this.renderingEngine].filter(Boolean),
+          timeoutMs: 15000
+        }).catch(() => process.exit(0));
       });
     }
-    
-    // 未捕获异常处理
+
+    // 未捕获异常处理（保留原有行为，但同样标记 shutdown 防止竞态）
     process.on('uncaughtException', (err) => {
       console.error('[HyperrealitySystem] 未捕获异常:', err.message);
       console.error(err.stack);
