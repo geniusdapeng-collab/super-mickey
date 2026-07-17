@@ -2121,34 +2121,52 @@ class HyperrealitySystem {
 
   /**
    * 🆕 v2.1.8: 将需求洞察结果转换为 RequirementList 格式（兼容下游）
+   * 【v2.1.11-重构】类型字段双轨化：
+   * - genre：开放题材，原样透传（不再被映射表圈死/掉EDU）
+   * - profile：生产画像，由 ProfileResolver 生成，驱动下游决策
+   * - videoType：降级为"展示用预设标签"（closestPreset 推导，仅用于日志/报告/旧链路兼容）
    */
-  _convertDiscoveryToRequirementList(discoveryResult, upstreamFields) {
+  async _convertDiscoveryToRequirementList(discoveryResult, upstreamFields) {
     const { audienceProfile, sceneStructure, riskAssessment, referenceCases } = discoveryResult;
-    
-    // 类型映射
-    const typeMapping = {
-      '硬科幻': 'CINE', '赛博朋克': 'CINE', '武侠动作': 'CINE',
-      '恐怖悬疑': 'DRAMA', '自然纪录片': 'DOC', '商业广告': 'MARKETING',
-      '科普教育': 'EDU', '音乐MV': 'MV', '家庭温情': 'FAMILY',
-      '浪漫爱情': 'DRAMA', '喜剧荒诞': 'DRAMA', '历史战争': 'CINE',
-      '社会现实': 'DOC', '艺术实验': 'ART', '运动竞技': 'CINE',
-      '美食文化': 'FOOD', '文化遗产': 'DOC', '旅游推广': 'TRAVEL'
-    };
-    
-    const videoType = typeMapping[upstreamFields.type] || 'EDU';
-    
+
+    // 生成生产画像（三级兜底，永不失败）
+    if (!this._profileResolver) {
+      const { ProfileResolver } = require('./engines/script-engine/core/profile-resolver');
+      // 【v2.1.11-fix】llmEngine 从 options 或 productionEngine 获取（非 this.llmEngine）
+      const llmEngine = this.options?.productionEngine?.agentConfig?.llmEngine 
+        || this.options?.llmEngine 
+        || null;
+      this._profileResolver = new ProfileResolver({ llmEngine });
+    }
+    const resolved = await this._profileResolver.resolve({
+      theme: upstreamFields.theme,
+      description: upstreamFields.description,
+      type: upstreamFields.type // 用户声明的题材（含自定义类型），原样保留
+    });
+
     return {
-      videoType: videoType,
-      videoTypeName: upstreamFields.type || '通用主题',
+      // 【新】双轨字段
+      genre: resolved.genre, // 开放题材（'宠物殡葬纪实'原样保留）
+      genreConfidence: resolved.genreConfidence,
+      productionProfile: resolved.profile, // 生产画像（下游决策唯一依据）
+
+      // 【旧字段保留，但语义降级】仅用于展示/旧链路兼容，不再做决策
+      videoType: resolved.presetRef, // 最接近的预设标签（展示用）
+      videoTypeName: resolved.genre, // 展示名直接用 genre
+      videoTypeInferred: resolved.profileSource !== 'llm',
+
       title: upstreamFields.theme || '未命名项目',
-      targetDuration: upstreamFields.duration_sec || 45,
-      durationRange: [Math.round((upstreamFields.duration_sec || 45) * 0.8), Math.round((upstreamFields.duration_sec || 45) * 1.2)],
+      targetDuration: resolved.profile.duration_target,
+      durationRange: [
+        Math.round(resolved.profile.duration_target * 0.8),
+        Math.round(resolved.profile.duration_target * 1.2)
+      ],
       style: {
         primary: 'CINE',
         secondary: [],
         description: upstreamFields.visual_style || '电影级质感'
       },
-      aspectRatio: '16:9',
+      aspectRatio: resolved.profile.aspect_ratio,
       // 【审计修复】platform 此前硬编码, 改为从受众兴趣标签推断(无命中时保持默认)
       platform: (() => {
         const tags = (audienceProfile?.primaryAudience?.interestTags || []).join(',');
@@ -2157,7 +2175,7 @@ class HyperrealitySystem {
       })(),
       creativeIntensity: upstreamFields.creative_style || 0.72,
       // 【审计修复】narrativeMode 此前硬编码 'dialogue', 无台词类主题会被误导
-      narrativeMode: /无台词|无对白|旁白|纯画面|narration|voiceover/i.test(upstreamFields.dialogue_requirement || '')
+      narrativeMode: resolved.profile.dialogue_density === 'none' || /无台词|无对白|旁白|纯画面|narration|voiceover/i.test(upstreamFields.dialogue_requirement || '')
         ? 'narration'
         : 'dialogue',
       characters: [],
@@ -2176,6 +2194,7 @@ class HyperrealitySystem {
       targetAudience: upstreamFields.target_audience || null,
       dialogueRequirement: upstreamFields.dialogue_requirement || null,
       contentConstraints: riskAssessment?.businessConstraints || [],
+      specialConstraints: resolved.profile.special_constraints,
       uncertainties: [],
       _analysis: {
         confidence: 0.8,
