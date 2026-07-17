@@ -91,8 +91,16 @@ class QualityGate {
 
         // 【v2.1.11-P1 修复】占位符红线：兜底占位符永远到不了渲染端
         hasPlaceholder: typeof p.prompt === 'string' && /示例角色|角色[AB]\b|\[角色名\]|\[角色设定服装\]/.test(p.prompt),
-        // 【审计修复】综合质量分数（0-100）
-        overallScore: Math.round((sceneScore.score + moodScore.score + cameraScore.score + lightingScore.score + actionScore.score + timelineScore.score + promptScore.score) / 7)
+        // 【审计修复·2026-07-17】综合质量分数（0-100）— 加权评分：prompt 30% / scene+camera+lighting 各 15% / mood+action 各 10% / timeline 5%
+        overallScore: Math.round(
+          promptScore.score * 0.30 +
+          sceneScore.score * 0.15 +
+          cameraScore.score * 0.15 +
+          lightingScore.score * 0.15 +
+          moodScore.score * 0.10 +
+          actionScore.score * 0.10 +
+          timelineScore.score * 0.05
+        )
       };
 
       // 【审计修复】综合通过条件：既有基础检查通过，又有质量分数阈值
