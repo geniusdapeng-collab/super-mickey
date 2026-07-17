@@ -9,6 +9,8 @@
  * 4. 质量>速度：不为了省token或提速而跳过LLM
  */
 
+const SpeechRate = require('../hyperreality-system/config/speech-rate');
+
 const MAX_RETRIES = 3;
 const RETRY_BACKOFF_MS = [1000, 3000, 10000]; // 指数退避
 
@@ -390,7 +392,7 @@ ${totalDuration}秒
 ${sceneDesc}
 
 ## 分配原则
-1. 内容密度：台词字数多的场景需要更多时间（按5字/秒计算基线）
+1. 内容密度：台词字数多的场景需要更多时间（按${SpeechRate.NORMAL}字/秒计算基线，含停顿）
 2. 重要性：importance高的场景应获得更多时间
 3. 视觉复杂度：visualComplexity高的场景需要更多时间展示
 4. 节奏变化：开头和结尾可以稍短，中间核心内容应充分展开

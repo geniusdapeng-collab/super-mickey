@@ -132,10 +132,13 @@ class Phase3PromptFusion extends PhaseExecutor {
    */
   async _checkDialogueTiming(shots, blueprint) {
     // 获取视频类型以确定调整策略
-    const videoType = blueprint?.config?.type || blueprint?.type || 'EDU';
-    const typeConfig = ThemeConfig.getType(videoType) || ThemeConfig.getType('EDU');
-    
-    // 根据类型选择策略：EDU/MARKETING/FAMILY 优先保台词（延长镜头），DRAMA/CINE/ART 优先保节奏（缩短台词）
+    const rawType = blueprint?.config?.type || blueprint?.type || 'EDU';
+    const typeConfig = ThemeConfig.getType(rawType) || ThemeConfig.getType('EDU');
+    // 【一致性修复】策略判断使用 legacyMapping 归一化后的类型，
+    // 避免 DRAMA/MV/ADV/VLOG 等 legacy 类型绕过映射直接落入 shorten
+    const videoType = typeConfig.id; // getType 已做 legacy 映射，id 即规范类型
+
+    // 根据类型选择策略：EDU/MARKETING/FAMILY/DOC 优先保台词（延长镜头），其余优先保节奏（缩短台词）
     const strategy = ['EDU', 'MARKETING', 'FAMILY', 'DOC'].includes(videoType) ? 'extend' : 'shorten';
     
     const calculator = new DialogueTimingCalculator({

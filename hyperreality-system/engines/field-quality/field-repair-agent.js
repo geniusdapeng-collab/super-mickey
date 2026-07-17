@@ -253,7 +253,7 @@ class RuleRepairer {
       director_instruction: prd?.styleDirection
         ? `${prd.styleDirection}，超写实8K电影级，画面质感高级细腻`
         : '好莱坞电影级超写实8K质感，画面细腻真实，光影层次分明',
-      constraint: 'Aspect ratio 16:9, Resolution 4K UHD, Format H.264 MP4, Frame rate 24fps, Color space Rec.709',
+      constraint: 'Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, Color space Rec.709',
       baseline: '8K超高清，电影级调色，真实物理光照，皮肤纹理细节完整，毛发渲染自然',
       scene: prd?.scenes?.length
         ? String(prd.scenes[0]).substring(0, 150)

@@ -1,5 +1,7 @@
 'use strict';
 
+const SpeechRate = require('../config/speech-rate');
+
 /**
  * Dialogue Timing Calculator
  * 台词时长计算器
@@ -14,19 +16,13 @@
 
 class DialogueTimingCalculator {
   constructor(options = {}) {
-    // 语速配置（字/秒）
-    this.speechRates = {
-      slow: 2.5,      // 慢速：情绪深沉、抒情、老年角色
-      normal: 3.5,    // 正常：标准对话
-      fast: 4.5,      // 快速：紧张、战斗、年轻角色
-      rapid: 6.0,     // 急促：喊叫、紧急情况
-      ...options.speechRates
-    };
+    // 【一致性修复】语速从唯一真源读取
+    this.speechRates = { ...SpeechRate.RATES, ...options.speechRates };
 
     // 配置参数
     this.config = {
       // 台词占镜头时长的最大比例（留余量给动作/表情）
-      maxDialogueRatio: 0.8,
+      maxDialogueRatio: SpeechRate.MAX_DIALOGUE_RATIO,
       // 台词占镜头时长的警告比例
       warningDialogueRatio: 0.6,
       // 最小镜头时长（秒）

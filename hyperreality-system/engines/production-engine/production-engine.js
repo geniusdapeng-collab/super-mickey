@@ -364,41 +364,31 @@ class ProductionEngine {
 
   _initModules() {
     // 加载核心模块(从现有系统复用)
+    // 【一致性修复】注册表瘦身：只在用的模块正常加载；
+    // 历史遗留模块集中登记到 legacyModules，不实例化、明确标注禁用，
+    // 防止其携带的过时约定（12s/30s/旧长度标准）被误接回流程
     this.modules = {
-      // 时长分配
+      // 时长分配（在用）
       shotDurationAllocator: loadModule('shot-duration-allocator.js')?.ShotDurationAllocator,
-      durationCalculator: loadModule('duration-calculator.js')?.DurationCalculator,
-
-      // 运镜系统
+      // 运镜系统（在用）
       cameraMovement: loadModule('camera-movement-system-v2.js')?.CameraMovementSystem,
-      intraShotTimeline: loadModule('camera-movement-system-v3.js')?.IntraShotTimelineGenerator,
+    };
 
-      // 连续性
-      continuityEngine: loadModule('continuity-engine.js')?.ContinuityEngine,
-
-      // Prompt 增强
-      promptEnhancer: loadModule('intra-shot-prompt-enhancer.js')?.IntraShotPromptEnhancer,
-      styleInjector: loadModule('universal-style-injector.js')?.UniversalStyleInjector,
-
-      // 质量门
-      promptQualityGate: loadModule('prompt-quality-gate.js')?.PromptQualityGate,
-
-      // 字符计数
-      charCounter: loadModule('char-counter')?.charCounter,
-
-      // 片头系统
-      openingSystem: loadModule('opening-system-v3.js'),
-
-      // 角色系统
-      characterManager: loadModule('character-manager-v2.js')?.CharacterManagerV2,
-      characterPromptBuilder: loadModule('character-prompt-builder.js')?.CharacterPromptBuilder,
-
-      // 校验
-      storyboardValidator: loadModule('storyboard-validator.js')?.StoryboardValidator,
-      preRenderValidation: loadModule('pre-render-validation.js')?.preRenderValidation,
-
-      // 后期
-      postProduction: loadModule('post-production-pipeline.js')?.PostProductionPipeline,
+    this.legacyModules = {
+      // ⚠️ 以下模块未接入当前流程，约定值已过时，禁止直接调用
+      // durationCalculator: 未使用
+      // intraShotTimeline: 未使用
+      // continuityEngine: 未使用
+      // promptEnhancer: 未使用
+      // styleInjector: 未使用
+      // promptQualityGate: 旧长度标准（现行见 config/prompt-length.js）
+      // charCounter: 未使用
+      // openingSystem: 未使用（片头由 OpeningDesignAgent 处理）
+      // characterManager: 未使用（角色由 CharacterRefResolver 处理）
+      // characterPromptBuilder: 未使用
+      // storyboardValidator: 时长上限30s（现行15s）
+      // preRenderValidation: 时长上限12s（现行15s）
+      // postProduction: 未使用
     };
 
     // 初始化实例

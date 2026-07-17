@@ -11,6 +11,8 @@
  * 6. 节奏曲线：起承转合/渐进式/波浪式/倒金字塔
  */
 
+const SpeechRate = require('../hyperreality-system/config/speech-rate');
+
 class ShotDurationAllocatorV2 {
   constructor(config = {}) {
     // 角色类型配置（时长基线 + 默认重要性 + 视觉复杂度）
@@ -63,7 +65,8 @@ class ShotDurationAllocatorV2 {
       maxShots: 20,             // 最多镜头数
       voicePoolRatio: 0.60,     // 语音基线池比例
       elasticPoolRatio: 0.40,   // 弹性加成池比例
-      limitSpeed: 5.0,          // 极限语速（字/秒）
+      limitSpeed: SpeechRate.LIMIT,          // 【一致性修复】与校验侧统一口径：极限语速（字/秒）
+      comfortSpeed: SpeechRate.NORMAL,         // 舒适语速（字/秒）
       bufferSeconds: 0.5,       // 缓冲时间
       // 语速配置（字/秒）- 按场景类型（用于可读性语速参考）
       speedMap: {
