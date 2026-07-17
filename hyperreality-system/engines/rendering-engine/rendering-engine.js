@@ -249,7 +249,7 @@ class RenderingEngine {
       shotId: prompt.shotId,
       id: prompt.shotId, // 兼容现有系统
       prompt: prompt.prompt,
-      duration: prompt.duration ?? 12, // 【v2.1.6-fix-bug56】?? 只认 null/undefined,不认 0
+      duration: prompt.duration ?? 15, //
       isOpening: this._isOpeningShot(prompt), // 【v2.1.6-fix-bug55】配置化判定,支持多种格式
       // 定妆照引用(v6.37-P0: 优先读标准 portraits 字段,兜底 characterRef)
       // 【P2-20 修复】25字段标准是 portraits,characterRef 为兼容兜底
@@ -386,7 +386,7 @@ class RenderingEngine {
       shots.push({
         shotId,
         requiredCharacters: charsInShot,
-        duration: prompt.duration ?? 12, // 【v2.1.6-fix-bug56】?? 只认 null/undefined，不认 0
+        duration: prompt.duration ?? 15, //
         promptLength: prompt.promptCharCount || (typeof prompt.prompt === 'string' ? prompt.prompt.length : 0) || 0
       });
     }

@@ -47,10 +47,13 @@ class Phase2VisualAudio extends PhaseExecutor {
       this.log('AUDIO-DESIGN-AGENT', `完成 (${adResult.timing}ms)`);
 
       // 合并 VL + AD 结果到 shots
+      // 【修复 新-P0】白名单补齐 composition/color_palette/depth_of_field：
+      // VL agent 明确输出这三个字段，不应被拦截（Phase3 虽可兜底，但 VL 的专门设计更优）
       let newShots = this.mergeShots(shots, vlResult.shots, [
         'camera', 'cameraString', 'cameraMovement',
         'lighting', 'lightingString',
         'timeline',
+        'composition', 'color_palette', 'depth_of_field',
         'visual_elements', 'color_temperature', 'camera_movement'
       ]);
       

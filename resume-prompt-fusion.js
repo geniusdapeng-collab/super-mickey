@@ -64,9 +64,9 @@ async function main() {
   // 4. 初始化系统（只启用 PromptFusion）
   const agentConfig = {
     enableLLMAgents: true,
-    llmTimeout: 90000,          // 90秒/镜头
+    llmTimeout: 300000,          // 【一致性修复】与主流程对齐：原90s与主流程300s严重不匹配
     llmMaxRetries: 1,             // 1次重试
-    maxPromptLength: 12000,
+    maxPromptLength: 3000,       // 【一致性修复】与prompt-length.js唯一真源对齐
     promptFusionConcurrency: 1,   // 串行
     continuityReview: false,      // 跳过 ContinuityReview
     enableFieldConsistency: false,  // 跳过一致性检查

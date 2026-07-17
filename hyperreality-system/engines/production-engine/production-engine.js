@@ -536,7 +536,6 @@ class ProductionEngine {
     // 【P1-9 修复】生成 blueprint 指纹，用于 checkpoint 一致性校验
     // 【修复 P3-1】使用稳定序列化（键排序）消除 JSON 键序不确定性导致的哈希漂移
     const crypto = require('crypto');
-    const stableStringify = (obj) => JSON.stringify(obj, Object.keys(obj).sort());
     const stableHashInput = JSON.stringify(adaptedBlueprint.scenes || [], (k, v) => {
       if (v && typeof v === 'object' && !Array.isArray(v)) {
         return Object.keys(v).sort().reduce((sorted, key) => { sorted[key] = v[key]; return sorted; }, {});
@@ -594,15 +593,10 @@ class ProductionEngine {
           result, 
           adaptedBlueprint 
         });
-        if (phase1Result.success) {
-          currentShots = phase1Result.shots;
-        } else {
-          phase1Failed = true;
-          // 【修复 P2-2】phase1Failed 落为正式降级记录
-          result.degraded = true;
-          result.errors.push({ stage: 'phase1', message: phase1Result.error || 'Phase1 失败' });
-          this.log('PRODUCE', `⚠️ Phase 1 失败(${phase1Result.error})，已标记 degraded 继续`);
-        }
+        // 【修复 P2-2】phase1 失败降级记录（不再依赖 phase1Failed 布尔，直接写 result）
+      result.degraded = true;
+      result.errors.push({ stage: 'phase1', message: phase1Result.error || 'Phase1 失败' });
+      this.log('PRODUCE', `⚠️ Phase 1 失败(${phase1Result.error})，已标记 degraded 继续`);
       }
 
       // ----- Phase 2:VisualLanguage → AudioDesign → ContinuityReview -----

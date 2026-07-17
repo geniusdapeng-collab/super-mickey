@@ -239,9 +239,9 @@ const ShotSchema = new SchemaValidator('Shot', {
     }},
     
     // 时长（Stage 6生成）
-    duration: { type: 'number', min: 1, max: 30 },
-    shotDuration: { type: 'number', min: 1, max: 30 }, // 别名兼容
-    targetDuration: { type: 'number', min: 1, max: 30 }, // 别名兼容
+    duration: { type: 'number', min: 1, max: 15 },
+    shotDuration: { type: 'number', min: 1, max: 15 }, // 别名兼容
+    targetDuration: { type: 'number', min: 1, max: 15 }, // 别名兼容
     
     // 渲染输出（Stage 11生成）
     renderOutput: { type: 'object', fields: {

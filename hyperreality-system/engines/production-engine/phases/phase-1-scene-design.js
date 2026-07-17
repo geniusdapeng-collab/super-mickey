@@ -36,8 +36,10 @@ class Phase1SceneDesign extends PhaseExecutor {
       });
 
       // 合并场景设计结果（sdResult.shots 可能因 Agent 内部降级而缺失）
+      // 【修复 新-P0】白名单补齐 makeup/props：SceneDesign schema 输出 6 字段，
+      // 严格白名单生效后这两个字段会被 MERGE-GUARD 误拦截
       let newShots = this.mergeShots(shots, sdResult.shots || [], [
-        'scene', 'mood', 'action', 'emotional_target'
+        'scene', 'mood', 'action', 'emotional_target', 'makeup', 'props'
       ]);
 
       // 处理片头设计结果
