@@ -379,6 +379,13 @@ class HyperrealitySystem {
       const totalDeadlineMs = parseInt(process.env.STORMAXE_TOTAL_DEADLINE_MS || '3600000');
       this.stabilityShield.setLongTaskMode('ProductionEngine', true, totalDeadlineMs);
 
+      // 【审计修复·全局预算协调】此前 totalDeadlineMs 只约束 ProductionEngine 内部预算和健康监控阈值，
+      // 前置层(需求/PRD/剧本)与渲染/后期层各自为政，整体任务耗时可远超预期总时长。
+      // 现建立全局截止时间，在各层入口按"剩余预算"动态调度。
+      const globalDeadline = totalStart + totalDeadlineMs;
+      this._globalDeadline = globalDeadline;
+      console.log(` ⏱️ 全局任务预算: ${Math.round(totalDeadlineMs/60000)} 分钟 | 截止: ${new Date(globalDeadline).toISOString()}`);
+
       // ========== 🆕 Layer -1: 创意主题生成与确认 ==========
       // 【v2.1.8-强制流程】Step 2: 创意主题生成 + 人工确认（不可跳过）
       console.log('🎨 [Layer -1] 创意主题生成 - 解析用户意图...');
@@ -921,12 +928,25 @@ class HyperrealitySystem {
         }
       }
 
-      // 【修复】应用运行时 agentConfig(解决配置不生效问题)
-      if (options.productionEngine?.agentConfig) {
-        this.productionEngine.updateAgentConfig(options.productionEngine.agentConfig);
+      // 【审计修复·全局预算协调】将"全局剩余预算"下发给制作引擎，取代其独立的60分钟预算；
+      // 预留渲染/后期时间；预算告急时切换纯规则模式保交付，而不是整体超时崩盘
+      const RENDER_RESERVE_MS = parseInt(process.env.STORMAXE_RENDER_RESERVE_MS || '300000'); // 渲染+后期预留(默认5分钟)
+      const remainingForProduction = globalDeadline - Date.now() - RENDER_RESERVE_MS;
+      const MIN_PRODUCTION_BUDGET_MS = 10 * 60 * 1000;
+      const baseAgentConfig = { ...(options.productionEngine?.agentConfig || {}) };
+      if (remainingForProduction < MIN_PRODUCTION_BUDGET_MS) {
+        console.warn(` ⏰ 全局预算告急: 制作环节仅剩 ${Math.max(0, Math.round(remainingForProduction/60000))} 分钟，切换纯规则模式保交付`);
+        baseAgentConfig.enableLLMAgents = false;
+        baseAgentConfig.totalDeadlineMs = Math.max(remainingForProduction, 60000);
+      } else {
+        baseAgentConfig.totalDeadlineMs = remainingForProduction;
+        console.log(` 💰 全局预算: 制作引擎可用 ${Math.round(remainingForProduction/60000)} 分钟(已预留渲染/后期 ${Math.round(RENDER_RESERVE_MS/60000)} 分钟)`);
       }
 
-      productionResult = await this.productionEngine.produce(adapted, options.productionEngine?.agentConfig);
+      // 【修复】应用运行时 agentConfig(解决配置不生效问题)
+      this.productionEngine.updateAgentConfig(baseAgentConfig);
+
+      productionResult = await this.productionEngine.produce(adapted, baseAgentConfig);
 
       // 【v2.1.6-fix-bug36+38】分离 shots↔prompts 引用 + 建立 O(1) 索引
       const { DualArraySync } = require('./utils/dual-array-sync');
@@ -1643,6 +1663,13 @@ class HyperrealitySystem {
         try {
           console.log('\n🎨 [Layer 3] 渲染引擎 - 提交 Seedance...');
           const stage3Start = Date.now();
+
+          // 【审计修复·全局预算协调】渲染前检查全局剩余预算，不足时显式跳过而非渲染到一半被外部杀掉
+          const remainingForRender = globalDeadline - Date.now();
+          if (remainingForRender <= 60000) {
+            throw new Error(`全局预算耗尽(剩余 ${Math.max(0, Math.round(remainingForRender/1000))}s)，跳过渲染保产出物；Prompts 已生成，可单独提交渲染`);
+          }
+          console.log(` ⏱️ 全局预算: 渲染可用约 ${Math.round(remainingForRender/60000)} 分钟`);
 
           renderResult = await this.renderingEngine.render(productionResult.prompts, {
             // 【P0-9 修复】dryRun 仅由显式选项控制,不再因缺 apiKey 强制开启

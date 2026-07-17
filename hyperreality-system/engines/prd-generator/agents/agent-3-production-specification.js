@@ -19,7 +19,11 @@ class ProductionSpecificationAgent extends BaseAgent {
     const prompt = this._buildPrompt(discoveryResult, creativeResult);
     
     try {
-      const result = await this._callLLM(prompt, { timeout: this.timeoutMs });
+      // 【审计修复】参数错位：原代码 _callLLM(prompt, { timeout: this.timeoutMs }) 把 timeout 对象放在 schema 位置，
+      // 导致 timeoutMs 不生效、schema 污染提示词、返回值包装对象未解包 → LLM 产出 100% 被丢弃
+      const llmResponse = await this._callLLM(prompt, null, null, { timeoutMs: this.timeoutMs });
+      // 解包：BaseAgent._callLLM 返回 { result, degraded, degradeReason, attempts }
+      const result = llmResponse && llmResponse.result !== undefined ? llmResponse.result : llmResponse;
       return this._parseResult(result, discoveryResult);
     } catch (error) {
       console.warn(`[${this.agentName}] LLM 调用失败: ${error.message}，使用 fallback`);

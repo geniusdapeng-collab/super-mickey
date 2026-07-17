@@ -149,8 +149,12 @@ class RenderingEngine {
           throw new Error(`清单文件操作失败: ${e.message}`);
         }
 
-        // 【P1-18 修复】给 submit 调用加外层超时,防止 Seedance 提交永久挂起
-        const SUBMIT_TIMEOUT = 120000; // 2分钟
+        // 【P1-18 修复】给 submit 调用加外层超时，防止 Seedance 提交永久挂起
+        // 【审计修复】固定2分钟与分批提交耗时模型不匹配:
+        // submitter 按 maxConcurrent(默认3)分批，每批 = API往返 + 3秒间隔，
+        // 镜头数较多时(如21镜头=7批)总耗时可超2分钟被误杀。改为按批次数动态计算。
+        const batchCount = Math.ceil(shots.length / (this.config.maxConcurrent || 3));
+        const SUBMIT_TIMEOUT = Math.max(120000, batchCount * 45000); // 每批预算45s(API+间隔)，下限2分钟
         const submitPromise = this.submitter.submit(shots, {
           bindingManifestPath: manifestPath,
           skipValidation: options.skipValidation

@@ -16,10 +16,10 @@ class PRDGenerator {
   constructor(options = {}) {
     this.options = options;
     
-    // Agent 初始化
+    // Agent 初始化（带正确超时配置）
     this.agent1 = new ProductDefinitionAgent(options);
-    this.agent2 = new CreativeDirectionAgent(options);
-    this.agent3 = new ProductionSpecificationAgent(options);
+    this.agent2 = new CreativeDirectionAgent({ ...options, timeoutMs: options.agent2TimeoutMs || 120000 });
+    this.agent3 = new ProductionSpecificationAgent({ ...options, timeoutMs: options.agent3TimeoutMs || 180000 });
     this.agent4 = new ConstraintSynthesisAgent(options);
     this.agent5 = new DeliveryStandardAgent(options);
     

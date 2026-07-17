@@ -283,6 +283,12 @@ class LLMEngine {
     if (forceJson) body.response_format = { type: 'json_object' };
     else if (options.responseFormat) body.response_format = options.responseFormat;
 
+    // 【审计修复】透传 thinking 配置：BaseAgent 下发的 thinking:{type:'disabled'} 此前被静默丢弃，
+    // 导致所有 Agent 调用仍带着完整 reasoning 运行（更长延迟/更大响应/更高超时风险）
+    if (options.thinking && typeof options.thinking === 'object') {
+      body.thinking = options.thinking;
+    }
+
     try {
       const response = await this._fetchWithTimeout(
         this.baseUrl,
