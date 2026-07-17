@@ -301,7 +301,7 @@ class ScriptBlueprintAdapter {
    * 适配角色系统
    */
   _adaptCharacters(blueprint) {
-    return (blueprint.character_system?.characters || []).map(char => {
+    return (blueprint.character_system?.characters || []).map((char, index) => {
       const adapted = {
         character_id: char.character_id,
         name: char.name,
