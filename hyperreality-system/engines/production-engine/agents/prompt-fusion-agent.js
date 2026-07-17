@@ -481,9 +481,10 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
     };
 
     // 【P1-PROMPT-08 修复】传递镜头级独立预算
+    // 【2026-07-17】关键环节标记：PromptFusion 必须 LLM 驱动，不降级到规则
     const llmResult = await this._callLLM(prompt, schema, () => {
       throw new Error('LLM fallback');
-    }, { shotBudget });
+    }, { shotBudget, critical: true });
 
     const fusionEntry = llmResult.result?.shots?.find(s => s.shotId === shot.shotId);
     let fields = fusionEntry?.fields || {};

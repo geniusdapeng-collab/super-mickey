@@ -99,10 +99,11 @@ ${sceneOptions}
       required: ['shots'], requiredArrays: ['shots'], rejectEmptyArray: true, // 【P1-6 修复】启用数组类型校验
     };
 
+    // 【2026-07-17】关键环节标记：场景设计必须 LLM 驱动
     const llmResult = await this._callLLM(prompt, schema, () => {
       // 降级：使用原规则方法
       return this._fallback(shots);
-    });
+    }, { critical: true });
 
     if (llmResult.degraded) {
       return { shots: llmResult.result?.shots || shots, degraded: true, degradeReason: llmResult.degradeReason };

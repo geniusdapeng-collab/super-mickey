@@ -97,6 +97,10 @@ class ProductionEngine {
       hardThreshold: 5,
       degradationRateThreshold: 0.5
     });
+
+    // 【2026-07-17 复活】Agent 间数据契约校验器（TOP 5 #4）
+    const { AgentContractValidator } = require('./utils/agent-contract-validator');
+    this.contractValidator = new AgentContractValidator({ strict: false, autoFix: true });
   }
 
   /**
@@ -552,6 +556,13 @@ class ProductionEngine {
           result.errors.push({ stage: 'phase1', message: phase1Result.error || 'Phase1 失败' });
           this.log('PRODUCE', `⚠️ Phase 1 失败(${phase1Result.error})，已标记 degraded 继续`);
         }
+        // 【2026-07-17 复活】Agent 间契约校验：Phase 1 → Phase 2
+        const cv1 = this.contractValidator.validate('phase1-phase2', { shots: currentShots, blueprint: adaptedBlueprint });
+        if (!cv1.valid) {
+          this.log('CONTRACT', `⚠️ Phase1→Phase2 契约校验未通过: ${cv1.errors.join('; ')}`);
+          if (cv1.fixed) this.log('CONTRACT', `🔧 自动修复 ${cv1.fixes.length} 项`);
+          currentShots = cv1.data.shots;
+        }
       }
 
       // ----- Phase 2:VisualLanguage → AudioDesign → ContinuityReview -----
@@ -569,6 +580,13 @@ class ProductionEngine {
           result.degraded = true;
           result.errors.push({ stage: 'phase2', message: phase2Result.error || 'Phase2 失败，使用未增强镜头继续' });
           this.log('PRODUCE', `⚠️ Phase 2 失败(${phase2Result.error})，已标记 degraded 继续`);
+        }
+        // 【2026-07-17 复活】Agent 间契约校验：Phase 2 → Phase 3
+        const cv2 = this.contractValidator.validate('phase2-phase3', { shots: currentShots });
+        if (!cv2.valid) {
+          this.log('CONTRACT', `⚠️ Phase2→Phase3 契约校验未通过: ${cv2.errors.join('; ')}`);
+          if (cv2.fixed) this.log('CONTRACT', `🔧 自动修复 ${cv2.fixes.length} 项`);
+          currentShots = cv2.data.shots;
         }
       }
 
@@ -588,6 +606,13 @@ class ProductionEngine {
           result.degradeReason = `Phase3 PromptFusion 失败: ${phase3Result.error || '未知原因'}`;
           result.errors.push({ stage: 'phase3', message: phase3Result.error || 'PromptFusion 失败' });
           this.log('PRODUCE', `🔴 Phase 3 失败(${phase3Result.error})，产出为未融合镜头，已标记 degraded`);
+        }
+        // 【2026-07-17 复活】Agent 间契约校验：Phase 3 → 输出
+        const cv3 = this.contractValidator.validate('phase3-output', { shots: currentShots });
+        if (!cv3.valid) {
+          this.log('CONTRACT', `⚠️ Phase3→Output 契约校验未通过: ${cv3.errors.join('; ')}`);
+          if (cv3.fixed) this.log('CONTRACT', `🔧 自动修复 ${cv3.fixes.length} 项`);
+          currentShots = cv3.data.shots;
         }
       }
 
@@ -702,6 +727,17 @@ class ProductionEngine {
       result.success = true;
       result.timing.total = Date.now() - startTime;
       this.log('PRODUCE', `✅ LLM 制作完成${result.resumed ? '(断点续跑)' : ''} | ${currentShots.length} 镜头 | ${result.timing.total}ms`);
+
+      // 【2026-07-17 复活】最终完整性校验（pipeline-integrity-validator 轻量化）
+      const integrity = this._finalIntegrityCheck(currentShots, adaptedBlueprint);
+      if (!integrity.valid) {
+        this.log('INTEGRITY', `⚠️ 最终完整性校验未通过: ${integrity.errors.join('; ')}`);
+        result.warnings = result.warnings || [];
+        result.warnings.push(...integrity.errors);
+      } else {
+        this.log('INTEGRITY', `✅ 最终完整性校验通过`);
+      }
+
       this._clearCheckpoints(); // 成功完成,清理 checkpoint
 
     } catch (error) {
@@ -1613,7 +1649,50 @@ class ProductionEngine {
     return protagonist?.name || null;
   }
 
+  /**
+   * 【2026-07-17 复活】最终完整性校验（pipeline-integrity-validator 轻量化）
+   * 检查 shots 结构完整性和 prompt 有效性
+   */
+  _finalIntegrityCheck(shots, blueprint) {
+    const errors = [];
+    const warnings = [];
 
+    if (!Array.isArray(shots) || shots.length === 0) {
+      errors.push('shots 为空或非数组');
+      return { valid: false, errors, warnings };
+    }
+
+    for (const shot of shots) {
+      const id = shot.shotId || shot.shot_id || 'unknown';
+      // 检查必需字段
+      if (!shot.prompt || typeof shot.prompt !== 'string' || shot.prompt.length < 50) {
+        errors.push(`${id}: prompt 缺失或过短(${shot.prompt?.length || 0}字符)`);
+      }
+      if (!shot.duration || shot.duration <= 0) {
+        warnings.push(`${id}: duration 无效(${shot.duration})`);
+      }
+      if (!shot.scene && !shot.fields?.scene) {
+        warnings.push(`${id}: scene 描述缺失`);
+      }
+      // 检查 prompt 是否包含关键要素
+      const p = shot.prompt || '';
+      if (!p.includes('运镜') && !p.includes('camera') && !p.includes('镜头')) {
+        warnings.push(`${id}: prompt 可能缺少运镜描述`);
+      }
+      if (!p.includes('灯光') && !p.includes('lighting') && !p.includes('光影')) {
+        warnings.push(`${id}: prompt 可能缺少灯光描述`);
+      }
+    }
+
+    // 检查场景覆盖
+    const blueprintScenes = blueprint.scenes?.length || 0;
+    const shotScenes = new Set(shots.map(s => s.scene || s.fields?.scene).filter(Boolean)).size;
+    if (blueprintScenes > 0 && shotScenes < Math.min(blueprintScenes, 2)) {
+      warnings.push(`场景覆盖不足: 剧本${blueprintScenes}个场景, 镜头仅覆盖${shotScenes}个`);
+    }
+
+    return { valid: errors.length === 0, errors, warnings };
+  }
 
   /**
    * v6.37+: 构建 characterCards 数组(FieldGuard 要求的关键字段)

@@ -338,6 +338,50 @@ class BaseAgent {
     }
     
     console.error(`[${this.name}] 所有 ${attempt} 次尝试均失败，最后错误: ${lastError?.message}`);
+
+    // 【2026-07-17 复活】llm-enforcement-layer 核心理念：关键环节不降级
+    // 如果标记为 critical path 且 LLM 引擎仍可用，换模型/缩 prompt 继续重试 LLM
+    if (options.critical && llm) {
+      const altModel = options.altModel || this._getAltLLMEngine?.();
+      if (altModel) {
+        console.log(`[${this.name}] 🔥 关键环节，尝试备用模型...`);
+        try {
+          const shrunkPrompt = currentPrompt.length > 2000
+            ? currentPrompt.slice(0, 2000) + '\n[关键内容保留，细节已压缩]'
+            : currentPrompt;
+          const altResult = await altModel.reasonStructured(
+            `${this._getSystemPrompt()}\n\n${shrunkPrompt}`,
+            schema,
+            { maxTokens: Math.floor(callMaxTokens * 0.7), timeoutMs: Math.min(perCallTimeout * 1.2, 120000), thinking: { type: 'disabled' } }
+          );
+          if (altResult?.success) {
+            console.log(`[${this.name}] ✅ 备用模型成功`);
+            return { result: altResult.data, degraded: false, degradeReason: null, attempts: attempt + 1 };
+          }
+        } catch (altErr) {
+          console.warn(`[${this.name}] 备用模型也失败: ${altErr.message}`);
+        }
+      }
+      // 备用模型失败后，缩到极限再试一次主模型
+      if (currentPrompt.length > 1500) {
+        console.log(`[${this.name}] 🔥 关键环节，缩 prompt 到极限后最终重试...`);
+        try {
+          const miniPrompt = currentPrompt.slice(0, 1500) + '\n[极度压缩，仅保留核心指令]';
+          const finalResult = await llm.reasonStructured(
+            `${this._getSystemPrompt()}\n\n${miniPrompt}`,
+            schema,
+            { maxTokens: Math.floor(callMaxTokens * 0.5), timeoutMs: Math.min(perCallTimeout * 1.5, 180000), thinking: { type: 'disabled' } }
+          );
+          if (finalResult?.success) {
+            console.log(`[${this.name}] ✅ 极限缩 prompt 成功`);
+            return { result: finalResult.data, degraded: false, degradeReason: null, attempts: attempt + 1 };
+          }
+        } catch (finalErr) {
+          console.warn(`[${this.name}] 极限重试失败: ${finalErr.message}`);
+        }
+      }
+    }
+
     return this._executeFallback(fallbackFn, `LLM failed after ${attempt} attempts: ${lastError?.message}`);
   }
 

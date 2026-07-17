@@ -148,9 +148,10 @@ class VisualLanguageAgent extends BaseAgent {
     // 【修复】每批使用独立预算，避免单批耗尽全部时间
     const batchBudget = Math.min(this.llmTimeout, 420000); // 每批最多 7 分钟
 
+    // 【2026-07-17】关键环节标记：镜头设计必须 LLM 驱动
     const llmResult = await this._callLLM(prompt, schema, () => {
       return this._fallback(shots);
-    }, { shotBudget: batchBudget });
+    }, { shotBudget: batchBudget, critical: true });
 
     if (llmResult.degraded) {
       return {
