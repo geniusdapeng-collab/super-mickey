@@ -378,8 +378,6 @@ class ProductionEngine {
     this.modules = {
       // 时长分配（在用）
       shotDurationAllocator: loadModule('shot-duration-allocator.js')?.ShotDurationAllocator,
-      // 运镜系统（在用）
-      cameraMovement: loadModule('camera-movement-system-v2.js')?.CameraMovementSystem,
     };
 
     this.legacyModules = {
@@ -387,6 +385,7 @@ class ProductionEngine {
       // durationCalculator: 未使用
       // intraShotTimeline: 未使用
       // continuityEngine: 未使用
+      // camera-movement-system-v2: 已内联为 _getSegmentMovement 方法，文件已归档
       // promptEnhancer: 未使用
       // styleInjector: 未使用
       // promptQualityGate: 旧长度标准（现行见 config/prompt-length.js）
