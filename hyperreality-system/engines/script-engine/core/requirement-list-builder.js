@@ -933,7 +933,7 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
 
       // 技术参数
       constraints: {
-        maxPromptLength: result.maxPromptLength || 12000,
+        maxPromptLength: result.maxPromptLength || 3000,
         referenceImageCount: result.referenceImageCount || 2,
         maxShotDuration: 15
       },
@@ -1041,8 +1041,9 @@ ${r.uncertainties.length ? `## ⚠️ 待确认项\n\n${r.uncertainties.map((u, 
       protagonist: requirementList.protagonist?.id || 'default',
       featured_beast_id: requirementList._analysis.worldSetting === 'Nirath' ?
         requirementList._analysis.featuredBeastId : null,
-      max_prompt_length: requirementList.constraints?.maxPromptLength || 2000,
-      reference_image_count: requirementList.constraints?.referenceImageCount || 0,
+      max_prompt_length: requirementList.constraints?.maxPromptLength || 3000,
+      // 【一致性修复】与 L939 及全系统约定对齐：默认 2 张参考图（原 || 0 与其他所有环节矛盾）
+      reference_image_count: requirementList.constraints?.referenceImageCount ?? 2,
       // 超级小香宝扩展字段
       creative_intensity: requirementList.creativeIntensity,
       narrative_mode: requirementList.narrativeMode,

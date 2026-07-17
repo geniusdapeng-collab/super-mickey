@@ -16,8 +16,9 @@ class VisualLanguageAgent extends BaseAgent {
   constructor(options = {}) {
     super({
       name: 'VisualLanguageAgent',
-      llmTimeout: options.llmTimeout || 450000, // 【修复】从 300s → 450s
-      ...options
+      ...options,
+      // 【修复】llmTimeout 默认值必须写在 ...options 之后，否则会被 base 配置静默覆盖
+      llmTimeout: options.llmTimeout ?? 450000
     });
     this.batchSize = options.batchSize || 3; // 【修复】每批最多 3 个镜头（已验证）
   }

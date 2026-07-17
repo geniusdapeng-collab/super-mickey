@@ -348,8 +348,10 @@ class ProductionEngine {
     this.agents = {
       // 深度模型:创造性主任务
       sceneDesign: new SceneDesignAgent({ ...base, llmModel: deepModel }),
-      visualLanguage: new VisualLanguageAgent({ ...base, llmModel: deepModel }),
-      promptFusion: new PromptFusionAgent({ ...base, llmModel: deepModel, maxPromptLength: this.config.maxPromptLength }),
+      // 【一致性修复】VL 是最慢 Agent（实测 258s 起），显式给足 450s，不再被 base 的 300s 覆盖
+      visualLanguage: new VisualLanguageAgent({ ...base, llmModel: deepModel, llmTimeout: 450000 }),
+      // 【一致性修复】PromptFusion 是最重 Agent，显式恢复 5 次重试，不再被 base 的 2 次覆盖
+      promptFusion: new PromptFusionAgent({ ...base, llmModel: deepModel, llmMaxRetries: 5, maxPromptLength: this.config.maxPromptLength }),
 
       // 快速模型:结构化小任务(音效/片头/审查),可用非推理模型加速
       audioDesign: new AudioDesignAgent({ ...base, llmModel: fastModel, llmMaxTokens: 8000 }),

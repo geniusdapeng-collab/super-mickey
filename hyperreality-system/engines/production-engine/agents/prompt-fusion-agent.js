@@ -137,7 +137,15 @@ function buildFullSchema(shotId) {
 
 class PromptFusionAgent extends BaseAgent {
   constructor(options = {}) {
-    super({ name: 'PromptFusionAgent', enabled: true, llmTimeout: 300000, llmMaxRetries: 5, ...options });
+    super({
+      name: 'PromptFusionAgent',
+      enabled: true,
+      ...options,
+      // 【修复】llmTimeout/llmMaxRetries 写到 ...options 之后，
+      // 未显式传入时落类内默认，不再被 base 配置静默腰斩
+      llmTimeout: options.llmTimeout ?? 300000,
+      llmMaxRetries: options.llmMaxRetries ?? 5
+    });
     const PromptLengthConfig = require('../../../config/prompt-length.js');
     // ...
     // 【审计修复】从配置文件读取,不再硬编码

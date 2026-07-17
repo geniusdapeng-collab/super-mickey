@@ -2614,7 +2614,9 @@ class HyperrealitySystem {
       // 【v2.1.4-fix13】统计字段数
       const fieldCount = (p.prompt?.match(/【/g) || []).length;
       const isOpening = p.shotId === 'SC00' || p.sceneType === 'opening';
-      const expectedFields = isOpening ? 30 : 25;
+      // 【一致性修复】字段数期望与 STANDARD_FIELDS_SCHEMA 对齐：
+      // 全部镜头统一 25 字段标准；"片头30字段"约定在系统中不存在，属历史遗留误写
+      const expectedFields = 25;
       const fieldStatus = fieldCount >= expectedFields ? '✅' : (fieldCount >= expectedFields - 3 ? '⚠️' : '❌');
       lines.push(`| ${p.shotId} | ${p.duration || '?'}s | ${charCount} | ${fieldStatus} ${fieldCount}/${expectedFields} | ${hasImages ? '✓' : '✗'} | ${hasTimeline ? '✓' : '✗'} | ${hasConstraints ? '✓' : '✗'} |`);
     }
@@ -2625,7 +2627,7 @@ class HyperrealitySystem {
 
     for (const p of prompts) {
       const isOpening = p.shotId === 'SC00' || p.sceneType === 'opening';
-      lines.push(`### ${p.shotId}${isOpening ? '(片头·30字段)' : '(内容·25字段)'}`);
+      lines.push(`### ${p.shotId}${isOpening ? '(片头·25字段)' : '(内容·25字段)'}`);
       const charCount = p.promptCharCount || (typeof p.prompt === 'string' ? p.prompt.length : 0);
       lines.push(`**长度**: ${charCount} 字符 | **定妆照**: ${p.characterRef && p.characterRef !== 'NONE' ? '有' : '无'} | **时间轴**: ${p.timelineString || '无'}`);
       lines.push('');
@@ -2649,7 +2651,7 @@ class HyperrealitySystem {
     lines.push('## ⚠️ 审核须知');
     lines.push('');
     lines.push('1. 【内容镜头】确认有 25 个字段(序号01-25)');
-    lines.push('2. 【片头镜头】确认有 30 个字段(序号01-30,含5个片头专属字段)');
+    lines.push('2. 【片头镜头】确认有 25 个字段(与内容镜头统一标准)');
     lines.push('3. 确认【情绪】字段有具体面部/眼神描述,不是简单关键词');
     lines.push('4. 确认角色定妆照引用正确');
     lines.push('5. 确认负面约束(暗黑风/金属光泽)已包含');
