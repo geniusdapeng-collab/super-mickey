@@ -560,7 +560,7 @@ class ProductionEngine {
         if (!cv1.valid) {
           this.log('CONTRACT', `⚠️ Phase1→Phase2 契约校验未通过: ${cv1.errors.join('; ')}`);
           if (cv1.fixed) this.log('CONTRACT', `🔧 自动修复 ${cv1.fixCount} 项`);
-          currentShots = cv1.data.shots;
+          currentShots = cv1.fixed.shots;
         }
       }
 
@@ -585,7 +585,7 @@ class ProductionEngine {
         if (!cv2.valid) {
           this.log('CONTRACT', `⚠️ Phase2→Phase3 契约校验未通过: ${cv2.errors.join('; ')}`);
           if (cv2.fixed) this.log('CONTRACT', `🔧 自动修复 ${cv2.fixCount} 项`);
-          currentShots = cv2.data.shots;
+          currentShots = cv2.fixed.shots;
         }
       }
 
@@ -611,7 +611,7 @@ class ProductionEngine {
         if (!cv3.valid) {
           this.log('CONTRACT', `⚠️ Phase3→Output 契约校验未通过: ${cv3.errors.join('; ')}`);
           if (cv3.fixed) this.log('CONTRACT', `🔧 自动修复 ${cv3.fixCount} 项`);
-          currentShots = cv3.data.shots;
+          currentShots = cv3.fixed.shots;
         }
       }
 
