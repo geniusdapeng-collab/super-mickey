@@ -1068,10 +1068,16 @@ ${r.uncertainties.length ? `## ⚠️ 待确认项\n\n${r.uncertainties.map((u, 
       target_duration: requirementList.targetDuration,
       target_platform: (requirementList.platform || '视频号/抖音').split('/'),
       language: requirementList.language || '中文',
-      style_tags: [
-        requirementList.style.primary.toLowerCase(),
-        ...requirementList.style.secondary.map(s => s.toLowerCase())
-      ],
+      // 【v2.1.11 修复】SuperMickey 需求清单结构与暴风战斧不同，
+      // style 对象可能不存在，需从 upstreamFields 安全回退提取
+      style_tags: (() => {
+        const primary = requirementList.style?.primary
+          || requirementList.upstreamFields?.tone
+          || '温情怀旧';
+        const secondary = requirementList.style?.secondary
+          || [];
+        return [primary.toLowerCase(), ...secondary.map(s => s.toLowerCase())];
+      })(),
       world_setting: requirementList.worldSetting || requirementList._analysis.worldSetting || '现实世界',
       protagonist: requirementList.protagonist?.id || 'default',
       featured_beast_id: requirementList._analysis.worldSetting === 'Nirath' ?
