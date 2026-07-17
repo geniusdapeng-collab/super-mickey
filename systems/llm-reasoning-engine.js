@@ -425,6 +425,7 @@ class LLMEngine {
     const totalTimeout = options.timeoutMs || this.timeoutMs;
     const callStart = Date.now();
     let lastError = null;
+    let lastRetryable = true; // 【修复 P1-5】追踪底层 retryable 判定
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       // === 截止时间门控：超时则停止重试 ===
@@ -455,13 +456,16 @@ class LLMEngine {
         ...options,
         forceJson: true,
         responseFormat: { type: 'json_object' },
-        temperature: options.temperature ?? 1,
+        // 【修复 P2-6】结构化输出默认降温到 0.6：显著降低 JSON 畸形率，
+        // 创意多样性由 prompt 内容保证，不靠采样温度（调用方仍可显式覆盖）
+        temperature: options.temperature ?? 0.6,
         maxTokens: options.maxTokens ?? this.maxTokens,
         timeoutMs: attemptTimeout
       });
 
       if (!result.success) {
         lastError = result.error;
+        lastRetryable = result.retryable !== false; // 【修复 P1-5】记录
         console.warn(`[LLMEngine] reasonStructured attempt ${attempt}/${maxRetries} 失败: ${lastError}`);
         // 【P0-12 修复】超时/鉴权错误不可重试
         if (result.retryable === false) {
@@ -510,7 +514,8 @@ class LLMEngine {
       }
     }
 
-    return { success: false, error: lastError || '未知错误' };
+    // 【修复 P1-5】带出 retryable，上层 BaseAgent 不再只靠字符串猜
+    return { success: false, error: lastError || '未知错误', retryable: lastRetryable };
   }
 }
 

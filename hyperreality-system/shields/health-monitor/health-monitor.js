@@ -132,9 +132,24 @@ class HealthMonitor extends EventEmitter {
     // 【P0-1 修复】自动保活：长时间任务期间每10秒更新心跳
     if (enabled) {
       if (agentInfo._keepAliveTimer) clearInterval(agentInfo._keepAliveTimer);
+      agentInfo._longTaskStartedAt = Date.now();
       agentInfo._keepAliveTimer = setInterval(() => {
+        // 【修复 P1-3】有限保活：超过长任务预算后停止保活并立即报警，
+        // 防止"真挂死被自动保活永远掩盖"
+        const elapsed = Date.now() - (agentInfo._longTaskStartedAt || 0);
+        if (elapsed > agentInfo._longTaskTimeout) {
+          clearInterval(agentInfo._keepAliveTimer);
+          agentInfo._keepAliveTimer = null;
+          console.error(`[HealthMonitor] ⛔ ${agentId} 长任务超预算(${agentInfo._longTaskTimeout}ms)，停止保活，判定挂死`);
+          this._handleDeadAgent(agentId, `长任务超预算 ${agentInfo._longTaskTimeout}ms 仍未完成`);
+          return;
+        }
         agentInfo.health.lastHeartbeat = Date.now();
       }, 10000); // 每10秒保活
+      // 【修复 P1-3】unref：保活定时器不得阻止进程退出
+      if (typeof agentInfo._keepAliveTimer.unref === 'function') {
+        agentInfo._keepAliveTimer.unref();
+      }
       console.log(`[HealthMonitor] ⏱️ 长时间任务模式启用: ${agentId}, timeout=${finalTimeoutMs}ms (强制下限${minLongTaskTimeoutMs}ms)`);
     } else {
       // 关闭时清理保活定时器
@@ -425,12 +440,22 @@ class HealthMonitor extends EventEmitter {
   /**
    * 停止监控
    */
+  /**
+   * 停止监控
+   * 【修复 P1-3】同时清理所有 Agent 的保活定时器，防止进程无法退出
+   */
   stop() {
     if (this._monitorInterval) {
       clearInterval(this._monitorInterval);
       this._monitorInterval = null;
     }
-    console.log('[HealthMonitor] 🛑 健康监控已停止');
+    for (const info of this.agents.values()) {
+      if (info._keepAliveTimer) {
+        clearInterval(info._keepAliveTimer);
+        info._keepAliveTimer = null;
+      }
+    }
+    console.log('[HealthMonitor] 🛑 健康监控已停止（含全部保活定时器）');
   }
 }
 

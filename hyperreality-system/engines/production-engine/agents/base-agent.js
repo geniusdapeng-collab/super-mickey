@@ -13,6 +13,37 @@ const { globalLLMLimiter } = require('../../../core/llm-concurrency-limiter');
 const DEFAULT_MODEL = process.env.STORMAXE_LLM_MODEL || 'kimi-k2p6';
 const DEFAULT_FAST_MODEL = process.env.STORMAXE_LLM_FAST_MODEL || DEFAULT_MODEL;
 
+/**
+ * 【修复 P1-4/P1-5】进程级 LLM 熔断器（轻量版）
+ * 任一 Agent 遇到不可重试错误（AUTH/PARAM），记录到共享状态，
+ * 其余 Agent 在冷却窗口内直接走降级，不再逐个撞 401/400。
+ */
+const SharedCircuitBreaker = {
+  _trippedAt: null,
+  _reason: null,
+  COOLDOWN_MS: 5 * 60 * 1000, // 熔断后 5 分钟冷却
+
+  isOpen() {
+    if (!this._trippedAt) return false;
+    if (Date.now() - this._trippedAt > this.COOLDOWN_MS) {
+      this._trippedAt = null; // 冷却结束，自动半开（允许一次试探）
+      this._reason = null;
+      return false;
+    }
+    return true;
+  },
+
+  trip(reason) {
+    if (!this._trippedAt) {
+      this._trippedAt = Date.now();
+      this._reason = reason;
+      console.error(`[SharedCircuitBreaker] 🔥 全局熔断触发: ${reason}，${this.COOLDOWN_MS / 60000} 分钟内所有 Agent 直接降级`);
+    }
+  },
+
+  reason() { return this._reason; }
+};
+
 function loadLLMEngine(model, maxTokens) {
   try {
     const SYSTEMS_PATH = path.join(__dirname, '../../../../systems');
@@ -150,6 +181,12 @@ class BaseAgent {
       return this._executeFallback(fallbackFn, 'LLM engine not available');
     }
 
+    // 【修复 P1-4/P1-5】全局熔断检查：AUTH/PARAM 级故障时全员快速降级
+    if (SharedCircuitBreaker.isOpen()) {
+      console.warn(`[${this.name}] 🔥 全局熔断中(${SharedCircuitBreaker.reason()})，直接降级`);
+      return this._executeFallback(fallbackFn, `Shared circuit breaker open: ${SharedCircuitBreaker.reason()}`);
+    }
+
     // 【v2.1.0】镜头级独立预算：每个镜头有自己的预算，不互相侵占
     const shotBudget = options.shotBudget || null;
     const effectiveBudget = shotBudget ? Math.min(shotBudget, this._remainingMs()) : this._remainingMs();
@@ -168,14 +205,16 @@ class BaseAgent {
     if (requestedTimeout <= hardCeiling) {
       perCallTimeout = requestedTimeout; // 正常情况：内层可以完整执行
     } else {
-      // budget不足：按比例缩放，但保证至少50%的内层时间
-      perCallTimeout = Math.max(requestedTimeout * 0.5, hardCeiling);
-      console.warn(`[${this.name}] ⚠️ timeout缩放: 请求${requestedTimeout}ms > budget上限${hardCeiling}ms, 按比例缩放为${perCallTimeout}ms (保证内层50%)`);
+      // 【修复 P0-3】原 Math.max 会突破 hardCeiling（如 max(150000, 60000)=150000）。
+      // 正确语义：在 hardCeiling 以内，尽量保留请求值的 50%，但绝不越限。
+      const INNER_FLOOR_MS = 30000; // 内层最低保障 30s（仍受 hardCeiling 约束）
+      perCallTimeout = Math.min(hardCeiling, Math.max(requestedTimeout * 0.5, INNER_FLOOR_MS));
+      console.warn(`[${this.name}] ⚠️ timeout缩放: 请求${requestedTimeout}ms > budget上限${hardCeiling}ms, 收敛为${perCallTimeout}ms (≤上限)`);
     }
 
-    // 【P0-ARCH-01 修复】fastMode覆盖必须经过同样的优先级校验
-    if (options.fastMode && perCallTimeout > options.fastTimeoutMs) {
-      perCallTimeout = Math.max(options.fastTimeoutMs, hardCeiling * 0.3);
+    // 【修复 P0-3】fastMode 同样必须 clamp 到 hardCeiling，且防 fastTimeoutMs 缺失
+    if (options.fastMode && typeof options.fastTimeoutMs === 'number' && perCallTimeout > options.fastTimeoutMs) {
+      perCallTimeout = Math.min(hardCeiling, Math.max(options.fastTimeoutMs, hardCeiling * 0.3));
     }
     
     console.log(`[${this.name}] _callLLM 进入 | perCallTimeout=${perCallTimeout}ms maxTokens=${callMaxTokens} retries=${callMaxRetries} budget=${effectiveBudget}ms ceiling=${hardCeiling}ms${shotBudget ? ' (镜头独立预算)' : ''}`);
@@ -219,7 +258,8 @@ class BaseAgent {
         console.log(`[${this.name}] 尝试 ${attempt}/${callMaxRetries} | timeout=${currentTimeout}ms${classification ? ` strategy=${classification.strategy}` : ''}`);
         
         const fullPrompt = `${this._getSystemPrompt()}\n\n${currentPrompt}`;
-        // 【P1-D9 修复】使用全局并发限制器包装LLM调用，防止请求风暴
+        // 【修复 P2-4】许可排队预算纳入总账：排队+执行共享 currentTimeout 与剩余预算
+        const acquireBudget = Math.max(5000, Math.min(currentTimeout, this._remainingMs()));
         const result = await globalLLMLimiter.withLimit(
           async () => this._callWithTimeout(
             llm.reasonStructured(fullPrompt, schema, {
@@ -232,11 +272,14 @@ class BaseAgent {
             currentTimeout,
             `[${this.name}] attempt ${attempt}/${callMaxRetries}`
           ),
-          currentTimeout // 等待许可的超时等于调用超时
+          acquireBudget // 排队超时也按剩余预算收敛
         );
 
         if (!result || !result.success) {
-          throw new Error(`LLM引擎返回失败: ${result?.error || '无返回'}`);
+          // 【修复 P1-5】透传底层 retryable 判定，ErrorClassifier 优先尊重它
+          const e = new Error(`LLM引擎返回失败: ${result?.error || '无返回'}`);
+          if (result && result.retryable === false) e.retryable = false;
+          throw e;
         }
 
         // Schema 校验
@@ -264,6 +307,10 @@ class BaseAgent {
         // 不可重试错误 → 立即熔断
         if (!classification.retryable || effectiveMaxRetries === 0) {
           console.error(`[${this.name}] 🔴 不可重试错误(${classification.type})，停止重试: ${classification.message}`);
+          // 【修复 P1-5】AUTH/PARAM 升级为全局熔断，避免其余 Agent 逐个撞墙
+          if (classification.type === 'AUTH' || classification.type === 'PARAM') {
+            SharedCircuitBreaker.trip(`${classification.type}: ${err.message}`);
+          }
           break;
         }
         

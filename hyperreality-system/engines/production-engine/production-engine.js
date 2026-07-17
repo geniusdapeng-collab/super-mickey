@@ -58,9 +58,11 @@ function loadModule(name, required = false) {
 
 class ProductionEngine {
   constructor(options = {}) {
+    // 【修复 P1-1】长度限制从唯一真源读取，消除 12000/3000/2000 各自为政
+    const PromptLengthConfig = require('../../config/prompt-length.js');
     this.config = {
-      maxPromptLength: 12000, // 【审计修复】与 config/prompt-length.js 保持一致
-      targetPromptLength: 12000, // 【审计修复】与 config/prompt-length.js 保持一致
+      maxPromptLength: PromptLengthConfig.HARD_MAX, // 唯一真源：3000
+      targetPromptLength: PromptLengthConfig.TARGET_MAX, // 唯一真源：3000
       referenceImageCount: 2,
       outputDir: options.outputDir || process.env.OUTPUT_DIR || './output/super-mickey-output',
       ...options
@@ -75,6 +77,9 @@ class ProductionEngine {
 
     // v2.0.0-LLM-Agent: 初始化Agents
     this._initAgents();
+
+    // 【修复 P2-5】补齐 llmModel 属性，修复 Phase35/RuleFallback 的配置传递链
+    this.llmModel = this.agentConfig.llmModel;
 
     this.modules = {};
     this.logs = [];
@@ -583,6 +588,10 @@ class ProductionEngine {
           currentShots = phase1Result.shots;
         } else {
           phase1Failed = true;
+          // 【修复 P2-2】phase1Failed 落为正式降级记录
+          result.degraded = true;
+          result.errors.push({ stage: 'phase1', message: phase1Result.error || 'Phase1 失败' });
+          this.log('PRODUCE', `⚠️ Phase 1 失败(${phase1Result.error})，已标记 degraded 继续`);
         }
       }
 
@@ -596,6 +605,11 @@ class ProductionEngine {
         });
         if (phase2Result.success) {
           currentShots = phase2Result.shots;
+        } else {
+          // 【修复 P2-2】失败必须留痕：degraded 标记 + errors 记录
+          result.degraded = true;
+          result.errors.push({ stage: 'phase2', message: phase2Result.error || 'Phase2 失败，使用未增强镜头继续' });
+          this.log('PRODUCE', `⚠️ Phase 2 失败(${phase2Result.error})，已标记 degraded 继续`);
         }
       }
 
@@ -609,6 +623,12 @@ class ProductionEngine {
         });
         if (phase3Result.success) {
           currentShots = phase3Result.shots;
+        } else {
+          // 【修复 P2-2】Phase 3 是核心环节：失败 = 整体降级交付，必须显式标记
+          result.degraded = true;
+          result.degradeReason = `Phase3 PromptFusion 失败: ${phase3Result.error || '未知原因'}`;
+          result.errors.push({ stage: 'phase3', message: phase3Result.error || 'PromptFusion 失败' });
+          this.log('PRODUCE', `🔴 Phase 3 失败(${phase3Result.error})，产出为未融合镜头，已标记 degraded`);
         }
       }
 
@@ -629,19 +649,24 @@ class ProductionEngine {
 
       // ===== Phase-3.5: 字段质量检查与修复（自适应预算）=====
       // v2.1.5-refactor: 使用新 Phase 架构
-      let phase35Success = false;
-      try {
-        const phase35Result = await this.phase35.execute({ 
-          shots: currentShots, 
-          result, 
-          adaptedBlueprint 
-        });
-        if (phase35Result.success) {
-          currentShots = phase35Result.shots;
-          phase35Success = true;
+      // 【修复 P2-3】断点续跑守卫：startPhase=99 表示 phase3.5 已完成，直接跳过
+      let phase35Success = startPhase > 4; // 恢复自 phase3.5 checkpoint 视为已成功
+      if (startPhase <= 4) {
+        try {
+          const phase35Result = await this.phase35.execute({ 
+            shots: currentShots, 
+            result, 
+            adaptedBlueprint 
+          });
+          if (phase35Result.success) {
+            currentShots = phase35Result.shots;
+            phase35Success = true;
+          }
+        } catch (phase35Error) {
+          this.log('PHASE-3.5', `❌ Phase 3.5 异常: ${phase35Error.message}`);
         }
-      } catch (phase35Error) {
-        this.log('PHASE-3.5', `❌ Phase 3.5 异常: ${phase35Error.message}`);
+      } else {
+        this.log('PHASE-3.5', '⏭️ 断点续跑：phase3.5 已完成，跳过');
       }
 
       // 【v2.1.8-审计修复】Phase 3.5 失败后使用隔离的降级逻辑，确保不抛异常到外层
@@ -713,6 +738,61 @@ class ProductionEngine {
     }
 
     return result;
+  }
+
+  /**
+   * 【修复 P0-2】纯规则生产路径（enableLLMAgents=false 时使用）
+   * 不调用任何 LLM Agent，直接用规则引擎生成 Prompt
+   */
+  async _produceViaRules(currentShots, adaptedBlueprint, result, startTime) {
+    this.log('RULES-MODE', '🔧 LLM Agents 已禁用，使用纯规则引擎生产');
+    try {
+      // 1. 规则 Prompt 生成
+      let shots = await this.ruleFallback.engineerPromptsFallback(currentShots, adaptedBlueprint);
+      if (!Array.isArray(shots) || shots.length === 0) {
+        throw new Error('规则引擎未产出任何镜头');
+      }
+
+      // 2. 展平 fields（与 LLM 路径保持同一数据规范）
+      shots = shots.map(shot => {
+        const flat = { ...shot };
+        if (shot.fields && typeof shot.fields === 'object') {
+          for (const [key, value] of Object.entries(shot.fields)) {
+            if (value === undefined || value === null || value === '') continue;
+            const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+            flat[key] = value;
+            flat[camelKey] = value;
+          }
+        }
+        return flat;
+      });
+
+      // 3. 内容边界 + 质量门（与 LLM 路径同一套最终防线）
+      try {
+        shots = this.boundaryGuard.enforce(shots, adaptedBlueprint);
+      } catch (bgError) {
+        this.log('BOUNDARY-GUARD', `⚠️ 边界检查失败: ${bgError.message}，跳过`);
+      }
+      try {
+        result.stages.qualityGate = await this._runStage('quality-gate', () => this.qualityGate.run(shots));
+      } catch (qgError) {
+        this.log('QUALITY-GATE', `⚠️ QualityGate失败: ${qgError.message}，继续`);
+        result.stages.qualityGate = { passed: false, error: qgError.message, shots };
+      }
+
+      result.shots = shots;
+      result.prompts = shots;
+      result.meta = this._buildMeta(adaptedBlueprint);
+      result.success = true;
+      result.degraded = true;
+      result.degradeReason = 'LLM Agents 禁用，纯规则模式产出';
+      result.timing.total = Date.now() - startTime;
+      this.log('RULES-MODE', `✅ 规则生产完成 | ${shots.length} 镜头 | ${result.timing.total}ms`);
+      return result;
+    } catch (e) {
+      this.log('RULES-MODE', `❌ 规则生产失败: ${e.message}`);
+      throw e; // 交给 produce() 外层 catch → RECOVERY 兜底
+    }
   }
 
   /**
@@ -850,29 +930,45 @@ class ProductionEngine {
 
   /**
    * 按 shotId 把 updatedShots 的指定字段合并回 baseShots
-   * - 只在字段非空时覆盖,避免降级返回的空字符串冲掉已有数据
-   * 【审计修复·P0】merged[f] = v 是引用赋值，改为深拷贝
+   * 【修复 P1-2】严格白名单 + 键名兼容：
+   * - 传了 fields 就只合并 fields（阶段隔离不可被幻觉字段击穿）
+   * - 未传 fields 才全量合并（保留旧行为的逃生门）
+   * - 合并键兼容 shotId / shot_id 两种命名
+   * - 被白名单拦截的字段打印日志，便于观察 LLM 是否越权输出
    */
   _mergeShotsByShotId(baseShots, updatedShots, fields) {
-    const map = new Map((updatedShots || []).map(s => [s.shotId, s]));
+    const map = new Map(
+      (updatedShots || [])
+        .filter(s => s && (s.shotId || s.shot_id))
+        .map(s => [s.shotId || s.shot_id, s])
+    );
     return baseShots.map(shot => {
-      const u = map.get(shot.shotId);
+      const u = map.get(shot.shotId) || map.get(shot.shot_id);
       if (!u) return shot;
       const merged = this._deepCloneShot(shot);
-      // 若指定白名单，优先合并白名单字段；再合并 u 中其他非空字段（防止丢字段）
-      const whiteSet = fields && fields.length ? new Set(fields) : null;
-      const keys = whiteSet
-        ? [...fields, ...Object.keys(u).filter(k => !whiteSet.has(k))]
-        : Object.keys(u);
+
+      const strictWhitelist = fields && fields.length > 0;
+      const keys = strictWhitelist ? fields : Object.keys(u);
+
+      // 观测：严格白名单模式下，记录被拦截的越权字段（每镜头只报一次）
+      if (strictWhitelist) {
+        const blocked = Object.keys(u).filter(k =>
+          !fields.includes(k) &&
+          !['shotId', 'shot_id', 'degraded', 'degradeReason'].includes(k) &&
+          u[k] !== undefined && u[k] !== null && u[k] !== ''
+        );
+        if (blocked.length > 0) {
+          this.log('MERGE-GUARD', `🛡️ ${shot.shotId || shot.shot_id}: 拦截白名单外字段 ${blocked.join(', ')}`);
+        }
+      }
+
       for (const f of keys) {
-        if (f === 'shotId') continue;
+        if (f === 'shotId' || f === 'shot_id') continue;
         const v = u[f];
         if (v === undefined || v === null || v === '') continue;
-        // duration 的 0 不覆盖；其他数值 0 也不覆盖有效值
         if (typeof v === 'number' && v === 0) continue;
         merged[f] = this._deepCloneValue(v);
       }
-      // 【审计修复】保留降级元数据字段（如果 updatedShots 中有）
       if (u.degraded !== undefined) merged.degraded = u.degraded;
       if (u.degradeReason !== undefined) merged.degradeReason = u.degradeReason;
       return merged;

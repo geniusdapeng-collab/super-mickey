@@ -84,6 +84,9 @@ class RenderingEngine {
       timing: {}
     };
 
+    // 【修复 P0-1】shots 提升到 try 外声明，catch 块才能安全引用
+    let shots = [];
+
     try {
       // 检查 API 密钥和 endpoint
       if (!this.config.apiKey && !options.dryRun) {
@@ -103,7 +106,7 @@ class RenderingEngine {
       }
 
       // 构建渲染数据结构(兼容现有系统)
-      const shots = validPrompts.map(p => this._convertToShotFormat(p));
+      shots = validPrompts.map(p => this._convertToShotFormat(p));
 
       // 🆕 【v2.1.6-fix】注入全局负面提示词
       for (const shot of shots) {
@@ -113,7 +116,11 @@ class RenderingEngine {
           : this.negativePromptInjector.generateForContentShot({ maxLength: 300 });
         shot.negativePrompt = negativePrompt;
         if (shot.prompt && !shot.prompt.includes('【负面约束】')) {
+          // 【修复 P1-1】先为负面词预留空间截断主 prompt，再拼接，总量不超限
+          shot.prompt = this._enforcePromptLimit(shot.prompt, negativePrompt.length + 1);
           shot.prompt = `${shot.prompt}\n${negativePrompt}`;
+        } else if (shot.prompt) {
+          shot.prompt = this._enforcePromptLimit(shot.prompt, 0);
         }
       }
       this.log('RENDER', `🛡️ 已注入全局负面提示词 (${shots.length} 镜头)`);
@@ -208,6 +215,29 @@ class RenderingEngine {
     }
 
     return result;
+  }
+
+  /**
+   * 【修复 P1-1】渲染边界长度强制：提交 Seedance 前的最后一道闸
+   * 主 prompt 超限 → 按句边界截断（不硬切半个句子）；
+   * 负面提示词注入前，先为主 prompt 预留负面词空间，确保总量不超限。
+   */
+  _enforcePromptLimit(prompt, reserveForNegative = 0) {
+    const PromptLengthConfig = require('../../config/prompt-length.js');
+    const hardMax = PromptLengthConfig.HARD_MAX - reserveForNegative;
+    if (typeof prompt !== 'string' || prompt.length <= hardMax) return prompt;
+
+    // 优先在句号/换行处截断，保住完整语义单元
+    const window = prompt.slice(0, hardMax);
+    const lastSentenceEnd = Math.max(
+      window.lastIndexOf('。'),
+      window.lastIndexOf('\n'),
+      window.lastIndexOf('；')
+    );
+    const cutPoint = lastSentenceEnd > hardMax * 0.7 ? lastSentenceEnd + 1 : hardMax;
+    const truncated = prompt.slice(0, cutPoint);
+    this.log('RENDER', `⚠️ prompt 超限(${prompt.length}>${hardMax})，句边界截断至 ${truncated.length} 字符`);
+    return truncated;
   }
 
   /**

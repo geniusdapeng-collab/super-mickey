@@ -28,10 +28,10 @@ if (!HUMAN_SECRET) {
 }
 
 if (!HUMAN_SECRET) {
-  console.error('❌ 错误: HUMAN_CONFIRMATION_SECRET 未设置');
-  console.error('  请运行: export HUMAN_CONFIRMATION_SECRET=$(openssl rand -hex 32)');
-  console.error('  或确保 .env 文件中包含 HUMAN_CONFIRMATION_SECRET');
-  process.exit(1);
+  // 【修复 P1-6】缺密钥不再 process.exit：主流程允许启动，确认环节安全降级为"不可用"
+  console.warn('⚠️ [confirmation-crypto] HUMAN_CONFIRMATION_SECRET 未设置');
+  console.warn('  人工确认环节将不可用（无法生成/验证签名），但系统其余功能正常');
+  console.warn('  配置方法: export HUMAN_CONFIRMATION_SECRET=$(openssl rand -hex 32)，或写入 .env');
 }
 
 // nonce 管理（持久化存储，防止重放攻击）
@@ -52,6 +52,10 @@ try {
  * @returns {string} HMAC-SHA256 签名
  */
 function generateSignature(type, timestamp, nonce) {
+  // 【修复 P1-6】惰性校验：仅在真正需要签名时才失败
+  if (!HUMAN_SECRET) {
+    throw new Error('HUMAN_CONFIRMATION_SECRET 未配置，无法生成确认签名');
+  }
   const payload = `${type}:${timestamp}:${nonce}`;
   return crypto.createHmac('sha256', HUMAN_SECRET).update(payload).digest('hex');
 }
@@ -63,6 +67,11 @@ function generateSignature(type, timestamp, nonce) {
  * @returns {boolean} 验证是否通过
  */
 function verifyConfirmation(confirmData, type) {
+  // 【修复 P1-6】密钥未配置时，任何确认文件都不可信 → 安全拒绝（继续等待人工处理）
+  if (!HUMAN_SECRET) {
+    console.log(' ⛔ 拒绝: HUMAN_CONFIRMATION_SECRET 未配置，签名体系不可用');
+    return false;
+  }
   // 1. 检查必填字段
   if (!confirmData.signature || !confirmData.timestamp || !confirmData.nonce) {
     console.log(' ⛔ 拒绝: 缺少签名字段');

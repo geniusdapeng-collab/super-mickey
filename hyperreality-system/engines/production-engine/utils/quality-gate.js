@@ -7,9 +7,12 @@
  * - 片头专属检查
  */
 
+const PromptLengthConfig = require('../../../config/prompt-length.js');
+
 class QualityGate {
-  constructor(config = { maxPromptLength: 2000 }) {
-    this.config = config;
+  constructor(config = {}) {
+    // 【修复 P1-1】未显式传入时回退到唯一真源，不再使用孤立的 2000
+    this.config = { maxPromptLength: PromptLengthConfig.HARD_MAX, ...config };
   }
 
   /**

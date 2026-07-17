@@ -35,8 +35,8 @@ class Phase1SceneDesign extends PhaseExecutor {
           : Promise.resolve(null)
       });
 
-      // 合并场景设计结果
-      let newShots = this.mergeShots(shots, sdResult.shots, [
+      // 合并场景设计结果（sdResult.shots 可能因 Agent 内部降级而缺失）
+      let newShots = this.mergeShots(shots, sdResult.shots || [], [
         'scene', 'mood', 'action', 'emotional_target'
       ]);
 
@@ -69,21 +69,35 @@ class Phase1SceneDesign extends PhaseExecutor {
   }
 
   /**
-   * 并行执行多个任务（保持与 ProductionEngine._runParallel 兼容）
+   * 并行执行多个任务（部分容错版）
+   * 【修复 P2-1】核心任务(scene-design)失败才算 Phase 失败；
+   * 非核心任务(opening-design)失败降级为 null 继续，保住核心 LLM 产出
    */
   async _runParallel(tasks) {
     const entries = Object.entries(tasks);
     const results = await Promise.all(
-      entries.map(([key, promise]) => 
-        promise.then(result => ({ key, result, success: true }))
-               .catch(error => ({ key, error, success: false }))
+      entries.map(([key, promise]) =>
+        Promise.resolve(promise)
+          .then(result => ({ key, result, success: true }))
+          .catch(error => ({ key, error, success: false }))
       )
     );
-    
+
     const output = {};
+    const failed = [];
     for (const r of results) {
-      if (!r.success) throw r.error;
-      output[r.key] = r.result;
+      if (r.success) output[r.key] = r.result;
+      else failed.push(r);
+    }
+
+    // 核心任务失败 → Phase 失败（抛出由 execute 的 catch 统一处理）
+    const coreFailure = failed.find(r => r.key === 'scene-design');
+    if (coreFailure) throw coreFailure.error;
+
+    // 非核心任务失败 → 降级继续
+    for (const f of failed) {
+      this.log('PHASE-1', `⚠️ 非核心任务 ${f.key} 失败(${f.error?.message})，降级继续`);
+      output[f.key] = null;
     }
     return [output['scene-design'], output['opening-design']];
   }
