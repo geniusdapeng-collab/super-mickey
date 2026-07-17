@@ -646,12 +646,12 @@ class HyperrealitySystem {
         if (baselineMatch.isHotStart && baselineMatch.template) {
           console.log(`\n🛡️ [稳定性护盾] 热启动模式: 命中基线模板 ${baselineMatch.template.id}`);
           console.log(`   题材: ${baselineMatch.category} | 已使用${baselineMatch.template.metadata.usageCount}次`);
-          metadata._baseline = baselineMatch.template;
-          metadata._baselineCategory = baselineMatch.category;
+          // 【2026-07-17 清理】_baseline/_baselineCategory 写后无人读，暂存 local 变量
+          const baselineTemplate = baselineMatch.template;
+          const baselineCategory = baselineMatch.category;
+          // TODO: 如需注入剧本 prompt，从此处透传
         } else {
           console.log(`\n🛡️ [稳定性护盾] 冷启动模式: 未命中基线,将全LLM生成`);
-          metadata._baseline = null;
-          metadata._baselineCategory = baselineMatch.category;
         }
 
       // ========== 🆕 v2.1.9: Step 3.5 PRD 生成 ==========
@@ -2065,7 +2065,7 @@ class HyperrealitySystem {
           timestamp: new Date().toISOString()
         });
         console.log(`\n💾 [PipelineLogger] 结果已保存: ${sessionDir}`);
-        result._sessionDir = sessionDir;
+        // 【2026-07-17 清理】_sessionDir 写后无人读，删除
       } catch (err) {
         console.warn(`   ⚠️ PipelineLogger 失败: ${err.message}`);
         result.errors.push({ stage: 'PipelineLogger', message: err.message });
