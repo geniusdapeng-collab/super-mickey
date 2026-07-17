@@ -2,7 +2,7 @@
  * VoiceCraft Bridge v1.0-Peng
  * StoryForge Pro ↔ VoiceCraft 融合接口
  */
-const VoiceCraft = require('../voice-craft/voice-craft.js');
+const VoiceCraft = require('../shanhaijing-voice-craft/voice-craft.js');
 
 class VoiceCraftBridge {
   constructor(dataDir = './voice-craft-data', storyforgeDataDir) {

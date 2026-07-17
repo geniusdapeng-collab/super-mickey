@@ -161,6 +161,4 @@ module.exports = {
   saveMicroMotionReport,
   convertDirectorPromptsToMicroMotion,
   mergeMicroMotionBack
-};```
-
-## 文件: seedance-director/scripts/pack-code.js
+};

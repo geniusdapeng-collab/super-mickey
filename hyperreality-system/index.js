@@ -2197,7 +2197,6 @@ class HyperrealitySystem {
       suggestions: confirmPath.suggestions,
       waitTimeMs: confirmPath.waitTimeMs // 【v2.1.10-hotfix】传递等待时间
     };
-    };
   }
 
   /**

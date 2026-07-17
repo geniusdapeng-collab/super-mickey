@@ -330,6 +330,4 @@ class Guardian {
   }
 }
 
-module.exports = Guardian;```
-
-## 文件: persona-vault/agents/mirror-engine.js
+module.exports = Guardian;

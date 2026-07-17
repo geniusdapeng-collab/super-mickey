@@ -362,7 +362,7 @@ class CharacterPortraitEnforcer {
       
       let card;
       try {
-        card = JSON.parse(await fs.promises.readFile(cardPath, 'utf8'));
+        card = JSON.parse(fss.readFileSync(cardPath, 'utf8')); // 【审计修复】同步方法内不能使用 await
       } catch(e) { continue; }
       
       const portraits = card.generatedAssets?.portraits || [];

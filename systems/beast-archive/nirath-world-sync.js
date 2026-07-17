@@ -175,8 +175,7 @@ class NirathWorldSync {
       corrected = this.replaceCrystalWithEnergy(corrected);
     }
 
-    // 7. 增强环境描述（包括能量形式）
-    const enhancement = this.enhanceEnvironment(prompt, scene);
+    // 7. 增强环境描述（包括能量形式）：复用第5步已生成的 enhancement，追加能量形式
     if (energyEnhancement.length > 0) {
       enhancement.push(...energyEnhancement);
     }

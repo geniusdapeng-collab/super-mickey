@@ -6,8 +6,12 @@ const { resolvePromptText } = require('./prompt-resolver');
 const renderPolicy = require('../config/render-policy');
 const { ValidationError } = require('./errors');
 const { PromptGuardian } = require('../scripts/prompt-guardian');
-const { RenderPipelineGuard } = require('../scripts/render-pipeline-guard');
-const { RenderQAChecker } = require('../scripts/render-qa-checker');
+const { RenderPipelineGuard } = require('../hyperreality-system/engines/render-pipeline-guard');
+// RenderQAChecker 在仓库中已缺失, 改为可选加载(非阻塞QA, 缺失时跳过)
+let RenderQAChecker = null;
+try {
+  RenderQAChecker = require('../scripts/render-qa-checker').RenderQAChecker;
+} catch (e) { /* 可选模块, 缺失时跳过QA警告检查 */ }
 
 function imageFileToDataUrl(filePath) {
   const ext = path.extname(filePath).toLowerCase().replace('.', '') || 'png';
@@ -173,7 +177,11 @@ function buildRenderPayload({
   // v6.6.5-fix: RenderPipelineGuard 强制检查
   const pipelineGuard = new RenderPipelineGuard();
   try {
-    pipelineGuard.checkStrict(payload);
+    // 接口适配: check 接收数组, 返回 { pass, errors, warnings }
+    const guardResult = pipelineGuard.check([payload]);
+    if (!guardResult.pass) {
+      throw new Error('PIPELINE_GUARD_FAILED: ' + guardResult.errors.map(e => `${e.ruleName || e.rule}: ${e.message}`).join('; '));
+    }
     console.log(`[buildRenderPayload] ✅ PipelineGuard 全部通过`);
   } catch (err) {
     console.error(`[buildRenderPayload] ❌ PipelineGuard 阻止提交: ${err.message}`);
@@ -181,9 +189,9 @@ function buildRenderPayload({
   }
 
   // v6.6.5-fix: QA检查（非阻塞，仅记录警告）
-  const qaChecker = new RenderQAChecker({ strict: false });
+  const qaChecker = RenderQAChecker ? new RenderQAChecker({ strict: false }) : null;
   const qaContext = { characters: referenceImages.length > 0 ? [{ name: referenceImages[0].roleId }] : [] };
-  const qaResult = qaChecker.check(payload, qaContext);
+  const qaResult = qaChecker ? qaChecker.check(payload, qaContext) : { warnings: [], errors: [] };
   if (qaResult.warnings.length > 0) {
     console.log(`[buildRenderPayload] ⚠️ QA检查发现${qaResult.warnings.length}项警告:`);
     for (const w of qaResult.warnings) {

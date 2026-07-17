@@ -21,7 +21,14 @@ const WoundMiner = require('./agents/wound-miner');
 const GravityWeaver = require('./agents/gravity-weaver');
 const EmpathyEngine = require('./agents/empathy-engine');
 const EvolutionTracker = require('./agents/evolution-tracker');
-const MirrorEngine = require('./agents/mirror-engine');
+// mirror-engine.js 在仓库中已丢失(见 guardian.js 尾部残留的原始路径标记)
+// 改为可选加载: 缺失时镜像矩阵功能降级, 不影响其他 Agent
+let MirrorEngine = null;
+try {
+  MirrorEngine = require('./agents/mirror-engine');
+} catch (e) {
+  console.warn('[PersonaVault] mirror-engine 模块缺失, 镜像矩阵功能已降级');
+}
 const Guardian = require('./agents/guardian');
 const StateBus = require('./state-bus');
 
@@ -33,7 +40,7 @@ class PersonaVault {
     this.weaver = new GravityWeaver(this.stateBus);
     this.empathyEngine = new EmpathyEngine(this.stateBus);
     this.evolutionTracker = new EvolutionTracker(this.stateBus);
-    this.mirrorEngine = new MirrorEngine(this.stateBus);
+    this.mirrorEngine = MirrorEngine ? new MirrorEngine(this.stateBus) : null;
     this.guardian = new Guardian(this.stateBus);
   }
 
@@ -168,7 +175,9 @@ class PersonaVault {
     console.log(`\n🪞 [PersonaVault] 镜像引擎: ${ids.join(', ')}`);
     
     const personas = ids.map(id => this.stateBus.getCharacter(id)).filter(Boolean);
-    const mirrorMatrix = await this.mirrorEngine.calculate({ allPersonas: ids, personaStates: personas });
+    const mirrorMatrix = this.mirrorEngine
+      ? await this.mirrorEngine.calculate({ allPersonas: ids, personaStates: personas })
+      : null; // mirror-engine 缺失时降级
     
     await this.stateBus.updateGlobal({ mirrors: mirrorMatrix.mirrors });
     console.log(`✅ 镜像关系: ${mirrorMatrix.mirrors?.length} 对`);

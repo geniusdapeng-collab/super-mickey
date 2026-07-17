@@ -8,7 +8,7 @@
  * - 断点续跑时恢复到最细粒度的失败点
  */
 
-const { PipelineStateMachine } = require('../../core/pipeline-state-machine');
+const { PipelineStateMachine } = require('../../../core/pipeline-state-machine');
 
 class StagePhaseCoordinator {
   constructor(projectId, productionEngine) {

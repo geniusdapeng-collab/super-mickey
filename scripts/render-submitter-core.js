@@ -19,7 +19,7 @@
 const fs = require('fs');
 const path = require('path');
 const { PromptGuardian } = require('./prompt-guardian');
-const { RenderPipelineGuard } = require('./render-pipeline-guard');
+const { RenderPipelineGuard } = require('../hyperreality-system/engines/render-pipeline-guard');
 
 const REQUIRED_ANGLES = ['front', 'threeQuarter', 'closeup', 'side'];
 
@@ -362,7 +362,10 @@ class RenderSubmitterCore {
 
     // 🔒 强制检查（PipelineGuard）
     const pipelineGuard = new RenderPipelineGuard();
-    const guardResult = pipelineGuard.check(payload);
+    // 接口适配: 现有 Guard.check 接收 prompt 数组, 错误字段为 ruleName
+    const guardResult = pipelineGuard.check([payload]);
+    guardResult.errors = guardResult.errors.map(e => ({ ...e, rule: e.ruleName || e.rule }));
+    guardResult.warnings = guardResult.warnings.map(w => ({ ...w, rule: w.ruleName || w.rule }));
     
     if (!guardResult.pass) {
       console.error(`⛔ PipelineGuard 检查失败，阻止提交！`);

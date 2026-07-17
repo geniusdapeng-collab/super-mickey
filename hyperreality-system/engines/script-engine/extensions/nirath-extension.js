@@ -303,7 +303,7 @@ class 示例世界Extension {
     ];
     
     // 随机选择 2-3 个环境元素
-    const { SafeRandom } = require('../../utils/safe-random');
+    const { SafeRandom } = require('../../../utils/safe-random');
     const shuffled = SafeRandom.shuffle(elements);
     const count = 2 + SafeRandom.randomInt(2);
     const selected = shuffled.slice(0, count);

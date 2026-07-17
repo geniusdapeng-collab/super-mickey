@@ -59,7 +59,6 @@ class AsyncDirectorAgent {
         console.log(`[AsyncDirectorAgent] 💓 Heartbeat | 已运行${elapsed}秒 | 导演优化:${reviewResult ? '✅' : '⏳'} | 编剧优化:${loopResult ? '✅' : '⏳'}`);
       }, 30000); // 每30秒输出一次
       
-      try {
       console.log(`[AsyncDirectorAgent] 🎬 Step 1: 导演优化...`);
       const { DirectorFinalReview } = require('./director-final-review.js');
       const directorReview = new DirectorFinalReview({ 
@@ -101,7 +100,7 @@ class AsyncDirectorAgent {
 
       console.log(`[AsyncDirectorAgent] ✅ 编剧优化完成 | 迭代: ${loopResult.iteration}轮 | 评分: ${loopResult.summary?.directorScore || 0}/100`);
       
-      } catch (error) {
+    } catch (error) {
         console.error(`[AsyncDirectorAgent] 💥 执行失败: ${error.message}`);
         console.error(error.stack);
         errors.push({
@@ -113,8 +112,6 @@ class AsyncDirectorAgent {
         // P1-fix: 无论成功失败都清理心跳定时器，避免阻止进程退出
         clearInterval(heartbeatInterval);
       }
-    }
-
     // ===== 组装结果 =====
     const totalTime = Date.now() - startTime;
     const result = {

@@ -61,5 +61,6 @@ class SafePromise {
     }
     return results;
   }
+}
 
-  module.exports = { SafePromise };
+module.exports = { SafePromise };
