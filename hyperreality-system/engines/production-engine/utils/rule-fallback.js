@@ -7,7 +7,7 @@
  * - 极简 Prompt 拼接
  */
 
-const { FALLBACK_SCENES, FALLBACK_ACTIONS } = require('../../../config/neutral-fallbacks');
+const { FALLBACK_SCENES, renderFallbackAction } = require('../../../config/neutral-fallbacks');
 
 class RuleFallbackEngine {
   constructor(options = {}) {
@@ -82,10 +82,10 @@ class RuleFallbackEngine {
     // 动作写实检查（分级）
     let actionDesc = shot.action || '';
     if (forbiddenWords.action.some(w => actionDesc.includes(w))) {
-      // 【修复 P0-3】领域中立兜底动作：从唯一真源读取
-      const fallbackActions = FALLBACK_ACTIONS;
+      // 【v2.1.11-P1 修复】兜底动作用真实角色名插值，"示例角色"占位符不得进入生产 prompt
+      const charName = (typeof shot.character === 'string' && shot.character !== 'NONE') ? shot.character : '人物';
       const idx = parseInt(shot.shotId?.replace(/\D/g, '') || '0') || 0;
-      actionDesc = fallbackActions[idx % fallbackActions.length];
+      actionDesc = renderFallbackAction(charName, idx);
     }
     if (actionDesc) parts.push(actionDesc);
     

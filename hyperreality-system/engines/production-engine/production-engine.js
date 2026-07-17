@@ -4,7 +4,7 @@
 // 版本:v1.0.0 | 日期:2026-06-08
 
 const path = require('path');
-const { FALLBACK_SCENES, FALLBACK_ACTIONS } = require('../../config/neutral-fallbacks');
+const { FALLBACK_SCENES, renderFallbackAction } = require('../../config/neutral-fallbacks');
 
 // v2.1.5-refactor: 提取工具函数
 const { safeStringify } = require('./utils/safe-stringify');
@@ -1666,8 +1666,6 @@ class ProductionEngine {
     const forbiddenWords = getRealismForbidden(visualRegister);
     // 【修复 P0-2】领域中立兜底场景：从唯一真源读取
     const fallbackScenes = FALLBACK_SCENES;
-    // 【修复 P0-2】领域中立兜底动作：从唯一真源读取
-    const fallbackActions = FALLBACK_ACTIONS;
 
     for (const shot of shots) {
       // 【v2.1.11-重构】按 visual_register 分级强制写实过滤
@@ -1680,8 +1678,9 @@ class ProductionEngine {
       
       let filteredAction = shot.action || '';
       if (forbiddenWords.action.some(w => filteredAction.includes(w))) {
+        const charName = (typeof shot.character === 'string' && shot.character !== 'NONE') ? shot.character : '人物';
         const idx = parseInt(shot.shotId?.replace(/\D/g, '') || '0') || 0;
-        filteredAction = fallbackActions[idx % fallbackActions.length];
+        filteredAction = renderFallbackAction(charName, idx);
         console.warn(`[ProductionEngine] ⚠️ 镜头 ${shot.shotId} 动作含禁止词汇(校验强度=${visualRegister})，兜底替换为写实动作`);
       }
       

@@ -318,13 +318,19 @@ async function main() {
   
   try {
     // Step 2-5: 执行系统流程（包含确认环节）
-    // 【v2.1.8-fix】传递时长和约束参数
-    const metadata = {};
+    // 【v2.1.11-P1 修复】场景/角色上限从 theme-config 类型配额读取，不再写死
+    // （原 maxCharacters=2 会截断多角色项目；maxScenes 按5秒/场硬算无视类型差异）
+    const { getType } = require('../config/theme-config');
+    const typeCfg = getType(metadata.videoType) || {};
     if (durationMs) {
       metadata.target_duration = durationMs / 1000; // 转换为秒
       metadata.duration = durationMs / 1000;
-      metadata.maxScenes = Math.ceil((durationMs / 1000) / 5); // 每场景约5秒
-      metadata.maxCharacters = 2;
+      if (!metadata.maxScenes) {
+        metadata.maxScenes = typeCfg.maxScenes || Math.ceil((durationMs / 1000) / 10);
+      }
+      if (!metadata.maxCharacters) {
+        metadata.maxCharacters = typeCfg.maxCharacters || 5; // 无类型配置时给通用上限，而非 2
+      }
       metadata.style = 'CINE';
     }
     const result = await system.create(userInput, metadata, {

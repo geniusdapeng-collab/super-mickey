@@ -7,7 +7,7 @@
 const { BaseAgent } = require('./base-agent');
 const { normalizeFields, makeGetter } = require('../../field-standardizer');
 const { FieldConsistencyChecker } = require('../../field-consistency-checker');
-const { FALLBACK_SCENES, FALLBACK_ACTIONS } = require('../../../config/neutral-fallbacks');
+const { FALLBACK_SCENES, renderFallbackAction } = require('../../../config/neutral-fallbacks');
 
 // 【v2.1.4-fix10-P25-fix3】外部专家建议:填满 schema 解决 LLM 字段缺失问题
 // 25 个标准字段的 schema 模板:键名 + 类型提示
@@ -1483,11 +1483,10 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
     if (actionHasForbidden) {
       console.warn(`[PromptFusionAgent] ⚠️ 镜头 ${shot.shotId} 动作含禁止词汇(校验强度=${visualRegister}): "${actionDesc.substring(0, 50)}...",强制替换为写实动作`);
       // 提取角色名
-      const charName = shot.character?.name || '示例角色';
-      // 【修复 P0-1】领域中立兜底动作：从唯一真源读取，不含任何项目特定元素
-      const fallbackActions = FALLBACK_ACTIONS;
+      const charName = shot.character?.name || shot.character || '人物';
+      // 【v2.1.11-P1 修复】兜底动作用真实角色名插值，"示例角色"占位符不得进入生产 prompt
       const idx = parseInt(shot.shotId.replace(/\D/g, '')) || 0;
-      actionDesc = fallbackActions[idx % fallbackActions.length];
+      actionDesc = renderFallbackAction(charName, idx);
     }
     if (actionDesc) parts.push(`【动作】${actionDesc}`);
 
@@ -1633,10 +1632,10 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
 
       let actionDesc = shot.action || '';
       if (forbiddenWords.action.some(w => actionDesc.includes(w))) {
-        // 【修复 P0-1】领域中立兜底动作：从唯一真源读取
-        const fallbackActions = FALLBACK_ACTIONS;
+        // 【v2.1.11-P1 修复】兜底动作用真实角色名插值
+        const charName = (typeof shot.character === 'string' && shot.character !== 'NONE') ? shot.character : '人物';
         const idx = parseInt(shot.shotId?.replace(/\D/g, '') || '0') || 0;
-        actionDesc = fallbackActions[idx % fallbackActions.length];
+        actionDesc = renderFallbackAction(charName, idx);
       }
       if (actionDesc) parts.push(actionDesc);
 
