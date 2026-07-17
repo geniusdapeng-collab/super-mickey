@@ -68,6 +68,8 @@ class VisualLanguageAgent extends BaseAgent {
 
   async process(shots, blueprint) {
     console.log(`[VisualLanguageAgent] 开始处理 ${shots.length} 个镜头，批次大小 ${this.batchSize}...`);
+    // 【2026-07-17 camera-coherence】暂存全片镜头，供全局编排指导注入
+    this._allShots = shots;
 
     // 【修复】分批处理：超过 batchSize 个镜头自动拆分
     if (shots.length > this.batchSize) {
@@ -220,13 +222,22 @@ class VisualLanguageAgent extends BaseAgent {
         (visualSpec.specialVisualEffects?.length ? `- 特效需求: ${visualSpec.specialVisualEffects.join(', ')}\n` : '');
     }
 
+    // 【2026-07-17 camera-coherence】注入全片运镜编排指导
+    let choreographyGuide = '';
+    try {
+      const { buildGlobalChoreographyGuide } = require('../../../../systems/camera-coherence');
+      choreographyGuide = '\n' + buildGlobalChoreographyGuide(this._allShots || shots) + '\n';
+    } catch (e) { /* 库缺失不影响主流程 */ }
+
     return `## 镜头信息 (${shots.length}个)
 ${shotsInfo}
-${batchHint}${visualSpecSection}
+${batchHint}${choreographyGuide}${visualSpecSection}
 
 ## 任务
 为每个镜头设计:
 1. camera: {shot_size, movement, angle, lens, speed}
+ - shot_size 从七级中选择: ELS/LS/FS/MS/MCU/CU/ECU，选择必须遵守上方编排指导的景别节奏
+ - movement 必须有叙事动机（角色动→跟；揭示→推；情绪外化→手持；客观陈述→固定）
 2. cameraString: 运镜描述文本（20-30字，动态描述）
 3. lighting: {key_light, fill_light, time_of_day, atmosphere}
 4. lightingString: 灯光场景化描述（20-30字）
@@ -234,6 +245,7 @@ ${batchHint}${visualSpecSection}
 6. color_palette: 色彩方案（主色调+辅助色+肤色+饱和度+对比度，40-50字）
 7. depth_of_field: 景深方案（焦点+光圈+前景背景虚化，40-50字）
 8. timeline: 运镜时间轴（3-4段，根据台词节奏设计，每段含时间范围、运镜动作、画面目的）
+ - 相邻镜头 timeline 的末段（落幅）状态需考虑与下一镜起幅的衔接
 
 原则: 运镜服务叙事,构图服务情绪,色彩服务情绪,景深服务景别,时间轴动态切分${visualSpec ? '\n【强制】以上设计方案必须严格遵循 PRD 视觉规格中的风格、色彩、光照和镜头语言要求。' : ''}
 输出JSON: {"shots": [{"shotId":"...","camera":{},"cameraString":"...","lighting":{},"lightingString":"...","composition":"...","color_palette":"...","depth_of_field":"...","timeline":[]}]};`;

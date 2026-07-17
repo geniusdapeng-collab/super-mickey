@@ -697,6 +697,36 @@ class ProductionEngine {
         }
       }
 
+      // ===== 【2026-07-17 新增】运镜协调性校验（纯规则，零LLM，毫秒级，永不降级）=====
+      try {
+        const { CoherenceValidator } = require('../../../systems/camera-coherence');
+        const coherenceReport = new CoherenceValidator().validate(currentShots);
+        result.stages.cameraCoherence = coherenceReport;
+        this.log('CAMERA-COHERENCE',
+          `运镜协调校验: ${coherenceReport.passed ? '✅ 通过' : '⚠️ 有临界问题'} | ` +
+          `节奏曲线: ${coherenceReport.rhythm.curve} | ` +
+          `critical=${coherenceReport.issueCount.critical} warning=${coherenceReport.issueCount.warning} info=${coherenceReport.issueCount.info}`);
+
+        if (!coherenceReport.passed) {
+          // 临界问题不阻断流程：标记降级 + 把可执行修复建议写进镜头 metadata
+          result.degraded = true;
+          const criticalIssues = coherenceReport.issues.filter(i => i.severity === 'critical');
+          result.errors.push({
+            stage: 'camera-coherence',
+            message: `${criticalIssues.length} 处运镜/转场临界问题：${criticalIssues[0]?.message || ''}`
+          });
+          currentShots = currentShots.map(s => {
+            const id = s.shotId || s.shot_id;
+            const related = coherenceReport.issues.filter(i => i.shots.includes(id));
+            return related.length
+              ? { ...s, _coherenceIssues: related.map(i => ({ rule: i.rule, severity: i.severity, message: i.message, hint: i.rewrite_hint })) }
+              : s;
+          });
+        }
+      } catch (ccError) {
+        this.log('CAMERA-COHERENCE', `⚠️ 协调校验异常: ${ccError.message}，跳过`);
+      }
+
       // ===== 内容边界后处理(最终防线)=====
       // v2.1.5-refactor: 使用 ContentBoundaryGuard
       try {

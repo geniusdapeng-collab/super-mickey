@@ -258,10 +258,18 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
     );
     console.log(`[PromptFusionAgent] 每个镜头预算: ${PER_SHOT_BUDGET}ms (串行模式，不除以镜头数)`);
 
+    // 【2026-07-17 camera-coherence】预构建全片邻镜上下文（景别/运镜/转场摘要）
+    this._cameraPlans = null;
+    try {
+      const { extractLightPlans } = require('../../../systems/camera-coherence');
+      this._cameraPlans = extractLightPlans(shots);
+    } catch (e) { this._cameraPlans = null; }
+
     // 【审计修复】串行处理,避免并发导致API超时
     for (let i = resumeIndex; i < shots.length; i++) {
       const shotStartTime = Date.now();
       const shot = shots[i];
+      this._currentShotIdx = i; // 【camera-coherence】当前镜索引，供邻镜上下文定位
       // 【P0-PERF-01 修复】设置镜头级截止时间
       const shotDeadline = shotStartTime + Math.min(PER_SHOT_BUDGET, this.MAX_DEGRADE_BUDGET_PER_SHOT);
       this._callBudget.set(shot.shotId, 5); // 单镜头最多5次LLM调用
@@ -1841,11 +1849,20 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
       ' 每个字段内容必须体现上述子要素,缺失会被标记为不合格。'
     ].join('\n');
 
+    // 【2026-07-17 camera-coherence】注入邻镜协调上下文（上一镜/下一镜的景别+运镜+转场）
+    let neighborContext = '';
+    try {
+      if (this._cameraPlans && typeof this._currentShotIdx === 'number') {
+        const { buildNeighborContext } = require('../../../systems/camera-coherence');
+        neighborContext = '\n' + buildNeighborContext(this._cameraPlans, this._currentShotIdx) + '\n';
+      }
+    } catch (e) { /* 不影响主流程 */ }
+
     return `${directorContext}
 画幅:${ratio}
 角色:${characterInfo || '无'}
 镜头:\n${shotsInfo}
-
+${neighborContext}
 ${sufficiency}
 
 任务:为每个镜头生成标准字段格式的导演分镜提示词。
