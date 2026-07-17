@@ -112,15 +112,19 @@ class AgentContractValidator {
     const result = this._validateObject(data, contract, '');
     
     let fixed = null;
+    let fixCount = 0;
     if (!result.valid && this.autoFix) {
-      fixed = this._autoFix(data, contract, contractName);
+      const autoFixResult = this._autoFix(data, contract, contractName);
+      fixed = autoFixResult.data;
+      fixCount = autoFixResult.fixCount;
     }
 
     return {
       valid: result.valid && this.errors.length === 0,
       errors: this.errors,
       warnings: this.warnings,
-      fixed: fixed
+      fixed: fixed,
+      fixCount: fixCount
     };
   }
 
@@ -254,7 +258,7 @@ class AgentContractValidator {
     }
 
     console.log(`[AgentContractValidator] ${contractName} 自动修复: ${fixCount} 处`);
-    return fixed;
+    return { data: fixed, fixCount };
   }
 
   _generateDefault(rule, key, contractName) {
