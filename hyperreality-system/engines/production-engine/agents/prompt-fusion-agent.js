@@ -438,6 +438,7 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
 
   /**
    * 【v2.1.8-fix】镜头级断点续跑：加载子 checkpoint
+   * 【修复 P0-5】加载成功后立即删除，防止已完成镜头的子 checkpoint 泄漏
    */
   _loadSubCheckpoint(checkpointMgr, blueprintHash) {
     const fs = require('fs');
@@ -451,6 +452,8 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
         return null;
       }
       console.log(`[PromptFusionAgent] 📂 子 checkpoint 已加载: ${data.completed}/${data.total} 镜头`);
+      // 【修复 P0-5】加载成功即删除，防止泄漏
+      try { fs.unlinkSync(subCkptPath); } catch (_) {}
       return data;
     } catch (e) {
       console.warn(`[PromptFusionAgent] 子 checkpoint 加载失败: ${e.message}`);

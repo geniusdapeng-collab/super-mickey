@@ -614,8 +614,17 @@ class LLMChecker {
         timeoutPromise
       ]).finally(() => clearTimeout(timer));
 
-      // 【v2.1.6-fix20】reason() 可能返回已解析的对象，无需再 JSON.parse
-      const data = (typeof response === 'string') ? JSON.parse(response) : (response || {issues: []});
+      // 【修复 P0-3】reason() 返回信封格式 {success, content, error}，必须提取 content
+      let rawContent;
+      if (response && typeof response === 'object') {
+        if (response.success === true && typeof response.content === 'string') {
+          rawContent = response.content;
+        } else if (response.success === false) {
+          console.warn(`[LLMChecker] LLM返回失败: ${response.error || '未知错误'}`);
+          return [];
+        }
+      }
+      const data = (typeof rawContent === 'string') ? JSON.parse(rawContent) : (rawContent || {issues: []});
       return (data.issues || []).map(item => new Issue({
         fieldEn: item.field_en || '',
         fieldCn: item.field_cn || '',

@@ -205,11 +205,11 @@ class BaseAgent {
     if (requestedTimeout <= hardCeiling) {
       perCallTimeout = requestedTimeout; // 正常情况：内层可以完整执行
     } else {
-      // 【修复 P0-3】原 Math.max 会突破 hardCeiling（如 max(150000, 60000)=150000）。
-      // 正确语义：在 hardCeiling 以内，尽量保留请求值的 50%，但绝不越限。
-      const INNER_FLOOR_MS = 30000; // 内层最低保障 30s（仍受 hardCeiling 约束）
-      perCallTimeout = Math.min(hardCeiling, Math.max(requestedTimeout * 0.5, INNER_FLOOR_MS));
-      console.warn(`[${this.name}] ⚠️ timeout缩放: 请求${requestedTimeout}ms > budget上限${hardCeiling}ms, 收敛为${perCallTimeout}ms (≤上限)`);
+      // 【修复 P0-2】原 Math.max(requestedTimeout * 0.5, ...) 会错误地把 timeout 砍半。
+      // 正确语义：当请求 timeout 超过 hardCeiling 时，直接用 hardCeiling（剩余预算），
+      // 绝不应额外缩放。预算不足时由外层降级逻辑处理。
+      perCallTimeout = Math.min(hardCeiling, requestedTimeout);
+      console.warn(`[${this.name}] ⚠️ timeout收敛: 请求${requestedTimeout}ms > budget上限${hardCeiling}ms, 收敛为${perCallTimeout}ms (≤上限)`);
     }
 
     // 【修复 P0-3】fastMode 同样必须 clamp 到 hardCeiling，且防 fastTimeoutMs 缺失
@@ -276,9 +276,10 @@ class BaseAgent {
         );
 
         if (!result || !result.success) {
-          // 【修复 P1-5】透传底层 retryable 判定，ErrorClassifier 优先尊重它
+          // 【修复 P1-1】透传底层错误类型与 retryable，避免 PARAM 错误被误判为 UNKNOWN 导致重试风暴
           const e = new Error(`LLM引擎返回失败: ${result?.error || '无返回'}`);
           if (result && result.retryable === false) e.retryable = false;
+          if (result && result.type) e.llmErrorType = result.type; // 透传类型，辅助 ErrorClassifier
           throw e;
         }
 
@@ -293,6 +294,11 @@ class BaseAgent {
         
       } catch (err) {
         lastError = err;
+        // 【修复 P1-3】如果剩余预算已不足，超时即不可重试（避免无意义重试）
+        if (this._remainingMs() < 10000) {
+          err.retryable = false;
+          err.message = `[BudgetExhausted] ${err.message}`;
+        }
         classification = ErrorClassifier.classify(err);
         
         // 【P1-QUAL-02 修复】根据错误类型动态调整最大重试次数

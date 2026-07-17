@@ -380,9 +380,18 @@ class LLMRepairer {
         timeoutPromise
       ]).finally(() => clearTimeout(timer));
 
-      // 【v2.1.6-fix20】reason() 可能返回已解析的对象，无需再 JSON.parse
-      const data = (typeof response === 'string') ? JSON.parse(response) : (response || {});
-      const repairedFields = data.repaired_fields || data || {}; // 【v2.1.4-fix13】兼容两种返回格式
+      // 【修复 P0-4/P0-6】reason() 返回信封格式 {success, content, error}，必须提取 content
+      let rawContent;
+      if (response && typeof response === 'object') {
+        if (response.success === true && typeof response.content === 'string') {
+          rawContent = response.content;
+        } else if (response.success === false) {
+          console.warn(`[LLMRepairer] LLM返回失败: ${response.error || '未知错误'}`);
+          return { repairedShot: shot, actions: [], degraded: true };
+        }
+      }
+      const data = (typeof rawContent === 'string') ? JSON.parse(rawContent) : (rawContent || {});
+      const repairedFields = data.repaired_fields || {};
 
       const repairedShot = deepClone(shot);
       const actions = [];

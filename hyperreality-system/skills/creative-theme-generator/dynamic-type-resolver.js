@@ -91,7 +91,15 @@ class DynamicTypeResolver {
         temperature: 1.0,
         timeoutMs: this.timeoutMs
       });
-      return result.data || result;
+      // 【修复 P0-5】reasonStructured 返回信封 {success, data, ...}，必须检查 success 并提取 data
+      if (result && result.success === true && result.data) {
+        return result.data;
+      }
+      if (result && result.success === false) {
+        console.warn(`[DynamicTypeResolver] reasonStructured 失败: ${result.error || '未知错误'}`);
+      }
+      // 失败时不应返回信封对象，避免污染缓存
+      throw new Error('reasonStructured 未返回有效数据');
     }
     
     // 尝试 generate
@@ -196,7 +204,7 @@ class DynamicTypeResolver {
   }
 
   /**
-   * Fallback 配置（LLM 失败时使用）
+   * 【修复 P1-5】Fallback 配置使用中性描述，避免硬编码风格词（如"电影级"）与写实规则冲突
    */
   _fallbackConfig(type, context) {
     console.log(`[DynamicTypeResolver] 🔄 使用 fallback 配置: ${type}`);
@@ -206,7 +214,7 @@ class DynamicTypeResolver {
       category: '通用',
       themes: [`${type}主题A`, `${type}主题B`, `${type}主题C`, '未命名主题', '探索未知'],
       descriptionTemplate: '一部关于{type}的视频作品，展现{theme}的独特魅力与情感深度',
-      visualFeatures: ['电影级质感', '专业摄影', '氛围光影', '精致构图'],
+      visualFeatures: ['写实风格', '自然光线', '真实环境', '细节丰富'],
       toneOptions: ['温暖治愈', '中性客观', '诗意哀伤'],
       dialoguePattern: '根据场景需要设计对白，不超过5句',
       specialNotes: '无特殊技术要求',

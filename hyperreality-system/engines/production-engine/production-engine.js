@@ -258,6 +258,7 @@ class ProductionEngine {
   /**
    * 【新增】清除 checkpoint(成功完成后调用)
    * 【审计修复·P0】补全 phase0 和 phase3.5
+   * 【修复 P0-5】同时清理 PromptFusion 镜头级子 checkpoint（checkpoint-phase3-<hash>.json）
    */
   _clearCheckpoints() {
     try {
@@ -271,6 +272,14 @@ class ProductionEngine {
           }
         }
       });
+      // 【修复 P0-5】清理 PromptFusion 镜头级子 checkpoint
+      try {
+        for (const f of fs.readdirSync(this._checkpointDir)) {
+          if (/^checkpoint-phase3-[0-9a-f]{8,}\.json$/i.test(f)) {
+            try { fs.unlinkSync(path.join(this._checkpointDir, f)); } catch (_) {}
+          }
+        }
+      } catch (_) {}
     } catch (e) { /* 忽略 */ }
   }
 
@@ -584,10 +593,15 @@ class ProductionEngine {
           result, 
           adaptedBlueprint 
         });
-        // 【修复 P2-2】phase1 失败降级记录（不再依赖 phase1Failed 布尔，直接写 result）
-      result.degraded = true;
-      result.errors.push({ stage: 'phase1', message: phase1Result.error || 'Phase1 失败' });
-      this.log('PRODUCE', `⚠️ Phase 1 失败(${phase1Result.error})，已标记 degraded 继续`);
+        // 【修复 P0-1】重构时丢失的 phase1Result.success 分支：成功时必须合并 shots
+        if (phase1Result.success) {
+          currentShots = phase1Result.shots || currentShots;
+        } else {
+          // 【修复 P2-2】phase1 失败降级记录（不再依赖 phase1Failed 布尔，直接写 result）
+          result.degraded = true;
+          result.errors.push({ stage: 'phase1', message: phase1Result.error || 'Phase1 失败' });
+          this.log('PRODUCE', `⚠️ Phase 1 失败(${phase1Result.error})，已标记 degraded 继续`);
+        }
       }
 
       // ----- Phase 2:VisualLanguage → AudioDesign → ContinuityReview -----

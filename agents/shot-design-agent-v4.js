@@ -175,14 +175,25 @@ class ShotDesignAgentV4 {
     // 构建Prompt（优化版：增强电影镜头设计深度）
     const prompt = this._buildShotPrompt(sceneCard, index, total, storyBeat, shotType, priority);
 
-    // 调用LLM（原有逻辑不变）
-    const result = await this.engine.reasonRaw(prompt, {
+    // 调用LLM（带成功校验与一次重试，失败显式抛出，禁止拿空串静默走规则解析）
+    let result = await this.engine.reasonRaw(prompt, {
       maxTokens: 1200,
       temperature: 1
     });
+    if ((!result || result.success === false || !(result.content || result.reasoning_content || '').trim()) ) {
+      console.warn(`[ShotDesign] 首次生成失败(${result && result.error || '内容为空'})，2s 后重试一次...`);
+      await new Promise(r => setTimeout(r, 2000));
+      result = await this.engine.reasonRaw(prompt, { maxTokens: 1200, temperature: 1 });
+    }
+    if (!result || result.success === false) {
+      throw new Error(`Shot Card LLM生成失败: ${(result && result.error) || '未知错误'}`);
+    }
 
     // 从content或reasoning_content提取（原有逻辑不变）
     const rawText = result.content || result.reasoning_content || '';
+    if (!rawText.trim()) {
+      throw new Error('Shot Card LLM返回内容为空');
+    }
 
     // 解析Shot Card数据（原有逻辑不变）
     const shotData = this._parseShotData(rawText, sceneCard, shotType, priority);

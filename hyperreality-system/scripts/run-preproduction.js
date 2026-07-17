@@ -321,6 +321,8 @@ async function main() {
     // 【v2.1.11-P1 修复】场景/角色上限从 theme-config 类型配额读取，不再写死
     // （原 maxCharacters=2 会截断多角色项目；maxScenes 按5秒/场硬算无视类型差异）
     const { getType } = require('../config/theme-config');
+    // 【修复 P1-6】metadata 未定义，先构建
+    const metadata = { videoType: 'CINE' };
     const typeCfg = getType(metadata.videoType) || {};
     if (durationMs) {
       metadata.target_duration = durationMs / 1000; // 转换为秒

@@ -31,8 +31,9 @@ class Phase2VisualAudio extends PhaseExecutor {
     this.log('PHASE-2', 'VisualLanguage ∥ AudioDesign → ContinuityReview 启动...');
 
     try {
-      // 【P0-PERF-02 修复】VL + AD 并行执行（两者无依赖关系）
-      const [vlResult, adResult] = await Promise.all([
+      // 【修复 P1-2】VL + AD 并行执行，Promise.all → Promise.allSettled，
+      // 避免一个失败导致另一个结果也被丢弃
+      const [vlSettled, adSettled] = await Promise.allSettled([
         this.agents.visualLanguage.process(
           this.cloneShots(shots), 
           adaptedBlueprint
@@ -43,8 +44,19 @@ class Phase2VisualAudio extends PhaseExecutor {
         )
       ]);
       
-      this.log('VISUAL-LANGUAGE-AGENT', `完成 (${vlResult.timing}ms)`);
-      this.log('AUDIO-DESIGN-AGENT', `完成 (${adResult.timing}ms)`);
+      const vlResult = vlSettled.status === 'fulfilled' ? vlSettled.value : { shots: [], timing: 0, error: vlSettled.reason?.message };
+      const adResult = adSettled.status === 'fulfilled' ? adSettled.value : { shots: [], timing: 0, error: adSettled.reason?.message };
+      
+      if (vlSettled.status === 'rejected') {
+        this.log('VISUAL-LANGUAGE-AGENT', `❌ 失败: ${vlSettled.reason?.message}`);
+      } else {
+        this.log('VISUAL-LANGUAGE-AGENT', `完成 (${vlResult.timing}ms)`);
+      }
+      if (adSettled.status === 'rejected') {
+        this.log('AUDIO-DESIGN-AGENT', `❌ 失败: ${adSettled.reason?.message}`);
+      } else {
+        this.log('AUDIO-DESIGN-AGENT', `完成 (${adResult.timing}ms)`);
+      }
 
       // 合并 VL + AD 结果到 shots
       // 【修复 新-P0】白名单补齐 composition/color_palette/depth_of_field：

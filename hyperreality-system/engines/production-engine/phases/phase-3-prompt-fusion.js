@@ -24,7 +24,8 @@ class Phase3PromptFusion extends PhaseExecutor {
 
     // 动态预算计算
     // 【v2.1.8-fix】从 agentConfig 读取实际 llmTimeout，而非硬编码
-    const actualLLMTimeout = this.agentConfig?.llmTimeout || 90000;
+    // 【修复 P1-7】默认值与 PromptFusionAgent 一致（300s），避免预算估算严重偏低
+    const actualLLMTimeout = this.agentConfig?.llmTimeout || 300000;
     const actualRetries = this.agentConfig?.llmMaxRetries || 1;
     // 单镜头预算 = LLM超时 × (1 + 重试次数) + 解析/校验开销
     const PHASE3_PER_SHOT_MS = actualLLMTimeout * (1 + actualRetries) + 30000;   // 正常模式

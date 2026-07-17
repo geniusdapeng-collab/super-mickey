@@ -373,6 +373,15 @@ class LLMEngine {
   async generate(prompt, options = {}) { return this.reason(prompt, options); }
 
   /**
+   * 【修复 P0-4】兼容旧接口 reasonRaw（shot-design-agent-v4 / promptforge-worker 使用）
+   * 自由文本推理：不做 JSON 强制，返回与 reason() 相同的信封结构
+   * { success, content, reasoning_content, source, tokenCount, raw } 或 { success:false, error, retryable }
+   */
+  async reasonRaw(prompt, options = {}) {
+    return this.reason(prompt, { ...options, forceJson: false });
+  }
+
+  /**
    * chat 接口（BaseAgent 标准接口兼容）
    * 【P0-2 修复】LLMEngine 原本没有 chat 方法，但 field-check-agent / field-repair-agent /
    * cross-episode-validator 都调用 this.llm.chat(systemPrompt, userPrompt, temperature)，
