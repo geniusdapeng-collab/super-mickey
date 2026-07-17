@@ -81,6 +81,8 @@ class QualityGate {
         hasAudioLayer: p.shotId === 'S00' ? (!!p.audioLayerString && p.audioLayerString.length > 5) : true,
         hasTitleOverlay: p.shotId === 'S00' ? (!!p.titleOverlayString && p.titleOverlayString.length > 5) : true,
 
+        // 【v2.1.11-P1 修复】占位符红线：兜底占位符永远到不了渲染端
+        hasPlaceholder: typeof p.prompt === 'string' && /示例角色|角色[AB]\b|\[角色名\]|\[角色设定服装\]/.test(p.prompt),
         // 【审计修复】综合质量分数（0-100）
         overallScore: Math.round((sceneScore.score + moodScore.score + cameraScore.score + lightingScore.score + actionScore.score + timelineScore.score + promptScore.score) / 7)
       };
@@ -90,6 +92,7 @@ class QualityGate {
         check.hasScene && check.hasMood && check.hasCamera && check.hasLighting &&
         check.hasAction && check.hasTimeline && check.hasBackgroundSound &&
         check.hasPrompt && check.withinLimit && check.hasAudioLayer && check.hasTitleOverlay &&
+        !check.hasPlaceholder && // 【v2.1.11-P1】占位符红线：含"示例角色"等占位符直接判 fail
         check.overallScore >= 30; // 30分底线：全是空格或占位符的应被拒
 
       checks.push(check);
