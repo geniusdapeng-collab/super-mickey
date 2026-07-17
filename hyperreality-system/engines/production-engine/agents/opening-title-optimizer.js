@@ -137,13 +137,37 @@ ${existingPrompt.substring(0, 300)}...
 
   _fallback(shot, blueprint) {
     console.log(`[OpeningTitleOptimizer] 使用降级规则...`);
-    const title = blueprint.title || '未命名';
+    // 【2026-07-17 修复】删除医疗测试硬编码，改为通用库驱动兜底
+    const title = blueprint.title || blueprint.config?.title || '未命名';
+    const meta = blueprint._metadata || blueprint.config?._metadata || {};
+    const ep = meta.episodeNumber || meta.series?.currentEpisode || 1;
+    const isSeries = meta.isSeries || ep > 1;
+
+    let generic;
+    try {
+      const { designTypography } = require('../../../../systems/opening-cinematic/typography-designer');
+      const { designAudio } = require('../../../../systems/opening-cinematic/opening-audio-architect');
+      const genre = blueprint.genre || '通用';
+      const mood = meta.mood || 'epic';
+      const typo = designTypography({ genre, mood });
+      const au = designAudio({ mood, durationSec: 8 });
+      generic = {
+        title_animation: '主标题以动效模式入场（0-20% 钩子悬念 → 20-60% 标题成型为情绪峰值 → 60-100% 定格收束），副标题延迟 0.5 秒跟进，整体 3-5 秒',
+        title_font_design: typo.promptText,
+        opening_audio_design: `${au.layers.find(l => l.layer === 'L1-signature')?.content || '声音签名'}；${au.layers.find(l => l.layer === 'L2-bed')?.content || '氛围铺底渐入'}`
+      };
+    } catch (_) {
+      generic = {
+        title_animation: '主标题淡入入场，副标题延迟0.5秒跟随淡入，整体2秒',
+        title_font_design: '粗体无衬线字体，白色，带微阴影',
+        opening_audio_design: '环境音渐起，配合标题入场'
+      };
+    }
+
     return {
-      title_content: `${title} - 第1集`,
-      subtitle_content: '症状与实验室检查全解析',
-      title_animation: '主标题淡入入场，副标题延迟0.5秒跟随淡入，整体2秒',
-      title_font_design: '粗体无衬线字体，白色，带微阴影',
-      opening_audio_design: '环境音渐起，配合标题入场'
+      title_content: isSeries ? `${title} - 第${ep}集` : title,
+      subtitle_content: isSeries ? `第${ep}集 | ${title}核心内容全解析` : `${title} | 核心内容全解析`,
+      ...generic
     };
   }
 }

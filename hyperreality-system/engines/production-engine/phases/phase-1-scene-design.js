@@ -134,6 +134,16 @@ class Phase1SceneDesign extends PhaseExecutor {
     openingShot.lightingString = od.lightingString || openingShot.lightingString;
     openingShot.cameraString = od.cameraString || openingShot.cameraString;
 
+    // 【2026-07-17 升级】注入片头电影级方案：完整 plan + 秒级时间轴
+    if (od.cinematic) {
+      openingShot.cinematic = od.cinematic;
+    }
+    if (od.promptTimeline) {
+      openingShot.promptTimeline = od.promptTimeline;
+      // 片头镜头的 timeline 字段直接采用片头节拍表（25字段体系/PromptFusion 可消费）
+      openingShot.timeline = od.promptTimeline;
+    }
+
     this.log('OPENING-INJECT', `片头数据已注入 ${openingShot.shotId}: title="${openingShot.title}"`);
     
     return newShots;

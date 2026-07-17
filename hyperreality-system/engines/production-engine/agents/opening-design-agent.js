@@ -46,6 +46,53 @@ class OpeningDesignAgent extends BaseAgent {
   async process(blueprint) {
     console.log(`[OpeningDesignAgent] 开始设计片头...`);
 
+    // 【2026-07-17 升级】优先委托 OpeningCinematicAgent（电影级片头方案：
+    // 标题动效节拍表 + 角色入场编舞 + 五层音效 + 四维字体）。
+    // 任何失败都回落到下方原有轻量 LLM 流程，契约不变。
+    try {
+      const { OpeningCinematicAgent } = require('../../../../systems/opening-cinematic');
+      if (!this._cinematicAgent) {
+        this._cinematicAgent = new OpeningCinematicAgent({
+          llmModel: this.llmModel,
+          llmTimeout: this.llmTimeout,
+          llmMaxRetries: this.llmMaxRetries,
+          enabled: this.enabled
+        });
+        if (this._globalDeadline) this._cinematicAgent.setDeadline(this._globalDeadline);
+      }
+      const { plan, promptTimeline, postProduction, degraded, degradeReason } =
+        await this._cinematicAgent.process(blueprint, { durationSec: 8 });
+
+      // 映射到既有 opening 契约（字段不变，内容升级）+ 新增 cinematic/promptTimeline 扩展
+      const opening = {
+        shotId: 'S00',
+        scene: (plan.beats.find(b => b.phase === 'hook') || plan.beats[0]).visual,
+        mood: postProduction.meta.mood,
+        camera: { shot_size: 'wide', movement: 'per_beats', angle: 'per_beats' },
+        cameraString: plan.beats.map(b => `${b.tStart}-${b.tEnd}s:${b.camera || '缓推'}`).join('；'),
+        lighting: { key_light: 'per_plan', atmosphere: postProduction.meta.mood },
+        lightingString: plan.typography.description,
+        audioLayer: { bgm: plan.audio.bgm, sound_effects: plan.audio.signature },
+        audioLayerString: `${plan.audio.signature}；${plan.audio.bgm}；${plan.audio.syncNotes}`,
+        titleOverlay: {
+          main_title: plan.title_content,
+          sub_title: plan.subtitle_content,
+          style: plan.typography.description,
+          animation_pattern: plan.animation_pattern_id
+        },
+        titleOverlayString: `${plan.title_content} / ${plan.subtitle_content}`,
+        duration: plan.duration,
+        // 新增扩展字段：完整电影级方案（下游 phase1 注入 / 后期消费）
+        cinematic: plan,
+        promptTimeline
+      };
+      console.log(`[OpeningDesignAgent] 完成（OpeningCinematic ${degraded ? '规则库' : 'LLM'}方案）✓`);
+      return { opening, degraded, degradeReason };
+    } catch (e) {
+      console.warn(`[OpeningDesignAgent] OpeningCinematicAgent 不可用(${e.message})，回落到轻量方案`);
+    }
+
+    // ===== 以下为原有轻量流程，一字不动 =====
     const prompt = this._buildPrompt(blueprint);
 
     const schema = {
