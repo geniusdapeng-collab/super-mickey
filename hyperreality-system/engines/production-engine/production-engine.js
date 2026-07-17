@@ -209,13 +209,6 @@ class ProductionEngine {
     this._lowResourceMode = false;
   }
 
-  /**
-   * 【新增】Checkpoint 初始化(断点续跑)
-   */
-  _initCheckpoint() {
-    this._checkpointDir = this.agentConfig.checkpointDir || this.config.outputDir;
-    this._enableResume = this.agentConfig.enableResume !== false;
-  }
 
   /**
    * 【新增】加载最新 checkpoint(断点续跑)
@@ -335,13 +328,6 @@ class ProductionEngine {
     }
   }
 
-  /**
-   * 【审计修复·P0】安全序列化（已提取到 utils/safe-stringify.js）
-   * 保持向后兼容，内部委托给提取的工具函数
-   */
-  _safeStringify(obj) {
-    return safeStringify(obj);
-  }
 
   /**
    * v2.0.0-LLM-Agent: 初始化所有Agent
@@ -424,68 +410,9 @@ class ProductionEngine {
    * @param {object} adaptedBlueprint - 适配器输出的剧本数据
    * @returns {object} { shots, prompts, report }
    */
-  /**
-   * v2.0.5-彻底修复: LLM Agent输出标准化层
-   * 已提取到 utils/llm-output-normalizer.js
-   * 保持向后兼容，内部委托给 LLMOutputNormalizer
-   */
-  _normalizeLLMOutput(shots, blueprint) {
-    const normalized = LLMOutputNormalizer.normalizeShots(shots, blueprint);
-    
-    // 保留原有的角色信息补全逻辑（未提取到独立工具中）
-    return normalized.map((shot, idx) => {
-      const originalShot = shots[idx];
-      
-      // 5. 角色信息补全:如果shot没有characters,从blueprint补
-      if (!originalShot.characters || originalShot.characters.length === 0) {
-        shot.characters = blueprint.characters || [];
-      }
 
-      // 6. 角色引用补全:如果characterRef为NONE但有角色,生成描述性引用
-      if ((!originalShot.characterRef || originalShot.characterRef === 'NONE') && blueprint.characters && blueprint.characters.length > 0) {
-        const mainChar = blueprint.characters.find(c => c.role === 'protagonist') || blueprint.characters[0];
-        if (mainChar) {
-          shot.characterRef = `${mainChar.name}: ${mainChar.description || mainChar.persona || 'main character'}`;
-        }
-      }
 
-      return shot;
-    });
-  }
 
-  /**
-   * v2.0.5-彻底修复: 质量门适配LLM融合模式
-   * 当fusionText存在时,检查标准放宽(信息在融合段中)
-   */
-  _runQualityGateAdapted(prompts) {
-    const checks = prompts.map(p => {
-      const hasFusion = p.prompt && p.prompt.includes('fusion');
-      // 有fusionText时,timeline/camera/lighting可以不在独立字段中
-      const hasTimeline = !!p.timelineString || hasFusion;
-      const hasCamera = !!p.cameraString || hasFusion;
-      const hasLighting = !!p.lightingString || hasFusion;
-
-      return {
-        shotId: p.shotId,
-        hasPrompt: !!p.prompt && p.prompt.length > 50,
-        hasDuration: !!p.duration && p.duration > 0,
-        hasTimeline,
-        hasCharacter: p.character !== 'NONE' || p.characterRef !== 'NONE',
-        hasMood: !!p.mood,
-        hasDialogue: p.dialogue !== 'NONE' && p.dialogue !== '',
-        lengthOk: p.promptCharCount > 0 && p.promptCharCount < 2000,
-        passed: false // 后面计算
-      };
-    });
-
-    checks.forEach(c => {
-      c.passed = c.hasPrompt && c.hasDuration && c.hasTimeline &&
-                 c.hasCharacter && c.hasMood && c.hasDialogue && c.lengthOk;
-    });
-
-    const allPassed = checks.every(c => c.passed);
-    return { passed: allPassed, checks };
-  }
 
   // 【v2.1.4-fix10-P25-fix3】暴露单镜头融合方法，供 run-phase3.js 单镜头粒度续跑
   async fuseSingleShotPublic(shot, ratio, characters) {
@@ -856,39 +783,11 @@ class ProductionEngine {
   }
 
   /** 是否需要生成片头 */
-  _shouldGenerateOpening(adaptedBlueprint) {
-    const _meta = adaptedBlueprint.config?._metadata || adaptedBlueprint._metadata || {};
-    return _meta.isSeries ? (_meta.episodeNumber === 1) : (_meta.hasOpening !== false);
-  }
+
 
   /** 【v2.1.4】从adaptedBlueprint构造边界契约 */
   /** 【v2.1.4】从adaptedBlueprint构造边界契约 */
-  _buildEpisodeContract(adaptedBlueprint) {
-    // adaptedBlueprint结构: { config: { _metadata: {...} }, scenes: [...] }
-    const meta = adaptedBlueprint.config?._metadata || {};
-    const series = meta.series || {};
-    const plan = meta.seriesContentPlan || {};
-    const episodeIndex = series.currentEpisode || meta.episode || 1;
 
-    // 优先从seriesContentPlan提取
-    if (plan.episodes && plan.episodes[episodeIndex - 1]) {
-      const ep = plan.episodes[episodeIndex - 1];
-      return {
-        mustCover: ep.mustCover || ep.coreTopics || [],
-        canMention: ep.canMention || [],
-        mustNotCover: ep.mustNotCover || [],
-        previousSummary: null
-      };
-    }
-
-    // 回退:从series信息构造
-    return {
-      mustCover: series.episodeThemes || [],
-      canMention: [],
-      mustNotCover: [],
-      previousSummary: null
-    };
-  }
 
   /** 把全局截止时间下发给所有 Agent */
   _setAgentDeadline(deadlineMs) {
@@ -1016,47 +915,7 @@ class ProductionEngine {
     });
   }
 
-  /**
-   * 并行执行多个 Agent 任务(allSettled,单点失败不阻塞其余)
-   * 【v2.1.4-fix13-审计修复】增加外层超时保护，防止单个task hang住拖垮整个并行阶段
-   */
-  async _runParallel(tasks, label, timeoutMs = 300000) {
-    const keys = Object.keys(tasks);
-    const starts = keys.map(() => Date.now());
-    this.log(label, `${keys.join(' + ')} 并行启动...`);
 
-    const wrapped = keys.map((k, i) =>
-      Promise.resolve(tasks[k]).then(v => {
-        this.log(k.toUpperCase(), `完成 (${Date.now() - starts[i]}ms)`);
-        return v;
-      })
-    );
-
-    // 【v2.1.4-fix13-审计修复】外层超时保护：整个并行阶段最多等timeoutMs
-    let timer;
-    const timeoutPromise = new Promise((_, reject) => {
-      timer = setTimeout(() => reject(new Error(`${label}并行阶段超时(${timeoutMs}ms)`)), timeoutMs);
-    });
-
-    const allSettledPromise = Promise.allSettled(wrapped);
-    allSettledPromise.catch(() => {}); // 【v2.1.6-fix】防止悬空 rejection
-
-    const settled = await Promise.race([
-      allSettledPromise,
-      timeoutPromise
-    ]).finally(() => clearTimeout(timer));
-
-    const values = [];
-    settled.forEach((r, i) => {
-      if (r.status === 'fulfilled') {
-        values.push(r.value);
-      } else {
-        this.log(label, `⚠️ ${keys[i]} 异常: ${r.reason?.message || r.reason}(降级处理,继续)`);
-        values.push(this._emptyAgentResult(keys[i]));
-      }
-    });
-    return values;
-  }
 
   /** 并行任务异常时的兜底空结果(仅兜底,正常路径不会走到) */
   _emptyAgentResult(name) {
@@ -1450,37 +1309,7 @@ class ProductionEngine {
     };
   }
 
-  /**
-   * Stage 3: 运镜设计
-   * v6.37-P0: 改造 camera 字段为字符串格式,新增 lighting 字段
-   */
-  _designCameraMovement(shots) {
-    const cameraSystem = this.modules.cameraMovement;
 
-    const designedShots = shots.map(shot => {
-      // 基于场景类型推断运镜
-      const cameraConfig = this._inferCameraConfig(shot);
-
-      // v6.37-P1+: 构建 camera 字段(结构化对象 + 字符串)
-      const cameraResult = this._buildCameraString(cameraConfig, shot);
-
-      // v6.37-P1+: 构建 lighting 字段(结构化对象 + 字符串)
-      const lightingResult = this._buildLighting(shot, cameraConfig);
-
-      return {
-        ...shot,
-        camera: cameraResult, // 结构化对象
-        lighting: lightingResult, // 结构化对象
-        cameraMovement: {
-          ...cameraConfig,
-          // 4段式运镜时间轴
-          timeline: this._generateCameraTimeline(shot.timing.duration, cameraConfig)
-        }
-      };
-    });
-
-    return { shots: designedShots };
-  }
 
   /**
    * v6.37-P0: 构建 camera 字符串(12级机位+14运镜+焦距+速度)
@@ -1695,199 +1524,9 @@ class ProductionEngine {
     return purposes[index] || '推进叙事';
   }
 
-  /**
-   * Stage 4: Prompt 工程(核心)
-   * v6.37-P0: 按参考文档融合顺序构建 Prompt,产出标准字段格式
-   * 保留卓越系统特有字段:mouthAction, importance, visualComplexity, qualityScore, enhanced
-   */
-  _engineerPrompts(shots, blueprint) {
-    const prompts = [];
-    const engineeredShots = [];
-    
-    // 【v2.1.11-重构】写实校验强度分级：按 visual_register 决定禁用词范围
-    const { getRealismForbidden } = require('../../config/production-profile');
-    const visualRegister = blueprint?.productionProfile?.visual_register 
-      || blueprint?.requirementList?.productionProfile?.visual_register 
-      || 'realistic';
-    const forbiddenWords = getRealismForbidden(visualRegister);
-    // 【修复 P0-2】领域中立兜底场景：从唯一真源读取
-    const fallbackScenes = FALLBACK_SCENES;
 
-    for (const shot of shots) {
-      // 【v2.1.11-重构】按 visual_register 分级强制写实过滤
-      let filteredScene = shot.scene || '';
-      if (forbiddenWords.scene.some(w => filteredScene.includes(w))) {
-        const idx = parseInt(shot.shotId?.replace(/\D/g, '') || '0') || 0;
-        filteredScene = fallbackScenes[idx % fallbackScenes.length];
-        console.warn(`[ProductionEngine] ⚠️ 镜头 ${shot.shotId} 场景含禁止词汇(校验强度=${visualRegister})，兜底替换为写实场景`);
-      }
-      
-      let filteredAction = shot.action || '';
-      if (forbiddenWords.action.some(w => filteredAction.includes(w))) {
-        const charName = (typeof shot.character === 'string' && shot.character !== 'NONE') ? shot.character : '人物';
-        const idx = parseInt(shot.shotId?.replace(/\D/g, '') || '0') || 0;
-        filteredAction = renderFallbackAction(charName, idx);
-        console.warn(`[ProductionEngine] ⚠️ 镜头 ${shot.shotId} 动作含禁止词汇(校验强度=${visualRegister})，兜底替换为写实动作`);
-      }
-      
-      const filteredShot = {
-        ...shot,
-        scene: filteredScene,
-        action: filteredAction
-      };
 
-      // v2.0.5-彻底修复: 优先使用标准化后的字段(由_normalizeLLMOutput处理过)
-      // 如果标准化字段存在,直接使用;否则做兜底处理
-      const cameraStr = filteredShot.cameraString ||
-                        filteredShot.camera?.string ||
-                        (typeof filteredShot.camera === 'string' ? filteredShot.camera : '') || '';
-      const lightingStr = filteredShot.lightingString ||
-                          filteredShot.lighting?.string ||
-                          (typeof filteredShot.lighting === 'string' ? filteredShot.lighting : '') || '';
 
-      // v2.0.5-彻底修复: timeline优先使用标准化后的timelineString
-      let timelineStr = filteredShot.timelineString || '';
-      if (!timelineStr) {
-        if (filteredShot.timeline?.string && typeof filteredShot.timeline.string === 'string') {
-          timelineStr = filteredShot.timeline.string;
-        } else if (typeof filteredShot.timeline === 'string') {
-          timelineStr = filteredShot.timeline;
-        } else if (Array.isArray(filteredShot.timeline)) {
-          timelineStr = filteredShot.timeline.map(seg => 
-            `${seg.timeRange || ''}: ${seg.cameraMovement || ''}`
-          ).join('; ');
-        }
-      }
-
-      // v2.0.5-彻底修复: 确保backgroundSound有string版本
-      let bgSoundResult;
-      if (filteredShot.backgroundSoundString && typeof filteredShot.backgroundSoundString === 'string') {
-        bgSoundResult = {
-          object: filteredShot.backgroundSound || {},
-          string: filteredShot.backgroundSoundString
-        };
-      } else {
-        bgSoundResult = this.shotNormalizer.buildBackgroundSound(filteredShot);
-      }
-
-      // v2.0.5-彻底修复: 构建shotWithSound供_buildShotPrompt使用
-      const shotWithSound = {
-        ...filteredShot,
-        backgroundSound: bgSoundResult
-      };
-      const prompt = this.promptBuilder.buildShotPrompt(shotWithSound, blueprint, { cameraStr, lightingStr, timelineStr }, globalNegativePromptInjector);
-
-      // 字符计数
-      const promptLength = this.promptBuilder.countChars(prompt.fullPrompt);
-
-      // v6.37-P1+: 构建标准输出对象(严格按 25 字段标准)
-      // 正片 S01+: 25 核心字段 | 片头 S00: + audioLayer + titleOverlay
-      // v2.0.4-fix: 添加人物介绍卡片
-      const characterCards = this._buildCharacterCards(filteredShot, blueprint);
-
-      const standardOutput = {
-        // === 标准字段(v6.37-production+)===
-        shotId: filteredShot.shotId,
-        duration: filteredShot.timing?.duration || 20,
-        scene: filteredShot.scene || '',
-        mood: filteredShot.mood || '',
-        camera: filteredShot.camera?.object || filteredShot.camera || '',
-        cameraString: cameraStr,
-        lighting: filteredShot.lighting?.object || filteredShot.lighting || '',
-        lightingString: lightingStr,
-        characterRef: filteredShot.characterRef || 'NONE',
-        // v2.0.5-fix: 如果shot.character不存在,从blueprint获取主角名
-        character: filteredShot.character || this._getMainCharacterName(blueprint) || 'NONE',
-        action: filteredShot.action || '',
-        dialogue: filteredShot.dialogue || 'NONE',
-        dialogueText: filteredShot.dialogueText || '',
-        timeline: filteredShot.timeline?.object || filteredShot.timeline || {},
-        timelineString: timelineStr,
-        backgroundSound: bgSoundResult.object,
-        backgroundSoundString: bgSoundResult.string,
-        prompt: prompt.fullPrompt,
-        promptCharCount: promptLength,
-        // v2.0.4-fix: 人物介绍卡片
-        characterCards: characterCards,
-        // v2.1.4-fix12: 片头专属字段占位（OpeningTitleOptimizer后处理填充）
-        title_content: '',
-        subtitle_content: '',
-        title_animation: '',
-        title_font_design: '',
-        opening_audio_design: '',
-        // 【v2.1.5-fix】兜底路径也生成P0字段，避免FieldGuard报错
-        director_instruction: '好莱坞大导演质感，电影级画面，写实风格，无特效，无科幻元素，自然光效与人工照明融合',
-        constraint: 'Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no caption, no watermark',
-        baseline: '8K resolution, cinematic quality, highly detailed, photorealistic, intricate textures, sharp focus',
-        negative: 'no text, no watermark, no logo, no cartoon style, no flat lighting, no blurry, no distorted, no deformed, no extra limbs',
-        consistency: '保持角色形象一致，服装发型每帧统一，禁止角色变形或分身',
-        // fields 对象 — 25 字段完整版（兜底路径也提供完整默认值，避免空字段穿透）
-        fields: {
-          director_instruction: '好莱坞大导演质感，电影级画面，写实风格，无特效，无科幻元素，自然光效与人工照明融合',
-          constraint: 'Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no caption, no watermark',
-          baseline: '8K resolution, cinematic quality, highly detailed, photorealistic, intricate textures, sharp focus',
-          scene: filteredShot.scene || '',
-          lighting: lightingStr || '主光：自然光5600K柔光漫射；补光：反光板填充；整体明亮清晰',
-          composition: cameraStr || '景别：中景；主体位置：画面黄金分割点；线条引导：纵深层次感',
-          color_palette: '主色调：自然偏暖；辅助色：环境本色；肤色：自然健康；饱和度：中等自然；对比度：中高清晰',
-          depth_of_field: '焦点：主体面部；景深：中等；前景背景适度虚化',
-          camera_movement: cameraStr || '0-3s固定机位；3-6s缓慢推近',
-          character: filteredShot.character || this._getMainCharacterName(blueprint) || '主角',
-          costume: '符合角色身份的写实服装，面料质感真实，颜色自然',
-          makeup: '素颜或淡妆，妆容自然真实，发型整洁',
-          action: filteredShot.action || '',
-          props: '场景中必要的写实道具，材质真实，无文字标识',
-          portraits: filteredShot.characterRef || 'image://characters/default/portrait.png',
-          dialogue: filteredShot.dialogue || 'NONE',
-          timeline: timelineStr || 'T00:00 - 开场构图；T00:03 - 主体进入画面；T00:06 - 核心动作',
-          mood: filteredShot.mood || 'calm, natural',
-          pacing: '整体：沉稳中等节奏；开头：平缓引入；中段：自然推进；结尾：平稳收尾',
-          transition: '自然切换，无特效转场，直接硬切或微淡入淡出',
-          audio: '环境底噪真实自然，无明显配乐干扰，人声音量适中清晰',
-          negative: 'no text, no watermark, no logo, no cartoon style, no flat lighting, no blurry, no distorted, no deformed, no extra limbs',
-          bright_constraint: 'bright lighting, well-lit scene, clear visibility, no dark shadows on face',
-          character_constraint: `只出现${filteredShot.character || this._getMainCharacterName(blueprint) || '主角'}一人，禁止其他人物入镜，禁止同一角色重复出现`,
-          consistency: '保持角色形象一致，服装发型每帧统一，禁止角色变形或分身'
-        }
-      };
-
-      // 片头专属字段(仅 S00)
-      const _meta = blueprint.config?._metadata || blueprint._metadata || {};
-      const isSeries = _meta.isSeries || false;
-      const episodeNumber = _meta.episodeNumber || 1;
-      const hasOpening = isSeries ? (episodeNumber === 1) : true;
-
-      if (filteredShot.sceneType === 'opening' && hasOpening) {
-        const audioLayer = this.shotNormalizer.buildAudioLayer(filteredShot);
-        const titleOverlay = this.shotNormalizer.buildTitleOverlay(blueprint);
-        standardOutput.audioLayer = audioLayer.object;
-        standardOutput.audioLayerString = audioLayer.string;
-        standardOutput.titleOverlay = titleOverlay.object;
-        standardOutput.titleOverlayString = titleOverlay.string;
-      }
-
-      engineeredShots.push(standardOutput);
-      // 【v2.1.6-fix-bug36】分离 shots 和 prompts 的引用，防止影分身问题
-      prompts.push({ ...standardOutput });
-    }
-
-    return { shots: engineeredShots, prompts };
-  }
-
-  /**
-   * v6.37-P0: 构建 mouthAction 字段(供Seedance对口型)
-   */
-  _buildMouthAction(shot) {
-    const actionMap = {
-      'opening': '嘴部自然闭合,面对镜头,准备开口',
-      'establishing': '嘴部微张,观察时自然呼吸',
-      'conflict': '嘴部紧闭,紧张时咬紧牙关',
-      'emotional_climax': '嘴部张大,情感爆发时大声呼喊',
-      'resolution': '嘴部放松,微笑,平静呼吸'
-    };
-
-    return actionMap[shot.sceneType] || '嘴部自然闭合';
-  }
 
   /**
    * 🔊 v2.0-B+: 音频场景映射(极致视听融合)
@@ -1904,63 +1543,7 @@ class ProductionEngine {
     };
   }
 
-  /**
-   * 🔊 v2.0-B+: 构建音频描述(自然语言格式,Seedance可理解)
-   */
-  _buildAudioDescription(shot) {
-    const parts = [];
-    const sceneName = (shot.sceneName || shot.scene || shot.setting || '').toLowerCase();
-    const emotion = (shot.emotionPhase || shot.emotion || 'neutral').toLowerCase();
-    const timeOfDay = (shot.timeOfDay || shot.lighting?.timeOfDay || 'golden hour').toLowerCase();
 
-    const audioMap = this._getAudioSceneMap();
-    let template = null;
-
-    // 匹配场景类型
-    for (const [key, t] of Object.entries(audioMap)) {
-      if (sceneName.includes(key)) {
-        template = t;
-        break;
-      }
-    }
-
-    // 回退:基于时间
-    if (!template) {
-      if (timeOfDay.includes('night') || timeOfDay.includes('dusk')) {
-        template = { env: '夜晚虫鸣,远处低语', action: '轻柔脚步声', emotion: '神秘宁静的夜晚氛围' };
-      } else {
-        template = { env: '白天环境音', action: '自然动作声', emotion: '明亮日常氛围' };
-      }
-    }
-
-    // L1: 环境音 - 自然语言格式
-    parts.push(`伴随${template.env}`);
-
-    // L2: 动作音 - 自然语言格式
-    parts.push(`动作产生${template.action}`);
-
-    // L3: 情绪音 - 自然语言格式
-    const emotionAudioMap = {
-      'warm': '温暖治愈的轻音乐渐入',
-      'joy': '欢快的节奏音',
-      'tense': '紧张的心跳声渐强',
-      'sad': '低沉的弦乐余韵',
-      'epic': '宏大的交响乐铺垫',
-      'peaceful': '宁静的钢琴轻弹',
-      'establishing': '环境音渐显,氛围建立',
-      'climax': '全频段饱满,情绪峰值',
-      'resolve': '音乐渐弱,余音缭绕'
-    };
-    const emotionSound = emotionAudioMap[emotion] || template.emotion;
-    parts.push(`氛围弥漫${emotionSound}`);
-
-    // L4: 声画同步(如果含对话)
-    if (shot.dialogueText || shot.hasDialogue) {
-      parts.push('声画精准同步,嘴型与发音对齐');
-    }
-
-    return parts.join(',');
-  }
 
   /**
    * 构建单个镜头的完整 Prompt(v2.0-B+: 七层架构 + 极致视听融合 + v6.37-P0 字段对齐)
@@ -1981,118 +1564,7 @@ class ProductionEngine {
    * L8: 内部层(扩展)- PhysicsLayer/ColorScience/NegativePrompt/RenderStyle/DirectorStyle
    * L9: 质控层(P0必加)- 负面约束/角色一致性
    */
-  /**
-   * Stage 6: 片头生成
-   * 产出符合 25 字段标准（片头为空景，角色相关字段留空）
-   */
-  _generateOpening(blueprint) {
-    const config = blueprint.config || {};
-    const worldSetting = blueprint.worldSetting || {};
-    // B6-fix: 移除 featured_beast_id 强制要求,通用项目也生成片头
-    // const beastId = config.featured_beast_id;
-    // if (!beastId) { return { generated: false, reason: '无 featured_beast_id' }; }
 
-    // B7-fix: 复用 _buildBackgroundSound 保证格式一致
-    const openingBgSound = this.shotNormalizer.buildBackgroundSound({ sceneType: 'opening' });
-    const openingData = {
-      shotId: 'S00',
-      duration: config.opening_duration || 10,
-      scene: this._buildOpeningScene(worldSetting),
-      mood: 'epic, mysterious, awe-inspiring',
-      // 结构化 camera 对象
-      camera: {
-        shotSize: 'extreme wide',
-        movement: 'dolly in',
-        lens: '24mm',
-        speed: 0.3,
-        aperture: 'f/2.8',
-        focus: 'rack focus from atmosphere to ground'
-      },
-      cameraString: 'epic wide shot, slow descent through atmospheric layers, 24mm wide lens, slow speed',
-      // 结构化 lighting 对象
-      lighting: {
-        keyLight: { direction: 'backlight', colorTemp: 3200, effect: 'golden hour rim' },
-        fillLight: { direction: 'ambient', colorTemp: 6500, effect: 'cool fill' },
-        special: 'volumetric god rays'
-      },
-      lightingString: 'backlight 3200K, golden hour rim, volumetric god rays',
-      characterRef: 'NONE',
-      character: 'NONE',
-      action: 'establishing shot, camera slowly descending through atmospheric layers',
-      dialogue: 'NONE',
-      // 结构化 timeline 对象
-      timeline: {
-        start: 'T00:00',
-        end: 'T00:10',
-        duration: 10,
-        type: 'opening',
-        mood: 'epic'
-      },
-      timelineString: 'T00:00-T00:10 / duration: 10s / type: opening / mood: epic',
-      // 结构化 audioLayer 对象
-      audioLayer: {
-        segments: [
-          { time: '0-3s', sound: 'sub-bass earth rumble fade in' },
-          { time: '3-5s', sound: 'distant wind and environmental sounds' },
-          { time: '5-8s', sound: 'string section long note' },
-          { time: '8-10s', sound: 'timpani strike' }
-        ]
-      },
-      audioLayerString: 'Sub-bass earth rumble fade in 3s, distant wind and environmental sounds, string section long note at 5s, timpani strike at 8s',
-      // 结构化 titleOverlay 对象
-      titleOverlay: {
-        mainTitle: config.title || '未命名',
-        subtitle: worldSetting.name || '系列作品',
-        producer: `by ${config.producer || 'HAVS Team'}`,
-        titleAnim: 'light-vein carving growth 3.0-5.0s'
-      },
-      titleOverlayString: `MAIN_TITLE: "${config.title || '未命名'}"; SUBTITLE: "${worldSetting.name || '系列作品'}"; PRODUCER: "by ${config.producer || 'HAVS Team'}"; TITLE_ANIM: light-vein carving growth 3.0-5.0s`,
-      // 【v2.1.4-patch2】FieldGuard兼容:添加顶层title/subtitle字段
-      title: config.title || '未命名',
-      subtitle: worldSetting.name || '系列作品',
-      // B7-fix: 复用 _buildBackgroundSound 保证格式一致
-      backgroundSound: openingBgSound.object,
-      backgroundSoundString: openingBgSound.string,
-      prompt: '', // 由 Prompt 工程构建
-      promptCharCount: 0,
-      // 25 字段完整填充（片头为空景，角色相关留空）
-      director_instruction: '史诗级片头，大气磅礴，电影级质感，超写实风格',
-      constraint: 'Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, no text, no subtitle, no caption, no watermark',
-      baseline: '8K resolution, cinematic quality, highly detailed, photorealistic, intricate textures, sharp focus',
-      composition: 'extreme wide shot, symmetrical composition, horizon line at lower third, vast scale',
-      color_palette: 'golden hour warm tones, deep shadows, rich contrast, cinematic color grading',
-      depth_of_field: 'deep focus, atmospheric haze, infinite spatial depth',
-      camera_movement: 'slow dolly in, 0.3 speed, 24mm wide lens, rack focus from atmosphere to ground',
-      costume: '',
-      makeup: '',
-      props: '',
-      portraits: '',
-      pacing: 'slow, majestic, building tension',
-      transition: 'fade in from black, gradual reveal',
-      audio: 'sub-bass earth rumble, distant wind, string section, timpani strike, cinematic epic soundtrack',
-      negative: 'no text, no watermark, no logo, no cartoon style, no flat lighting, no blurry',
-      bright_constraint: 'well-lit scene, clear visibility, natural lighting',
-      character_constraint: '',
-      consistency: '片头风格与正片保持一致，色调统一'
-    };
-
-    // 构建片头 Prompt(传入结构化字符串)
-    const prompt = this.promptBuilder.buildShotPrompt(openingData, blueprint, {
-      cameraStr: openingData.cameraString,
-      lightingStr: openingData.lightingString,
-      timelineStr: openingData.timelineString
-    }, globalNegativePromptInjector);
-    openingData.prompt = prompt.fullPrompt;
-    openingData.promptCharCount = this.promptBuilder.countChars(prompt.fullPrompt);
-
-    return {
-      generated: true,
-      openingData,
-      shotId: 'S00',
-      type: 'opening',
-      beastId: null
-    };
-  }
 
   _buildOpeningScene(worldSetting) {
     const worldName = worldSetting.name || worldSetting.world_id || 'Unknown World';
@@ -2113,26 +1585,7 @@ class ProductionEngine {
     return protagonist?.name || null;
   }
 
-  /**
-   * v6.37+: 构建 portraits 数组(FieldGuard 要求的关键字段)
-   */
-  _buildPortraits(shot, blueprint) {
-    const portraits = [];
-    const characters = shot.characters || blueprint.characters || [];
 
-    for (const char of characters) {
-      // v6.37+: 预生产阶段如果没有定妆照,生成占位符记录,避免FieldGuard警告
-      portraits.push({
-        character: char.name || char.id || 'unknown',
-        characterId: char.id || char.name || 'unknown',
-        url: char.portraitUrl || 'PENDING_GENERATION',
-        angle: 'default',
-        source: char.portraitUrl ? 'character_system' : 'pending'
-      });
-    }
-
-    return portraits;
-  }
 
   /**
    * v6.37+: 构建 characterCards 数组(FieldGuard 要求的关键字段)

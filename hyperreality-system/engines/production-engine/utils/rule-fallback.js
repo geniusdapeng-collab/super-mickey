@@ -37,14 +37,8 @@ class RuleFallbackEngine {
    * 规则 Prompt 工程兜底(LLM PromptFusion 失败时)
    */
   async engineerPromptsFallback(shots, blueprint) {
-    if (typeof this._engineerPrompts === 'function') {
-      try {
-        const r = await this._engineerPrompts(shots, blueprint);
-        if (r?.shots?.length) return r.shots;
-      } catch (e) {
-        this.log('FALLBACK', `_engineerPrompts 失败: ${e.message},使用极简拼接`);
-      }
-    }
+    // 【2026-07-17 清理】_engineerPrompts 已删除，直接走极简拼接
+    this.log('FALLBACK', `⚠️ _engineerPrompts 已移除，使用极简拼接兜底`);
     return shots.map(s => ({
       ...s,
       prompt: this.assemblePromptSimple(s),
