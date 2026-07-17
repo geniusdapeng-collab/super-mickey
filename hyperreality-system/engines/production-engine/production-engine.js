@@ -89,6 +89,14 @@ class ProductionEngine {
     
     // v2.1.5-refactor: 初始化 Phase 执行器（渐进式重构）
     this._initPhases();
+
+    // 【2026-07-17 复活】降级观测与熔断器（TOP 5 #1）
+    const { DegradationObserver } = require('./agents/degradation-observer');
+    this.degradationObserver = new DegradationObserver({
+      softThreshold: 3,
+      hardThreshold: 5,
+      degradationRateThreshold: 0.5
+    });
   }
 
   /**
@@ -460,6 +468,21 @@ class ProductionEngine {
       }
     }
 
+    // 【2026-07-17 复活】DegradationObserver 熔断检查
+    const proceed = this.degradationObserver.canProceed();
+    if (!proceed.allowed) {
+      this.log('DEGRADATION', `🚫 熔断器拦截: ${proceed.reason}`);
+      return {
+        success: false,
+        shots: [],
+        prompts: [],
+        degraded: true,
+        degradationReport: proceed.report,
+        errors: [{ stage: 'circuit-breaker', message: proceed.reason }],
+        timing: { total: Date.now() - startTime }
+      };
+    }
+
     // 【P1-9 修复】生成 blueprint 指纹，用于 checkpoint 一致性校验
     // 【修复 P3-1】使用稳定序列化（键排序）消除 JSON 键序不确定性导致的哈希漂移
     const crypto = require('crypto');
@@ -703,6 +726,11 @@ class ProductionEngine {
       } catch (e2) {
         result.errors.push({ stage: 'recovery', message: e2.message });
       }
+    }
+
+    // 【2026-07-17 复活】注入降级观测报告
+    if (this.degradationObserver) {
+      result.degradationReport = this.degradationObserver._generateReport();
     }
 
     return result;
