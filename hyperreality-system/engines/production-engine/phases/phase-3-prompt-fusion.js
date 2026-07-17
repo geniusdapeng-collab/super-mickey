@@ -131,22 +131,22 @@ class Phase3PromptFusion extends PhaseExecutor {
    * - 根据类型自动选择调整策略
    */
   async _checkDialogueTiming(shots, blueprint) {
-    // 获取视频类型以确定调整策略
-    const rawType = blueprint?.config?.type || blueprint?.type || 'EDU';
-    const typeConfig = ThemeConfig.getType(rawType) || ThemeConfig.getType('EDU');
-    // 【一致性修复】策略判断使用 legacyMapping 归一化后的类型，
-    // 避免 DRAMA/MV/ADV/VLOG 等 legacy 类型绕过映射直接落入 shorten
-    const videoType = typeConfig.id; // getType 已做 legacy 映射，id 即规范类型
+    // 【v2.1.11-重构】台词策略由 productionProfile.dialogue_density 驱动，
+    // 不再用类型白名单（原方案把 DRAMA/MV/VLOG 等 legacy 类型全部误判为 shorten）
+    const { dialogueStrategy } = require('../../../config/production-profile');
+    const profile = blueprint?.productionProfile
+      || blueprint?.config?.productionProfile
+      || blueprint?.requirementList?.productionProfile
+      || null;
+    const strategy = dialogueStrategy(profile || {});
+    const videoTypeLabel = blueprint?.genre || blueprint?.requirementList?.genre || '通用';
 
-    // 根据类型选择策略：EDU/MARKETING/FAMILY/DOC 优先保台词（延长镜头），其余优先保节奏（缩短台词）
-    const strategy = ['EDU', 'MARKETING', 'FAMILY', 'DOC'].includes(videoType) ? 'extend' : 'shorten';
-    
     const calculator = new DialogueTimingCalculator({
       autoAdjust: true,
       adjustStrategy: strategy
     });
 
-    this.log('DIALOGUE-TIMING', `开始检查 (${videoType} 类型, 策略:${strategy})...`);
+    this.log('DIALOGUE-TIMING', `开始检查 (${videoTypeLabel} 题材, 台词密度=${(profile || {}).dialogue_density || 'medium'}, 策略:${strategy})...`);
     
     const checkResult = calculator.validateShots(shots);
     

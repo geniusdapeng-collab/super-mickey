@@ -675,17 +675,23 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
       completed.videoTypeName = ThemeConfig.getTypeName(completed.videoType);
     }
 
-    // 补全时长 - 使用 ThemeConfig
+    // 补全时长 - 【v2.1.11-重构】由 productionProfile 驱动；无 profile 时才回退 theme-config 预设
     if (!completed.duration) {
-      const themeConfig = ThemeConfig.getType(completed.videoType);
-      if (themeConfig) {
-        completed.duration = themeConfig.defaultDuration;
-        completed.durationRange = themeConfig.durationRange;
-        completed.durationInferred = true;
+      const profile = completed.productionProfile;
+      if (profile && profile.duration_target) {
+        completed.duration = profile.duration_target;
+        completed.durationRange = [Math.round(profile.duration_target * 0.8), Math.round(profile.duration_target * 1.2)];
+        completed.durationInferred = false; // profile 是用户意图的直接表达，不算"推断"
       } else {
-        // 兜底
-        completed.duration = 90;
-        completed.durationRange = [60, 120];
+        // 旧路径兜底（老类型链路仍可用）
+        const themeConfig = ThemeConfig.getType(completed.videoType);
+        if (themeConfig) {
+          completed.duration = themeConfig.defaultDuration;
+          completed.durationRange = themeConfig.durationRange;
+        } else {
+          completed.duration = 90;
+          completed.durationRange = [60, 120];
+        }
         completed.durationInferred = true;
       }
     }
