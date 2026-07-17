@@ -2148,9 +2148,17 @@ class HyperrealitySystem {
         description: upstreamFields.visual_style || '电影级质感'
       },
       aspectRatio: '16:9',
-      platform: '视频号/抖音',
+      // 【审计修复】platform 此前硬编码, 改为从受众兴趣标签推断(无命中时保持默认)
+      platform: (() => {
+        const tags = (audienceProfile?.primaryAudience?.interestTags || []).join(',');
+        const hits = ['抖音', 'B站', '小红书', '视频号', '快手', 'YouTube'].filter(p => tags.includes(p));
+        return hits.length ? hits.join('/') : '视频号/抖音';
+      })(),
       creativeIntensity: upstreamFields.creative_style || 0.72,
-      narrativeMode: 'dialogue',
+      // 【审计修复】narrativeMode 此前硬编码 'dialogue', 无台词类主题会被误导
+      narrativeMode: /无台词|无对白|旁白|纯画面|narration|voiceover/i.test(upstreamFields.dialogue_requirement || '')
+        ? 'narration'
+        : 'dialogue',
       characters: [],
       structure: {
         opening: sceneStructure?.opening?.purpose || '开场引入',
@@ -2161,6 +2169,11 @@ class HyperrealitySystem {
         upstreamFields.description || '',
         upstreamFields.special_notes || ''
       ].filter(Boolean),
+      // 【审计修复】以下 4 个创意主题字段此前在转换中被丢弃, 导致下游无法感知情绪/难度/受众/台词要求
+      tone: upstreamFields.tone || null,
+      difficulty: upstreamFields.difficulty || null,
+      targetAudience: upstreamFields.target_audience || null,
+      dialogueRequirement: upstreamFields.dialogue_requirement || null,
       contentConstraints: riskAssessment?.businessConstraints || [],
       uncertainties: [],
       _analysis: {

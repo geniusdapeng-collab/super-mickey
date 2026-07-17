@@ -19,12 +19,18 @@ class ProductionSpecificationAgent extends BaseAgent {
     const prompt = this._buildPrompt(discoveryResult, creativeResult);
     
     try {
-      // 【审计修复】参数错位：原代码 _callLLM(prompt, { timeout: this.timeoutMs }) 把 timeout 对象放在 schema 位置，
-      // 导致 timeoutMs 不生效、schema 污染提示词、返回值包装对象未解包 → LLM 产出 100% 被丢弃
-      const llmResponse = await this._callLLM(prompt, null, null, { timeoutMs: this.timeoutMs });
-      // 解包：BaseAgent._callLLM 返回 { result, degraded, degradeReason, attempts }
-      const result = llmResponse && llmResponse.result !== undefined ? llmResponse.result : llmResponse;
-      return this._parseResult(result, discoveryResult);
+      // 【审计修复】同 Agent-2：修正 schema 错位、timeout 下发、包装解包三处问题
+      const schema = {
+        required: ['visualSpecification', 'audioSpecification']
+      };
+      const llmResult = await this._callLLM(prompt, schema, null, { timeoutMs: this.timeoutMs });
+      const data = (llmResult && typeof llmResult === 'object' && 'result' in llmResult)
+        ? llmResult.result : llmResult;
+      if (data === null || data === undefined) {
+        console.warn(`[${this.agentName}] LLM 返回为空，使用 fallback`);
+        return this.fallback(discoveryResult, creativeResult);
+      }
+      return this._parseResult(typeof data === 'string' ? data : JSON.stringify(data), discoveryResult);
     } catch (error) {
       console.warn(`[${this.agentName}] LLM 调用失败: ${error.message}，使用 fallback`);
       return this.fallback(discoveryResult, creativeResult);

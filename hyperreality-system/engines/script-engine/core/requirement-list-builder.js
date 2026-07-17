@@ -1031,13 +1031,13 @@ ${r.uncertainties.length ? `## ⚠️ 待确认项\n\n${r.uncertainties.map((u, 
     return {
       title: requirementList.title,
       target_duration: requirementList.targetDuration,
-      target_platform: requirementList.platform.split('/'),
-      language: requirementList.language,
+      target_platform: (requirementList.platform || '视频号/抖音').split('/'),
+      language: requirementList.language || '中文', // 【审计修复】原样透传 undefined 会污染剧本 prompt("语言: undefined")
       style_tags: [
         requirementList.style.primary.toLowerCase(),
         ...requirementList.style.secondary.map(s => s.toLowerCase())
       ],
-      world_setting: requirementList._analysis.worldSetting,
+      world_setting: requirementList.worldSetting || requirementList._analysis.worldSetting || '现实世界', // 【审计修复】_analysis 中无 worldSetting 字段(恒为 undefined), 优先取显式字段, 默认现实世界
       protagonist: requirementList.protagonist?.id || 'default',
       featured_beast_id: requirementList._analysis.worldSetting === 'Nirath' ?
         requirementList._analysis.featuredBeastId : null,

@@ -1068,7 +1068,16 @@ class ProductionEngine {
       const sceneDescription = this._buildFiveDimensionScene(scene, worldSetting);
 
       // v6.37-P0: 构建 mood(3-5情绪关键词)
-      const mood = this.shotNormalizer.buildMood(scene);
+      let mood = this.shotNormalizer.buildMood(scene);
+
+      // 【审计修复】消费 EmotionArc: 此前 index.js 设计的 _emotionArc 挂在 blueprint 上后全库无人读取,
+      // 情绪系统对成片完全不起作用。现将弧线目标注入镜头: 弧线情绪并入 mood, 目标详情挂上镜头。
+      const arcTarget = (adaptedBlueprint._emotionArc && Array.isArray(adaptedBlueprint._emotionArc.targets))
+        ? adaptedBlueprint._emotionArc.targets[index] || null
+        : null;
+      if (arcTarget && arcTarget.emotion) {
+        mood = `${arcTarget.emotion}, ${mood}`;
+      }
 
       // v6.37-P0: 构建 action(核心动词+交互目标)
       const action = this.shotNormalizer.buildAction(scene);
@@ -1093,6 +1102,8 @@ class ProductionEngine {
 
         // v6.37-P0: 情绪
         mood: mood,
+        // 【审计修复】情绪弧线目标(供 PromptFusion/导演评审细粒度使用)
+        emotionArcTarget: arcTarget,
 
         // v6.37-P0: 角色(极简锚点)
         // 【v2.1.4-patch5】将 | 改为逗号,避免Seedance渲染乱码

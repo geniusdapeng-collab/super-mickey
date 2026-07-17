@@ -177,11 +177,39 @@ class ScriptGenerator {
 - 标题：${meta.title}
 - 叙事类型：${parsed.primary_mode} ${parsed.hybrid_config ? '+ ' + parsed.secondary_modes.join(', ') : ''}
 - 目标时长：${meta.target_duration}秒
-- 世界观：${meta.world_setting}
+- 世界观：${meta.world_setting || '现实世界'}
 ${meta.featured_beast_id ? '- 主角异兽：' + meta.featured_beast_id : ''}
 - 主角：${meta.protagonist}
-- 平台：${meta.target_platform.join(', ')}
-- 语言：${meta.language}
+- 平台：${(meta.target_platform || []).join(', ') || '通用平台'}
+- 语言：${meta.language || '中文'}
+${(() => {
+  // 【审计修复】消费上游已被提取却从未进入剧本 prompt 的关键字段:
+  // 主题情绪(tone)/视觉风格(visual_style)/目标受众(target_audience)/情绪画像(_emotionProfile)/PRD创意核心(_prd)
+  // 此前这些字段在 script-engine/index.js 被写入 metadata 后全库无人消费, 剧本 LLM 完全看不到风格与受众要求
+  const sections = [];
+  const tone = meta._creativeThemeTone;
+  const vs = meta._creativeThemeVisualStyle;
+  const audience = meta._creativeThemeTargetAudience;
+  const ep = meta._emotionProfile;
+  const prdCore = meta._prd?.creativeDirection?.creativeCore || meta._prd?.creativeCore || null;
+  if (tone || vs || audience) {
+    sections.push('## 主题风格要求（来自已确认的创意主题，必须体现）' +
+      (tone ? `\n- 情绪基调：${tone}` : '') +
+      (vs ? `\n- 视觉风格：${vs}` : '') +
+      (audience ? `\n- 目标受众：${audience}` : ''));
+  }
+  if (ep && ep.primary) {
+    sections.push(`## 情绪画像\n- 主导情绪：${ep.primary}${ep.secondary ? ' + ' + ep.secondary : ''}（强度 ${(Math.round((ep.intensity || 0.5) * 100))}%）\n- 剧本的情绪节奏必须服务于该情绪目标`);
+  }
+  if (prdCore && (prdCore.coreTheme || prdCore.creativeHook)) {
+    sections.push('## PRD 创意核心（已经用户确认，剧本必须对齐）' +
+      (prdCore.coreTheme ? `\n- 核心主题：${prdCore.coreTheme}` : '') +
+      (prdCore.creativeHook ? `\n- 创意钩子：${prdCore.creativeHook}` : '') +
+      (prdCore.emotionalArc ? `\n- 情绪弧线：${prdCore.emotionalArc}` : '') +
+      (Array.isArray(prdCore.keyMessages) && prdCore.keyMessages.length ? `\n- 关键信息：${prdCore.keyMessages.join('；')}` : ''));
+  }
+  return sections.length ? '\n' + sections.join('\n\n') + '\n' : '';
+})()}
 
 ## 系统约束（不可违反）
 1. 禁止旁白（Voiceover），只保留角色对话（Dialogue）

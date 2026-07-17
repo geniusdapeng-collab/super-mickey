@@ -19,12 +19,22 @@ class CreativeDirectionAgent extends BaseAgent {
     const prompt = this._buildPrompt(discoveryResult);
     
     try {
-      // 【审计修复】参数错位：原代码 _callLLM(prompt, { timeout: this.timeoutMs }) 把 timeout 对象放在 schema 位置，
-      // 导致 timeoutMs 不生效、schema 污染提示词、返回值包装对象未解包 → LLM 产出 100% 被丢弃
-      const llmResponse = await this._callLLM(prompt, null, null, { timeoutMs: this.timeoutMs });
-      // 解包：BaseAgent._callLLM 返回 { result, degraded, degradeReason, attempts }
-      const result = llmResponse && llmResponse.result !== undefined ? llmResponse.result : llmResponse;
-      return this._parseResult(result);
+      // 【审计修复】三处问题：
+      // 1. 原调用把 { timeout } 当成 schema 传入, 会被注入提示词成为"目标JSON结构示例", 污染生成;
+      // 2. timeout 应通过第4参数 options.timeoutMs 下发, 原写法自定义超时不生效;
+      // 3. _callLLM 返回包装对象 { result, degraded, ... }, 真实数据在 .result 字段,
+      //    原写法直接解析包装对象, LLM 创意产出 100% 被静默丢弃, 永远走模板兜底。
+      const schema = {
+        required: ['coreTheme', 'creativeHook', 'emotionalArc', 'keyMessages', 'endingType']
+      };
+      const llmResult = await this._callLLM(prompt, schema, null, { timeoutMs: this.timeoutMs });
+      const data = (llmResult && typeof llmResult === 'object' && 'result' in llmResult)
+        ? llmResult.result : llmResult;
+      if (data === null || data === undefined) {
+        console.warn(`[${this.agentName}] LLM 返回为空，使用 fallback`);
+        return this.fallback(discoveryResult);
+      }
+      return this._parseResult(typeof data === 'string' ? data : JSON.stringify(data));
     } catch (error) {
       console.warn(`[${this.agentName}] LLM 调用失败: ${error.message}，使用 fallback`);
       return this.fallback(discoveryResult);
