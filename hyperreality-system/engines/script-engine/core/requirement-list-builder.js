@@ -1078,10 +1078,10 @@ ${r.uncertainties.length ? `## ⚠️ 待确认项\n\n${r.uncertainties.map((u, 
           || [];
         return [primary.toLowerCase(), ...secondary.map(s => s.toLowerCase())];
       })(),
-      world_setting: requirementList.worldSetting || requirementList._analysis.worldSetting || '现实世界',
+      world_setting: requirementList.worldSetting || requirementList._analysis?.worldSetting || '现实世界',
       protagonist: requirementList.protagonist?.id || 'default',
-      featured_beast_id: requirementList._analysis.worldSetting === 'Nirath' ?
-        requirementList._analysis.featuredBeastId : null,
+      featured_beast_id: requirementList._analysis?.worldSetting === 'Nirath' ?
+        requirementList._analysis?.featuredBeastId : null,
       max_prompt_length: requirementList.constraints?.maxPromptLength || 3000,
       reference_image_count: requirementList.constraints?.referenceImageCount ?? 2,
       creative_intensity: requirementList.creativeIntensity,
