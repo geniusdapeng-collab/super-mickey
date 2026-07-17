@@ -666,6 +666,8 @@ ${meta._directorStyle}` : ''}
           aspectRatio: userIntent.metadata?.aspectRatio || '16:9',
           // 【v2.1.4】传递系列内容规划
           seriesContentPlan: userIntent.metadata?.seriesContentPlan || null,
+          // 【脱节2 修复】透传 PRD 完整内容到剧本生成
+          _prd: userIntent.metadata?._prd || null,
           ...userIntent.metadata?._metadata
         }
       };

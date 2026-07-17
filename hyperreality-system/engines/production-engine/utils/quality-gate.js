@@ -17,8 +17,16 @@ class QualityGate {
 
   /**
    * 【审计修复·P0】增强型质量检查，防止空白/占位符通过
+   * 【接线3 修复】支持从 PRD deliveryStandard 读取验收阈值
    */
-  run(prompts) {
+  run(prompts, prd = null) {
+    // 【接线3 修复】从 PRD 提取验收阈值
+    const prdThresholds = prd?.deliveryStandard?.acceptanceCriteria 
+      || prd?.acceptanceCriteria 
+      || null;
+    const scoreThreshold = prdThresholds ? 
+      Math.round(((prdThresholds.visual || 0.75) + (prdThresholds.narrative || 0.75)) / 2 * 100) : 30;
+    
     const checks = [];
     for (const p of prompts) {
       // 【P1-11 修复】改读25字段标准名，兼容camelCase和旧xxxString
@@ -88,12 +96,13 @@ class QualityGate {
       };
 
       // 【审计修复】综合通过条件：既有基础检查通过，又有质量分数阈值
+      // 【接线3 修复】使用 PRD 阈值（如有）替代硬编码 30 分
       check.passed =
         check.hasScene && check.hasMood && check.hasCamera && check.hasLighting &&
         check.hasAction && check.hasTimeline && check.hasBackgroundSound &&
         check.hasPrompt && check.withinLimit && check.hasAudioLayer && check.hasTitleOverlay &&
         !check.hasPlaceholder && // 【v2.1.11-P1】占位符红线：含"示例角色"等占位符直接判 fail
-        check.overallScore >= 30; // 30分底线：全是空格或占位符的应被拒
+        check.overallScore >= scoreThreshold; // PRD 阈值底线
 
       checks.push(check);
     }

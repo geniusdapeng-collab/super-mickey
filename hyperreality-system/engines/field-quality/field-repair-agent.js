@@ -89,25 +89,74 @@ class PRD {
   }
 
   // 从 blueprint/metadata 自动构建 PRD
+  // 【脱节3 修复】使用正确的字段映射，兼容双轨 metadata 结构
   static fromBlueprint(blueprint) {
     const meta = blueprint._metadata || blueprint.config?._metadata || {};
     const characters = blueprint.characters || [];
     const scenes = blueprint.scenes || [];
+    
+    // 从多层级结构中解析视频类型
+    const videoType = meta.videoType || blueprint.videoType || blueprint.type || 'general';
+    
+    // 从风格字段解析风格方向（支持单轨/双轨）
+    let styleDirection = meta.styleDirection || '';
+    if (!styleDirection && blueprint.style) {
+      const style = typeof blueprint.style === 'string' ? blueprint.style : (blueprint.style.primary || '');
+      styleDirection = style;
+    }
+    
+    // 从情绪字段解析（支持双轨：mood/emotionProfile）
+    let moodTone = meta.moodTone || '';
+    if (!moodTone) {
+      if (blueprint.emotionProfile?.primary) {
+        moodTone = `${blueprint.emotionProfile.primary}${blueprint.emotionProfile.secondary ? '+' + blueprint.emotionProfile.secondary : ''}`;
+      } else if (blueprint.mood) {
+        moodTone = blueprint.mood;
+      } else if (blueprint.tone) {
+        moodTone = blueprint.tone;
+      }
+    }
+    
+    // 解析角色（兼容多种格式）
+    const parsedCharacters = characters.map(c => ({
+      name: c.name || '',
+      nameEn: c.nameEn || c.name_en || '',
+      identity: c.identity || c.role || c.description || '',
+      appearance: c.appearance || c.costume || c.description || '',
+    }));
+    
+    // 解析场景（兼容字符串和对象格式）
+    const parsedScenes = scenes.map(s => {
+      if (typeof s === 'string') return s;
+      return s.description || s.purpose || s.scene || JSON.stringify(s);
+    }).filter(Boolean);
+    
+    // 解析特殊约束（多源合并）
+    const specialConstraints = [];
+    if (Array.isArray(meta.specialConstraints)) {
+      specialConstraints.push(...meta.specialConstraints);
+    }
+    if (Array.isArray(blueprint.contentConstraints)) {
+      specialConstraints.push(...blueprint.contentConstraints);
+    }
+    if (Array.isArray(blueprint.forbiddenElements)) {
+      specialConstraints.push(...blueprint.forbiddenElements.map(f => `禁止: ${f}`));
+    }
+    
+    // 解析台词
+    const dialogues = (blueprint.dialogues || []).map(d => typeof d === 'string' ? d : d.text || '').filter(Boolean);
+    
     return new PRD({
-      projectName: blueprint.title || '',
-      videoType: meta.videoType || blueprint.type || 'general',
-      styleDirection: meta.styleDirection || '',
-      moodTone: meta.moodTone || '',
-      characters: characters.map(c => ({
-        name: c.name || '',
-        nameEn: c.nameEn || c.name_en || '',
-        identity: c.identity || c.role || '',
-        appearance: c.appearance || '',
-      })),
-      scenes: scenes.map(s => typeof s === 'string' ? s : s.description || ''),
-      dialogues: (blueprint.dialogues || []).map(d => typeof d === 'string' ? d : d.text || ''),
-      specialConstraints: meta.specialConstraints || [],
-      targetPlatform: meta.targetPlatform || '',
+      projectName: blueprint.title || meta.projectName || '',
+      videoType,
+      styleDirection,
+      moodTone,
+      characters: parsedCharacters,
+      scenes: parsedScenes,
+      dialogues,
+      specialConstraints: specialConstraints.slice(0, 10),
+      targetPlatform: meta.targetPlatform || blueprint.platform || blueprint.targetPlatform || '',
+      rawText: blueprint.rawText || ''
     });
   }
 }

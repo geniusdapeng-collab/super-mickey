@@ -191,6 +191,7 @@ class VisualLanguageAgent extends BaseAgent {
 
   /**
    * 【优化】精简 Prompt，降低 LLM 处理负担
+   * 【接线1 修复】注入 PRD visualSpecification 到视觉设计 prompt
    */
   _buildPrompt(shots, blueprint, options = {}) {
     const shotsInfo = shots.map(s => {
@@ -202,9 +203,26 @@ class VisualLanguageAgent extends BaseAgent {
       ? `\n【注意】这是第 ${options.batchIndex + 1}/${options.totalBatches} 批，仅处理上面列出的 ${shots.length} 个镜头。`
       : '';
 
+    // 【接线1 修复】提取 PRD 视觉规格并注入 prompt
+    const prd = blueprint?._prd || blueprint?.meta?._prd || null;
+    const visualSpec = prd?.productionSpecification?.visualSpecification || prd?.visualSpecification || null;
+    
+    let visualSpecSection = '';
+    if (visualSpec) {
+      const refs = (visualSpec.visualReferences || []).slice(0, 3).join(', ');
+      visualSpecSection = `\n## PRD 视觉规格（必须遵循）\n` +
+        `- 主风格: ${visualSpec.primaryStyle || '未指定'}\n` +
+        `- 色彩方案: 主色调=${visualSpec.colorPalette?.dominant || '未指定'}, 强调色=${visualSpec.colorPalette?.accent || '未指定'}, 情绪=${visualSpec.colorPalette?.mood || '未指定'}\n` +
+        `- 光照方向: ${visualSpec.lightingDirection || '未指定'}\n` +
+        `- 镜头语言: ${visualSpec.cameraLanguage || '未指定'}\n` +
+        `- 质感等级: ${visualSpec.textureQuality || '未指定'}\n` +
+        (refs ? `- 视觉参考: ${refs}\n` : '') +
+        (visualSpec.specialVisualEffects?.length ? `- 特效需求: ${visualSpec.specialVisualEffects.join(', ')}\n` : '');
+    }
+
     return `## 镜头信息 (${shots.length}个)
 ${shotsInfo}
-${batchHint}
+${batchHint}${visualSpecSection}
 
 ## 任务
 为每个镜头设计:
@@ -217,7 +235,7 @@ ${batchHint}
 7. depth_of_field: 景深方案（焦点+光圈+前景背景虚化，40-50字）
 8. timeline: 运镜时间轴（3-4段，根据台词节奏设计，每段含时间范围、运镜动作、画面目的）
 
-原则: 运镜服务叙事,构图服务情绪,色彩服务情绪,景深服务景别,时间轴动态切分
+原则: 运镜服务叙事,构图服务情绪,色彩服务情绪,景深服务景别,时间轴动态切分${visualSpec ? '\n【强制】以上设计方案必须严格遵循 PRD 视觉规格中的风格、色彩、光照和镜头语言要求。' : ''}
 输出JSON: {"shots": [{"shotId":"...","camera":{},"cameraString":"...","lighting":{},"lightingString":"...","composition":"...","color_palette":"...","depth_of_field":"...","timeline":[]}]};`;
   }
 

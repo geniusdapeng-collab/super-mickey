@@ -1039,38 +1039,64 @@ ${r.uncertainties.length ? `## ⚠️ 待确认项\n\n${r.uncertainties.map((u, 
    * 生成适合下游 ScriptEngine 的 metadata 格式
    */
   toScriptEngineMetadata(requirementList) {
+    // 【脱节4 修复】保留完整场景骨架，透传 keyElements/emotionalBeat/duration
+    const structure = requirementList.structure || { opening: '', scenes: [], ending: '' };
+    
+    // 构建带详细信息的场景列表（如果原始结构中有更详细的信息）
+    const enrichedScenes = (structure.scenes || []).map((scene, idx) => {
+      if (typeof scene === 'string') {
+        return {
+          description: scene,
+          purpose: scene,
+          keyElements: [],
+          emotionalBeat: '',
+          duration: null
+        };
+      }
+      // 已经是对象格式，保留所有字段
+      return {
+        description: scene.description || scene.purpose || String(scene),
+        purpose: scene.purpose || scene.description || '',
+        keyElements: scene.keyElements || scene.key_elements || [],
+        emotionalBeat: scene.emotionalBeat || scene.emotional_beat || '',
+        duration: scene.duration || null
+      };
+    });
+    
     return {
       title: requirementList.title,
       target_duration: requirementList.targetDuration,
       target_platform: (requirementList.platform || '视频号/抖音').split('/'),
-      language: requirementList.language || '中文', // 【审计修复】原样透传 undefined 会污染剧本 prompt("语言: undefined")
+      language: requirementList.language || '中文',
       style_tags: [
         requirementList.style.primary.toLowerCase(),
         ...requirementList.style.secondary.map(s => s.toLowerCase())
       ],
-      world_setting: requirementList.worldSetting || requirementList._analysis.worldSetting || '现实世界', // 【审计修复】_analysis 中无 worldSetting 字段(恒为 undefined), 优先取显式字段, 默认现实世界
+      world_setting: requirementList.worldSetting || requirementList._analysis.worldSetting || '现实世界',
       protagonist: requirementList.protagonist?.id || 'default',
       featured_beast_id: requirementList._analysis.worldSetting === 'Nirath' ?
         requirementList._analysis.featuredBeastId : null,
       max_prompt_length: requirementList.constraints?.maxPromptLength || 3000,
-      // 【一致性修复】与 L939 及全系统约定对齐：默认 2 张参考图（原 || 0 与其他所有环节矛盾）
       reference_image_count: requirementList.constraints?.referenceImageCount ?? 2,
-      // 超级小香宝扩展字段
       creative_intensity: requirementList.creativeIntensity,
       narrative_mode: requirementList.narrativeMode,
       aspect_ratio: requirementList.aspectRatio,
+      // 【脱节4 修复】透传完整场景骨架到下游
+      structure: {
+        opening: structure.opening || '',
+        scenes: enrichedScenes,
+        ending: structure.ending || ''
+      },
       series: requirementList.isSeries ? {
         title: requirementList.seriesTitle,
-        name: requirementList.seriesTitle,                    // 【v2.1.4-fix13-审计修复】增加 name 别名
-        currentEpisode: requirementList.episode,               // 【修复】episode → currentEpisode
-        episode: requirementList.episode,                      // 【修复】保留 episode 向后兼容
-        totalEpisodes: requirementList.totalEpisodes,          // 【修复】total_episodes → totalEpisodes
-        total_episodes: requirementList.totalEpisodes,         // 【修复】保留 total_episodes 向后兼容
+        name: requirementList.seriesTitle,
+        currentEpisode: requirementList.episode,
+        episode: requirementList.episode,
+        totalEpisodes: requirementList.totalEpisodes,
+        total_episodes: requirementList.totalEpisodes,
         episodeTitles: requirementList.episodeTitles || []
       } : null,
-      // 【v2.1.4】传递系列内容规划
       seriesContentPlan: requirementList.seriesContentPlan || null,
-      // 🆕 v1.2.6-fix4b: 传递 characters 数组（角色覆盖的前置条件）
       characters: requirementList.characters || []
     };
   }

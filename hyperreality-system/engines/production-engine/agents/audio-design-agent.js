@@ -150,10 +150,24 @@ class AudioDesignAgent extends BaseAgent {
     const rhythmGuidance = emotionCurveInfo
       ? `\n## 场景情绪曲线\n${emotionCurveInfo}\n请确保音频设计严格跟随情绪曲线：上升时音强渐增，下降时音强渐减，转折点时音效有明确的"情绪标记"。`
       : '';
+    
+    // 【接线1 修复】提取 PRD 音频规格并注入 prompt
+    const prd = blueprint?._prd || blueprint?.meta?._prd || null;
+    const audioSpec = prd?.productionSpecification?.audioSpecification || prd?.audioSpecification || null;
+    
+    let audioSpecSection = '';
+    if (audioSpec) {
+      audioSpecSection = `\n## PRD 音频规格（必须遵循）\n` +
+        `- 音乐风格: ${audioSpec.musicStyle || '未指定'}\n` +
+        `- 音效设计方向: ${audioSpec.soundDesign || '未指定'}\n` +
+        `- 配音策略: ${audioSpec.voicePolicy || '未指定'}\n` +
+        `- 音频情绪: ${audioSpec.audioMood || '未指定'}\n` +
+        (audioSpec.audioReferences?.length ? `- 音频参考: ${audioSpec.audioReferences.slice(0, 3).join(', ')}\n` : '');
+    }
 
     return `## 镜头场景
 ${shotsInfo}
-${rhythmGuidance}
+${rhythmGuidance}${audioSpecSection}
 
 ## 任务
 为每个镜头设计环境音效。
@@ -162,6 +176,8 @@ ${rhythmGuidance}
 - 如果说话方式是"quietly"，环境音强度应低（low），背景安静，突出角色低语
 - 如果说话方式是"direct-address"，环境音应干净（low-medium），避免干扰直接对话
 - 如果说话方式是"with a smile"，环境音可温暖柔和，氛围轻松
+
+${audioSpec ? '【强制】以上音频设计必须严格遵循 PRD 音频规格中的音乐风格、音效方向和配音策略。' : ''}
 - 如果说话方式是"firmly"，环境音可略高（medium），增强力量感
 
 【优化新增】每个镜头的音效设计必须包含：

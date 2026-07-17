@@ -42,7 +42,11 @@ class CreativeDirectionAgent extends BaseAgent {
   }
 
   _buildPrompt(discoveryResult) {
-    const { upstreamFields, audienceProfile, sceneStructure, referenceCases } = discoveryResult;
+    const { upstreamFields, audienceProfile, sceneStructure, referenceCases, userModifications } = discoveryResult;
+    
+    const userModificationsSection = (userModifications && userModifications.length > 0)
+      ? `\n【用户修改意见】\n${userModifications.map((m, i) => `${i + 1}. ${m}`).join('\n')}\n\n以上修改意见必须体现在创意核心中。`
+      : '';
     
     return `你是一位资深视频导演/制片人，正在将客户的业务需求转化为产品制作需求。
 
@@ -85,7 +89,7 @@ class CreativeDirectionAgent extends BaseAgent {
 4. emotionalArc 必须从以下枚举选择：setup→rising→climax→falling→resolution, setup→rising→climax→resolution, setup→climax→resolution, loop, flat→peak→flat
 5. endingType 必须从枚举选择：开放式, 闭合式, 悬念式, 升华式, 反转式
 6. 所有字段必须存在，不能为 null
-7. 只输出 JSON，不要任何 markdown 代码块标记，不要解释文本`;
+7. 只输出 JSON，不要任何 markdown 代码块标记，不要解释文本${userModificationsSection}`;
   }
 
   _parseResult(result) {

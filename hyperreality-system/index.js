@@ -949,6 +949,56 @@ class HyperrealitySystem {
 
       productionResult = await this.productionEngine.produce(adapted, baseAgentConfig);
 
+      // 【接线4 修复】场景规划一致性检查：PRD scenePlan vs 实际生成
+      // 【接线5 修复】角色双轨仲裁：PRD characterSystem vs 定妆照目录
+      try {
+        const prd = prdResult || metadata?._prd || null;
+        if (prd) {
+          // 场景一致性检查
+          const scenePlan = prd.productionSpecification?.scenePlan || prd.scenePlan || null;
+          if (scenePlan?.scenes && productionResult?.shots) {
+            const plannedSceneCount = scenePlan.scenes.length;
+            const plannedShotCount = scenePlan.shotMapping?.reduce((sum, s) => sum + (s.estimatedShots || 0), 0) || 0;
+            const actualSceneCount = new Set(productionResult.shots.map(s => s.shotId?.split('-')[0] || s.sceneId)).size;
+            const actualShotCount = productionResult.shots.length;
+            
+            if (Math.abs(plannedSceneCount - actualSceneCount) > 1 || Math.abs(plannedShotCount - actualShotCount) > 3) {
+              console.warn(`   ⚠️ [场景一致性] 规划 vs 实际偏差: 场景${plannedSceneCount}→${actualSceneCount}, 镜头${plannedShotCount}→${actualShotCount}`);
+              result.warnings = result.warnings || [];
+              result.warnings.push({ type: 'scene_mismatch', planned: { scenes: plannedSceneCount, shots: plannedShotCount }, actual: { scenes: actualSceneCount, shots: actualShotCount } });
+            } else {
+              console.log(`   ✅ [场景一致性] 规划/实际匹配: 场景${plannedSceneCount}/${actualSceneCount}, 镜头${plannedShotCount}/${actualShotCount}`);
+            }
+          }
+          
+          // 角色双轨仲裁
+          const prdChars = prd.productionSpecification?.characterSystem?.characters 
+            || prd.characterSystem?.characters || [];
+          if (prdChars.length > 0) {
+            const fs = require('fs');
+            const path = require('path');
+            const charsDir = options.productionEngine?.charactersDir || path.join(__dirname, '../characters');
+            let portraitCount = 0;
+            try {
+              const entries = fs.readdirSync(charsDir);
+              portraitCount = entries.filter(f => /\.(png|jpg|jpeg|webp)$/i.test(f)).length;
+            } catch (e) {
+              // 目录可能不存在
+            }
+            
+            if (prdChars.length !== portraitCount) {
+              console.warn(`   ⚠️ [角色双轨] PRD角色${prdChars.length}个 vs 定妆照${portraitCount}张: ${prdChars.map(c => c.name || c.characterId).join(', ')}`);
+              result.warnings = result.warnings || [];
+              result.warnings.push({ type: 'character_mismatch', prdCharacters: prdChars.length, portraits: portraitCount, names: prdChars.map(c => c.name || c.characterId) });
+            } else {
+              console.log(`   ✅ [角色双轨] PRD角色${prdChars.length}个 / 定妆照${portraitCount}张 — 匹配`);
+            }
+          }
+        }
+      } catch (checkErr) {
+        console.warn(`   ⚠️ 场景/角色一致性检查失败: ${checkErr.message}`);
+      }
+
       // 【v2.1.6-fix-bug36+38】分离 shots↔prompts 引用 + 建立 O(1) 索引
       const { DualArraySync } = require('./utils/dual-array-sync');
       this.dualSync = new DualArraySync();

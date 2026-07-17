@@ -38,8 +38,12 @@ class ProductionSpecificationAgent extends BaseAgent {
   }
 
   _buildPrompt(discoveryResult, creativeResult) {
-    const { upstreamFields, audienceProfile, sceneStructure, referenceCases } = discoveryResult;
+    const { upstreamFields, audienceProfile, sceneStructure, referenceCases, userModifications } = discoveryResult;
     const creativeCore = creativeResult?.creativeCore || {};
+    
+    const userModificationsSection = (userModifications && userModifications.length > 0)
+      ? `\n【用户修改意见】\n${userModifications.map((m, i) => `${i + 1}. ${m}`).join('\n')}\n\n以上修改意见必须体现在制作规格中（视觉风格、角色设计、场景规划等方面）。`
+      : '';
     
     return `你是一位资深视频制作总监，正在制定详细的制作规格。
 
@@ -135,7 +139,7 @@ class ProductionSpecificationAgent extends BaseAgent {
 7. shotMapping 必须与 scenes 一一对应，每个场景预估1-6个镜头
 8. shotBreakdownHint 从以下选择：establishing, wide, medium, close-up, extreme-close-up, POV, drone, tracking, static
 9. 角色 portraitPath 留空字符串（系统后续填充），但需标注是否需要生成定妆照
-10. 只输出 JSON，不要任何 markdown 代码块标记，不要解释文本`;
+10. 只输出 JSON，不要任何 markdown 代码块标记，不要解释文本${userModificationsSection}`;
   }
 
   _parseResult(result, discoveryResult) {

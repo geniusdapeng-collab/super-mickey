@@ -707,8 +707,10 @@ class ProductionEngine {
 
       // ===== Quality Gate =====
       // v2.1.5-refactor: 使用 QualityGate 模块
+      // 【接线3 修复】传入 PRD 交付标准作为验收阈值
       try {
-        result.stages.qualityGate = await this._runStage('quality-gate', () => this.qualityGate.run(currentShots));
+        const prd = adaptedBlueprint?._prd || adaptedBlueprint?.meta?._prd || adaptedBlueprint?.config?._metadata?._prd || null;
+        result.stages.qualityGate = await this._runStage('quality-gate', () => this.qualityGate.run(currentShots, prd));
       } catch (qgError) {
         this.log('QUALITY-GATE', `⚠️ QualityGate失败: ${qgError.message}，继续`);
         result.stages.qualityGate = { passed: false, error: qgError.message, shots: currentShots };

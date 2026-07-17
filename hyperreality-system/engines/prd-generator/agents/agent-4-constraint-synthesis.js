@@ -10,12 +10,12 @@ class ConstraintSynthesisAgent {
   }
 
   process(discoveryResult, productResult, creativeResult, productionResult, budgetProfile) {
-    const { upstreamFields, riskAssessment, audienceProfile, referenceCases } = discoveryResult;
+    const { upstreamFields, riskAssessment, audienceProfile, referenceCases, userModifications } = discoveryResult;
     const type = upstreamFields.type || '通用';
     const difficulty = upstreamFields.difficulty || 'medium';
     
-    // 1. 制作约束
-    const productionConstraints = this._buildConstraints(type, difficulty, riskAssessment, upstreamFields, budgetProfile);
+    // 1. 制作约束（注入用户修改意见）
+    const productionConstraints = this._buildConstraints(type, difficulty, riskAssessment, upstreamFields, budgetProfile, userModifications);
     
     // 2. 受众定位（直接透传）
     const audienceProfileOut = this._buildAudienceProfile(audienceProfile);
@@ -30,7 +30,7 @@ class ConstraintSynthesisAgent {
     };
   }
 
-  _buildConstraints(type, difficulty, riskAssessment, upstreamFields, budgetProfile) {
+  _buildConstraints(type, difficulty, riskAssessment, upstreamFields, budgetProfile, userModifications = []) {
     // 技术约束
     const technicalConstraints = [];
     if (riskAssessment?.technicalRisks) {
@@ -42,6 +42,15 @@ class ConstraintSynthesisAgent {
     }
     if (upstreamFields?.special_notes) {
       technicalConstraints.push(`特殊要求: ${upstreamFields.special_notes.slice(0, 50)}`);
+    }
+    // 【脱节1 修复】注入用户修改意见到技术约束
+    if (userModifications && userModifications.length > 0) {
+      userModifications.forEach(mod => {
+        const modStr = String(mod).slice(0, 100);
+        if (modStr.length > 3) {
+          technicalConstraints.push(`用户要求: ${modStr}`);
+        }
+      });
     }
     if (technicalConstraints.length === 0) {
       technicalConstraints.push('保持视觉风格一致性');
@@ -56,7 +65,7 @@ class ConstraintSynthesisAgent {
       businessConstraints.push('符合目标平台审核规范');
     }
     
-    // 禁止元素
+    // 禁止元素（基础 + 用户修改）
     const forbiddenByType = {
       '硬科幻': ['卡通风格', '过度简化', '模糊镜头'],
       '赛博朋克': ['自然光线', '田园风光', '暖色调为主'],
@@ -66,7 +75,20 @@ class ConstraintSynthesisAgent {
       '自然纪录片': ['虚构情节', '夸张特效', '人物表演'],
       '通用': ['低质量', '模糊', '不稳定']
     };
-    const forbiddenElements = forbiddenByType[type] || ['低质量', '模糊', '不稳定'];
+    const forbiddenElements = [...(forbiddenByType[type] || ['低质量', '模糊', '不稳定'])];
+    
+    // 【脱节1 修复】从用户修改意见中提取禁止类要求
+    if (userModifications && userModifications.length > 0) {
+      userModifications.forEach(mod => {
+        const modStr = String(mod).toLowerCase();
+        if (modStr.includes('不要') || modStr.includes('禁止') || modStr.includes('避免') || modStr.includes('不准')) {
+          const item = String(mod).replace(/不要|禁止|避免|不准|不[要需]/g, '').trim().slice(0, 30);
+          if (item && !forbiddenElements.includes(item)) {
+            forbiddenElements.push(item);
+          }
+        }
+      });
+    }
     
     // 质量阈值
     const thresholdsByDifficulty = {
