@@ -96,7 +96,7 @@ ${genreHint ? `【用户声明的题材】${genreHint}（原样保留，不要�
     if (typeof this.llmEngine.reasonStructured === 'function') {
       const result = await this.llmEngine.reasonStructured(prompt, {
         required: ['genre', 'profile']
-      }, { maxTokens: 2000, temperature: 0.3, timeoutMs: this.timeoutMs });
+      }, { maxTokens: 2000, temperature: 1, timeoutMs: this.timeoutMs });
       if (result && result.success && result.data && result.data.genre) {
         return {
           genre: String(result.data.genre).trim(),

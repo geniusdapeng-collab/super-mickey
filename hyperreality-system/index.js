@@ -1,3 +1,4 @@
+
 // hyperreality-system/index.js
 // SuperMickey - 超级小香宝统一入口
 // 深度融合:剧本引擎 → 适配层 → 制作引擎 → 完整镜头
@@ -54,7 +55,9 @@ const { DurationConstraintManager } = require('./engines/duration-constraint/dur
 const { BehaviorAnchorSystem } = require('./engines/behavior-system/behavior-anchor-system');
 
 // 【v2.1.10-hotfix】密码学验证模块——AI 无法伪造确认签名
-const { verifyConfirmation } = require('../scripts/confirmation-crypto');
+const { verifyConfirmation, verifyConfirmationDetailed } = require('../scripts/confirmation-crypto');
+// 【v2.1.12-fix 多进程竞态修复】单实例锁 + 运行身份 + 确认文件生命周期
+const runCoordinator = require('../scripts/run-coordinator');
 const { SmartImageReferencer } = require('./engines/smart-image-referencer');
 const { SceneNumberMapper } = require('./engines/scene-number-mapper');
 const { IdentityPersistenceSystem } = require('./engines/identity-persistence-system');
@@ -359,6 +362,61 @@ class HyperrealitySystem {
     // 【v2.1.6-fix-bug39】metadata 深拷贝隔离，防止模块间状态污染
     const { deepClone } = require('./utils/safe-clone');
     metadata = deepClone(metadata);
+
+    // 【v2.1.12-fix 多进程竞态修复】单实例锁 + 运行身份登记
+    // 任何入口（run-preproduction-*.js / app/commands/preproduction.js / 直调 create）
+    // 都必须先获得锁，杜绝"多进程并发跑预生产、互相清理输出、竞争消费确认文件"
+    if (this._activeRun) {
+      const reentrantMsg = `本实例已有运行中的预生产任务 (run_id=${this._activeRun})，禁止并发 create()`;
+      console.error(`   ⛔ ${reentrantMsg}`);
+      return {
+        success: false,
+        lockConflict: true,
+        stages: { preproductionLock: { status: 'reentrant-blocked', run_id: this._activeRun } },
+        errors: [{ stage: 'preproductionLock', message: reentrantMsg }],
+        confirmations: {},
+        totalWaitTimeMs: 0
+      };
+    }
+    let lockResult = { acquired: true, skipped: true };
+    if (process.env.STORMAXE_SKIP_LOCK === '1') {
+      console.warn('   ⚠️ STORMAXE_SKIP_LOCK=1，跳过单实例锁（仅限测试用途）');
+    } else {
+      lockResult = runCoordinator.acquireLock(
+        { title: metadata.title, intent: String(intent).substring(0, 120), source: 'HyperrealitySystem.create' },
+        { force: process.env.STORMAXE_FORCE_RUN === '1' }
+      );
+    }
+    if (!lockResult.acquired) {
+      const h = lockResult.holder || {};
+      const lockMsg = `已有预生产流程在运行: PID=${h.pid} | 主题=${h.title || '?'} | 启动于=${h.started_at || '?'}，禁止重复启动`;
+      console.error('');
+      console.error('⛔ '.repeat(20));
+      console.error(`   ${lockMsg}`);
+      console.error('   处理建议:');
+      console.error(`     1. 等待该流程完成（或人工确认后 kill ${h.pid}）`);
+      console.error('     2. 确认其为僵尸进程后重试（失效锁会被自动接管）');
+      console.error('     3. 确需强制接管: STORMAXE_FORCE_RUN=1（危险，慎用）');
+      console.error('⛔ '.repeat(20));
+      return {
+        success: false,
+        lockConflict: true,
+        stages: { preproductionLock: { status: 'locked', holder: h } },
+        errors: [{ stage: 'preproductionLock', message: lockMsg }],
+        confirmations: {},
+        totalWaitTimeMs: 0
+      };
+    }
+    if (lockResult.tookOverStale) {
+      console.log(`   ♻️ 已接管失效锁（原持有者 PID=${lockResult.previousHolder?.pid} 已退出）`);
+    }
+    if (lockResult.forcedOverLiveHolder) {
+      console.warn(`   ⚠️ STORMAXE_FORCE_RUN=1 强制接管锁！原持有者 PID=${lockResult.previousHolder?.pid} 仍存活，请确认这是你有意为之`);
+    }
+    // 登记本次运行身份：run_id 将绑定到本运行产生的所有确认文件
+    this._runId = runCoordinator.startRun({ title: metadata.title });
+    this._activeRun = this._runId;
+    console.log(`   🔒 单实例锁已持有 (PID=${process.pid}) | 运行编号: ${this._runId}`);
 
     console.log(`\n🔥 [HyperrealitySystem v${this.version}] 开始创作`);
     console.log(`   意图: ${intent}`);
@@ -2045,6 +2103,13 @@ class HyperrealitySystem {
       if (this.eventBus && typeof this.eventBus.clearSessionListeners === 'function') {
         this.eventBus.clearSessionListeners();
       }
+      // 【v2.1.12-fix 多进程竞态修复】结束运行身份并释放单实例锁
+      try {
+        if (this._runId) runCoordinator.finishRun(this._runId);
+        this._runId = null;
+        this._activeRun = null;
+        runCoordinator.releaseLock();
+      } catch (_) { /* 收尾阶段静默 */ }
     }
 
     // 【v2.1.4-fix13-审计修复】将完整 shots/prompts/opening 挂到 result,供调用方获取完整数据
@@ -2481,134 +2546,21 @@ class HyperrealitySystem {
    * 【v2.1.8-强制流程】禁止预置确认文件，必须等待真实人工确认
    */
   async _waitForExternalConfirmation(type, content) {
-    // 【v2.1.7-fix】使用绝对路径，避免工作目录不同导致确认文件位置错乱
-    const outputDir = path.join(__dirname, 'output', 'confirmations');
-    if (!fs.existsSync(outputDir)) {
-      fs.mkdirSync(outputDir, { recursive: true });
-    }
-
-    // 写入待确认内容
-    const contentPath = path.join(outputDir, `confirmation-${type}.md`);
-    fs.writeFileSync(contentPath, content, 'utf8');
-
-    const confirmPath = path.join(outputDir, `confirmation-${type}.json`);
-
-    // 【v2.1.8-强制流程】删除预置确认文件检查，禁止绕过人工确认
-    // 之前此处有漏洞：允许预置 JSON 文件跳过确认
-    // 现在必须等待真实的人工确认
-
-    // 【v2.1.10-hotfix】立即通知标记：外部系统可通过此标记检测到确认文件已生成
-    console.log('');
-    console.log('╔══════════════════════════════════════════════════════════════════════╗');
-    console.log(`║ 🔔 NOTIFICATION: confirmation-${type}.md 已生成 ║`);
-    console.log('╠══════════════════════════════════════════════════════════════════════╣');
-    console.log(`║ 文件路径: ${contentPath.substring(contentPath.length - 50).padStart(50)} ║`);
-    console.log(`║ 查看命令: cat ${contentPath} ║`);
-    console.log('║                                                                      ║');
-    console.log('║ 请审阅内容后，运行以下命令确认:                                      ║');
-    console.log(`║   node scripts/human-confirm.js ${type} approve "你的理由"           ║`);
-    console.log('║ 或拒绝:                                                              ║');
-    console.log(`║   node scripts/human-confirm.js ${type} reject "调整原因"           ║`);
-    console.log('║                                                                      ║');
-    console.log('║ ⚠️  AI 不得创建 confirmation-*.json，必须等待人类确认               ║');
-    console.log('║ ⏱️  等待时间不计入流程有效时间                                       ║');
-    console.log('╚══════════════════════════════════════════════════════════════════════╝');
-    console.log('');
-
-    // 【v2.1.10-hotfix】等待确认逻辑改进：等待时间不计入总超时
-    // 原因：用户可能因忙碌、消息延迟等原因未能及时确认，此时间不应消耗流程配额
-    // 改为：长等待+阶段提醒机制，不设强制超时
-    const maxWait = 2 * 60 * 60 * 1000; // 2小时（仅作为提醒节点，不强制终止）
-    const checkInterval = 5000; // 5秒检查一次（减少CPU占用）
-    const reminderIntervals = [15, 30, 45, 60, 90, 120]; // 分钟节点提醒
-    let lastReminderIndex = -1;
-    let startTime = Date.now(); // 重置计时器：每次提醒后重置，避免累计超时
-    let totalWaitMs = 0; // 累计等待时间（用于统计，但不影响流程）
-
-    while (true) {
-      const elapsed = Date.now() - startTime;
-      const elapsedMins = Math.floor(elapsed / 60000);
-      const totalElapsedMins = Math.floor(totalWaitMs / 60000) + elapsedMins;
-      
-      // 检查是否需要发送提醒
-      const currentReminderIndex = reminderIntervals.findIndex(m => totalElapsedMins >= m && totalElapsedMins < m + 5);
-      if (currentReminderIndex !== -1 && currentReminderIndex !== lastReminderIndex) {
-        lastReminderIndex = currentReminderIndex;
-        const reminderMin = reminderIntervals[currentReminderIndex];
-        console.log('');
-        console.log('🔄 '.repeat(15));
-        console.log(`   📢 提醒: 已等待 ${reminderMin} 分钟，确认文件仍在等待中...`);
-        console.log(`      请查看: ${contentPath}`);
-        console.log(`      确认命令: node scripts/human-confirm.js ${type} approve "你的理由"`);
-        console.log('      ⚠️ 等待时间不计入流程有效时间');
-        console.log('🔄 '.repeat(15));
-        console.log('');
-      }
-      
-      // 2小时节点：提醒用户，重置计时器，继续等待（不强制终止）
-      if (elapsed >= maxWait) {
-        totalWaitMs += elapsed;
-        startTime = Date.now(); // 重置计时器
-        console.log('');
-        console.log('⏰ '.repeat(15));
-        console.log('   ⏰ 等待已超2小时，流程仍继续等待...');
-        console.log('   原因：等待确认的时间不计入流程有效时间');
-        console.log('   如需确认，请运行上述命令');
-        console.log('   如需终止，请发送关闭信号');
-        console.log('⏰ '.repeat(15));
-        console.log('');
-      }
-      // 【v2.1.6-fix】收到关闭信号，立即中断轮询
-      if (this._shutdownRequested) {
-        console.log('   ⏰ 收到关闭信号，中断等待');
-        return { approved: false, reason: 'shutdown' };
-      }
-
-      if (fs.existsSync(confirmPath)) {
-        try {
-          const confirmData = JSON.parse(fs.readFileSync(confirmPath, 'utf8'));
-          
-          // 【v2.1.10-hotfix】密码学签名验证——AI 无法伪造
-          // 确认文件必须包含有效的 HMAC-SHA256 签名
-          // 签名由 human-confirm.js 工具生成，密钥仅人类知晓
-          if (!verifyConfirmation(confirmData, type)) {
-            console.log(`   ⛔ 拒绝非法确认文件: 签名验证失败`);
-            console.log(`   ⛔ 仅人类可通过 human-confirm.js 工具生成有效签名`);
-            console.log(`   ⛔ AI 不得擅自创建 confirmation-*.json`);
-            // 删除非法确认文件，防止继续被读取
-            fs.unlinkSync(confirmPath);
-            continue;
-          }
-          
-          console.log(`   ✅ 收到有效人类确认: approved=${confirmData.approved}`);
-
-          // 【v2.1.10-fix Step2确认过期】消费一次性确认：验证通过后立即删除确认文件。
-          // 原因：签名有效期放宽到 24h 后，若不删除，下一次运行到达同一环节时
-          // 会读到本次运行遗留的旧确认文件，造成"旧确认自动放行新内容"。
-          // 每个环节每次运行都要求一次真实的人工确认。
-          try { fs.unlinkSync(confirmPath); } catch (_) {}
-
-          const waitTimeMs = Date.now() - startTime + totalWaitMs;
-          console.log(`   ⏱️ 本次等待确认耗时: ${Math.round(waitTimeMs/1000)}秒 (${Math.round(waitTimeMs/60000)}分钟)`);
-          console.log(`   ⏱️ 等待时间不计入流程有效时间`);
-          return {
-            approved: confirmData.approved === true || confirmData.approved === 'true' || confirmData.approved === 1,
-            reason: confirmData.reason || '',
-            suggestions: confirmData.suggestions || [],
-            waitTimeMs: waitTimeMs // 【v2.1.10-hotfix】记录总等待时间，用于排除统计
-          };
-        } catch (e) {
-          console.log('   ⚠️ 确认文件解析失败,继续等待...');
-        }
-      }
-
-      // 每5秒检查一次，但只在特定时间打印状态（减少日志噪音）
-      if (elapsed % 300000 < checkInterval) { // 每5分钟打印一次简短状态
-        console.log(`   ⏳ 等待确认中... (${elapsedMins}分钟) — 等待时间不计入流程总时间`);
-      }
-
-      await new Promise(resolve => setTimeout(resolve, checkInterval));
-    }
+    // 【v2.1.8-强制流程】禁止预置确认文件，必须等待真实人工确认（规则保持）
+    // 【v2.1.12-fix 多进程竞态修复】实现抽离至 scripts/confirmation-waiter.js：
+    //  - 验证通过的消费方式由 unlinkSync 删除改为"归档"（archive/consumed/），
+    //    多进程场景下另一个进程不会再"等到一半文件被删"而无限空转
+    //  - 确认文件需通过 run_id + 时间戳双重绑定，上一轮残留的合法确认
+    //    （如事故中的 confirmation-portraits.json）永不自动放行新内容
+    //  - nonce 重放（确认已被其他实例消费/复制攻击）时明确终止流程，
+    //    不再无限循环等待（即 2026-07-18 事故的根因修复）
+    const { waitForExternalConfirmation } = require('../scripts/confirmation-waiter');
+    return waitForExternalConfirmation({
+      type,
+      content,
+      runId: this._runId || null,
+      shouldAbort: () => this._shutdownRequested === true
+    });
   }
 
   /**

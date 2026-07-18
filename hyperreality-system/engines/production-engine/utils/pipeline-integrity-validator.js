@@ -43,7 +43,7 @@ Prompt: ${item.prompt?.slice(0, 300) || '空'}
     try {
       const result = await this.llm.reason(prompt, {
         maxTokens: 200,
-        temperature: 0.1,
+        temperature: 1,
         timeoutMs: 30000
       });
 
