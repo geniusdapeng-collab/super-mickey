@@ -385,6 +385,12 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
       console.warn(`[PromptFusionAgent] ⚠️ ${failed}/${shots.length} 镜头需要补全/兜底`);
     }
     console.log(`[PromptFusionAgent] 完成 ✓ | 降级: ${failed}/${shots.length}`);
+
+    // 【v2.1.10-fix 提示词融合断点】全部镜头完成后显式清理子 checkpoint，避免残留文件累积
+    if (checkpointMgr && blueprintHash) {
+      try { this._clearSubCheckpoint(checkpointMgr, blueprintHash); } catch (_) {}
+    }
+
     return {
       shots: results,
       degraded: failed > 0,
@@ -445,8 +451,8 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
   }
 
   /**
-   * 【v2.1.8-fix】镜头级断点续跑：加载子 checkpoint
-   * 【修复 P0-5】加载成功后立即删除，防止已完成镜头的子 checkpoint 泄漏
+   * 【v2.1.10-fix 提示词融合断点】加载子 checkpoint（加载后不删除，防止进程崩溃丢失进度）
+   * 清理时机：全部镜头完成后由 process() 末尾统一调用 _clearSubCheckpoint。
    */
   _loadSubCheckpoint(checkpointMgr, blueprintHash) {
     const fs = require('fs');
@@ -460,12 +466,23 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
         return null;
       }
       console.log(`[PromptFusionAgent] 📂 子 checkpoint 已加载: ${data.completed}/${data.total} 镜头`);
-      // 【修复 P0-5】加载成功即删除，防止泄漏
-      try { fs.unlinkSync(subCkptPath); } catch (_) {}
+      // 【v2.1.10-fix】加载后保留文件，供后续增量写入覆盖；仅在全部完成后清理
       return data;
     } catch (e) {
       console.warn(`[PromptFusionAgent] 子 checkpoint 加载失败: ${e.message}`);
       return null;
+    }
+  }
+
+  /**
+   * 【v2.1.10-fix 提示词融合断点】清理子 checkpoint（全部镜头完成后调用）
+   */
+  _clearSubCheckpoint(checkpointMgr, blueprintHash) {
+    const fs = require('fs');
+    const path = require('path');
+    const subCkptPath = path.join(checkpointMgr.baseDir || './checkpoints', `checkpoint-phase3-${blueprintHash}.json`);
+    if (fs.existsSync(subCkptPath)) {
+      try { fs.unlinkSync(subCkptPath); } catch (_) {}
     }
   }
 

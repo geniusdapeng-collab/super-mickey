@@ -9,6 +9,20 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
+// 【v2.1.10-fix Step2确认过期】签名有效期策略调整
+// 原实现：时间戳有效期 ±5 分钟。人类确认后，若主流程 >5 分钟才读取到确认文件
+// （例如确认时主流程正卡在长时间 LLM 调用、或隔了一夜重跑），合法确认会被误判
+// "时间戳过期"并删除，导致 Step 2 反复要求重新确认。
+// 防重放的真实防线是 nonce 一次性消费（下方 usedNonces），超长有效期不降低安全性：
+// 没有 HMAC 密钥依然无法伪造签名，同一 nonce 依然只能用一次。
+// 默认 24 小时，可通过 HUMAN_CONFIRMATION_TTL_MS 覆盖。
+const CONFIRM_TTL_MS = (() => {
+  const v = parseInt(process.env.HUMAN_CONFIRMATION_TTL_MS || '', 10);
+  return Number.isFinite(v) && v > 0 ? v : 24 * 60 * 60 * 1000;
+})();
+// 未来时间戳宽限（仅容忍时钟偏移，超过即视为伪造）
+const FUTURE_SKEW_MS = 10 * 60 * 1000;
+
 // 人类共享密钥（仅在人类端存储，AI 不可访问）
 // 优先使用环境变量，回退到 .env 文件（确保主入口和 human-confirm.js 使用同一密钥）
 let HUMAN_SECRET = process.env.HUMAN_CONFIRMATION_SECRET;
@@ -78,11 +92,19 @@ function verifyConfirmation(confirmData, type) {
     return false;
   }
 
-  // 2. 检查时间戳（允许 ±5 分钟时钟偏移）
+  // 2. 检查时间戳
+  // 【v2.1.10-fix Step2确认过期】拆分为"未来偏移"与"有效期"两个独立判断：
+  // - 未来偏移超过 10 分钟 → 伪造嫌疑，拒绝
+  // - 确认文件生成超过 TTL（默认 24h，HUMAN_CONFIRMATION_TTL_MS 可调）→ 过期，拒绝
+  // 防重放依赖 nonce 一次性消费，不依赖短 TTL
   const now = Date.now();
   const ts = confirmData.timestamp;
-  if (Math.abs(now - ts) > 5 * 60 * 1000) {
-    console.log(' ⛔ 拒绝: 时间戳过期（可能是重放攻击）');
+  if (ts > now + FUTURE_SKEW_MS) {
+    console.log(' ⛔ 拒绝: 时间戳来自未来（超过允许的时钟偏移，疑似伪造）');
+    return false;
+  }
+  if (now - ts > CONFIRM_TTL_MS) {
+    console.log(` ⛔ 拒绝: 确认文件已过期（生成于 ${Math.round((now - ts) / 60000)} 分钟前，有效期 ${Math.round(CONFIRM_TTL_MS / 3600000)} 小时）`);
     return false;
   }
 

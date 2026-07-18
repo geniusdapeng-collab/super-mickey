@@ -11,7 +11,9 @@ class ScriptBlueprint {
     this.meta = {
       title: data.meta?.title || 'Untitled',
       narrative_mode: data.meta?.narrative_mode || 'dramatic',
-      target_duration: data.meta?.target_duration || 120,
+      // 【v2.1.10-fix 时长断层】兜底与 production-profile 唯一真源对齐(60s)，
+      // 不再硬编码 120s（历史测试残留值，会把真实目标时长"静默带偏"）
+      target_duration: data.meta?.target_duration || 60,
       acts_count: data.meta?.acts_count || 3,
       scenes_count: data.meta?.scenes_count || 5,
       ...data.meta

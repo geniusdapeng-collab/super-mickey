@@ -24,6 +24,11 @@ class PhaseExecutor {
     this.mergeShots = options.mergeShots || ((a, b, fields) => a);
     // 【v2.1.6-fix】长时间任务健康监控支持
     this.healthMonitor = options.healthMonitor || null;
+    // 【v2.1.10-fix 提示词融合断点】接收 checkpointManager（含 baseDir），
+    // 供 Phase3 将其下发给 PromptFusionAgent 做镜头级子 checkpoint。
+    // 原实现未接收该选项，this.checkpointManager 恒为 undefined，
+    // 导致 PromptFusionAgent 的镜头级断点续跑在主链路中完全失效。
+    this.checkpointManager = options.checkpointManager || null;
   }
 
   log(stage, message) {

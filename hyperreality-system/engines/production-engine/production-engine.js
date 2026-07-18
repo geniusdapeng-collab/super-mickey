@@ -86,6 +86,19 @@ class ProductionEngine {
     this.logs = [];
     this._initResourceGuard();
     this._initModules();
+
+    // 【v2.1.10-fix 提示词融合断点】checkpoint 目录与续跑开关初始化
+    // 原实现：this._checkpointDir / this._enableResume 从未被赋值（agentConfig 里
+    // 传入的 checkpointDir/enableResume 无人读取），导致：
+    // 1) _loadLatestCheckpoint 中 path.join(undefined, ...) 抛 TypeError，
+    // 被 catch 静默吞掉后返回 null —— Phase 级断点续跑从未生效；
+    // 2) _clearCheckpoints 同样抛异常被吞 —— 旧 checkpoint 残留；
+    // 3) !this._enableResume 恒为 true —— 续跑在入口处就被短路。
+    this._checkpointDir = this.agentConfig.checkpointDir
+      || options.checkpointDir
+      || path.join(process.cwd(), 'checkpoints');
+    this._enableResume = this.agentConfig.enableResume !== false;
+    this._checkpointManager = null;
     
     // v2.1.5-refactor: 初始化 Phase 执行器（渐进式重构）
     this._initPhases();
@@ -122,7 +135,10 @@ class ProductionEngine {
       budgetRemaining: this._budgetRemaining.bind(this),
       checkMemory: this._checkMemory.bind(this),
       cloneShots: this._cloneShots.bind(this),
-      mergeShots: this._mergeShotsByShotId.bind(this)
+      mergeShots: this._mergeShotsByShotId.bind(this),
+      // 【v2.1.10-fix 提示词融合断点】下发 checkpointManager，
+      // 让 Phase3 能把它传给 PromptFusionAgent 启用镜头级子 checkpoint
+      checkpointManager: this._getCheckpointManager()
     };
     
     this.phase1 = new Phase1SceneDesign(commonOptions);
@@ -171,7 +187,12 @@ class ProductionEngine {
       checkMemory: this._checkMemory.bind(this),
       cloneShots: this._cloneShots.bind(this),
       mergeShots: this._mergeShotsByShotId.bind(this),
-      healthMonitor: this.healthMonitor
+      healthMonitor: this.healthMonitor,
+      // 【v2.1.10-fix 提示词融合断点】下发 checkpointManager（含 baseDir），
+      // 供 Phase3 将其下发给 PromptFusionAgent 做镜头级子 checkpoint。
+      // 原实现未接收该选项，this.checkpointManager 恒为 undefined，
+      // 导致 PromptFusionAgent 的镜头级断点续跑在主链路中完全失效。
+      checkpointManager: this._getCheckpointManager()
     };
     this.phase1 = new Phase1SceneDesign(commonOptions);
     this.phase2 = new Phase2VisualAudio(commonOptions);
@@ -322,19 +343,28 @@ class ProductionEngine {
   }
 
   /**
+   * 【v2.1.10-fix 提示词融合断点】CheckpointManager 惰性单例
+   * 供 _saveCheckpoint 与 Phase 执行器（镜头级子 checkpoint）共用同一 baseDir
+   */
+  _getCheckpointManager() {
+    if (!this._checkpointManager) {
+      this._checkpointManager = new CheckpointManager(this._checkpointDir);
+    }
+    return this._checkpointManager;
+  }
+
+  /**
    * 【新增】增量保存 checkpoint（已提取到 utils/checkpoint-manager.js）
    * 保持向后兼容，内部委托给 CheckpointManager
    */
   async _saveCheckpoint(phase, shots, extra = {}) {
-    if (!this._checkpointManager) {
-      this._checkpointManager = new CheckpointManager(this._checkpointDir);
-    }
+    const checkpointManager = this._getCheckpointManager();
     // 【P1-9 修复】自动附加 blueprint 指纹
     const enrichedExtra = {
       ...extra,
       blueprintFingerprint: this._blueprintFingerprint
     };
-    const result = this._checkpointManager.save(phase, shots, enrichedExtra, this.log.bind(this));
+    const result = checkpointManager.save(phase, shots, enrichedExtra, this.log.bind(this));
     if (!result.success) {
       // 保持原有行为：保存失败不抛异常
     }
@@ -1207,7 +1237,8 @@ class ProductionEngine {
     }) : [];
 
     // v1.2.5: 时长归一化--确保总时长严格等于目标时长
-    const targetDuration = adaptedBlueprint.config?.target_duration || adaptedBlueprint.meta?.target_duration || 120;
+    // 【v2.1.10-fix 时长断层】兜底与 production-profile 唯一真源对齐(60s)，消除 120s 测试残留
+    const targetDuration = adaptedBlueprint.config?.target_duration || adaptedBlueprint.meta?.target_duration || 60;
     shots = this._normalizeDurations(shots, targetDuration);
 
     return { shots, sceneCount: shots.length };

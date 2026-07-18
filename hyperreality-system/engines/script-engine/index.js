@@ -107,6 +107,18 @@ class ScriptEngine {
     // 3. 校验剧本
     const validation = this.scriptValidator.validate(blueprint);
     console.log(`[ScriptEngine] 剧本校验: ${validation.passed ? '通过' : '失败'} (${validation.overall_score}分)`);
+    
+    // 【v2.1.10-fix】保存详细校验报告，便于分析扣分项
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const reportPath = path.join(__dirname, '..', '..', 'output', 'script-validation-report.json');
+      fs.mkdirSync(path.dirname(reportPath), { recursive: true });
+      fs.writeFileSync(reportPath, JSON.stringify(validation, null, 2));
+      console.log(`[ScriptEngine] 校验报告已保存: ${reportPath}`);
+    } catch (e) {
+      console.warn(`[ScriptEngine] 保存校验报告失败: ${e.message}`);
+    }
 
     // 4. 适配到现有系统格式
     const adapted = this.adapter.adapt(blueprint);
@@ -143,7 +155,8 @@ class ScriptEngine {
   _generateFromTemplate(userIntent) {
     const meta = userIntent.metadata;
     const { SafeCast } = require('../../utils/safe-cast');
-    const duration = SafeCast.number(meta.target_duration, 120);
+    // 【v2.1.10-fix 时长断层】兜底与 production-profile 唯一真源对齐(60s)，消除 120s 测试残留
+    const duration = SafeCast.number(meta.target_duration, 60);
     const sceneCount = 5;
     const sceneDuration = Math.floor(duration / sceneCount);
 

@@ -188,7 +188,8 @@ class ScriptValidator {
    */
   _checkDuration(blueprint) {
     const checks = [];
-    const targetDuration = SafeCast.number(blueprint.meta?.target_duration, 120);
+    // 【v2.1.10-fix 时长断层】兜底与 production-profile 唯一真源对齐(60s)，消除 120s 测试残留
+    const targetDuration = SafeCast.number(blueprint.meta?.target_duration, 60);
     const actualDuration = blueprint.getTotalDuration();
     
     checks.push({
@@ -229,17 +230,62 @@ class ScriptValidator {
   }
 
   /**
+   * 【v2.1.10-fix 台词真空】本片旁白策略判定（与生成侧 _resolveVoiceoverPolicy 同口径）
+   * 供 _checkDialogue / _checkForbiddenElements 条件化放行旁白。
+   */
+  _isVoiceoverAllowed(blueprint) {
+    const meta = blueprint?.meta || {};
+    const metaMd = meta._metadata || {};
+
+    // 1. 生成侧盖戳
+    if (metaMd.voiceoverAllowed === true) return true;
+
+    // 2. PRD voicePolicy
+    const prd = metaMd._prd || meta._prd || null;
+    const voicePolicy = prd?.audioSpecification?.voicePolicy || '';
+    if (/旁白|画外音/.test(voicePolicy)) return true;
+
+    // 3. 台词要求
+    const dialogueReq = metaMd.dialogueRequirement || meta.dialogue_requirement || '';
+    if (/旁白|画外音|narration|voiceover/i.test(dialogueReq)) return true;
+
+    // 4. 叙事模式
+    const narrativeMode = meta.narrative_mode || metaMd.narrativeMode || '';
+    if (String(narrativeMode).toLowerCase() === 'narration') return true;
+
+    return false;
+  }
+
+  /**
    * 台词检查
    */
   _checkDialogue(blueprint) {
     const checks = [];
     const scenes = blueprint.structure.scenes || [];
-    
+    // 【v2.1.10-fix 台词真空】本片旁白策略：PRD/主题要求旁白时，旁白台词计入台词判定
+    const voiceoverAllowed = this._isVoiceoverAllowed(blueprint);
+
     // 统计有台词的场景
     // 【P1-14 修复】同时检查 lines 和 blocks 两种格式
     const hasDialogueContent = (d) => (d?.lines?.length > 0) || (d?.blocks?.length > 0);
-    const scenesWithDialogue = scenes.filter(s => SafeCast.bool(s.dialogue?.has_dialogue, false) && hasDialogueContent(s.dialogue));
-    
+    // 【v2.1.10-fix 台词真空】has_dialogue 标志缺失时以"实际内容"为准。
+    // 原实现要求 has_dialogue===true 且有内容，但生成 prompt 从未要求 LLM 输出该标志，
+    // 导致"台词明明存在却被判 0/6"。字符串形式的 dialogue 同样视为有效内容。
+    const sceneHasDialogue = (s) => {
+      const d = s.dialogue;
+      if (typeof d === 'string' && d.trim()) return true;
+      const flagOrContent = SafeCast.bool(d?.has_dialogue, hasDialogueContent(d));
+      if (flagOrContent && hasDialogueContent(d)) return true;
+      // 旁白允许的片子：narration / voice_over 字段中的内容也计为台词
+      if (voiceoverAllowed) {
+        if (typeof s.narration === 'string' && s.narration.trim()) return true;
+        if (Array.isArray(s.narration) && s.narration.length > 0) return true;
+        if (s.voice_over?.text) return true;
+      }
+      return false;
+    };
+    const scenesWithDialogue = scenes.filter(sceneHasDialogue);
+
     checks.push({
       category: 'dialogue',
       name: 'has_dialogue',
@@ -248,7 +294,7 @@ class ScriptValidator {
       message: `${scenesWithDialogue.length}/${scenes.length} 场景有台词`,
       suggestion: '必须至少包含台词的场景'
     });
-    
+
     // 检查台词长度
     let longLines = 0;
     for (const scene of scenes) {
@@ -268,7 +314,7 @@ class ScriptValidator {
         }
       }
     }
-    
+
     checks.push({
       category: 'dialogue',
       name: 'line_length',
@@ -277,25 +323,50 @@ class ScriptValidator {
       message: longLines === 0 ? '所有台词长度合规' : `${longLines} 句台词超过 ${this.config.maxLineLength} 字`,
       suggestion: `台词每句不超过 ${this.config.maxLineLength} 字`
     });
-    
-    // 检查是否包含旁白（禁止）
+
+    // 检查是否包含旁白
+    // 【v2.1.10-fix 台词真空】旁白禁令改为按策略生效：
+    // PRD/主题明确要求旁白（画外音）的片子，旁白是合法台词形式，不再一刀切禁止；
+    // 未要求旁白的片子维持原禁令。这消除了"PRD 要旁白 vs 校验器禁旁白"的规则冲突。
     let hasVoiceover = false;
     for (const scene of scenes) {
       if (scene.voice_over?.text) {
         hasVoiceover = true;
         break;
       }
+      // dialogue.blocks 中 speaker=旁白 或 type=narration 也视为旁白内容
+      const blocks = scene.dialogue?.blocks;
+      if (Array.isArray(blocks)) {
+        for (const b of blocks) {
+          if (b && (b.type === 'narration' || b.speaker === '旁白' || b.speaker === 'voiceover')) {
+            hasVoiceover = true;
+            break;
+          }
+        }
+      }
+      if (hasVoiceover) break;
     }
-    
-    checks.push({
-      category: 'dialogue',
-      name: 'no_voiceover',
-      passed: !hasVoiceover,
-      severity: 'critical',
-      message: hasVoiceover ? '检测到旁白（禁止）' : '无旁白，合规',
-      suggestion: '全局禁止旁白，只保留角色对话'
-    });
-    
+
+    if (voiceoverAllowed) {
+      checks.push({
+        category: 'dialogue',
+        name: 'no_voiceover',
+        passed: true,
+        severity: 'ok',
+        message: hasVoiceover ? '本片允许旁白，检测到旁白内容（合规）' : '本片允许旁白（未使用）',
+        suggestion: null
+      });
+    } else {
+      checks.push({
+        category: 'dialogue',
+        name: 'no_voiceover',
+        passed: !hasVoiceover,
+        severity: 'critical',
+        message: hasVoiceover ? '检测到旁白（本片未要求旁白，禁止）' : '无旁白，合规',
+        suggestion: '本片未要求旁白，只保留角色对话；如确需旁白请在主题/PRD中声明'
+      });
+    }
+
     return checks;
   }
 
@@ -489,8 +560,15 @@ class ScriptValidator {
   _checkForbiddenElements(blueprint) {
     const checks = [];
     const scenes = blueprint.structure.scenes || [];
-    
-    for (const forbidden of this.config.forbiddenElements) {
+
+    // 【v2.1.10-fix 台词真空】旁白允许的片子，从禁用清单中剔除 旁白/voiceover，
+    // 否则"PRD 要旁白"与"全局禁旁白"直接冲突，剧本永远不可能同时通过两项检查
+    const voiceoverAllowed = this._isVoiceoverAllowed(blueprint);
+    const activeForbidden = voiceoverAllowed
+      ? this.config.forbiddenElements.filter(e => e !== '旁白' && e !== 'voiceover')
+      : this.config.forbiddenElements;
+
+    for (const forbidden of activeForbidden) {
       let found = false;
       let location = '';
       

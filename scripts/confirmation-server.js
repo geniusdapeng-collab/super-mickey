@@ -1,10 +1,17 @@
 /**
- * confirmation-server.js - 确认服务 API
- * 提供 HTTP API 供 AI 助手调用，生成密码学签名的确认文件
- * 
- * 用法（HTTP POST）:
- *   curl -X POST http://localhost:9876 \
+ * confirmation-server.js - 确认服务 API（加固版 v2.1.10-fix）
+ *
+ * 安全策略：
+ * 1. 只监听 127.0.0.1，逐请求校验回环来源
+ * 2. 校验 X-Confirm-Token 头（timing-safe 比较）
+ * 3. 每次请求（含被拒绝）追加写入 audit.log
+ * 4. 确认文件补齐 type 字段
+ * 5. type 参数白名单校验
+ *
+ * 用法（HTTP POST，仅限本机）：
+ *   curl -X POST http://127.0.0.1:9876 \
  *     -H "Content-Type: application/json" \
+ *     -H "X-Confirm-Token: <HUMAN_CONFIRMATION_TOKEN>" \
  *     -d '{"type":"creative-theme","action":"approve","reason":"确认"}'
  */
 
@@ -13,7 +20,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
-// 加载 .env
+// ── 加载 .env ───────────────────────────────────────────────────────────
 const envPath = path.join(__dirname, '..', '.env');
 if (fs.existsSync(envPath)) {
   const envContent = fs.readFileSync(envPath, 'utf8');
@@ -21,11 +28,48 @@ if (fs.existsSync(envPath)) {
   if (secretMatch && !process.env.HUMAN_CONFIRMATION_SECRET) {
     process.env.HUMAN_CONFIRMATION_SECRET = secretMatch[1].trim();
   }
+  const tokenMatch = envContent.match(/HUMAN_CONFIRMATION_TOKEN=(.+)/);
+  if (tokenMatch && !process.env.HUMAN_CONFIRMATION_TOKEN) {
+    process.env.HUMAN_CONFIRMATION_TOKEN = tokenMatch[1].trim();
+  }
 }
 
 let HUMAN_SECRET = process.env.HUMAN_CONFIRMATION_SECRET;
+let HUMAN_TOKEN = process.env.HUMAN_CONFIRMATION_TOKEN;
 
 const PORT = process.env.CONFIRMATION_SERVER_PORT || 9876;
+const AUDIT_LOG = path.join(__dirname, '..', 'hyperreality-system', 'output', 'confirmations', 'audit.log');
+
+// type 白名单：小写字母/数字开头，可含连字符，1-64 字符
+const TYPE_RE = /^[a-z0-9][a-z0-9-]{0,63}$/;
+
+// timing-safe token 比较
+function verifyToken(tokenHeader, expected) {
+  if (!tokenHeader || !expected) return false;
+  const a = Buffer.from(tokenHeader, 'utf8');
+  const b = Buffer.from(expected, 'utf8');
+  if (a.length !== b.length) return false;
+  try {
+    return crypto.timingSafeEqual(a, b);
+  } catch {
+    return false;
+  }
+}
+
+function logAudit(clientIp, result, type, action, reason, filePath) {
+  const dir = path.dirname(AUDIT_LOG);
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  const entry = [
+    new Date().toISOString(),
+    clientIp,
+    result,
+    String(type || ''),
+    String(action || ''),
+    String(reason || ''),
+    filePath || 'N/A'
+  ].join(' | ') + '\n';
+  fs.appendFileSync(AUDIT_LOG, entry, 'utf8');
+}
 
 function generateConfirmation(type, approved, reason) {
   if (!HUMAN_SECRET) {
@@ -37,6 +81,7 @@ function generateConfirmation(type, approved, reason) {
   const signature = crypto.createHmac('sha256', HUMAN_SECRET).update(payload).digest('hex');
 
   const confirmData = {
+    type,
     approved,
     timestamp,
     nonce,
@@ -47,47 +92,81 @@ function generateConfirmation(type, approved, reason) {
 
   const confirmPath = path.join(__dirname, '..', 'hyperreality-system', 'output', 'confirmations', `confirmation-${type}.json`);
   const dir = path.dirname(confirmPath);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(confirmPath, JSON.stringify(confirmData, null, 2));
 
   return { file: confirmPath, timestamp, signature };
 }
 
+// ── 回环来源校验 ───────────────────────────────────────────────────────
+function isLoopback(ip) {
+  return ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1';
+}
+
 const server = http.createServer(async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const clientIp = req.socket.remoteAddress || 'unknown';
+
+  // CORS 头保持原有（仅本地回环，无实际暴露风险）
+  res.setHeader('Access-Control-Allow-Origin', 'http://127.0.0.1');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Confirm-Token');
+
   if (req.method === 'OPTIONS') {
     res.writeHead(200);
     res.end();
     return;
   }
-  
+
   if (req.method !== 'POST') {
+    logAudit(clientIp, 'rejected-method', null, null, null, null);
     res.writeHead(405, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: 'Method not allowed' }));
     return;
   }
-  
+
+  // 1. 回环来源校验
+  if (!isLoopback(clientIp)) {
+    logAudit(clientIp, 'rejected-origin', null, null, null, null);
+    res.writeHead(403, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Forbidden: only loopback allowed' }));
+    return;
+  }
+
+  // 2. X-Confirm-Token 校验
+  const token = req.headers['x-confirm-token'];
+  if (!verifyToken(token, HUMAN_TOKEN)) {
+    logAudit(clientIp, 'rejected-token', null, null, null, null);
+    res.writeHead(403, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Forbidden: invalid token' }));
+    return;
+  }
+
   let body = '';
   req.on('data', chunk => body += chunk);
   req.on('end', async () => {
     try {
       const data = JSON.parse(body);
       const { type, action, reason } = data;
-      
+
       if (!type || !action) {
+        logAudit(clientIp, 'rejected-params', type || null, action || null, reason || null, null);
         res.writeHead(400, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Missing type or action' }));
         return;
       }
-      
+
+      // 5. type 白名单校验
+      if (!TYPE_RE.test(type)) {
+        logAudit(clientIp, 'rejected-type', type, action, reason, null);
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Invalid type format' }));
+        return;
+      }
+
       const approved = action !== 'reject';
       const result = generateConfirmation(type, approved, reason || '');
-      
+      logAudit(clientIp, approved ? 'approved' : 'rejected', type, action, reason || '', result.file);
+
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({
         success: true,
@@ -98,18 +177,17 @@ const server = http.createServer(async (req, res) => {
         timestamp: result.timestamp
       }));
     } catch (e) {
+      logAudit(clientIp, 'rejected-error', null, null, e.message, null);
       res.writeHead(500, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: e.message }));
     }
   });
 });
 
-// 导出供外部调用（AI 助手可直接 require 后调用 generateConfirmation）
 module.exports = { server, generateConfirmation };
 
-// 如果直接运行，启动服务器
 if (require.main === module) {
-  server.listen(PORT, () => {
-    console.log(`[ConfirmationServer] 确认服务已启动: http://localhost:${PORT}`);
+  server.listen(PORT, '127.0.0.1', () => {
+    console.log(`[ConfirmationServer] 加固版确认服务已启动: http://127.0.0.1:${PORT} (仅回环)`);
   });
 }

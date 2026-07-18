@@ -2233,11 +2233,19 @@ class HyperrealitySystem {
       videoTypeInferred: resolved.profileSource !== 'llm',
 
       title: upstreamFields.theme || '未命名项目',
-      targetDuration: resolved.profile.duration_target,
-      durationRange: [
-        Math.round(resolved.profile.duration_target * 0.8),
-        Math.round(resolved.profile.duration_target * 1.2)
-      ],
+      // 【v2.1.10-fix 时长断层】创意主题已人工确认的 duration_sec 是时长唯一权威来源，
+      // 必须优先于 ProfileResolver 的推断值（LLM 画像会自由发挥，本次事故即把 45s 改成 120s）
+      targetDuration: (() => {
+        const confirmed = Number(upstreamFields.duration_sec);
+        if (Number.isFinite(confirmed) && confirmed > 0) return confirmed;
+        return resolved.profile.duration_target;
+      })(),
+      durationRange: (() => {
+        const base = Number(upstreamFields.duration_sec) > 0
+          ? Number(upstreamFields.duration_sec)
+          : resolved.profile.duration_target;
+        return [Math.round(base * 0.8), Math.round(base * 1.2)];
+      })(),
       style: {
         primary: 'CINE',
         secondary: [],
@@ -2573,6 +2581,13 @@ class HyperrealitySystem {
           }
           
           console.log(`   ✅ 收到有效人类确认: approved=${confirmData.approved}`);
+
+          // 【v2.1.10-fix Step2确认过期】消费一次性确认：验证通过后立即删除确认文件。
+          // 原因：签名有效期放宽到 24h 后，若不删除，下一次运行到达同一环节时
+          // 会读到本次运行遗留的旧确认文件，造成"旧确认自动放行新内容"。
+          // 每个环节每次运行都要求一次真实的人工确认。
+          try { fs.unlinkSync(confirmPath); } catch (_) {}
+
           const waitTimeMs = Date.now() - startTime + totalWaitMs;
           console.log(`   ⏱️ 本次等待确认耗时: ${Math.round(waitTimeMs/1000)}秒 (${Math.round(waitTimeMs/60000)}分钟)`);
           console.log(`   ⏱️ 等待时间不计入流程有效时间`);

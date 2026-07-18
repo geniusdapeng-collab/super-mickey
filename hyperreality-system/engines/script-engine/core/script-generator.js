@@ -161,12 +161,43 @@ class ScriptGenerator {
   }
 
   /**
+   * 【v2.1.10-fix 台词真空】本片旁白策略解析（生成侧）
+   * PRD voicePolicy / 主题 dialogue_requirement / 叙事模式任一命中"旁白/画外音"即允许旁白。
+   * 供 _buildGenerationPrompt 动态调整系统约束，供 _normalizeScenesDialogue 归位游离旁白。
+   */
+  _resolveVoiceoverPolicy(userIntent) {
+    const meta = userIntent?.metadata || {};
+    const prd = meta._prd || meta._metadata?._prd || null;
+    const voicePolicy = prd?.audioSpecification?.voicePolicy || '';
+    const dialogueReq = meta._creativeTheme?.dialogue_requirement
+      || meta.dialogue_requirement
+      || meta.dialogueRequirement
+      || '';
+    const narrativeMode = meta.narrative_mode || meta.narrativeMode || '';
+
+    const allowed = /旁白|画外音/.test(voicePolicy)
+      || /旁白|画外音|narration|voiceover/i.test(dialogueReq)
+      || String(narrativeMode).toLowerCase() === 'narration';
+
+    return {
+      allowed,
+      voicePolicy,
+      dialogueRequirement: dialogueReq,
+      narrativeMode
+    };
+  }
+
+  /**
    * 构建 LLM 生成 Prompt
    */
   _buildGenerationPrompt(userIntent, template) {
     const meta = userIntent.metadata;
     const constraints = userIntent.constraints;
     const parsed = userIntent.parsed;
+
+    // 【v2.1.10-fix 台词真空】本片旁白策略（驱动下方系统约束的措辞）
+    const voiceoverPolicy = this._resolveVoiceoverPolicy(userIntent);
+    const voiceoverAllowed = voiceoverPolicy.allowed;
 
     const prompt = `你是一位顶级短视频编剧，专门为AI视频生成系统创作结构化剧本。
 
@@ -212,13 +243,17 @@ ${(() => {
 })()}
 
 ## 系统约束（不可违反）
-1. 禁止旁白（Voiceover），只保留角色对话（Dialogue）
-2. 每个场景必须有角色对话（台词）
+${voiceoverAllowed
+  ? `1. 本片允许旁白/画外音：旁白必须写进 dialogue.blocks，speaker 固定为 "旁白"，type 固定为 "narration"；角色对话的 type 用 monologue/dialogue/reaction。严禁把旁白放到 scene.narration 或 scene.voice_over 等游离字段`
+  : `1. 禁止旁白（Voiceover），只保留角色对话（Dialogue）；严禁出现 speaker 为"旁白/voiceover"的台词，严禁 scene.narration / scene.voice_over 字段`}
+2. 每个场景必须有台词（${voiceoverAllowed ? '角色对话或旁白均可' : '角色对话'}）
 3. 台词必须口语化，适合短视频节奏（每句不超过30字）
 4. 【v2.1.5-fix-C】台词必须生成 blocks 字段：每句台词需包含 speaker/line/emotion/trigger/manner/type，emotion 必须是副词（如 confidently/hesitates/gently），trigger 必须是物理动作触发（如 looks at camera/pauses then smiles）
 5. 场景时长分配：根据内容重要性、台词长度、视觉复杂度三维度分配
-6. 总时长必须严格等于 ${meta.target_duration} 秒
+6. 总时长必须严格等于 ${meta.target_duration} 秒（所有场景 timing.duration 之和）
 7. 角色视觉锚点必须保持一致（定妆照引用）
+8. 【v2.1.10-fix】dialogue 对象三要素缺一不可：has_dialogue（布尔，有台词时必须为 true）、lines（数组）、blocks（数组）
+9. 【v2.1.10-fix】character_system.characters 中每个角色必须包含 character_id、name、role；有且仅有一个 role="protagonist"，其余用 "supporting"；scene.characters 只允许引用已定义的 character_id
 
 ## 剧本结构模板
 采用三幕式结构：
@@ -247,9 +282,16 @@ ${meta.world_setting === '示例世界' ? `
 - voice_system: {global_voice_policy, voice_profiles: [...]}
 - world_setting: {world_id, world_name, era, core_rules, environment_tags}
 
-每个场景(scenes)必须包含：scene_id, scene_name, scene_type, scene_function, act_id, timing(start/duration/end), characters, setting, dialogue(lines+blocks), visual_notes, emotional_target(valence/arousal/dominance)
+每个场景(scenes)必须包含：scene_id, scene_name, scene_type, scene_function, act_id, timing(start/duration/end), characters, setting, dialogue, visual_notes, emotional_target(valence/arousal/dominance)
 
-dialogue.blocks 每个元素包含：speaker, line, emotion(副词), trigger(动作), manner(说话方式), type(monologue/dialogue/reaction)
+dialogue 对象的标准结构（必须严格遵守）：
+"dialogue": {
+  "has_dialogue": true,
+  "lines": [{"speaker": "角色ID", "text": "台词原文", "emotion": "情绪"}],
+  "blocks": [{"speaker": "角色ID", "line": "台词原文", "emotion": "副词", "trigger": "物理动作", "manner": "说话方式", "type": "monologue"}]
+}
+${voiceoverAllowed ? '旁白台词写法：{"speaker": "旁白", "line": "旁白原文", "emotion": "副词", "trigger": "镜头动作", "manner": "叙述", "type": "narration"}\n' : ''}
+character_system.characters 每个角色必须包含：character_id, name, role（有且仅有一个 "protagonist"）, visual_anchor: {core_features: [2-5个特征]}
 
 ## 关键要求
 1. 只输出纯JSON，不要markdown代码块，不要解释文字
@@ -652,12 +694,31 @@ ${meta._directorStyle}` : ''}
         console.log(`[ScriptGenerator] 角色覆盖完成: ${validNames.join(', ')}（已替换所有场景角色引用和身份描述）`);
       }
 
+      // ===== 【v2.1.10-fix】LLM 产出归一化（三道保险）=====
+      // 无论用户是否提供角色档案，都执行——原角色覆盖仅在 metadata.characters 非空时生效，
+      // 本次事故（用户未提供角色）暴露了 LLM 自由发挥的结构性风险
+      const voiceoverPolicy = this._resolveVoiceoverPolicy(userIntent);
+      const targetDuration = userIntent.metadata?.target_duration || 60;
+
+      // 保险1：角色系统归一化（主角缺失/场景引用未定义角色的自动修复）
+      this._normalizeCharacters(parsed);
+
+      // 保险2：台词归一化（has_dialogue 回填、lines/blocks 互转、游离旁白字段归位）
+      this._normalizeScenesDialogue(parsed, voiceoverPolicy.allowed);
+
+      // 保险3：时长强制对齐（LLM 对"总时长=Ns"的遵守不可靠，按比例缩放到目标值）
+      this._enforceTargetDuration(parsed, targetDuration);
+
       // v1.2.5: 注入metadata._metadata到blueprint meta
       const meta = {
         ...parsed.meta,
         narrative_mode: userIntent.parsed?.narrative_mode || 'dramatic',
-        target_duration: userIntent.metadata?.target_duration || 120,
+        // 【v2.1.10-fix 时长断层】兜底与 production-profile 唯一真源对齐(60s)
+        target_duration: userIntent.metadata?.target_duration || 60,
         _metadata: {
+          // 【v2.1.10-fix 台词真空】旁白策略盖戳，供校验器单点读取
+          voiceoverAllowed: voiceoverPolicy.allowed,
+          dialogueRequirement: voiceoverPolicy.dialogueRequirement || null,
           isSeries: userIntent.metadata?.series?.totalEpisodes > 1 || userIntent.metadata?.series?.total_episodes > 1,
           episodeNumber: userIntent.metadata?.series?.currentEpisode || userIntent.metadata?.series?.episode || 1,
           totalEpisodes: userIntent.metadata?.series?.totalEpisodes || userIntent.metadata?.series?.total_episodes || 1,
@@ -1031,6 +1092,244 @@ ${meta._directorStyle}` : ''}
     }
 
     return null;
+  }
+
+  /**
+   * 【v2.1.10-fix 角色缺失】角色系统归一化（主角缺失/场景引用未定义角色的自动修复）
+   * 无论用户是否提供角色档案都执行。
+   */
+  _normalizeCharacters(parsed) {
+    const scenes = parsed?.structure?.scenes || [];
+    if (!parsed.character_system || typeof parsed.character_system !== 'object') {
+      parsed.character_system = { characters: [] };
+    }
+    const cs = parsed.character_system;
+    if (!Array.isArray(cs.characters)) cs.characters = [];
+
+    const definedIds = new Set();
+    for (const c of cs.characters) {
+      const id = c?.character_id || c?.id;
+      if (id) {
+        definedIds.add(String(id));
+        if (!c.character_id && c.id) c.character_id = c.id;
+      }
+    }
+
+    // 1. 收集场景引用 & 统计引用次数
+    const refCount = new Map();
+    for (const scene of scenes) {
+      const chars = Array.isArray(scene.characters) ? scene.characters : [];
+      for (const ch of chars) {
+        const id = String(ch);
+        refCount.set(id, (refCount.get(id) || 0) + 1);
+      }
+    }
+
+    // 2. 为未定义的引用 ID 生成 stub
+    const prettify = (id) => id
+      .replace(/^CHAR[_-]?/i, '')
+      .replace(/[_-]+/g, ' ')
+      .trim()
+      .toLowerCase()
+      .replace(/\b\w/g, s => s.toUpperCase()) || id;
+
+    let stubsCreated = 0;
+    for (const id of refCount.keys()) {
+      if (!definedIds.has(id)) {
+        cs.characters.push({
+          character_id: id,
+          name: prettify(id),
+          role: 'supporting',
+          visual_anchor: { core_features: ['写实人物', '自然外观'], reference_images: [] },
+          _auto_stub: true
+        });
+        definedIds.add(id);
+        stubsCreated++;
+      }
+    }
+    if (stubsCreated > 0) {
+      console.warn(`[ScriptGenerator] ⚠️ 场景引用了 ${stubsCreated} 个未定义角色，已自动生成 stub 定义`);
+    }
+
+    // 3. 确保有且仅有一个主角
+    const hasProtagonist = cs.characters.some(c => c && (c.role === 'protagonist'));
+    if (!hasProtagonist && cs.characters.length > 0) {
+      let pick = null;
+      if (refCount.size > 0) {
+        let best = -1;
+        for (const [id, cnt] of refCount.entries()) {
+          if (cnt > best) { best = cnt; pick = id; }
+        }
+      }
+      const target = pick
+        ? cs.characters.find(c => String(c.character_id || c.id) === pick)
+        : cs.characters[0];
+      if (target) {
+        target.role = 'protagonist';
+        console.warn(`[ScriptGenerator] ⚠️ LLM 未标记主角，已将引用最多的角色 ${target.character_id}(${target.name}) 标记为 protagonist`);
+      }
+    }
+
+    // 4. 多余主角收敛
+    let protagonistSeen = false;
+    for (const c of cs.characters) {
+      if (c && c.role === 'protagonist') {
+        if (protagonistSeen) c.role = 'supporting';
+        protagonistSeen = true;
+      }
+    }
+  }
+
+  /**
+   * 【v2.1.10-fix 台词真空】台词归一化（has_dialogue 回填、lines/blocks 互转、游离旁白字段归位）
+   */
+  _normalizeScenesDialogue(parsed, voiceoverAllowed) {
+    const scenes = parsed?.structure?.scenes || [];
+    let fixedFlag = 0, converted = 0, derived = 0;
+
+    for (const scene of scenes) {
+      // 1. dialogue 为字符串 → 包装成 lines
+      if (typeof scene.dialogue === 'string' && scene.dialogue.trim()) {
+        scene.dialogue = { has_dialogue: true, lines: [{ speaker: null, text: scene.dialogue.trim() }], blocks: [] };
+        converted++;
+      } else if (!scene.dialogue || typeof scene.dialogue !== 'object') {
+        scene.dialogue = { has_dialogue: false, lines: [], blocks: [] };
+      }
+      const d = scene.dialogue;
+      if (!Array.isArray(d.lines)) d.lines = [];
+      if (!Array.isArray(d.blocks)) d.blocks = [];
+
+      // 2. 游离旁白字段归位
+      const strayNarrations = [];
+      if (typeof scene.narration === 'string' && scene.narration.trim()) {
+        strayNarrations.push(scene.narration.trim());
+      } else if (Array.isArray(scene.narration)) {
+        for (const n of scene.narration) {
+          if (typeof n === 'string' && n.trim()) strayNarrations.push(n.trim());
+          else if (n && typeof n === 'object' && (n.text || n.line)) strayNarrations.push(String(n.text || n.line));
+        }
+      }
+      if (scene.voice_over?.text) strayNarrations.push(String(scene.voice_over.text));
+      if (typeof scene.voiceover === 'string' && scene.voiceover.trim()) strayNarrations.push(scene.voiceover.trim());
+
+      if (strayNarrations.length > 0 && d.lines.length === 0 && d.blocks.length === 0) {
+        const fallbackSpeaker = voiceoverAllowed
+          ? '旁白'
+          : (Array.isArray(scene.characters) && scene.characters.length > 0 ? String(scene.characters[0]) : '旁白');
+        const narrationType = voiceoverAllowed ? 'narration' : 'monologue';
+        for (const text of strayNarrations) {
+          d.lines.push({ speaker: fallbackSpeaker, text, emotion: 'neutral' });
+          d.blocks.push({
+            speaker: fallbackSpeaker,
+            line: text,
+            emotion: 'calmly',
+            trigger: voiceoverAllowed ? 'camera moves slowly' : 'looks into distance',
+            manner: voiceoverAllowed ? '叙述' : '独白',
+            type: narrationType
+          });
+        }
+        converted++;
+      }
+      delete scene.narration;
+      if (scene.voice_over) delete scene.voice_over;
+      if (scene.voiceover) delete scene.voiceover;
+
+      // 3. lines/blocks 互转补齐
+      if (d.lines.length > 0 && d.blocks.length === 0) {
+        d.blocks = d.lines.map(l => ({
+          speaker: l.speaker || null,
+          line: l.text || l.line || '',
+          emotion: 'neutrally',
+          trigger: 'looks at camera',
+          manner: '自然',
+          type: 'monologue'
+        })).filter(b => b.line);
+        derived++;
+      } else if (d.blocks.length > 0 && d.lines.length === 0) {
+        d.lines = d.blocks.map(b => ({
+          speaker: b.speaker || null,
+          text: b.line || b.text || '',
+          emotion: b.emotion || 'neutral'
+        })).filter(l => l.text);
+        derived++;
+      }
+
+      // 4. has_dialogue 标志与实际内容对齐
+      const hasContent = d.lines.length > 0 || d.blocks.length > 0;
+      if (hasContent && d.has_dialogue !== true) { d.has_dialogue = true; fixedFlag++; }
+      if (!hasContent && d.has_dialogue !== false) { d.has_dialogue = false; fixedFlag++; }
+    }
+
+    if (fixedFlag || converted || derived) {
+      console.log(`[ScriptGenerator] 台词归一化: 标志回填 ${fixedFlag} 处, 游离旁白归位 ${converted} 处, lines/blocks 互转 ${derived} 处`);
+    }
+  }
+
+  /**
+   * 【v2.1.10-fix 时长断层】时长强制对齐（LLM 对"总时长=Ns"的遵守不可靠，按比例缩放到目标值）
+   */
+  _enforceTargetDuration(parsed, targetDuration) {
+    const scenes = parsed?.structure?.scenes || [];
+    const target = Number(targetDuration);
+    if (scenes.length === 0 || !Number.isFinite(target) || target <= 0) return;
+
+    const MIN_SCENE = 3;
+    const MAX_SCENE = 60;
+    const sum = () => scenes.reduce((t, s) => t + (Number(s?.timing?.duration) || 0), 0);
+
+    let currentTotal = sum();
+    if (currentTotal <= 0) {
+      const per = Math.max(MIN_SCENE, Math.min(MAX_SCENE, Math.round(target / scenes.length)));
+      for (const s of scenes) {
+        s.timing = s.timing || {};
+        s.timing.duration = per;
+      }
+      console.warn(`[ScriptGenerator] ⚠️ 场景时长全部缺失，已按目标 ${target}s 均分`);
+    } else if (Math.abs(currentTotal - target) > 2) {
+      const ratio = target / currentTotal;
+      for (const s of scenes) {
+        s.timing = s.timing || {};
+        const d0 = Number(s.timing.duration) || (target / scenes.length);
+        s.timing.duration = Math.max(MIN_SCENE, Math.min(MAX_SCENE, Math.round(d0 * ratio)));
+      }
+      console.warn(`[ScriptGenerator] ⚠️ 总时长 ${currentTotal}s 偏离目标 ${target}s，已按比例缩放`);
+    }
+
+    // 残差摊销
+    let guard = 1000;
+    while (guard-- > 0) {
+      const diff = target - sum();
+      if (diff === 0) break;
+      const step = diff > 0 ? 1 : -1;
+      const candidates = [...scenes]
+        .filter(s => {
+          const d = Number(s?.timing?.duration) || 0;
+          return step > 0 ? d < MAX_SCENE : d > MIN_SCENE;
+        })
+        .sort((a, b) => (step > 0
+          ? (Number(a.timing.duration) - Number(b.timing.duration))
+          : (Number(b.timing.duration) - Number(a.timing.duration))));
+      if (candidates.length === 0) {
+        console.warn(`[ScriptGenerator] ⚠️ 时长残差 ${diff}s 无法完全摊销，当前总和 ${sum()}s`);
+        break;
+      }
+      candidates[0].timing.duration += step;
+    }
+
+    // 重建 start/end 时间轴
+    let cursor = 0;
+    for (const s of scenes) {
+      s.timing.start = cursor;
+      s.timing.end = cursor + s.timing.duration;
+      cursor = s.timing.end;
+    }
+
+    const finalTotal = sum();
+    if (finalTotal !== Number(parsed?.meta?.total_duration)) {
+      parsed.meta = parsed.meta || {};
+      parsed.meta.total_duration = finalTotal;
+    }
+    console.log(`[ScriptGenerator] 时长对齐完成: 目标 ${target}s, 实际 ${finalTotal}s, ${scenes.length} 个场景`);
   }
 
   /**

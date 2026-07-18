@@ -144,7 +144,12 @@ class IntentParser {
         hybrid_config: null
       },
       metadata: {
+        // 【v2.1.10-fix 时长断层】先展开 metadata，再显式赋值关键字段。
+        // 原实现把 ...metadata 放在最后，metadata.target_duration 会静默覆盖
+        // 用户结构化主题中已确认的 duration_sec，造成时长链路断裂。
+        ...metadata,
         title: themeData.theme || metadata.title || '未命名项目',
+        // 优先级：用户结构化主题已确认时长 > metadata 确认时长 > 默认 60s
         target_duration: themeData.duration_sec || metadata.target_duration || 60,
         target_platform: metadata.target_platform || ['general'],
         language: metadata.language || 'zh-CN',
@@ -154,7 +159,6 @@ class IntentParser {
         protagonist: metadata.protagonist || 'protagonist',
         // 【v2.1.8-fix】保留用户的结构化主题定义
         _userStructuredTheme: themeData,
-        ...metadata
       },
       constraints: {
         max_prompt_length: metadata.max_prompt_length || 3000,
@@ -351,8 +355,13 @@ class IntentParser {
         } : null
       },
       metadata: {
+        // 【v2.1.10-fix 时长断层】先展开 metadata，再显式赋值关键字段。
+        // 原实现把 ...metadata 放在最后，且优先级为"文本提取 > metadata 确认值"，
+        // 已被人工确认的 target_duration 可能被文本正则提取值静默覆盖。
+        ...metadata,
         title: metadata.title || '未命名项目',
-        target_duration: analysis.target_duration || metadata.target_duration || 60,
+        // 优先级：metadata 已确认时长 > 文本提取时长 > 默认 60s
+        target_duration: metadata.target_duration || analysis.target_duration || 60,
         // 【v2.1.4-fix13-审计修复】不硬编码平台，从 metadata 获取或设为通用
         target_platform: metadata.target_platform || ['general'],
         language: metadata.language || 'zh-CN',
@@ -360,8 +369,7 @@ class IntentParser {
         world_setting: analysis.world_setting || metadata.world_setting || 'default',
         featured_beast_id: analysis.featured_beast_id || metadata.featured_beast_id || null,
         // v1.2.7-fix-A8: 移除 示例角色 硬编码，改为通用默认值
-        protagonist: metadata.protagonist || 'protagonist',
-        ...metadata
+        protagonist: metadata.protagonist || 'protagonist'
       },
       constraints: {
         // v2.1.4-fix13-审计修复: 超级小香宝标准 3000
