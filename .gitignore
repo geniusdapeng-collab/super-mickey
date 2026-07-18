@@ -88,6 +88,7 @@ HyperrealitySystem-*.md
 test-*.js
 !tests/*.js
 run-*.js
+!scripts/run-*.js
 generate-*.js
 export-*.js
 export-*.sh
