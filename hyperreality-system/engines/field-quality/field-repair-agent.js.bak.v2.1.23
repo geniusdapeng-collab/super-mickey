@@ -430,11 +430,6 @@ class RuleRepairer {
         return parts.length ? cap(`${current}，${parts.join('，')}`) : null;
       }
       case 'costume': {
-        // 【v2.2-refine】空镜不补服装模板(原逻辑给空镜/工装镜头拼"外套:合身外套"四件套)
-        const charText = String(repaired.character || repaired.角色 || '');
-        if (/无角色|无人物|无指定角色|空镜/.test(charText)) {
-          return '无角色出场，本字段不适用';
-        }
         const parts = [];
         if (miss.includes('外套') || miss.includes('上装')) parts.push('外套：合身外套');
         if (miss.includes('内搭')) parts.push('内搭：简约内衬');
@@ -485,9 +480,7 @@ class RuleRepairer {
     }
 
     // 角色名一致性锚定
-    // 【v2.2-refine】空镜跳过角色锚定(原逻辑给S1/S7空镜拼上"角色锚定:李明、小周")
-    const isEmptyShot = /无角色|无人物|无指定角色|空镜|空车厢/.test(String(repaired.character || ''));
-    if (!isEmptyShot && charNames.length) {
+    if (charNames.length) {
       for (const fieldEn of ['character', 'consistency']) {
         const current = repaired[fieldEn];
         if (typeof current !== 'string' || !current.trim()) continue;

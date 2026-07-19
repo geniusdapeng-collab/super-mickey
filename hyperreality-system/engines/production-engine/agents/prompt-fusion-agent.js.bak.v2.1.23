@@ -1145,24 +1145,27 @@ ${fieldDescs}
   /**
    * 从lighting动态推导明亮约束
    */
-  /**
-   * 【v2.2-refine 重写】从lighting动态推导明亮约束 — 中文短句, 不复述灯光细节
-   * 原实现返回英文长句(60-120字符), 与灯光正文80%重复且中英混排
-   */
   _generateBrightConstraint(lighting, mood) {
     const lightingStr = String(lighting || '').toLowerCase();
     const moodStr = this._extractMoodFromString(mood);
 
-    if (lightingStr.includes('night') || lightingStr.includes('moon') || lightingStr.includes('dark') || lightingStr.includes('夜')) {
-      return '低照度氛围光，主体轮廓清晰可辨不死黑';
+    // 夜晚场景
+    if (lightingStr.includes('night') || lightingStr.includes('moon') || lightingStr.includes('dark')) {
+      return 'atmospheric low-key lighting, moonlight or artificial light sources, visible through contrast rather than brightness, moody ambiance with clear visibility of key subjects';
     }
+
+    // 悲伤/忧郁情绪
     if (moodStr === 'sad') {
-      return '柔光低照度，主体可见无强烈亮部';
+      return 'soft diffused lighting, gentle shadows, adequate visibility without harsh brightness, low-key moody atmosphere';
     }
+
+    // 史诗/宏大
     if (moodStr === 'epic') {
-      return '强光比戏剧性照明，主体明亮突出';
+      return 'dramatic bright lighting with strong contrast, golden hour or strong directional light, clear visibility of grand scale';
     }
-    return '主体明亮清晰，阴影保留层次不死黑';
+
+    // 默认
+    return 'bright lighting, well-lit scene, clear visibility, natural illumination, avoid dark shadows on face, adequate illumination';
   }
 
   /**
