@@ -108,7 +108,7 @@ class FieldContentRefiner {
  };
  const camel = (s) => s.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
 
- // 1:1 映射字段
+ // 1:1 映射字段(含拆分后的独立字段)
  const DIRECT_MAP = [
  ['【场景】', 'scene'], ['【构图】', 'composition'], ['【色彩/色调】', 'color_palette'],
  ['【景深】', 'depth_of_field'], ['【运镜】', 'camera_movement'], ['【角色】', 'character'],
@@ -116,7 +116,9 @@ class FieldContentRefiner {
  ['【道具】', 'props'], ['【定妆照】', 'portraits'], ['【时间轴】', 'timeline'],
  ['【情绪】', 'mood'], ['【节奏】', 'pacing'], ['【转场】', 'transition'],
  ['【音频】', 'audio'], ['【负面约束】', 'negative'],
- ['【角色约束】', 'character_constraint'], ['【角色一致性】', 'consistency']
+ ['【角色约束】', 'character_constraint'], ['【角色一致性】', 'consistency'],
+ ['【灯光设计】', 'lighting'], ['【明亮约束】', 'bright_constraint'],
+ ['【导演意图】', 'director_instruction'], ['【基础】', 'baseline'], ['【约束】', 'constraint']
  ];
 
  const sections = [];
@@ -128,17 +130,6 @@ class FieldContentRefiner {
  backMap.push({ type: 'direct', key });
  }
  }
- // 灯光合并段
- const lighting = getF('lighting');
- const bright = getF('bright_constraint', 'brightConstraint');
- if (lighting || bright) {
- sections.push({
- head: '【灯光设计】',
- body: String(lighting || '') + (bright ? `;[亮度要求] ${bright}` : ''),
- sep: ''
- });
- backMap.push({ type: 'lighting' });
- }
 
  const refined = this._processSections(sections, shot);
 
@@ -147,14 +138,6 @@ class FieldContentRefiner {
  const meta = backMap[i];
  if (meta.type === 'direct') {
  patch[meta.key] = sec.body;
- } else if (meta.type === 'lighting') {
- const idx = sec.body.indexOf('[亮度要求]');
- if (idx >= 0) {
- patch.lighting = sec.body.slice(0, idx).replace(/[;；\s]+$/, '');
- patch.bright_constraint = sec.body.slice(idx + '[亮度要求]'.length).trim();
- } else {
- patch.lighting = sec.body;
- }
  }
  });
  return patch;
@@ -198,9 +181,20 @@ class FieldContentRefiner {
 
  // ---- 字段专属精炼 ----
  if (head === '【灯光设计】' || head === '【灯光/照明】') {
- core = this._compressBrightRequirement(core, hasCharacter);
+ // bright_constraint 已拆为独立标签【明亮约束】, 此处无需拆分
+ core = this._dedupeClauses(core);
  } else if (head === '【导演意图】') {
- core = this._normalizeDirectorIntent(core, shot);
+ // baseline/constraint 已拆为独立标签【基础】/【约束】, 此处无需拆分
+ core = this._dedupeClauses(core);
+ } else if (head === '【基础】') {
+ core = this._normalizeBaseline(core);
+ } else if (head === '【约束】') {
+ core = this._normalizeConstraint(core);
+ } else if (head === '【明亮约束】') {
+ core = this._normalizeBrightConstraint(core);
+ } else if (head === '【主标题内容】' || head === '【副标题内容】' || head === '【标题动画设计】' || head === '【标题字体设计】' || head === '【开场音频设计】') {
+ // 片头专属字段: 只去重, 不特殊处理
+ core = this._dedupeClauses(core);
  } else if (head === '【节奏】') {
  core = this._stripTimeRedundancy(core);
  } else if (head === '【道具】') {
@@ -396,48 +390,58 @@ class FieldContentRefiner {
  return [...NEGATIVE_TEXT_REPRESENTATIVES, ...others].join(', ');
  }
 
- // ==================== 4. 灯光设计: 亮度要求压缩 ====================
+ // ==================== 4. 基础: 统一技术规格写法 ====================
 
  /**
- * 【灯光设计】= lighting正文 + ";[亮度要求] bright正文"
- * 亮度要求与灯光正文 80% 重复, 压缩为一句定性要求(有/无角色两种形态)
+ * 【基础】= 8K/cinematic/photorealistic 等画质词
+ * 统一写法, 去重(8K/cinematic/photorealistic 只保留一次)
  */
- _compressBrightRequirement(body, hasCharacter) {
- const idx = body.indexOf('[亮度要求]');
- if (idx === -1) return body;
- const lightingPart = body.slice(0, idx).replace(/[;；\s]+$/, '');
- if (!lightingPart) return body; // 没有灯光正文, 不压缩(保底)
- const bright = hasCharacter
- ? '[亮度要求] 主体面部明亮清晰，阴影保留层次不死黑'
- : '[亮度要求] 主体照度均匀，画面无死黑区域';
- return `${lightingPart};${bright}`;
+ _normalizeBaseline(body) {
+ return this._dedupeClauses(body);
  }
 
- // ==================== 5. 导演意图: 合并段去重 + 技术规格统一 ====================
+ // ==================== 5. 约束: 统一技术规格模板 ====================
 
  /**
- * 【导演意图】= director_instruction + "。" + baseline + "。" + constraint
- * 处理:
- * a) 末句若为技术规格(画幅/分辨率/帧率/编码/色域), 统一替换为 constraintTemplate
- * —— 消除 7 镜 7 种写法(H.264/H.265/48kHz/4:2:2 互相矛盾)
- * b) 全段分句去重(8K/cinematic/photorealistic 只在 baseline 出现一次)
+ * 【约束】= 画幅/分辨率/帧率/格式
+ * 统一替换为 constraintTemplate, 消除 H.264/H.265/48kHz/4:2:2 打架
  */
- _normalizeDirectorIntent(body, shot) {
- const template = (shot && shot.ratio === '9:16')
- ? '9:16画幅，4K分辨率，24fps，MP4格式'
- : this.constraintTemplate;
- // 技术规格句识别: 含画幅/分辨率/帧率/fps/编码/色域/采样 任一关键词
- const techPattern = /画幅|分辨率|帧率|fps|编码|色域|采样|色彩空间|Rec\.709|H\.26[45]|MP4|广播级/;
- const units = body.split(/(?<=。)|(?<=[|])\s*/).filter(u => u.trim());
- const rewritten = units.map(u => {
- const core = u.replace(/[。|]\s*$/, '');
- if (techPattern.test(core) && core.length < 120) {
+ _normalizeConstraint(body) {
+ const template = this.constraintTemplate;
+ // 如果内容与模板本质相同(含画幅/分辨率/帧率/格式), 直接替换为模板
+ const techPattern = /画幅|分辨率|帧率|fps|格式|MP4|编码|色域/;
+ if (techPattern.test(body) && body.length < 120) {
  return template;
  }
- return u;
- });
- // 合并后可能对模板产生多个重复(原 baseline/constraint 都被识别), 交给分句去重
- return this._dedupeClauses(rewritten.join('').replace(/。。+/g, '。'));
+ return body;
+ }
+
+ // ==================== 5b. 导演意图: 去重 ====================
+
+ /**
+ * 【导演意图】= director_instruction (已拆分, 不再包含 baseline/constraint)
+ * 只需去重, 无需处理技术规格
+ */
+ _normalizeDirectorIntent(body, shot) {
+ return this._dedupeClauses(body);
+ }
+
+ // ==================== 5c. 明亮约束: 统一写法 ====================
+
+ /**
+ * 【明亮约束】= 亮度要求
+ * 统一替换为标准短句
+ */
+ _normalizeBrightConstraint(body, shot) {
+ // 从sections检测是否空镜(更可靠, 因为shot可能未传入)
+ const hasCharacter = shot && (typeof shot === 'object') && (
+ shot.character === undefined ||
+ (typeof shot.character === 'string' && !/无角色|无人物|空镜/.test(shot.character)) ||
+ (shot.character && typeof shot.character === 'object')
+ );
+ return hasCharacter
+ ? '主体面部明亮清晰，阴影保留层次不死黑'
+ : '主体照度均匀，画面无死黑区域';
  }
 
  // ==================== 6. 节奏: 删除与时间轴重复的逐秒描述 ====================
@@ -646,10 +650,10 @@ if (require.main === module) {
  console.log('\n=== 负面约束精炼 ===');
  console.log('后:', refiner._refineNegative(negative));
 
- // 用例3: 灯光+亮度要求
- const lighting = 'hard directional lighting, high contrast, dramatic shadows; 主光为桌面白炽台灯，色温2700K硬光直射；补光来自北窗微弱天光;[亮度要求] well-lit subject face within台灯照明锥形范围内，clear visibility of facial features，面部明亮区域覆盖颧骨至下颌，避免鼻影遮蔽鼻孔，暗部保留轮廓层次而非死黑，整体画面不可过曝但人物面部必须有足够照度支撑情绪传达';
+ // 用例3: 灯光(已拆分, 无亮度要求合并)
+ const lighting = 'hard directional lighting, high contrast, dramatic shadows; 主光为桌面白炽台灯，色温2700K硬光直射；补光来自北窗微弱天光';
  console.log('\n=== 灯光设计精炼 ===');
- console.log('后:', refiner._compressBrightRequirement(refiner._dedupeClauses(refiner._stripLeadingJunk(lighting)), true));
+ console.log('后:', refiner._ensureClosure(refiner._dedupeClauses(refiner._stripLeadingJunk(lighting))));
 
  // 用例4: 道具与场景去重
  const scene = '1980年代废弃蒸汽火车站台，红砖墙面斑驳，锈蚀铸铁长椅与木质长凳散置各处，角落堆放破损信号灯与废弃道岔扳手';

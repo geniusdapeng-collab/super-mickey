@@ -1414,22 +1414,18 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
       return undefined;
     };
 
-    // ⭐ v2.1.7 P3: 导演意图合并输出
-    // 将 director_instruction + constraint + baseline 合并为一个流畅段落
-    // 保持数据结构独立(兼容性),但输出更自然
+    // 【导演意图】拆分为独立字段
     const directorInstruction = getField('director_instruction', 'directorInstruction')
       || this._generateDirectorInstruction(shot.blueprint || {}, fields.mood);
-    const constraint = fields.constraint || '16:9画幅，4K分辨率，24fps，MP4格式';
-    const duration = shot.duration || 10;
+    if (directorInstruction) parts.push(`【导演意图】${directorInstruction}`);
+
+    // 【基础】独立输出
     const baseline = fields.baseline || this._generateBaseline(shot.blueprint || {}, duration);
+    if (baseline) parts.push(`【基础】${baseline}`);
 
-    // 合并为自然流畅的导演意图段落
-    const directorIntentParts = [];
-    if (directorInstruction) directorIntentParts.push(directorInstruction);
-    directorIntentParts.push(baseline);
-    directorIntentParts.push(constraint);
-
-    parts.push(`【导演意图】${directorIntentParts.join('。')}`);
+    // 【约束】独立输出
+    const constraint = fields.constraint || '16:9画幅，4K分辨率，24fps，MP4格式';
+    if (constraint) parts.push(`【约束】${constraint}`);
 
     // 【场景】
     // 【v2.1.11-重构】写实校验强度分级：按 visual_register 决定禁用词范围
@@ -1450,18 +1446,14 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
     }
     if (sceneDesc) parts.push(`【场景】${sceneDesc}`);
 
-    // 【灯光/照明】⭐ v2.1.7 P3: 灯光设计统一输出
-    // 将 lighting + bright_constraint 合并为统一的【灯光设计】段落
+    // 【灯光设计】只输出 lighting，bright_constraint 拆为独立标签
     const lightingField = getField('lighting');
+    if (lightingField) parts.push(`【灯光设计】${lightingField}`);
+
+    // 【明亮约束】独立输出
     const brightConstraint = getField('bright_constraint', 'brightConstraint')
       || this._generateBrightConstraint(fields.lighting, fields.mood);
-
-    if (lightingField || brightConstraint) {
-      const lightingParts = [];
-      if (lightingField) lightingParts.push(lightingField);
-      if (brightConstraint) lightingParts.push(`[亮度要求] ${brightConstraint}`);
-      parts.push(`【灯光设计】${lightingParts.join(';')}`);
-    }
+    if (brightConstraint) parts.push(`【明亮约束】${brightConstraint}`);
 
     // 【构图】⭐ 新增:景别+画面比例+主体位置+线条引导
     const compositionField = getField('composition');
@@ -1635,6 +1627,24 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
       console.warn(`[PromptFusionAgent] ⚠️ 镜头 ${shot.shotId} 中文占比过低(${(chineseRatio * 100).toFixed(1)}%), 尝试修正为中文输出`);
       // 【P2-PROMPT-03 修复】添加中文标记强制中文输出
       fullPrompt = '【强制中文输出】' + fullPrompt;
+    }
+
+    // 【v2.2.0】片头专属字段(30字段体系): 片头镜头追加5个独立标签
+    const isOpening = shot.sceneType === 'opening' || shot.shotId === 'SC00' || shot.shotId === 'S00';
+    if (isOpening) {
+      const openingFields = [
+        { key: 'title_content', label: '主标题内容' },
+        { key: 'subtitle_content', label: '副标题内容' },
+        { key: 'title_animation', label: '标题动画设计' },
+        { key: 'title_font_design', label: '标题字体设计' },
+        { key: 'opening_audio_design', label: '开场音频设计' }
+      ];
+      for (const of of openingFields) {
+        const value = getField(of.key) || shot[of.key] || fields?.[of.key];
+        if (value && String(value).trim()) {
+          fullPrompt += ` | 【${of.label}】${value}`;
+        }
+      }
     }
 
     return fullPrompt;
