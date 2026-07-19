@@ -1,8 +1,13 @@
 /**
- * FieldCheckAgent - 字段内容检查环节
+ * FieldCheckAgent - 字段内容检查环节（v2.1.14-fix）
  * 负责: 对25字段进行规则+LLM混合检查，输出结构化问题清单
  * 位置: PromptFusionAgent之后，FieldGuard之前
- * 
+ *
+ * 【v2.1.14-fix 改动】
+ * - LLMChecker 引入 json-salvage 鲁棒 JSON 提取（故障A同源修复）
+ * - 结构化任务温度降至 0.5
+ * - 新增 FIELD_REQUIREMENTS 导出（供修复层注入 prompt）
+ *
  * 架构:
  *   RuleChecker (规则引擎层) - 确定性检查，零延迟
  *     · _checkCompleteness() 完整性: P0/P1必填字段是否缺失
@@ -12,8 +17,23 @@
  *   LLMChecker (LLM语义层) - 跨字段语义一致性
  *     · check() 6类跨字段语义问题
  */
+const fs = require('fs');
+const path = require('path');
 const { BaseAgent } = require('../production-engine/agents/base-agent');
 const { asString, asStringLower, safeSlice, safeIncludes } = require('../field-standardizer');
+// 【v2.1.14-fix】LLM 响应鲁棒 JSON 提取（与修复层共用）
+const { extractJson } = require('./json-salvage');
+
+// LLM 语义检查异常时原始响应落盘目录
+const RAW_LOG_DIR = path.join(__dirname, '..', '..', 'output', 'field-quality');
+function _saveRawResponse(tag, raw) {
+  try {
+    if (!fs.existsSync(RAW_LOG_DIR)) fs.mkdirSync(RAW_LOG_DIR, { recursive: true });
+    const file = path.join(RAW_LOG_DIR, `llm-raw-${tag}-${Date.now()}.log`);
+    fs.writeFileSync(file, String(raw ?? '(null)'), 'utf8');
+    return file;
+  } catch (_) { return null; }
+}
 
 // ============================================================
 // 数据模型 - Issue, CheckReport
@@ -131,6 +151,32 @@ function flattenShot(shot) {
 }
 
 const MAX_TOTAL_CHARS = 12000; // 【审计修复】与 prompt-length.js 保持一致
+
+/**
+ * 【v2.1.14-fix】字段格式硬约束（供 LLM 修复层注入 prompt）
+ * 与 RuleChecker 的判定规则一一对应——修复器"知道"检查器的标准，
+ * 解决"检查器比修复器严"导致的修复后复检永不通过死循环
+ */
+const FIELD_REQUIREMENTS = {
+  director_instruction: '必须包含①风格定位（如：电影写实/超写实/纪录片质感）②写实要求（写实/真实/超写实）③情绪基调（基调/氛围/情绪类词）',
+  constraint: '必须包含①画幅比例（16:9）②分辨率（1920x1080）③输出格式（MP4）④帧率（24fps）',
+  lighting: '必须包含①主光描述（主光/主光源）②色温参数（如5600K）③光质定义（柔光/硬光/漫射）',
+  camera_movement: '必须包含①运动方式（推/拉/摇/移/跟/升降/环绕）②速度参数（如0.5m/s）③时间分布（须含秒数标记，如开场0-2秒/中段/收尾）',
+  negative: "必须包含 'no text' 和 'no watermark' 两项基础排除词",
+  composition: '必须包含①景别等级（远景/全景/中景/近景/特写）②主体位置（左侧/右侧/居中/对称）',
+  bright_constraint: '必须包含①亮度要求（明亮/光线充足）②可见性（清晰/可见）③面部明亮（面部无阴影/面部明亮）',
+  character_constraint: '必须包含①单角色限制（仅出现/只出现指定角色）②禁止分身声明（禁止分身/克隆/重复出现）',
+  timeline: '至少 3 个时间分段，每段以 T00:XX 标记（如 T00:00-开场、T00:02-发展、T00:05-收尾）',
+  pacing: '必须采用五段式：整体+开头+中段+高潮+结尾',
+  costume: '分层描述，至少覆盖外套/内搭/下装/鞋履中的 3 类',
+  dialogue: '仅以 ，。！？… 五种标点；句末必须用 。！？… 之一收尾；禁止分号冒号引号括号',
+  transition: '必须指定明确转场类型（切镜/淡入/淡出/叠化/划像），禁止模糊表述',
+  mood: '情绪词需与导演指令的情绪基调一致',
+  scene: '场景描述须与 PRD 的场景要求一致，包含空间/光线/材质/氛围要素',
+  character: '须使用 PRD 中定义的角色名，外观描述与定妆照锚定一致',
+  action: '动作描述须与角色和场景一致，含视线方向与微表情',
+  consistency: '须包含 PRD 角色名，锚定不可变更的外观要素（发型/服装/面部特征）',
+};
 
 class Issue {
   constructor({ fieldEn, fieldCn, severity, issueType, description, suggestion, currentValue = '' }) {
@@ -604,9 +650,9 @@ class LLMChecker {
     });
 
     try {
-      const checkPromise = this.llm.reason(userPrompt, { 
-        systemPrompt: LLM_CHECKER_SYSTEM_PROMPT, 
-        temperature: 1 
+      const checkPromise = this.llm.reason(userPrompt, {
+        systemPrompt: LLM_CHECKER_SYSTEM_PROMPT,
+        temperature: 0.5 // 【v2.1.14-fix】结构化任务降温，减少自然语言发挥
       });
       checkPromise.catch(() => {}); // 【v2.1.6-fix】防止悬空 rejection
       const response = await Promise.race([
@@ -624,7 +670,23 @@ class LLMChecker {
           return [];
         }
       }
-      const data = (typeof rawContent === 'string') ? JSON.parse(rawContent) : (rawContent || {issues: []});
+      // 【v2.1.14-fix 故障A同源】鲁棒 JSON 提取：
+      // 原实现对 LLM 返回的自然语言直接 JSON.parse 崩溃，静默降级为空导致语义检查失效
+      let data;
+      if (typeof rawContent === 'string') {
+        const salvage = extractJson(rawContent);
+        if (!salvage.ok) {
+          const rawFile = _saveRawResponse('check', rawContent);
+          console.warn(`[LLMChecker] JSON提取失败，本轮语义检查降级为空${rawFile ? `（原始响应已留存: ${rawFile}）` : ''}`);
+          return [];
+        }
+        if (salvage.method !== 'direct') {
+          console.log(`[LLMChecker] JSON经抢救提取成功（方式: ${salvage.method}）`);
+        }
+        data = salvage.data || { issues: [] };
+      } else {
+        data = rawContent || { issues: [] };
+      }
       return (data.issues || []).map(item => new Issue({
         fieldEn: item.field_en || '',
         fieldCn: item.field_cn || '',
@@ -702,6 +764,7 @@ module.exports = {
   CheckReport,
   FIELD_SPECS,
   SPEC_MAP,
+  FIELD_REQUIREMENTS,
   Priority,
   Severity,
   IssueType,

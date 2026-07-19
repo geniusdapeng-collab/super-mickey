@@ -210,3 +210,6 @@ hyperreality-system/_deprecated_scripts/
 
 # 确认机制 nonce 存储（安全敏感，不提交）
 .nonce-store.json
+*.bak-v2.1.*
+debug_reasoning.json
+_inherit_confirmations.sh

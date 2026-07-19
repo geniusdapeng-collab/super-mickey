@@ -1,19 +1,50 @@
 /**
- * FieldRepairAgent - 内容修复环节
+ * FieldRepairAgent - 内容修复环节（v2.1.14-fix）
  * 负责: 接收检查报告 + 原始PRD，对镜头提示词进行修复
  * 位置: FieldCheckAgent之后，FieldGuard之前
- * 
+ *
+ * 【v2.1.14-fix 四故障修复】
+ * 故障A（JSON崩溃）: 引入 json-salvage 鲁棒提取；提取失败记录原始响应落盘审计，
+ * 且按批次独立降级——单批失败不再拖垮整轮修复
+ * 故障B（180s超时）: LLM 修复按字段分批（每批≤5个），超时按批量自适应
+ * （1-3字段120s / 4-5字段180s），单批上下文大幅缩小
+ * 故障C（规则层太弱）: RuleRepairer 新增 12 类确定性"要素补齐" +
+ * PRD 风格锚点对齐 + 角色名跨字段一致性锚定，严重级格式问题无需 LLM 即可修
+ * 故障D（_recheckRemaining 白名单失真）: 改为规则修复后【重跑 RuleChecker 实检】，
+ * 只把真实剩余问题+未被规则触及的语义问题推给 LLM，噪音归零
+ *
+ * 附带修复（诊断包未列出，审计中发现）：
+ * 5. LLMRepairer 错误路径返回 {repairedShot} 与调用方解构 {repaired} 不匹配，
+ * 会导致 repaired=undefined 流入 PromptSync 崩溃 → 统一返回 {repaired, actions}
+ * 6. 修复温度 temperature:1 → 0.3（结构化输出任务，高温是"等等，重新看"的温床）
+ * 7. 修复 prompt 注入字段级格式硬约束（与 RuleChecker 判定规则一一对应），
+ * 解决"检查器比修复器严"导致的永不通过死循环
+ *
  * 架构:
  *   RuleRepairer (规则自动修复层) - 确定性问题秒修
- *     · 负面词补全、路径规范化、标点修复、P2/P3截断
- *   LLMRepairer (LLM智能修复层) - PRD注入
- *     · 内容补全、一致性修正、风格对齐
- *     · 后处理: _smartTruncate() 防止超长
- *   _recheckRemaining() - 规则修复后识别剩余问题，只传给LLM
+ *   LLMRepairer (LLM智能修复层) - PRD注入，分批修复
+ *   _recheckRemaining() - 规则修复后实检剩余问题，只传给LLM
  */
+const fs = require('fs');
+const path = require('path');
 const { BaseAgent } = require('../production-engine/agents/base-agent');
 const { deepClone } = require('../../utils/safe-clone');
-const { SPEC_MAP, Priority, Severity, IssueType, MAX_TOTAL_CHARS } = require('./field-check-agent');
+const { SPEC_MAP, Priority, Severity, IssueType, MAX_TOTAL_CHARS, FIELD_REQUIREMENTS } = require('./field-check-agent');
+const { extractJson } = require('./json-salvage');
+
+// 原始响应审计目录（LLM 返回无法解析时落盘，供人工复盘）
+const RAW_LOG_DIR = path.join(__dirname, '..', '..', 'output', 'field-quality');
+
+function _saveRawResponse(tag, raw) {
+  try {
+    if (!fs.existsSync(RAW_LOG_DIR)) fs.mkdirSync(RAW_LOG_DIR, { recursive: true });
+    const file = path.join(RAW_LOG_DIR, `llm-raw-${tag}-${Date.now()}.log`);
+    fs.writeFileSync(file, String(raw ?? '(null)'), 'utf8');
+    return file;
+  } catch (_) {
+    return null;
+  }
+}
 
 // ============================================================
 // 数据模型 - RepairAction, RepairLog, PRD
@@ -94,17 +125,17 @@ class PRD {
     const meta = blueprint._metadata || blueprint.config?._metadata || {};
     const characters = blueprint.characters || [];
     const scenes = blueprint.scenes || [];
-    
+
     // 从多层级结构中解析视频类型
     const videoType = meta.videoType || blueprint.videoType || blueprint.type || 'general';
-    
+
     // 从风格字段解析风格方向（支持单轨/双轨）
     let styleDirection = meta.styleDirection || '';
     if (!styleDirection && blueprint.style) {
       const style = typeof blueprint.style === 'string' ? blueprint.style : (blueprint.style.primary || '');
       styleDirection = style;
     }
-    
+
     // 从情绪字段解析（支持双轨：mood/emotionProfile）
     let moodTone = meta.moodTone || '';
     if (!moodTone) {
@@ -116,7 +147,7 @@ class PRD {
         moodTone = blueprint.tone;
       }
     }
-    
+
     // 解析角色（兼容多种格式）
     const parsedCharacters = characters.map(c => ({
       name: c.name || '',
@@ -124,13 +155,13 @@ class PRD {
       identity: c.identity || c.role || c.description || '',
       appearance: c.appearance || c.costume || c.description || '',
     }));
-    
+
     // 解析场景（兼容字符串和对象格式）
     const parsedScenes = scenes.map(s => {
       if (typeof s === 'string') return s;
       return s.description || s.purpose || s.scene || JSON.stringify(s);
     }).filter(Boolean);
-    
+
     // 解析特殊约束（多源合并）
     const specialConstraints = [];
     if (Array.isArray(meta.specialConstraints)) {
@@ -142,10 +173,10 @@ class PRD {
     if (Array.isArray(blueprint.forbiddenElements)) {
       specialConstraints.push(...blueprint.forbiddenElements.map(f => `禁止: ${f}`));
     }
-    
+
     // 解析台词
     const dialogues = (blueprint.dialogues || []).map(d => typeof d === 'string' ? d : d.text || '').filter(Boolean);
-    
+
     return new PRD({
       projectName: blueprint.title || meta.projectName || '',
       videoType,
@@ -266,6 +297,28 @@ class RuleRepairer {
           }
         }
       }
+
+      // 【v2.1.14-fix 故障C】修复6：INCOMPLETE 要素确定性补齐
+      // 覆盖 director_instruction/constraint/lighting/camera_movement/composition/
+      // bright_constraint/character_constraint/timeline/pacing/costume/transition
+      if (issue.issueType === IssueType.INCOMPLETE && typeof current === 'string' && current.trim()) {
+        const completed = this._completeElements(fieldEn, current, issue, prd);
+        if (completed && completed !== current) {
+          repaired[fieldEn] = completed;
+          actions.push(new RepairAction({
+            fieldEn, method: 'rule', before: current, after: completed,
+            reason: `规则修复：${fieldEn} 要素补齐（${issue.description.slice(0, 30)}）`
+          }));
+        }
+      }
+    }
+
+    // 【v2.1.14-fix 故障C】修复7：PRD 风格锚点对齐 + 角色名一致性锚定
+    // 对 scene/director_instruction/character/action/consistency 等语义字段，
+    // 若与 PRD 完全无关键词重叠（如排练室内容混入南极冰川主题），注入 PRD 锚点短语
+    if (prd) {
+      const alignActions = this._alignWithPrd(repaired, prd);
+      actions.push(...alignActions);
     }
 
     // 【P1-10 修复】RuleRepairer 写值同步 snake/camel/fields 三处
@@ -295,20 +348,212 @@ class RuleRepairer {
   }
 
   /**
+   * 【v2.1.14-fix 故障C】INCOMPLETE 要素确定性补齐
+   * 按 RuleChecker 的判定规则逐字段补齐缺失要素，补齐后受 charMax 约束
+   * @returns {string|null} 补齐后的值；无法规则补齐返回 null（留给 LLM）
+   */
+  _completeElements(fieldEn, current, issue, prd) {
+    const spec = SPEC_MAP[fieldEn];
+    const cap = (text) => {
+      if (!spec || spec.charMax >= 9999) return text;
+      return text.length > spec.charMax ? this._smartTruncate(text, spec.charMax) : text;
+    };
+    const lower = current.toLowerCase();
+    const miss = issue.description; // 检查器产出的描述含"缺少要素：X、Y"
+
+    switch (fieldEn) {
+      case 'director_instruction': {
+        const parts = [];
+        if (miss.includes('风格定位')) parts.push(`风格：${prd?.styleDirection || '电影写实'}`);
+        if (miss.includes('写实要求')) parts.push('超写实真实质感');
+        if (miss.includes('情绪基调')) parts.push(`情绪基调：${prd?.moodTone || '自然沉稳'}`);
+        return parts.length ? cap(`${current}，${parts.join('，')}`) : null;
+      }
+      case 'constraint': {
+        const parts = [];
+        if (miss.includes('画幅比例')) parts.push('16:9画幅');
+        if (miss.includes('分辨率')) parts.push('1920x1080分辨率');
+        if (miss.includes('输出格式')) parts.push('MP4格式');
+        if (miss.includes('帧率')) parts.push('24fps帧率');
+        return parts.length ? cap(`${current}，${parts.join('，')}`) : null;
+      }
+      case 'lighting': {
+        const parts = [];
+        if (miss.includes('主光描述')) parts.push('主光：顶部柔光');
+        if (miss.includes('色温参数')) parts.push('色温5600K');
+        if (miss.includes('光质定义')) parts.push('光质柔和漫射');
+        return parts.length ? cap(`${current}，${parts.join('，')}`) : null;
+      }
+      case 'camera_movement': {
+        const parts = [];
+        if (miss.includes('运动方式')) parts.push('固定机位缓慢微推');
+        if (miss.includes('速度参数')) parts.push('速度0.5m/s');
+        if (miss.includes('时间分布')) parts.push('时间分布：开场0-2秒建立，中段推进，收尾定格');
+        return parts.length ? cap(`${current}，${parts.join('，')}`) : null;
+      }
+      case 'composition': {
+        const parts = [];
+        if (miss.includes('景别等级')) parts.push('中景景别');
+        if (miss.includes('主体位置')) parts.push('主体位于画面左侧三分之一处');
+        return parts.length ? cap(`${current}，${parts.join('，')}`) : null;
+      }
+      case 'bright_constraint': {
+        const parts = [];
+        if (miss.includes('亮度要求')) parts.push('整体明亮光线充足');
+        if (miss.includes('可见性')) parts.push('画面清晰可见');
+        if (miss.includes('面部明亮')) parts.push('面部无阴影明亮清晰');
+        return parts.length ? cap(`${current}，${parts.join('，')}`) : null;
+      }
+      case 'character_constraint': {
+        const parts = [];
+        if (miss.includes('单角色限制')) parts.push('仅出现指定角色');
+        if (miss.includes('禁止分身声明')) parts.push('禁止分身克隆重复出现');
+        return parts.length ? cap(`${current}，${parts.join('，')}`) : null;
+      }
+      case 'timeline': {
+        // 分段不足 → 补足到 3 段
+        const segs = current.match(/T\d{2}:\d{2}/g) || [];
+        if (segs.length < 3) {
+          const pad = ['T00:03-发展段，主体动作推进', 'T00:05-收尾段，情绪定格沉淀'];
+          const need = pad.slice(0, 3 - segs.length);
+          return cap(`${current}；${need.join('；')}`);
+        }
+        return null;
+      }
+      case 'pacing': {
+        const parts = [];
+        if (miss.includes('整体')) parts.push('整体：节奏统一');
+        if (miss.includes('开头')) parts.push('开头：平稳引入');
+        if (miss.includes('中段')) parts.push('中段：自然推进');
+        if (miss.includes('高潮')) parts.push('高潮：轻微加速');
+        if (miss.includes('结尾')) parts.push('结尾：从容收尾');
+        return parts.length ? cap(`${current}，${parts.join('，')}`) : null;
+      }
+      case 'costume': {
+        const parts = [];
+        if (miss.includes('外套') || miss.includes('上装')) parts.push('外套：合身外套');
+        if (miss.includes('内搭')) parts.push('内搭：简约内衬');
+        if (miss.includes('下装')) parts.push('下装：合体长裤');
+        if (miss.includes('鞋履')) parts.push('鞋履：整洁鞋靴');
+        return parts.length ? cap(`${current}，${parts.join('，')}`) : null;
+      }
+      case 'transition': {
+        return cap(`${current}，切镜过渡（硬切）`);
+      }
+      default:
+        return null;
+    }
+  }
+
+  /**
+   * 【v2.1.14-fix 故障C】PRD 风格锚点对齐 + 角色名一致性
+   * 场景/导演指令/角色/动作/一致性字段若与 PRD 零关键词重叠，注入锚点短语；
+   * PRD 角色名未出现在角色/一致性字段时，追加角色锚定
+   */
+  _alignWithPrd(repaired, prd) {
+    const actions = [];
+    const anchorPhrase = this._prdAnchorPhrase(prd);
+    const anchorKeywords = this._prdAnchorKeywords(prd);
+    const charNames = (prd.characters || []).map(c => c.name).filter(Boolean);
+
+    // 风格锚定字段：与 PRD 零重叠 → 前置锚点短语
+    if (anchorPhrase && anchorKeywords.length) {
+      for (const fieldEn of ['scene', 'director_instruction']) {
+        const current = repaired[fieldEn];
+        if (typeof current !== 'string' || !current.trim()) continue;
+        const hasOverlap = anchorKeywords.some(k => current.includes(k));
+        if (!hasOverlap) {
+          const spec = SPEC_MAP[fieldEn];
+          let fixed = `${anchorPhrase}，${current}`;
+          if (spec && spec.charMax < 9999 && fixed.length > spec.charMax) {
+            fixed = this._smartTruncate(fixed, spec.charMax);
+          }
+          if (fixed !== current) {
+            repaired[fieldEn] = fixed;
+            actions.push(new RepairAction({
+              fieldEn, method: 'rule', before: current, after: fixed,
+              reason: '规则修复：字段与PRD零关键词重叠，注入PRD风格锚点'
+            }));
+          }
+        }
+      }
+    }
+
+    // 角色名一致性锚定
+    if (charNames.length) {
+      for (const fieldEn of ['character', 'consistency']) {
+        const current = repaired[fieldEn];
+        if (typeof current !== 'string' || !current.trim()) continue;
+        const missing = charNames.filter(n => !current.includes(n));
+        if (missing.length) {
+          const spec = SPEC_MAP[fieldEn];
+          let fixed = `${current}，角色锚定：${missing.join('、')}`;
+          if (spec && spec.charMax < 9999 && fixed.length > spec.charMax) {
+            fixed = this._smartTruncate(fixed, spec.charMax);
+          }
+          if (fixed !== current) {
+            repaired[fieldEn] = fixed;
+            actions.push(new RepairAction({
+              fieldEn, method: 'rule', before: current, after: fixed,
+              reason: `规则修复：追加PRD角色名锚定（${missing.join('、')}）`
+            }));
+          }
+        }
+      }
+    }
+
+    return actions;
+  }
+
+  /**
+   * PRD 锚点短语：风格方向 + 首个场景（≤40字符）
+   */
+  _prdAnchorPhrase(prd) {
+    const parts = [];
+    if (prd.styleDirection) parts.push(prd.styleDirection);
+    if (prd.scenes?.length) parts.push(String(prd.scenes[0]).slice(0, 30));
+    return parts.join('，').slice(0, 40);
+  }
+
+  /**
+   * PRD 锚点关键词集：从风格/场景/角色名中提取 2-6 字词元
+   */
+  _prdAnchorKeywords(prd) {
+    const text = [prd.styleDirection || '', ...(prd.scenes || []).map(String), ...(prd.characters || []).map(c => c.name || '')].join('，');
+    const tokens = text.split(/[,，、;；。\s\/（）()]+/).filter(t => t.length >= 2 && t.length <= 8);
+    return [...new Set(tokens)].slice(0, 20);
+  }
+
+  /**
+   * 智能截断（供规则层使用，与 LLMRepairer 同款逻辑）
+   */
+  _smartTruncate(text, maxLen) {
+    if (text.length <= maxLen) return text;
+    let truncated = text.slice(0, maxLen);
+    for (const sep of [', ', '，', '; ', '；', ' ']) {
+      const idx = truncated.lastIndexOf(sep);
+      if (idx > maxLen * 0.6) {
+        return truncated.slice(0, idx);
+      }
+    }
+    return truncated;
+  }
+
+  /**
    * 【审计修复·P0】根据字段名和上下文生成智能默认值
    */
   _generateDefault(fieldEn, prd, shot) {
     const defaults = {
       director_instruction: prd?.styleDirection
-        ? `${prd.styleDirection}，超写实8K电影级，画面质感高级细腻`
-        : '好莱坞电影级超写实8K质感，画面细腻真实，光影层次分明',
+        ? `${prd.styleDirection}，超写实8K电影级质感，情绪基调${prd?.moodTone || '自然沉稳'}`
+        : '好莱坞电影级超写实8K质感，画面细腻真实，情绪基调自然沉稳',
       constraint: 'Aspect ratio: 16:9, Resolution: 1920x1080, Format: MP4, Frame rate: 24fps, Color space Rec.709',
       baseline: '8K超高清，电影级调色，真实物理光照，皮肤纹理细节完整，毛发渲染自然',
       scene: prd?.scenes?.length
         ? String(prd.scenes[0]).substring(0, 150)
         : '写实风格室内场景，自然光线充足，材质细节丰富，空间层次分明',
       lighting: '主光源：自然光5600K柔和漫射，补光：反光板柔化阴影，光质：柔和均匀无刺眼高光',
-      camera_movement: '开场固定机位2秒建立构图，中段缓慢推轨接近主体，收尾稳定定格1秒',
+      camera_movement: '开场固定机位2秒建立构图，中段缓慢推轨接近主体速度0.5m/s，收尾稳定定格1秒',
       character: prd?.characters?.length
         ? `${prd.characters[0].name || '主角'}，${prd.characters[0].appearance || '写实形象，自然神态，服装得体'}`
         : '主角，写实形象，自然神态，服装得体，站姿放松自然',
@@ -326,7 +571,7 @@ class RuleRepairer {
       depth_of_field: 'moderate depth of field f/4, subject in sharp focus, soft background blur, cinematic separation',
       timeline: 'T00:00-开场构图，建立场景氛围；T00:02-主体动作，叙事推进；T00:05-收尾定格，情绪沉淀',
       mood: 'calm, professional, natural atmosphere',
-      bright_constraint: 'bright lighting, well-lit scene, clear visibility, no dark shadows on face, adequate illumination, face clearly lit',
+      bright_constraint: '明亮光线充足，清晰可见，面部明亮无阴影 bright, clear, face lit',
       character_constraint: '只出现指定角色一人，禁止其他人物入镜，禁止同一角色重复出现，禁止角色分身或克隆',
       costume: '日常便装，整洁得体，符合角色身份设定',
       props: '符合场景逻辑的日常物品，与角色动作协调',
@@ -340,7 +585,7 @@ class RuleRepairer {
 }
 
 // ============================================================
-// LLMRepairer - LLM智能修复层（PRD注入）
+// LLMRepairer - LLM智能修复层（PRD注入，分批修复）
 // ============================================================
 
 const LLM_REPAIRER_SYSTEM_PROMPT = `你是 AI 视频生成提示词的【内容修复专家】，精通 HyperrealitySystem 字段规范 v3.0。
@@ -354,8 +599,9 @@ const LLM_REPAIRER_SYSTEM_PROMPT = `你是 AI 视频生成提示词的【内容�
 4. 风格一致：修复后的字段须与其它字段保持风格一致
 5. 强制中文输出：所有字段必须使用中文，禁止英文单词（专有名词如人名地名除外）
 
-【输出格式】
-返回JSON，key 为需要修复的字段英文名，value 为修复后的完整字段内容：
+【输出格式——硬性要求】
+直接输出 JSON 对象本身，第一个字符就是 {，禁止输出任何自然语言开场白、思考过程或 markdown 围栏。
+key 为需要修复的字段英文名，value 为修复后的完整字段内容：
 {
   "repaired_fields": {
     "director_instruction": "修复后的完整内容",
@@ -366,9 +612,20 @@ const LLM_REPAIRER_SYSTEM_PROMPT = `你是 AI 视频生成提示词的【内容�
 只返回需要修复的字段，不要返回未出问题的字段。`;
 
 class LLMRepairer {
-  constructor(llmClient, timeoutMs = 180000) {
+  constructor(llmClient, timeoutMs = 180000, options = {}) {
     this.llm = llmClient;
-    this.timeoutMs = timeoutMs; // 【v2.1.4-fix13】增加超时配置
+    this.baseTimeoutMs = timeoutMs; // 【v2.1.14】作为自适应基准
+    this.temperature = options.temperature ?? 0.3; // 【v2.1.14-fix】结构化任务低温
+    this.maxFieldsPerBatch = options.maxFieldsPerBatch || 5; // 【v2.1.14-fix 故障B】分批阈值
+  }
+
+  /**
+   * 【v2.1.14-fix 故障B】按批字段数自适应超时
+   * 1-3 字段: 120s；4-5 字段: 180s（原固定值）；更大批量不会发生（已分批）
+   */
+  _timeoutForBatch(fieldCount) {
+    if (this.baseTimeoutMs && this.baseTimeoutMs !== 180000) return this.baseTimeoutMs; // 显式配置优先
+    return fieldCount <= 3 ? 120000 : 180000;
   }
 
   async repair(shot, report, prd) {
@@ -381,8 +638,44 @@ class LLMRepairer {
       return { repaired: shot, actions: [] };
     }
 
+    // 【v2.1.14-fix 故障B】按字段分批（每批 ≤ maxFieldsPerBatch 个字段）
+    const fieldsToRepair = [...new Set(llmIssues.map(i => i.fieldEn))];
+    const batches = [];
+    for (let i = 0; i < fieldsToRepair.length; i += this.maxFieldsPerBatch) {
+      batches.push(fieldsToRepair.slice(i, i + this.maxFieldsPerBatch));
+    }
+    if (batches.length > 1) {
+      console.log(`[LLMRepairer] ${fieldsToRepair.length} 个字段拆分为 ${batches.length} 批修复（每批≤${this.maxFieldsPerBatch}个）`);
+    }
+
+    let repairedShot = deepClone(shot);
+    const actions = [];
+
+    // 逐批修复：单批失败（超时/解析失败）不影响其他批次——不再整轮作废
+    for (let bi = 0; bi < batches.length; bi++) {
+      const batchFields = batches[bi];
+      const batchIssues = llmIssues.filter(i => batchFields.includes(i.fieldEn));
+      const batchTimeout = this._timeoutForBatch(batchFields.length);
+
+      const result = await this._repairBatch(repairedShot, batchIssues, batchFields, prd, batchTimeout, bi + 1, batches.length);
+      if (result.repaired) {
+        repairedShot = result.repaired;
+        actions.push(...result.actions);
+      }
+    }
+
+    return { repaired: repairedShot, actions };
+  }
+
+  /**
+   * 单批修复：构建 prompt → 调用 LLM → 鲁棒解析 → 应用结果
+   * 任何失败都只影响本批，返回 null 表示本批未修复
+   */
+  async _repairBatch(shot, batchIssues, batchFields, prd, timeoutMs, batchNum, batchTotal) {
+    const batchTag = batchTotal > 1 ? `（第${batchNum}/${batchTotal}批）` : '';
+
     // 构建问题清单
-    const issuesText = llmIssues.map(i => {
+    const issuesText = batchIssues.map(i => {
       const currentVal = i.currentValue || shot[i.fieldEn] || '（缺失）';
       return `- 字段【${i.fieldCn}】(${i.fieldEn})：${i.description}\n  修改建议：${i.suggestion}\n  当前值：${String(currentVal).slice(0, 80)}`;
     }).join('\n');
@@ -390,16 +683,16 @@ class LLMRepairer {
     // PRD约束文本（核心：防止修复偏离业务需求）
     const prdConstraint = prd ? prd.toConstraintText() : '';
 
-    // 当前字段快照 + 字符预算
-    const fieldsToRepair = [...new Set(llmIssues.map(i => i.fieldEn))];
+    // 当前字段快照
     const currentFields = {};
-    for (const f of fieldsToRepair) {
+    for (const f of batchFields) {
       currentFields[f] = shot[f] || '';
     }
     const currentFieldsJson = JSON.stringify(currentFields, null, 2);
 
+    // 字符预算
     const budgetHints = [];
-    for (const f of fieldsToRepair) {
+    for (const f of batchFields) {
       const spec = SPEC_MAP[f];
       if (spec && spec.charMax < 9999) {
         budgetHints.push(` - ${f}：≤ ${spec.charMax} 字符`);
@@ -407,51 +700,75 @@ class LLMRepairer {
     }
     const budgetText = budgetHints.length ? budgetHints.join('\n') : ' （无特殊限制）';
 
-    const userPrompt = `请根据以下信息修复提示词字段：\n\n【用户需求文档 PRD 约束】（修复时必须遵守，不得偏离）\n${prdConstraint}\n\n【需要修复的字段当前内容】\n${currentFieldsJson}\n\n【字符数预算限制】（修复后每个字段不得超过上限）\n${budgetText}\n\n【检查发现的问题】\n${issuesText}\n\n请修复上述问题，确保修复后的字段：\n1. 符合 PRD 中的视频类型、风格方向、情绪基调等业务约束\n2. 符合字段规范的格式要求\n3. 与其它字段保持风格一致\n4. 严格控制字符数在预算上限以内\n\n返回JSON格式的修复结果。`;
+    // 【v2.1.14-fix】字段级格式硬约束（与 RuleChecker 判定规则一一对应）
+    // 解决"检查器比修复器严"导致的修复后复检永不通过
+    const formatHints = [];
+    for (const f of batchFields) {
+      if (FIELD_REQUIREMENTS[f]) {
+        formatHints.push(` - ${f}：${FIELD_REQUIREMENTS[f]}`);
+      }
+    }
+    const formatText = formatHints.length
+      ? formatHints.join('\n')
+      : ' （无特殊格式要求）';
 
-    // 【v2.1.4-fix13】增加超时保护
+    const userPrompt = `请根据以下信息修复提示词字段：\n\n【用户需求文档 PRD 约束】（修复时必须遵守，不得偏离）\n${prdConstraint}\n\n【需要修复的字段当前内容】\n${currentFieldsJson}\n\n【字符数预算限制】（修复后每个字段不得超过上限）\n${budgetText}\n\n【字段格式硬约束】（修复后必须逐项满足，机器将按此复检）\n${formatText}\n\n【检查发现的问题】\n${issuesText}\n\n请修复上述问题，确保修复后的字段：\n1. 符合 PRD 中的视频类型、风格方向、情绪基调等业务约束\n2. 逐项满足【字段格式硬约束】的全部要素\n3. 与其它字段保持风格一致\n4. 严格控制字符数在预算上限以内\n\n直接输出JSON，第一个字符就是 {。`;
+
+    // 超时保护
     let timer;
     const timeoutPromise = new Promise((_, reject) => {
       timer = setTimeout(
-        () => reject(new Error(`LLMRepairer超时(${this.timeoutMs}ms)`)),
-        this.timeoutMs
+        () => reject(new Error(`LLMRepairer超时(${timeoutMs}ms)`)),
+        timeoutMs
       );
     });
 
     try {
-      const repairPromise = this.llm.reason(userPrompt, { 
-        systemPrompt: LLM_REPAIRER_SYSTEM_PROMPT, 
-        temperature: 1 
+      const repairPromise = this.llm.reason(userPrompt, {
+        systemPrompt: LLM_REPAIRER_SYSTEM_PROMPT,
+        temperature: this.temperature
       });
-      repairPromise.catch(() => {}); // 【v2.1.6-fix】防止悬空 rejection
+      repairPromise.catch(() => {}); // 防止悬空 rejection
       const response = await Promise.race([
         repairPromise,
         timeoutPromise
       ]).finally(() => clearTimeout(timer));
 
-      // 【修复 P0-4/P0-6】reason() 返回信封格式 {success, content, error}，必须提取 content
+      // reason() 返回信封格式 {success, content, error}，必须提取 content
       let rawContent;
       if (response && typeof response === 'object') {
         if (response.success === true && typeof response.content === 'string') {
           rawContent = response.content;
         } else if (response.success === false) {
-          console.warn(`[LLMRepairer] LLM返回失败: ${response.error || '未知错误'}`);
-          return { repairedShot: shot, actions: [], degraded: true };
+          console.warn(`[LLMRepairer] LLM返回失败${batchTag}: ${response.error || '未知错误'}，本批跳过`);
+          return { repaired: null, actions: [] };
         }
       }
-      const data = (typeof rawContent === 'string') ? JSON.parse(rawContent) : (rawContent || {});
+
+      // 【v2.1.14-fix 故障A】鲁棒 JSON 提取（四级降级，绝不抛出）
+      const salvage = extractJson(rawContent);
+      if (!salvage.ok) {
+        const rawFile = _saveRawResponse('repair', rawContent);
+        console.warn(`[LLMRepairer] JSON提取失败${batchTag}，本批跳过${rawFile ? `（原始响应已留存: ${rawFile}）` : ''}`);
+        return { repaired: null, actions: [] };
+      }
+      if (salvage.method !== 'direct') {
+        console.log(`[LLMRepairer] JSON经抢救提取成功（方式: ${salvage.method}）`);
+      }
+
+      const data = salvage.data || {};
       const repairedFields = data.repaired_fields || {};
 
       const repairedShot = deepClone(shot);
       const actions = [];
 
-      // 【v2.1.4-fix13】构建字段名映射表，支持 snake_case ↔ camelCase
+      // 构建字段名映射表，支持 snake_case ↔ camelCase
       const { SNAKE_TO_CAMEL, CAMEL_TO_SNAKE } = require('./field-check-agent');
 
       for (const [fieldEn, newValue] of Object.entries(repairedFields)) {
         if (!newValue || !String(newValue).trim()) continue;
 
-        // 【v2.1.4-fix13】将 LLM 返回的 key 统一映射到 shot 中已有的字段名
+        // 将 LLM 返回的 key 统一映射到 shot 中已有的字段名
         let targetField = fieldEn;
         // 如果 shot 中有 camelCase 版本，优先用 camelCase
         if (SNAKE_TO_CAMEL[fieldEn] && SNAKE_TO_CAMEL[fieldEn] in repairedShot) {
@@ -477,8 +794,8 @@ class LLMRepairer {
         // 字符数后处理
         const spec = SPEC_MAP[fieldEn] || SPEC_MAP[SNAKE_TO_CAMEL[fieldEn]];
         let finalValue = newValue;
-        if (spec && spec.charMax < 9999 && finalValue.length > spec.charMax) {
-          finalValue = this._smartTruncate(finalValue, spec.charMax);
+        if (spec && spec.charMax < 9999 && String(finalValue).length > spec.charMax) {
+          finalValue = this._smartTruncate(String(finalValue), spec.charMax);
         }
 
         if (finalValue !== oldValue) {
@@ -489,7 +806,7 @@ class LLMRepairer {
           } else {
             repairedShot[targetField] = finalValue;
           }
-          // 【v2.1.4-fix13】同时在 snake_case 和 camelCase 两个位置都赋值，确保下游都能取到
+          // 同时在 snake_case 和 camelCase 两个位置都赋值，确保下游都能取到
           if (SNAKE_TO_CAMEL[fieldEn]) {
             repairedShot[SNAKE_TO_CAMEL[fieldEn]] = finalValue;
           }
@@ -499,20 +816,20 @@ class LLMRepairer {
 
           actions.push(new RepairAction({
             fieldEn, method: 'llm', before: oldValue, after: finalValue,
-            reason: 'LLM 修复：参考 PRD 约束修复检查问题'
+            reason: `LLM 修复：参考 PRD 约束修复检查问题${batchTag}`
           }));
         }
       }
 
       return { repaired: repairedShot, actions };
     } catch (e) {
-      // 【v2.1.4-fix13】区分超时和其他异常
+      // 【v2.1.14-fix】单批失败不再拖垮整轮：记录并跳过本批
       if (e.message?.includes('超时')) {
-        console.warn(`[LLMRepairer] 修复超时(${this.timeoutMs}ms)，返回原始shot`);
+        console.warn(`[LLMRepairer] 本批修复超时(${timeoutMs}ms)${batchTag}，跳过本批，其余批次继续`);
       } else {
-        console.warn(`[LLMRepairer] 修复异常: ${e.message}`);
+        console.warn(`[LLMRepairer] 本批修复异常${batchTag}: ${e.message}，跳过本批`);
       }
-      return { repaired: shot, actions: [] };
+      return { repaired: null, actions: [] };
     }
   }
 
@@ -537,8 +854,11 @@ class FieldRepairAgent extends BaseAgent {
   constructor(options = {}) {
     super({ name: 'FieldRepairAgent', llmTimeout: options.llmTimeout || 180000, ...options });
     this.ruleRepairer = new RuleRepairer();
-    // 【v2.1.4-fix13】把超时配置传给 LLMRepairer
-    this.llmRepairer = new LLMRepairer(this._getLLMEngine(), options.llmTimeout || 180000);
+    // 【v2.1.14-fix】透传温度与分批配置
+    this.llmRepairer = new LLMRepairer(this._getLLMEngine(), options.llmTimeout || 180000, {
+      temperature: options.llmTemperature ?? 0.3,
+      maxFieldsPerBatch: options.maxFieldsPerBatch || 5,
+    });
     this.prd = options.prd || null;
   }
 
@@ -558,10 +878,12 @@ class FieldRepairAgent extends BaseAgent {
 
     // 第二层：LLM智能修复（注入PRD约束）
     if (this.llmRepairer.llm && this.prd) {
-      // 重新检查规则修复后的shot，确认哪些问题仍需LLM修复
-      const remainingReport = this._recheckRemaining(repaired, report);
+      // 【v2.1.14-fix 故障D】规则修复后实检剩余问题，只把真实未解决的推给LLM
+      const remainingReport = this._recheckRemaining(repaired, report, ruleActions);
+      console.log(`[FieldRepairAgent] 实检剩余问题：${remainingReport.issues.length} 项推给 LLM（原报告 ${report.issues.length} 项）`);
       if (remainingReport.issues.length) {
         const { repaired: llmRepaired, actions: llmActions } = await this.llmRepairer.repair(repaired, remainingReport, this.prd);
+        // 【v2.1.14-fix】LLMRepairer 任何路径都返回 {repaired, actions}，llmRepaired 永不为 undefined
         repaired = llmRepaired;
         log.actions.push(...llmActions);
         console.log(`[FieldRepairAgent] LLMRepairer 完成：${llmActions.length} 项修复`);
@@ -578,38 +900,46 @@ class FieldRepairAgent extends BaseAgent {
     return { repaired, log };
   }
 
-  _recheckRemaining(shot, originalReport) {
-    // 识别规则修复后仍存在的问题，供LLM修复
-    const { CheckReport } = require('./field-check-agent');
+  /**
+   * 【v2.1.14-fix 故障D】精确识别规则修复后的剩余问题
+   * 旧实现：4 条 fieldEn|issueType 白名单猜测，已修复但未列入白名单的问题
+   * 照样推给 LLM（含全部规则默认值填充的 MISSING 问题），LLM 收到
+   * 大量"已修但仍报"的噪音，产生困惑性输出
+   * 新实现：
+   * 1. 对规则修复后的 shot 重跑 RuleChecker 实检 → 真实的规则层剩余问题
+   * 2. 原报告中的 LLM 语义问题（inconsistent/conflict），若涉及字段未被
+   *    规则修复触碰 → 保留推给 LLM
+   * 3. 按 字段+描述 去重
+   */
+  _recheckRemaining(shot, originalReport, ruleActions = []) {
+    const { CheckReport, RuleChecker } = require('./field-check-agent');
     const remaining = new CheckReport(originalReport.shotId);
 
-    // 规则可修复的字段+问题类型组合
-    const ruleFixable = new Set([
-      'negative|incomplete',
-      'portraits|format_error',
-      'dialogue|format_error',
-    ]);
+    // ① 实检：对修复后的 shot 重新跑规则检查（确定性、零成本、绝对准确）
+    const checker = new RuleChecker();
+    const freshRuleIssues = checker.check(shot);
+    remaining.issues.push(...freshRuleIssues);
 
+    // ② 保留未被规则触碰的 LLM 语义问题
+    const ruleTouchedFields = new Set(ruleActions.map(a => a.fieldEn));
+    const ruleIssueKeys = new Set(freshRuleIssues.map(i => `${i.fieldEn}|${i.description}`));
     for (const issue of originalReport.issues) {
-      const key = `${issue.fieldEn}|${issue.issueType}`;
-      if (ruleFixable.has(key)) {
-        const current = shot[issue.fieldEn] || '';
-        // 检查规则修复后是否已解决
-        if (issue.fieldEn === 'negative' && /no text/.test(current.toLowerCase())) continue;
-        if (issue.fieldEn === 'portraits' && /\/characters\/.+\/portrait_v\d+\.(png|jpg)/.test(current)) continue;
-        if (issue.fieldEn === 'dialogue' && /句末标点/.test(issue.description)) {
-          if (current && /[。！？…]$/.test(current)) continue;
-        }
-        if (issue.fieldEn === 'dialogue' && /禁止标点/.test(issue.description)) {
-          if (!/[；;：:""''"'\[\]【】]/.test(current)) continue;
-        }
-        // 跳过P2/P3超长问题（规则已截断）
-        if (issue.issueType === IssueType.OVER_LENGTH && issue.fieldEn in SPEC_MAP && [Priority.P2, Priority.P3].includes(SPEC_MAP[issue.fieldEn].priority)) {
-          if (current.length <= SPEC_MAP[issue.fieldEn].charMax) continue;
-        }
-      }
+      const isSemantic = [IssueType.INCONSISTENT, IssueType.CONFLICT].includes(issue.issueType);
+      if (!isSemantic) continue; // 规则类问题以实检为准
+      if (ruleTouchedFields.has(issue.fieldEn)) continue; // 规则已改过该字段，交给下一轮检查判定
+      const key = `${issue.fieldEn}|${issue.description}`;
+      if (ruleIssueKeys.has(key)) continue; // 实检已覆盖
       remaining.issues.push(issue);
     }
+
+    // ③ 去重
+    const seen = new Set();
+    remaining.issues = remaining.issues.filter(i => {
+      const key = `${i.fieldEn}|${i.issueType}|${i.description}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
 
     return remaining;
   }
