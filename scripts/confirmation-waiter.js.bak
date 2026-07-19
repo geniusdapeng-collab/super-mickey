@@ -1,4 +1,3 @@
-
 /**
  * confirmation-waiter.js - 人工确认等待器（确认文件的接收、校验与生命周期管理）
  *
@@ -6,10 +5,6 @@
  * 从 hyperreality-system/index.js 的 _waitForExternalConfirmation 抽离，
  * 使确认等待逻辑可独立测试；index.js 中的同名方法变为薄封装。
  * 【v2.1.13-fix】验签失败时追加"旧确认服务器实例漂移"排查指引。
- * 【v2.1.16-fix 确认未推送】新增两种推送通道：
- *   1. PENDING.json 机器可读状态文件——AI 助手/外部系统轮询单个文件即可获知
- *      "当前有待确认事项"，包含绝对路径、run_id、内容预览，不再靠猜路径
- *   2. 可选 webhook（STORMAXE_CONFIRM_WEBHOOK_URL）——确认文件生成后主动 POST
  *
  * 与旧实现的关键差异：
  * 1. 不再 unlinkSync 消费确认文件 → 验证通过后归档到 archive/consumed/（rename 原子），
@@ -68,19 +63,6 @@ async function waitForExternalConfirmation(opts) {
   const contentPath = path.join(outputDir, `confirmation-${type}.md`);
   runCoordinator.atomicWriteSync(contentPath, header + content);
 
-  // 【v2.1.16-fix 确认未推送】写入机器可读待确认状态（AI 助手轮询单文件即可感知）
-  _writePendingState(outputDir, {
-    pending: true,
-    type,
-    md_path: contentPath,
-    run_id: runId,
-    generated_at: new Date(mdWrittenAt).toISOString(),
-    preview: String(content).slice(0, 300),
-    pid: process.pid
-  });
-  // 【v2.1.16-fix】可选 webhook 主动推送（fire-and-forget，不阻塞流程）
-  _pushWebhook({ event: 'confirmation.pending', type, md_path: contentPath, run_id: runId, generated_at: new Date(mdWrittenAt).toISOString() }, log);
-
   const confirmPath = path.join(outputDir, `confirmation-${type}.json`);
 
   // ── 预清理：该 type 若残留旧确认文件（上一轮遗留），一律归档 ─────────────
@@ -88,7 +70,7 @@ async function waitForExternalConfirmation(opts) {
   // 早于本次 .md 的确认文件。
   if (fs.existsSync(confirmPath)) {
     const archived = runCoordinator.archiveConfirmation(confirmPath, 'stale', 'pre-wait-clean');
-    log(`   🧹 已归档残留确认文件（上一轮遗留，不参与本次确认）: ${path.basename(archived || confirmPath)}`);
+    log(` 🧹 已归档残留确认文件（上一轮遗留，不参与本次确认）: ${path.basename(archived || confirmPath)}`);
   }
 
   // 【v2.1.8-强制流程】禁止预置确认文件，必须等待真实人工确认（保持原规则）
@@ -103,12 +85,12 @@ async function waitForExternalConfirmation(opts) {
   log(`║ 运行编号: ${String(runId || 'unknown').padEnd(50)} ║`);
   log('║                                                                      ║');
   log('║ 请审阅内容后，运行以下命令确认:                                      ║');
-  log(`║   node scripts/human-confirm.js ${type} approve "你的理由"           ║`);
+  log(`║   node scripts/human-confirm.js ${type} approve "你的理由" ║`);
   log('║ 或拒绝:                                                              ║');
-  log(`║   node scripts/human-confirm.js ${type} reject "调整原因"           ║`);
+  log(`║   node scripts/human-confirm.js ${type} reject "调整原因" ║`);
   log('║                                                                      ║');
-  log('║ ⚠️  AI 不得创建 confirmation-*.json，必须等待人类确认               ║');
-  log('║ ⏱️  等待时间不计入流程有效时间                                       ║');
+  log('║ ⚠️ AI 不得创建 confirmation-*.json，必须等待人类确认                   ║');
+  log('║ ⏱️ 等待时间不计入流程有效时间                                        ║');
   log('╚══════════════════════════════════════════════════════════════════════╝');
   log('');
 
@@ -145,10 +127,10 @@ async function waitForExternalConfirmation(opts) {
       const reminderMin = reminderIntervals[currentReminderIndex];
       log('');
       log('🔄 '.repeat(15));
-      log(`   📢 提醒: 已等待 ${reminderMin} 分钟，确认文件仍在等待中...`);
-      log(`      请查看: ${contentPath}`);
-      log(`      确认命令: node scripts/human-confirm.js ${type} approve "你的理由"`);
-      log('      ⚠️ 等待时间不计入流程有效时间');
+      log(` 📢 提醒: 已等待 ${reminderMin} 分钟，确认文件仍在等待中...`);
+      log(`    请查看: ${contentPath}`);
+      log(`    确认命令: node scripts/human-confirm.js ${type} approve "你的理由"`);
+      log(' ⚠️  等待时间不计入流程有效时间');
       log('🔄 '.repeat(15));
       log('');
     }
@@ -159,17 +141,17 @@ async function waitForExternalConfirmation(opts) {
       startTime = Date.now();
       log('');
       log('⏰ '.repeat(15));
-      log('   ⏰ 等待已超2小时，流程仍继续等待...');
-      log('   原因：等待确认的时间不计入流程有效时间');
-      log('   如需确认，请运行上述命令');
-      log('   如需终止，请发送关闭信号');
+      log(' ⏰ 等待已超2小时，流程仍继续等待...');
+      log('    原因：等待确认的时间不计入流程有效时间');
+      log('    如需确认，请运行上述命令');
+      log('    如需终止，请发送关闭信号');
       log('⏰ '.repeat(15));
       log('');
     }
 
     // 【v2.1.12】可选硬上限（默认关闭）
     if (hardCapMs > 0 && totalWaitSoFar() >= hardCapMs) {
-      log(`   ⛔ 等待确认超过硬上限 ${Math.round(hardCapMs / 60000)} 分钟（STORMAXE_CONFIRM_MAX_WAIT_MS），流程明确终止`);
+      log(` ⛔ 等待确认超过硬上限 ${Math.round(hardCapMs / 60000)} 分钟（STORMAXE_CONFIRM_MAX_WAIT_MS），流程明确终止`);
       return {
         approved: false,
         reason: `confirm-wait-hard-timeout (${Math.round(hardCapMs / 60000)}min)`,
@@ -181,7 +163,7 @@ async function waitForExternalConfirmation(opts) {
 
     // 收到关闭信号，立即中断轮询（原逻辑保持）
     if (shouldAbort()) {
-      log('   ⏰ 收到关闭信号，中断等待');
+      log(' ⏰ 收到关闭信号，中断等待');
       return { approved: false, reason: 'shutdown', suggestions: [], waitTimeMs: totalWaitSoFar() };
     }
 
@@ -192,14 +174,14 @@ async function waitForExternalConfirmation(opts) {
         confirmData = JSON.parse(fs.readFileSync(confirmPath, 'utf8'));
       } catch (e) {
         // 理论上原子写后不会再读到半个文件；兜底保留
-        log('   ⚠️ 确认文件解析失败（可能写入中）,继续等待...');
+        log(' ⚠️ 确认文件解析失败（可能写入中）,继续等待...');
       }
 
       if (confirmData) {
         // ① run_id 绑定：携带 run_id 且与本次运行不一致 → 跨运行确认，归档拒绝
         if (confirmData.run_id && runId && confirmData.run_id !== runId) {
-          log(`   ⛔ 确认文件的 run_id (${confirmData.run_id}) 与本次运行 (${runId}) 不一致`);
-          log('   ⛔ 该确认属于其他运行，已归档拒绝，继续等待本次运行的确认');
+          log(` ⛔ 确认文件的 run_id (${confirmData.run_id}) 与本次运行 (${runId}) 不一致`);
+          log(' ⛔ 该确认属于其他运行，已归档拒绝，继续等待本次运行的确认');
           runCoordinator.archiveConfirmation(confirmPath, 'rejected', 'run-id-mismatch');
           await new Promise(resolve => setTimeout(resolve, checkInterval));
           continue;
@@ -207,7 +189,7 @@ async function waitForExternalConfirmation(opts) {
 
         // ② 新鲜度绑定：确认时间戳早于本次 .md 生成时间 → 上一轮残留，归档拒绝
         if (typeof confirmData.timestamp === 'number' && confirmData.timestamp < mdWrittenAt - STALE_SKEW_MS) {
-          log('   ⛔ 确认文件生成时间早于本次待确认内容（上一轮残留），已归档拒绝');
+          log(' ⛔ 确认文件生成时间早于本次待确认内容（上一轮残留），已归档拒绝');
           runCoordinator.archiveConfirmation(confirmPath, 'rejected', 'stale-confirm');
           await new Promise(resolve => setTimeout(resolve, checkInterval));
           continue;
@@ -220,8 +202,8 @@ async function waitForExternalConfirmation(opts) {
             // 【v2.1.12 关键行为变更】nonce 已被消费 = 该确认已被另一实例消费，
             // 或遭遇复制攻击。无论哪种，继续等待都不会再有结果 → 明确终止，
             // 流程干净退出（原实现：删除文件后无限循环等待，即本次事故根因之一）
-            log('   ⛔ 该确认已被其他实例消费（nonce 重放），或遭遇复制攻击');
-            log('   ⛔ 本流程无法继续，明确终止。请确认只有一个预生产进程在运行后重试');
+            log(' ⛔ 该确认已被其他实例消费（nonce 重放），或遭遇复制攻击');
+            log(' ⛔ 本流程无法继续，明确终止。请确认只有一个预生产进程在运行后重试');
             runCoordinator.archiveConfirmation(confirmPath, 'replay', 'nonce-replay');
             return {
               approved: false,
@@ -231,14 +213,14 @@ async function waitForExternalConfirmation(opts) {
               fatal: true
             };
           }
-          log(`   ⛔ 拒绝非法确认文件: ${verdict.message}`);
-          log('   ⛔ 仅人类可通过 human-confirm.js 工具生成有效签名');
-          log('   ⛔ AI 不得擅自创建 confirmation-*.json');
+          log(` ⛔ 拒绝非法确认文件: ${verdict.message}`);
+          log(' ⛔ 仅人类可通过 human-confirm.js 工具生成有效签名');
+          log(' ⛔ AI 不得擅自创建 confirmation-*.json');
           // 【v2.1.13】签名不匹配且确认由服务端生成时，给出实例漂移排查指引
           if (verdict.code === 'bad-signature') {
-            log('   💡 排查提示: 若近期轮换过密钥或更新过确认服务代码，正在运行的确认服务器');
-            log('      可能是持有旧密钥/旧代码的残留实例（本次 07-19 事故的成因）。');
-            log('      运行 node scripts/ensure-confirmation-server.js 可自动检测并重启确认服务器');
+            log(' 💡 排查提示: 若近期轮换过密钥或更新过确认服务代码，正在运行的确认服务器');
+            log('    可能是持有旧密钥/旧代码的残留实例（本次 07-19 事故的成因）。');
+            log('    运行 node scripts/ensure-confirmation-server.js 可自动检测并重启确认服务器');
           }
           // 归档（而非删除）非法确认文件：保留审计证据，且避免多进程下"删一半"
           runCoordinator.archiveConfirmation(confirmPath, 'rejected', verdict.code);
@@ -247,16 +229,15 @@ async function waitForExternalConfirmation(opts) {
         }
 
         // ④ 验证通过 → 归档消费（rename 原子），不再 unlinkSync
-        _writePendingState(outputDir, { pending: false, type, run_id: runId, cleared_at: new Date().toISOString() });
-        log(`   ✅ 收到有效人类确认: approved=${confirmData.approved}`);
+        log(` ✅ 收到有效人类确认: approved=${confirmData.approved}`);
         const archivedTo = runCoordinator.archiveConfirmation(confirmPath, 'consumed', runId || undefined);
         if (archivedTo) {
-          log(`   🗂️ 确认文件已归档: ${path.basename(archivedTo)}`);
+          log(` 🗂️  确认文件已归档: ${path.basename(archivedTo)}`);
         }
 
         const waitTimeMs = totalWaitSoFar();
-        log(`   ⏱️ 本次等待确认耗时: ${Math.round(waitTimeMs / 1000)}秒 (${Math.round(waitTimeMs / 60000)}分钟)`);
-        log('   ⏱️ 等待时间不计入流程有效时间');
+        log(` ⏱️ 本次等待确认耗时: ${Math.round(waitTimeMs / 1000)}秒 (${Math.round(waitTimeMs / 60000)}分钟)`);
+        log(' ⏱️ 等待时间不计入流程有效时间');
         return {
           approved: confirmData.approved === true || confirmData.approved === 'true' || confirmData.approved === 1,
           reason: confirmData.reason || '',
@@ -268,52 +249,11 @@ async function waitForExternalConfirmation(opts) {
 
     // 每5分钟打印一次简短状态（原逻辑保持）
     if (elapsed % 300000 < checkInterval) {
-      log(`   ⏳ 等待确认中... (${elapsedMins}分钟) — 等待时间不计入流程总时间`);
+      log(` ⏳ 等待确认中... (${elapsedMins}分钟) — 等待时间不计入流程总时间`);
     }
 
     await new Promise(resolve => setTimeout(resolve, checkInterval));
   }
 }
 
-/**
- * 【v2.1.16-fix】写入待确认状态文件（原子写）
- * AI 助手只需轮询 PENDING.json 即可获知待确认事项，含绝对路径，消除路径不一致
- */
-function _writePendingState(outputDir, state) {
-  try {
-    const pendingPath = path.join(outputDir, 'PENDING.json');
-    const tmp = pendingPath + `.tmp-${process.pid}`;
-    fs.writeFileSync(tmp, JSON.stringify(state, null, 2));
-    fs.renameSync(tmp, pendingPath);
-  } catch (_) { /* 推送失败不阻断确认流程 */ }
-}
-
-/**
- * 【v2.1.16-fix】可选 webhook 推送（STORMAXE_CONFIRM_WEBHOOK_URL）
- * fire-and-forget：短超时、失败静默，绝不影响主流程
- */
-function _pushWebhook(payload, log) {
-  const url = process.env.STORMAXE_CONFIRM_WEBHOOK_URL;
-  if (!url) return;
-  try {
-    const http = url.startsWith('https') ? require('https') : require('http');
-    const body = JSON.stringify(payload);
-    const u = new URL(url);
-    const req = http.request({
-      hostname: u.hostname,
-      port: u.port || (u.protocol === 'https:' ? 443 : 80),
-      path: u.pathname + u.search,
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
-      timeout: 5000
-    });
-    req.on('error', () => { /* 静默 */ });
-    req.on('timeout', () => req.destroy());
-    req.write(body);
-    req.end();
-    log(`   📡 确认通知已推送 webhook: ${u.hostname}`);
-  } catch (_) { /* 静默 */ }
-}
-
 module.exports = { waitForExternalConfirmation, STALE_SKEW_MS };
-

@@ -1,0 +1,17 @@
+{
+  "type": "uncaughtException",
+  "message": "title is not defined",
+  "stack": "ReferenceError: title is not defined\n    at Object.<anonymous> (/root/.openclaw/workspace/github-repos/super-mickey/hyperreality-system/engines/script-engine/core/adapter.js:4:27)\n    at Module._compile (node:internal/modules/cjs/loader:1854:14)\n    at Object..js (node:internal/modules/cjs/loader:1985:10)\n    at Module.load (node:internal/modules/cjs/loader:1577:32)\n    at Module._load (node:internal/modules/cjs/loader:1379:12)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.require (node:internal/modules/cjs/loader:1600:12)\n    at require (node:internal/modules/helpers:153:16)\n    at Object.<anonymous> (/root/.openclaw/workspace/github-repos/super-mickey/hyperreality-system/engines/script-engine/index.js:9:36)\n    at Module._compile (node:internal/modules/cjs/loader:1854:14)",
+  "instanceId": "default",
+  "timestamp": "2026-07-19T04:42:57.096Z",
+  "fatal": false,
+  "processUptimeMs": 30.286141,
+  "memoryUsage": {
+    "rss": 51974144,
+    "heapTotal": 8065024,
+    "heapUsed": 5429712,
+    "external": 1682462,
+    "arrayBuffers": 22815
+  },
+  "crashDumpAt": "2026-07-19T04:42:57.097Z"
+}

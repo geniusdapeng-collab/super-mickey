@@ -447,21 +447,9 @@ class HyperrealitySystem {
       // 【审计修复·全局预算协调】此前 totalDeadlineMs 只约束 ProductionEngine 内部预算和健康监控阈值，
       // 前置层(需求/PRD/剧本)与渲染/后期层各自为政，整体任务耗时可远超预期总时长。
       // 现建立全局截止时间，在各层入口按"剩余预算"动态调度。
-      // 【v2.1.16-fix 预算吞等待时间】改为 let：人工确认等待时间将补偿到全局截止时间
-      let globalDeadline = totalStart + totalDeadlineMs;
+      const globalDeadline = totalStart + totalDeadlineMs;
       this._globalDeadline = globalDeadline;
       console.log(` ⏱️ 全局任务预算: ${Math.round(totalDeadlineMs/60000)} 分钟 | 截止: ${new Date(globalDeadline).toISOString()}`);
-
-      // 【v2.1.16-fix 预算吞等待时间】确认等待补偿器：
-      // 用户思考确认的时间(可能10-30分钟)原本直接吃掉全局截止(墙钟)，
-      // 导致到达制作层时预算归零→切换纯规则模式。现每次确认返回后把等待时长
-      // 补偿到 globalDeadline，与"等待时间不计入流程有效时间"的设计对齐
-      const _extendDeadlineForWait = (waitTimeMs, stepName) => {
-        if (!waitTimeMs || waitTimeMs <= 0) return;
-        globalDeadline += waitTimeMs;
-        this._globalDeadline = globalDeadline;
-        console.log(`   ⏱️ [${stepName}] 确认等待 ${Math.round(waitTimeMs/60000)} 分钟已补偿到全局截止时间（新截止: ${new Date(globalDeadline).toISOString()}）`);
-      };
 
       // ========== 🆕 Layer -1: 创意主题生成与确认 ==========
       // 【v2.1.8-强制流程】Step 2: 创意主题生成 + 人工确认（不可跳过）
@@ -491,7 +479,6 @@ class HyperrealitySystem {
         // 【v2.1.10-hotfix】累加等待时间
         if (themeConfirmation.waitTimeMs) {
           result.totalWaitTimeMs += themeConfirmation.waitTimeMs;
-          _extendDeadlineForWait(themeConfirmation.waitTimeMs, '创意主题');
         }
 
         if (!themeConfirmation.approved) {
@@ -568,7 +555,6 @@ class HyperrealitySystem {
       // 【v2.1.10-hotfix】累加等待时间
       if (requirementConfirmation.waitTimeMs) {
         result.totalWaitTimeMs += requirementConfirmation.waitTimeMs;
-        _extendDeadlineForWait(requirementConfirmation.waitTimeMs, '需求清单');
       }
 
       if (!requirementConfirmation.approved) {
@@ -756,7 +742,6 @@ class HyperrealitySystem {
         // 【v2.1.10-hotfix】累加等待时间
         if (prdConfirmation.waitTimeMs) {
           result.totalWaitTimeMs += prdConfirmation.waitTimeMs;
-          _extendDeadlineForWait(prdConfirmation.waitTimeMs, 'PRD');
         }
 
         if (!prdConfirmation.approved) {
@@ -786,20 +771,6 @@ class HyperrealitySystem {
           result.stages.prdGeneration.regenerated = true;
           result.stages.prdGeneration.data = prdResult;
           metadata._prd = prdResult;
-        }
-
-        // 【v2.1.16-fix 时长漂移】PRD 是时长的唯一权威（经人工确认），
-        // 同步回 metadata.target_duration，供剧本引擎/制作引擎使用。
-        // 原问题：主题/PRD/剧本/制作各自为政（45 vs 60 漂移），budget 按错时长计算
-        const prdDuration = prdResult?.productPositioning?.targetDuration
-          || prdResult?.prdSummary?.targetDuration
-          || null;
-        if (prdDuration && Number.isFinite(Number(prdDuration)) && Number(prdDuration) > 0) {
-          const prevDuration = metadata.target_duration;
-          if (prevDuration !== Number(prdDuration)) {
-            console.log(`   🔄 时长权威同步: metadata.target_duration ${prevDuration}s → ${prdDuration}s（以 PRD 为准）`);
-          }
-          metadata.target_duration = Number(prdDuration);
         }
 
       } catch (err) {
@@ -1733,12 +1704,6 @@ class HyperrealitySystem {
         const promptConfirmation = await this._confirmPrompts(productionResult.prompts);
         result.confirmations.prompts = promptConfirmation;
 
-        // 【v2.1.16-fix】累加等待时间并补偿全局截止（与其余三个确认点对齐）
-        if (promptConfirmation.waitTimeMs) {
-          result.totalWaitTimeMs += promptConfirmation.waitTimeMs;
-          _extendDeadlineForWait(promptConfirmation.waitTimeMs, '提示词');
-        }
-
         if (!promptConfirmation.approved) {
           console.log('   ❌ 提示词未确认,流程中止');
           result.success = false;
@@ -2571,8 +2536,7 @@ class HyperrealitySystem {
       reviewedAt: new Date().toISOString(),
       report: promptReport,
       reason: confirmPath.reason,
-      suggestions: confirmPath.suggestions,
-      waitTimeMs: confirmPath.waitTimeMs // 【v2.1.16-fix】透传等待时间用于全局截止补偿
+      suggestions: confirmPath.suggestions
     };
   }
 
