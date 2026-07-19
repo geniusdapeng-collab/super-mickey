@@ -27,9 +27,6 @@ class PRDGenerator {
     this.timeoutMs = options.timeoutMs || 600000; // 10 分钟总预算
     this.agent2TimeoutMs = options.agent2TimeoutMs || 120000; // 2 分钟
     this.agent3TimeoutMs = options.agent3TimeoutMs || 300000; // 5 分钟
-    
-    // 预算配置（系统注入）
-    this.budgetProfile = options.budgetProfile || this._buildDefaultBudgetProfile();
   }
 
   /**
@@ -80,8 +77,7 @@ class PRDGenerator {
         discoveryResult,
         productResult,
         creativeResult,
-        productionResult,
-        this.budgetProfile
+        productionResult
       );
       
       // Step 5: DeliveryStandardAgent（规则引擎，< 100ms）
@@ -90,8 +86,7 @@ class PRDGenerator {
         productResult,
         creativeResult,
         productionResult,
-        constraintResult,
-        this.budgetProfile
+        constraintResult
       );
       
       // 合并所有 Agent 输出
@@ -100,17 +95,8 @@ class PRDGenerator {
         ...creativeResult,
         ...productionResult,
         ...constraintResult,
-        ...deliveryResult,
-        budgetProfile: this.budgetProfile
+        ...deliveryResult
       };
-      
-      // 成本-质量一致性校验
-      console.log(`[PRDGenerator] 🔍 成本-质量一致性校验...`);
-      const costValidation = validateCostQualityAlignment(prd);
-      if (!costValidation.passed) {
-        console.warn(`[PRDGenerator] ⚠️ 成本-质量不一致: ${costValidation.reason}，自动调整`);
-        prd.budgetProfile = costValidation.adjustedBudget || this.budgetProfile;
-      }
       
       // 结构校验 + fallback 填充
       console.log(`[PRDGenerator] 🔍 结构校验...`);
@@ -321,7 +307,7 @@ class PRDGenerator {
         fallbackPlan: { trigger: '质量低于阈值', action: '降低复杂度', expectedOutput: '保证可交付' },
         continuityCheckpoints: [{ checkpoint: 'scene-logic', validationMethod: '场景逻辑检查' }]
       },
-      budgetProfile: this.budgetProfile
+      budgetProfile: null
     };
     
     return fallbacks[module] || {};
@@ -348,7 +334,6 @@ class PRDGenerator {
 | 平台 | ${prd.productPositioning?.targetPlatform || '未指定'} |
 | 场景 | ${prd.scenePlan?.scenes?.length || 0} 场景 / ${prd.scenePlan?.shotMapping?.reduce((s, m) => s + (m.estimatedShots || 0), 0) || 0} 预估镜头 |
 | 角色 | ${prd.characterSystem?.characters?.map(c => c.name).join(', ') || '无'} |
-| 品质档 | ${prd.budgetProfile?.qualityTier || 'standard'} |
 
 **核心钩子**：${prd.creativeCore?.creativeHook || '未指定'}
 
@@ -469,56 +454,12 @@ ${(prd.deliveryStandard?.deliverables || []).map(d => `- [${d.priority === 'requ
 - **动作**：${prd.deliveryStandard?.fallbackPlan?.action || '未指定'}
 - **预期产出**：${prd.deliveryStandard?.fallbackPlan?.expectedOutput || '未指定'}
 
-## 12. 预算配置
-
-- **品质档**：${prd.budgetProfile?.qualityTier || 'standard'}
-- **算力预算**：${prd.budgetProfile?.computeBudget?.maxCalls || 1} 次调用
-- **Token 预算**：${prd.budgetProfile?.tokenBudget?.maxTokens || 10000}
-
 ---
 
 **请回复：确认 / 修改：xxx / 重新生成**
 
 > PRD 生成耗时：${summary.generationTimeMs || '未记录'}ms
 `;
-  }
-
-  _buildDefaultBudgetProfile() {
-    return {
-      qualityTier: 'standard',
-      computeBudget: {
-        maxCalls: 10,
-        estimatedCost: 1.0
-      },
-      tokenBudget: {
-        maxTokens: 10000,
-        allocatedAgents: {
-          creativeDirection: 2000,
-          productionSpecification: 4000,
-          promptFusion: 3000,
-          qualityCheck: 1000
-        }
-      },
-      apiCallBudget: {
-        totalCalls: 15,
-        services: [
-          { service: 'video_generation', maxCalls: 10 },
-          { service: 'llm_text', maxCalls: 5 }
-        ]
-      },
-      degradationPath: [
-        {
-          trigger: '算力超支超过 50%',
-          action: '降低 resolution 到 1080p，减少特效',
-          impact: '视觉质量下降约 15%'
-        },
-        {
-          trigger: 'Token 超支超过 30%',
-          action: '减少 LLM 迭代次数，使用简化 prompt',
-          impact: '叙事质量下降约 10%'
-        }
-      ]
-    };
   }
 }
 

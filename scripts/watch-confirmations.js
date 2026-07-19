@@ -1,5 +1,4 @@
 
-#!/usr/bin/env node
 /**
  * watch-confirmations.js - 确认通知推送守护（v2.1.16-fix 新增）
  *

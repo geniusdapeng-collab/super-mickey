@@ -89,7 +89,8 @@ class CreativeDirectionAgent extends BaseAgent {
 4. emotionalArc 必须从以下枚举选择：setup→rising→climax→falling→resolution, setup→rising→climax→resolution, setup→climax→resolution, loop, flat→peak→flat
 5. endingType 必须从枚举选择：开放式, 闭合式, 悬念式, 升华式, 反转式
 6. 所有字段必须存在，不能为 null
-7. 只输出 JSON，不要任何 markdown 代码块标记，不要解释文本${userModificationsSection}`;
+7. 时间线完整性：如果主题涉及"发展"、"历史"、"演变"、"变迁"等时间跨度概念，必须覆盖完整历史时间线（从最早的起源/起源事件开始，而非默认从1949年或现代开始）。例如"中国铁路发展"必须从晚清/京张铁路/詹天佑等起源讲起，而非仅从1949年开始
+8. 只输出 JSON，不要任何 markdown 代码块标记，不要解释文本${userModificationsSection}`;
   }
 
   _parseResult(result) {

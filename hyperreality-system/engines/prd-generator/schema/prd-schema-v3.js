@@ -14,8 +14,7 @@ const PRDSchema = {
     "productionConstraints",
     "audienceProfile",
     "referenceCases",
-    "deliveryStandard",
-    "budgetProfile"
+    "deliveryStandard"
   ],
   properties: {
     // ========== 1. 项目定义（5 字段）==========
@@ -427,80 +426,6 @@ const PRDSchema = {
         }
       },
       additionalProperties: false
-    },
-    
-    // ========== 12. 预算配置（5 字段）==========
-    budgetProfile: {
-      type: "object",
-      required: ["qualityTier", "computeBudget", "tokenBudget", "apiCallBudget", "degradationPath"],
-      properties: {
-        qualityTier: {
-          type: "string",
-          enum: ["standard", "premium", "film"]
-        },
-        computeBudget: {
-          type: "object",
-          required: ["maxCalls", "estimatedCost"],
-          properties: {
-            maxCalls: { type: "number", minimum: 1 },
-            estimatedCost: { type: "number" }
-          },
-          additionalProperties: false
-        },
-        tokenBudget: {
-          type: "object",
-          required: ["maxTokens", "allocatedAgents"],
-          properties: {
-            maxTokens: { type: "number" },
-            allocatedAgents: {
-              type: "object",
-              properties: {
-                creativeDirection: { type: "number" },
-                productionSpecification: { type: "number" },
-                promptFusion: { type: "number" },
-                qualityCheck: { type: "number" }
-              },
-              additionalProperties: false
-            }
-          },
-          additionalProperties: false
-        },
-        apiCallBudget: {
-          type: "object",
-          required: ["totalCalls", "services"],
-          properties: {
-            totalCalls: { type: "number" },
-            services: {
-              type: "array",
-              items: {
-                type: "object",
-                required: ["service", "maxCalls"],
-                properties: {
-                  service: { type: "string" },
-                  maxCalls: { type: "number" }
-                },
-                additionalProperties: false
-              }
-            }
-          },
-          additionalProperties: false
-        },
-        degradationPath: {
-          type: "array",
-          items: {
-            type: "object",
-            required: ["trigger", "action", "impact"],
-            properties: {
-              trigger: { type: "string" },
-              action: { type: "string" },
-              impact: { type: "string" }
-            },
-            additionalProperties: false
-          },
-          maxItems: 3
-        }
-      },
-      additionalProperties: false
     }
   },
   additionalProperties: false
@@ -508,7 +433,6 @@ const PRDSchema = {
 
 // 模块级枚举映射（用于 fallback 填充）
 const ENUM_DEFAULTS = {
-  productType: '剧情短片',
   genre: '通用',
   targetPlatform: '通用',
   aspectRatio: '16:9',
@@ -531,8 +455,7 @@ const ENUM_DEFAULTS = {
   videoCodec: 'H.264',
   audioCodec: 'AAC',
   container: 'MP4',
-  qualityTier: 'standard'
-};
+  qualityTier: 'standard'};
 
 // 类型到产品类型映射
 const TYPE_TO_PRODUCT_TYPE = {
