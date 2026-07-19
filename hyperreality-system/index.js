@@ -3042,6 +3042,22 @@ class HyperrealitySystem {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const basePath = path.join(outputDir, `super-mickey-${timestamp}`);
 
+    // v2.1.22-fix: 深度清洗——移除内部调试字段（以 _ 开头），不污染最终提示词
+    const cleanForExport = (obj) => {
+      if (Array.isArray(obj)) {
+        return obj.map(cleanForExport);
+      }
+      if (obj && typeof obj === 'object') {
+        const cleaned = {};
+        for (const [k, v] of Object.entries(obj)) {
+          if (k.startsWith('_') && k !== '_id') continue; // 保留 _id，剔除其余内部标记
+          cleaned[k] = cleanForExport(v);
+        }
+        return cleaned;
+      }
+      return obj;
+    };
+
     // v2.1.5-fix: 安全写入函数(带验证)
     const safeWrite = async (filePath, content, label) => {
       await fs.writeFile(filePath, content);
@@ -3055,10 +3071,10 @@ class HyperrealitySystem {
       }
     };
 
-    // 保存完整结果 JSON
+    // 保存完整结果 JSON（清洗后，移除内部调试字段）
     await safeWrite(
       `${basePath}-result.json`,
-      JSON.stringify(result, null, 2),
+      JSON.stringify(cleanForExport(result), null, 2),
       '结果JSON'
     );
 
