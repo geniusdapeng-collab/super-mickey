@@ -1992,6 +1992,13 @@ class HyperrealitySystem {
         const adapter = result.stages?.adapter || {};
         // 【审计修复】统一片头判定,兼容 SC00/S00
         let openingShot = productionResult.shots.find(s => isOpeningShot(s));
+        // 【v2.1.22-fix 片头字段丢失】兜底：isOpeningShot 识别不到时取第一个镜头，
+        // 保证下方 OpeningTitleOptimizer 一定执行，片头 5 专属字段不再整体缺失
+        if (!openingShot && productionResult.shots.length > 0) {
+          openingShot = productionResult.shots[0];
+          openingShot.sceneType = 'opening';
+          console.warn(`⚠️ [FieldGuard] 未识别到片头镜头，兜底使用第一个镜头 ${openingShot.shotId || openingShot.shot_id} 作为片头`);
+        }
         const openingShotId = openingShot ? (openingShot.shotId || openingShot.shot_id) : null; // 【v2.1.6-fix-bug40】缓存片头shotId
         if (openingShot) {
           // 如果片头缺少title/subtitle,先用adapter标题兜底
@@ -2041,7 +2048,7 @@ class HyperrealitySystem {
 
                 // v2.1.5-fix: 同步到 prompts[0],确保双数组一致
                 if (productionResult.prompts && productionResult.prompts.length > 0) {
-                  const promptOpening = productionResult.prompts.find(p => isOpeningShot(p));
+                  const promptOpening = productionResult.prompts.find(p => isOpeningShot(p)) || productionResult.prompts[0]; // 【v2.1.22-fix】兜底取第一个 prompt，保证片头字段同步不丢失
                   if (promptOpening) {
                     promptOpening.title_content = optimized.title_content;
                     promptOpening.subtitle_content = optimized.subtitle_content;
@@ -2071,7 +2078,7 @@ class HyperrealitySystem {
 
                 // v2.1.5-fix: 降级分支也同步到 prompts
                 if (productionResult.prompts && productionResult.prompts.length > 0) {
-                  const promptOpening = productionResult.prompts.find(p => isOpeningShot(p));
+                  const promptOpening = productionResult.prompts.find(p => isOpeningShot(p)) || productionResult.prompts[0]; // 【v2.1.22-fix】兜底取第一个 prompt，保证片头字段同步不丢失
                   if (promptOpening) {
                     promptOpening.title_content = openingShot.title_content;
                     promptOpening.subtitle_content = openingShot.subtitle_content;
@@ -2094,7 +2101,7 @@ class HyperrealitySystem {
 
               // v2.1.5-fix: 异常分支也同步到 prompts
               if (productionResult.prompts && productionResult.prompts.length > 0) {
-                const promptOpening = productionResult.prompts.find(p => isOpeningShot(p));
+                const promptOpening = productionResult.prompts.find(p => isOpeningShot(p)) || productionResult.prompts[0]; // 【v2.1.22-fix】兜底取第一个 prompt，保证片头字段同步不丢失
                 if (promptOpening) {
                   promptOpening.title_content = openingShot.title_content;
                   promptOpening.subtitle_content = openingShot.subtitle_content;
@@ -2119,7 +2126,7 @@ class HyperrealitySystem {
             // 同步 title/subtitle 顶层字段
             openingShot.title = openingShot.title || openingShot.title_content;
             openingShot.subtitle = openingShot.subtitle || openingShot.subtitle_content;
-            openingShot.sceneType = openingShot.sceneType || 'opening'; // 兜底 sceneType
+            openingShot.sceneType = 'opening'; // 【v2.1.22-fix】强制修正：已选定它就是片头，旧值（如 hook）一律覆盖
           }
 
           // v1.2.6-fix5: 只对 shots 做标准化,不要用 normalized.shots 覆盖 prompts          // v1.2.6-fix5: 只对 shots 做标准化,不要用 normalized.shots 覆盖 prompts          // v1.2.6-fix5: 只对 shots 做标准化,不要用 normalized.shots 覆盖 prompts

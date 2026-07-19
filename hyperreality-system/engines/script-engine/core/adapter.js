@@ -3,6 +3,8 @@
 // 版本：v1.0 | 日期：2026-06-07
 
 const path = require('path');
+// 【v2.1.22-fix 片头字段丢失】场景类型归一化（双保险：覆盖一切 blueprint 来源）
+const { normalizeSceneTypes } = require('./scene-type-normalizer');
 
 class ScriptBlueprintAdapter {
   constructor(options = {}) {
@@ -102,13 +104,24 @@ class ScriptBlueprintAdapter {
 
   /**
    * 适配场景列表
+   * 【v2.1.22-fix 片头字段丢失】scene_type 先经 normalizeSceneTypes 归一化再透传：
+   * LLM 路径已在 script-generator 归一过一次，此处兜底覆盖模板降级/外部注入等
+   * 其他 blueprint 来源，保证进入生产引擎的 scene_type 一定是标准五型，
+   * 且第一个场景一定是 opening。visual_direction 推断同步使用归一化后的类型。
    */
   _adaptScenes(blueprint) {
-    return blueprint.structure.scenes.map((scene, index) => {
+    const rawScenes = blueprint.structure.scenes || [];
+
+    // 归一化（就地修改 scene_type，返回同一数组）
+    normalizeSceneTypes(rawScenes, {
+      logger: (msg) => console.warn(`[Adapter] ${msg}`)
+    });
+
+    return rawScenes.map((scene, index) => {
       const adaptedScene = {
         scene_id: scene.scene_id || `SC${String(index).padStart(2, '0')}`,
         scene_name: scene.scene_name || `场景${index + 1}`,
-        scene_type: scene.scene_type || 'establishing',
+        scene_type: scene.scene_type, // ← 已是归一化后的标准五型
         scene_function: scene.scene_function || 'establish',
         
         // 时序
@@ -142,6 +155,7 @@ class ScriptBlueprintAdapter {
         emotional_target: scene.emotional_target || { valence: 0, arousal: 0.5, dominance: 0.5 },
         
         // 视觉方向（为制作引擎准备）
+        // 【v2.1.22-fix】使用归一化后的 scene_type 推断，英雄之旅词汇不再全部掉到默认值
         visual_direction: {
           shot_type: this._inferShotType(scene.scene_type),
           camera_movement: this._inferCameraMovement(scene.scene_type),

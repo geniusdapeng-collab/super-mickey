@@ -6,6 +6,8 @@ const fs = require('fs');
 const path = require('path');
 const { ScriptBlueprint } = require('./script-blueprint');
 const { buildBoundaryPrompt, extractSeriesPlan, extractPreviousSummary } = require('./boundary-prompt-templates');
+// 【v2.1.22-fix 片头字段丢失】场景类型归一化（确定性修正 LLM 的非标准 scene_type）
+const { normalizeSceneTypes, buildSceneTypeConstraintText } = require('./scene-type-normalizer');
 
 // 复用现有LLM引擎
 const LLM_ENGINE_PATH = path.join(__dirname, '../../../../systems/llm-reasoning-engine.js');
@@ -102,6 +104,14 @@ class ScriptGenerator {
         if (!blueprint.structure?.scenes || !Array.isArray(blueprint.structure.scenes) || blueprint.structure.scenes.length === 0) {
           throw new ScriptGenerationError('JSON_NO_SCENES', 'LLM输出JSON中structure.scenes为空或缺失');
         }
+
+        // 5.5 【v2.1.22-fix 片头字段丢失】场景类型归一化：
+        // 把 LLM 输出的非标准 scene_type（hook/setup/rising_action 等英雄之旅词汇）
+        // 确定性映射到标准五型，并强制 scenes[0] = opening，
+        // 防止下游 phase-1 片头注入与最终导出片头查找静默跳过。
+        normalizeSceneTypes(blueprint.structure.scenes, {
+          logger: (msg) => console.log(`[ScriptGenerator] ${msg}`)
+        });
 
         console.log(`[ScriptGenerator] 剧本生成完成: ${blueprint.blueprint_id}, ${blueprint.structure.scenes.length} 场景`);
         return blueprint;
@@ -254,6 +264,7 @@ ${voiceoverAllowed
 7. 角色视觉锚点必须保持一致（定妆照引用）
 8. 【v2.1.10-fix】dialogue 对象三要素缺一不可：has_dialogue（布尔，有台词时必须为 true）、lines（数组）、blocks（数组）
 9. 【v2.1.10-fix】character_system.characters 中每个角色必须包含 character_id、name、role；有且仅有一个 role="protagonist"，其余用 "supporting"；scene.characters 只允许引用已定义的 character_id
+10. 【v2.1.22-fix】${buildSceneTypeConstraintText()}
 
 ## 剧本结构模板
 采用三幕式结构：
@@ -282,7 +293,7 @@ ${meta.world_setting === '示例世界' ? `
 - voice_system: {global_voice_policy, voice_profiles: [...]}
 - world_setting: {world_id, world_name, era, core_rules, environment_tags}
 
-每个场景(scenes)必须包含：scene_id, scene_name, scene_type, scene_function, act_id, timing(start/duration/end), characters, setting, dialogue, visual_notes, emotional_target(valence/arousal/dominance)
+每个场景(scenes)必须包含：scene_id, scene_name, scene_type（仅限 opening/establishing/conflict/emotional_climax/resolution 五选一，第一个场景必须是 opening）, scene_function, act_id, timing(start/duration/end), characters, setting, dialogue, visual_notes, emotional_target(valence/arousal/dominance)
 
 dialogue 对象的标准结构（必须严格遵守）：
 "dialogue": {

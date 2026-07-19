@@ -144,6 +144,35 @@ class ScriptValidator {
       message: `有 ${sceneCount} 个场景`,
       suggestion: `场景数量应在 ${this.config.minScenes}-${this.config.maxScenes} 之间`
     });
+
+    // 【v2.1.22-fix 片头字段丢失】scene_type 合法性 + 片头位置观测
+    // （归一化层已兜底修正，此处只做观测让校验报告可见，severity 用 warning 不阻塞）
+    const firstType = structure.scenes?.[0]?.scene_type;
+    checks.push({
+      category: 'structure',
+      name: 'first_scene_opening',
+      passed: firstType === 'opening',
+      severity: 'warning',
+      message: firstType === 'opening'
+        ? '第一个场景为 opening 类型 ✓'
+        : `第一个场景类型为 "${firstType}"（应为 opening，归一化层会修正）`,
+      suggestion: 'scene_type 合法取值：opening/establishing/conflict/emotional_climax/resolution，第一个场景必须是 opening'
+    });
+
+    const VALID_TYPES = ['opening', 'establishing', 'conflict', 'emotional_climax', 'resolution'];
+    const invalidTypes = (structure.scenes || [])
+      .map((s, i) => ({ i, t: s.scene_type }))
+      .filter(x => !VALID_TYPES.includes(x.t));
+    checks.push({
+      category: 'structure',
+      name: 'scene_type_whitelist',
+      passed: invalidTypes.length === 0,
+      severity: 'warning',
+      message: invalidTypes.length === 0
+        ? '全部场景类型命中标准五型白名单 ✓'
+        : `存在非标准 scene_type：${invalidTypes.map(x => `scenes[${x.i}]="${x.t}"`).join(', ')}`,
+      suggestion: `scene_type 必须是：${VALID_TYPES.join(', ')}`
+    });
     
     // 检查场景连续性
     let continuous = true;

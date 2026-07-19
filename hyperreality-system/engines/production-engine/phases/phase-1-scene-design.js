@@ -113,20 +113,48 @@ class Phase1SceneDesign extends PhaseExecutor {
   }
 
   /**
-   * 注入片头数据到 sceneType=opening 的镜头
+   * 注入片头数据到片头镜头
+   * 【v2.1.22-fix 片头字段丢失】多级查找 + 永不静默：
+   * 1. 优先 sceneType === 'opening'
+   * 2. 启发式：shotId 形如 S00/SC00/S00-01/OP/opening/intro
+   * 3. 兜底 shots[0]（与 _shouldGenerateOpening 恒 true 的设计一致：片头永远是第一个镜头）
+   * 注入时强制 sceneType = 'opening'，让下游 isOpeningShot / FieldGuard /
+   * OpeningTitleOptimizer 判定全部对齐；每次选择都打日志，杜绝"静默跳过"。
    */
   _injectOpeningData(shots, odResult) {
-    const openingIdx = shots.findIndex(s => s.sceneType === 'opening');
-    if (openingIdx < 0) return shots;
+    if (!Array.isArray(shots) || shots.length === 0) {
+      this.log('OPENING-INJECT-SKIP', '⚠️ shots 为空，片头数据无法注入');
+      return shots;
+    }
+
+    let openingIdx = shots.findIndex(s => s.sceneType === 'opening');
+    let matchedBy = 'sceneType';
+
+    if (openingIdx < 0) {
+      openingIdx = shots.findIndex(s =>
+        /^(S?C?00($|-|_)|OP|opening|intro)/i.test(String(s.shotId || s.sceneId || ''))
+      );
+      matchedBy = 'id-heuristic';
+    }
+    if (openingIdx < 0) {
+      openingIdx = 0;
+      matchedBy = 'fallback-first-shot';
+    }
+    if (matchedBy !== 'sceneType') {
+      this.log('OPENING-INJECT', `⚠️ 未找到 sceneType=opening 的镜头，经 ${matchedBy} 选中 ${shots[openingIdx].shotId} 作为片头`);
+    }
 
     const od = odResult.opening;
     const titleOverlay = od.titleOverlay || {};
-    
+
     // 克隆并修改（避免直接变异原始对象）
     const newShots = [...shots];
     newShots[openingIdx] = this.cloneShots([shots[openingIdx]])[0];
-    
+
     const openingShot = newShots[openingIdx];
+    // 【v2.1.22-fix】修正类型标记，保证下游所有"找片头"逻辑都能识别本镜头
+    openingShot.sceneType = 'opening';
+
     openingShot.title = od.title || titleOverlay.mainTitle || titleOverlay.main_title || '';
     openingShot.subtitle = od.subtitle || titleOverlay.subtitle || titleOverlay.sub_title || '';
     openingShot.titleOverlay = od.titleOverlay || null;
@@ -137,6 +165,16 @@ class Phase1SceneDesign extends PhaseExecutor {
     // 【2026-07-17 升级】注入片头电影级方案：完整 plan + 秒级时间轴
     if (od.cinematic) {
       openingShot.cinematic = od.cinematic;
+      // 【v2.1.22-fix】电影级方案直出片头专属字段（OpeningTitleOptimizer 之前的保险，
+      // 尽力而为，拿不到就留给 OpeningTitleOptimizer 后补）
+      try {
+        const plan = od.cinematic;
+        openingShot.title_content = plan.title_content || openingShot.title || '';
+        openingShot.subtitle_content = plan.subtitle_content || openingShot.subtitle || '';
+        if (plan.typography?.description) openingShot.title_font_design = plan.typography.description;
+        const audioBits = [plan.audio?.signature, plan.audio?.bgm, plan.audio?.syncNotes].filter(Boolean);
+        if (audioBits.length) openingShot.opening_audio_design = audioBits.join('；');
+      } catch (_) { /* 增强字段尽力而为，不影响主流程 */ }
     }
     if (od.promptTimeline) {
       openingShot.promptTimeline = od.promptTimeline;
@@ -144,8 +182,8 @@ class Phase1SceneDesign extends PhaseExecutor {
       openingShot.timeline = od.promptTimeline;
     }
 
-    this.log('OPENING-INJECT', `片头数据已注入 ${openingShot.shotId}: title="${openingShot.title}"`);
-    
+    this.log('OPENING-INJECT', `片头数据已注入 ${openingShot.shotId}: title="${openingShot.title}" (matchedBy=${matchedBy})`);
+
     return newShots;
   }
 }
