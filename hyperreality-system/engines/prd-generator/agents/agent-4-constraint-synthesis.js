@@ -1,3 +1,4 @@
+
 /**
  * Agent 4: ConstraintSynthesisAgent
  * 约束合成 Agent - 规则引擎为主，无需 LLM
@@ -41,7 +42,8 @@ class ConstraintSynthesisAgent {
       });
     }
     if (upstreamFields?.special_notes) {
-      technicalConstraints.push(`特殊要求: ${upstreamFields.special_notes.slice(0, 50)}`);
+      // 【v2.1.15-fix】特殊要求全量保留（如婴儿拍摄安全规范），截断50字符会丢约束
+      technicalConstraints.push(`特殊要求: ${upstreamFields.special_notes}`);
     }
     // 【脱节1 修复】注入用户修改意见到技术约束
     if (userModifications && userModifications.length > 0) {
@@ -82,7 +84,7 @@ class ConstraintSynthesisAgent {
       userModifications.forEach(mod => {
         const modStr = String(mod).toLowerCase();
         if (modStr.includes('不要') || modStr.includes('禁止') || modStr.includes('避免') || modStr.includes('不准')) {
-          const item = String(mod).replace(/不要|禁止|避免|不准|不[要需]/g, '').trim().slice(0, 30);
+          const item = String(mod).replace(/不要|禁止|避免|不准|不[要需]/g, '').trim().slice(0, 60); // 【v2.1.15-fix】30→60，避免禁止项被腰斩
           if (item && !forbiddenElements.includes(item)) {
             forbiddenElements.push(item);
           }

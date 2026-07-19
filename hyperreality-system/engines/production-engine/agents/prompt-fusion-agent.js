@@ -702,7 +702,7 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
       ],
       lighting: [
         `主光:侧向自然光5600K漫射,补光:左前方反光板,${character}面部清晰明亮`,
-        `顶光+环境反射光混合照明,${scene ? scene.slice(0,20) : '室内'}空间均匀明亮`,
+        `顶光+环境反射光混合照明,${scene ? String(scene).split(/[，。；]/)[0].slice(0, 20) : '室内'}空间均匀明亮`, // 【v2.1.15-fix】场景取首子句，不腰斩
         `窗光为主光源,漫反射柔光填充,${character}轮廓分明`
       ],
       scene: [

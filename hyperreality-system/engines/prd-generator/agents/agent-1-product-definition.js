@@ -1,3 +1,4 @@
+
 // 简单 UUID 生成（不依赖外部包）
 function uuidv4() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -37,8 +38,11 @@ class ProductDefinitionAgent {
   }
 
   _extractProjectName(theme) {
-    // 取主题前 20 字作为项目名称
-    return theme.length > 20 ? theme.slice(0, 20) + '...' : theme;
+    // 【v2.1.15-fix】取主题第一个语义完整子句作为项目名称（≤20字符，标点边界）
+    const t = String(theme || '').trim();
+    const clause = t.split(/[，。！？；：:]/)[0].trim();
+    if (clause && clause.length <= 20) return clause;
+    return (clause || t).slice(0, 20);
   }
 
   _mapProductPositioning(type, target_audience, duration_sec, audienceProfile, sceneStructure, budgetProfile) {

@@ -1,3 +1,4 @@
+
 /**
  * ProfileResolver - 生产画像解析器
  *
@@ -137,8 +138,17 @@ ${genreHint ? `【用户声明的题材】${genreHint}（原样保留，不要�
     const durMatch = t.match(/(\d+)\s*(秒|s\b)/);
     if (durMatch) profile.duration_target = parseInt(durMatch[1]);
 
+    // 【v2.1.15-fix 主题漂移】genre 兜底取第一个语义完整子句（≤20字符），
+    // 不再硬 slice(0,20) 腰斩句子丢失核心信息
+    const genreFallback = (() => {
+      const t = String(text || '').trim();
+      if (!t) return '通用主题';
+      const clause = t.split(/[，。！？；：:]/)[0].trim();
+      return (clause.length <= 20 ? clause : clause.slice(0, 20)) || '通用主题';
+    })();
+
     return {
-      genre: genreHint || (text || '通用主题').slice(0, 20),
+      genre: genreHint || genreFallback,
       genreConfidence: genreHint ? 'user_explicit' : 'fallback',
       profile,
       profileSource: 'keywords'

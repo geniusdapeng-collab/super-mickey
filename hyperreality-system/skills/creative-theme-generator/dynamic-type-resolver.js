@@ -1,3 +1,4 @@
+
 /**
  * DynamicTypeResolver - LLM 动态类型配置生成器
  * 
@@ -93,6 +94,8 @@ class DynamicTypeResolver {
       });
       // 【修复 P0-5】reasonStructured 返回信封 {success, data, ...}，必须检查 success 并提取 data
       if (result && result.success === true && result.data) {
+        // 【v2.1.15-fix】校验配置完整性：畸形配置直接丢弃走 fallback，不入缓存
+        this._validateConfig(result.data);
         return result.data;
       }
       if (result && result.success === false) {
@@ -129,22 +132,48 @@ class DynamicTypeResolver {
     const jsonMatch = responseText.match(/```json\n?([\s\S]*?)\n?```/) ||
                       responseText.match(/{[\s\S]*}/);
     if (jsonMatch) {
-      return JSON.parse(jsonMatch[1] || jsonMatch[0]);
+      const parsed = JSON.parse(jsonMatch[1] || jsonMatch[0]);
+      // 【v2.1.15-fix】同样校验完整性
+      this._validateConfig(parsed);
+      return parsed;
     }
     throw new Error('无法解析 LLM 输出');
+  }
+
+  /**
+   * 【v2.1.15-fix】校验 LLM 生成的类型配置完整性
+   * 防止畸形 JSON 被缓存后污染后续所有同类型生成
+   */
+  _validateConfig(config) {
+    if (!config || typeof config !== 'object') {
+      throw new Error('配置不是有效对象');
+    }
+    if (typeof config.typeName !== 'string' || !config.typeName.trim()) {
+      throw new Error('配置缺少有效的 typeName 字段');
+    }
+    if (!Array.isArray(config.themes) || config.themes.length === 0) {
+      throw new Error('配置缺少有效的 themes 数组');
+    }
+    return true;
   }
 
   /**
    * 构建 Prompt
    */
   _buildPrompt(type, context) {
-    const { theme = '', description = '', tone = '' } = context;
-    
+    const { theme = '', description = '', tone = '', userInput = '' } = context;
+
+    // 【v2.1.15-fix 主题漂移】完整用户输入是生成类型配置的首要依据。
+    // 原实现只有类型名（还是20字符截断的）+三个空字段，LLM只能自由发挥
+    const userInputSection = userInput
+      ? `【用户完整输入——最重要依据】\n${userInput}\n`
+      : '';
+
     return `你是一位视频类型学专家。请为以下视频类型生成完整的类型配置。
 
 【类型名称】${type}
 
-【上下文】
+${userInputSection}【上下文】
 - 用户主题: ${theme || '未指定'}
 - 用户描述: ${description || '未指定'}
 - 情绪基调: ${tone || '未指定'}
@@ -166,10 +195,16 @@ class DynamicTypeResolver {
   "difficulty": "难度等级（简单/中等/困难/极高）"
 }
 
-要求：
-1. themes 必须包含5个该类型的经典主题
-2. 所有字段必须存在且不为空
-3. 只输出 JSON，不要任何解释文本`;
+【硬性要求——防止主题漂移】
+1. 若提供了【用户完整输入】，typeName/themes/descriptionTemplate 必须紧扣该输入的
+   核心内容（人物、地点、事件、情感），严禁套用到无关的通用题材
+   （如用户写"滕王阁"不得生成"故宫"相关内容）
+2. themes[0] 应直接提炼自用户输入的核心主题（如"滕王阁穿越记"），
+   其余 themes 可为同类型拓展
+3. descriptionTemplate 中的情节要素必须来自用户输入，不得虚构无关场景
+4. themes 必须包含5个该类型的经典主题
+5. 所有字段必须存在且不为空
+6. 只输出 JSON，不要任何解释文本`;
   }
 
   /**

@@ -1,3 +1,4 @@
+
 /**
  * CreativeThemeGenerator - 创意主题生成器
  * 位置: 全链路最开头
@@ -970,7 +971,18 @@ class FieldCompleter {
   }
 
   _generateTheme(type, input) {
-    // ⭐ v2.1.8: 优先使用动态类型配置
+    // 【v2.1.15-fix 主题漂移】最优先：从用户输入提取核心主题
+    // 原实现顺序颠倒（先随机池后提取），且窗口 <100 字符，108字符输入直接掉进随机池
+    const inputText = String(input || '');
+    if (inputText.length > 5 && inputText.length <= 150) {
+      const coreTheme = this._extractCoreTheme(inputText);
+      if (coreTheme && coreTheme.length >= 4) {
+        console.log(`[FieldCompleter] 📝 从输入提取主题: "${coreTheme}"`);
+        return coreTheme;
+      }
+    }
+
+    // ⭐ v2.1.8: 其次使用动态类型配置的主题池
     if (this._currentTypeConfig && this._currentTypeConfig.themes) {
       const themes = this._currentTypeConfig.themes;
       return themes[Math.floor(Math.random() * themes.length)];
@@ -1016,19 +1028,27 @@ class FieldCompleter {
    * 【v2.1.8-fix-context】从用户输入中提取核心主题短语
    */
   _extractCoreTheme(text) {
-    // 策略：去除常见修饰词，保留核心名词短语
-    // 例："小香在动物园神奇的一天" → "小香在动物园神奇的一天"
-    // 例："街头卖炒饭的小摊贩" → "街头卖炒饭的小摊贩"
-    
-    // 如果文本已经是简短描述（<30字），直接返回
-    if (text.length <= 30) {
-      return text.replace(/[，。！？]/g, '');
-    }
-    
-    // 否则截取前30字作为主题
-    return text.substring(0, 30).replace(/[，。！？]/g, '');
+    // 【v2.1.15-fix】策略升级：取第一个语义完整的子句作为主题（标点边界，不腰斩句子）
+    // 例："滕王阁穿越记：60多岁奶奶抱着..." → "滕王阁穿越记"
+    if (!text) return '';
+    const cleaned = String(text).trim();
+
+    // 优先取冒号前的标题式短语（"滕王阁穿越记：..." → "滕王阁穿越记"）
+    const titleMatch = cleaned.match(/^([^：:，。！？；]{2,20})[：:]/);
+    if (titleMatch) return titleMatch[1].trim();
+
+    // 其次取第一个子句（逗号/句号/分号边界），≤30字
+    const clause = cleaned.split(/[，。！？；]/)[0].trim();
+    const candidate = clause.length <= 30 ? clause : clause.substring(0, 30);
+    const result = candidate.replace(/[，。！？]/g, '').trim();
+
+    // 太短（<4字）不构成主题，返回空让上层走配置池
+    return result.length >= 4 ? result : '';
   }
-  
+
+  /**
+   * 【v2.1.8-fix-context】从用户输入中提取核心主题短语（保留旧注释说明）
+   */
   _generateDescription(type, theme, input) {
     // ⭐ v2.1.8: 优先使用动态类型配置的描述模板
     if (this._currentTypeConfig && this._currentTypeConfig.descriptionTemplate) {
@@ -1365,13 +1385,18 @@ class CreativeThemeGenerator {
     
     // ⭐ v2.1.8: LLM 动态类型配置解析（TYPE_LIBRARY 未命中或推断为null时）
     if (!type || (!TYPE_LIBRARY[type] && !this._normalizeTypeName(type))) {
+      // 【v2.1.15-fix 主题漂移】类型标签仅作缓存键与兜底名；
+      // 完整用户输入通过 context.userInput 全量传给 LLM。
+      // 原实现只把输入截断为20字符+context全空 → LLM只能自由发挥 → "故宫的晨钟"式漂移
       const typeNameForResolver = type || parseResult.input?.substring(0, 20).replace(/[，。！？]/g, '').trim() || '通用';
       console.log(`[CreativeThemeGenerator] 🧠 类型 "${typeNameForResolver}" 不在静态库中，调用 DynamicTypeResolver...`);
       try {
         this._currentTypeConfig = await this.typeResolver.resolve(typeNameForResolver, {
           theme: extractedFields.theme,
           description: extractedFields.description,
-          tone: extractedFields.tone
+          tone: extractedFields.tone,
+          userInput: parseResult.input || '', // ★ 完整输入全文（108字符不再丢失）
+          scene: parseResult.scene
         });
         console.log(`[DynamicTypeResolver] ✅ 动态配置已加载: ${this._currentTypeConfig.typeName}`);
         // 使用 resolver 返回的类型名称
@@ -1394,7 +1419,17 @@ class CreativeThemeGenerator {
     }
     if (this._currentTypeConfig) {
       const cfg = this._currentTypeConfig;
-      if (!extractedFields.theme && cfg.themes) extractedFields.theme = cfg.themes[0];
+      // 【v2.1.15-fix 主题漂移】theme 优先从用户完整输入提取（如"滕王阁穿越记"），
+      // 其次采用动态配置的 themes[0]；原实现直接采用 LLM 自由发挥的主题池首项
+      if (!extractedFields.theme) {
+        const coreTheme = this.fieldCompleter._extractCoreTheme(parseResult.input);
+        if (coreTheme) {
+          extractedFields.theme = coreTheme;
+          console.log(`[CreativeThemeGenerator] 📝 主题从用户输入提取: "${coreTheme}"`);
+        } else if (cfg.themes) {
+          extractedFields.theme = cfg.themes[0];
+        }
+      }
       if (!extractedFields.description && cfg.descriptionTemplate) extractedFields.description = cfg.descriptionTemplate.replace(/{theme}/g, cfg.themes?.[0] || '未知主题');
       if (!extractedFields.tone && cfg.toneOptions) extractedFields.tone = cfg.toneOptions[0];
       if (!extractedFields.visual_style && cfg.visualFeatures) extractedFields.visual_style = `${cfg.filmReferences?.[0] || '经典电影风格'}风格，${cfg.visualFeatures.join('，')}`;
@@ -1477,32 +1512,46 @@ class CreativeThemeGenerator {
    * 生成用户确认用的摘要文本
    * 【v2.1.9-fix】补全遗漏的 special_notes 字段，确保12字段完整显示
    */
+  /**
+   * 生成用户确认用的摘要文本
+   * 【v2.1.9-fix】补全遗漏的 special_notes 字段，确保12字段完整显示
+   * 【v2.1.15-fix 确认单截断】长文本智能换行显示完整内容，不再硬截断36字符
+   *   原实现 description/visual_style 等只显示前36字符，用户无法审阅完整内容
+   */
   generateConfirmationSummary(result) {
     const task = result.tasks[0];
+    // 盒内可用宽度 40 字符（中文按 2 宽度计）
+    const wrap = (text) => this._wrapBoxLines(String(text ?? ''), 38);
+    const box = (label, text) => {
+      const lines = wrap(text);
+      return lines.map(l => `║ ${l}║`).join('\n');
+    };
+
     return `
 ╔══════════════════════════════════════════╗
 ║      🎬 创意主题生成确认单               ║
 ╠══════════════════════════════════════════╣
-║ 类型: ${task.type.padEnd(30)}║
-║ 主题: ${task.theme.padEnd(30)}║
+║ 类型: ${String(task.type).padEnd(30)}║
+║ 主题: ${String(task.theme).padEnd(30)}║
 ║ 时长: ${String(task.duration_sec + '秒').padEnd(30)}║
-║ 难度: ${task.difficulty.padEnd(30)}║
+║ 难度: ${String(task.difficulty).padEnd(30)}║
 ║ 创意系数: ${String(task.creative_style).padEnd(26)}║
-║ 情绪基调: ${task.tone.padEnd(28)}║
+║ 情绪基调: ${String(task.tone).padEnd(28)}║
 ╠══════════════════════════════════════════╣
 ║ 📋 核心描述:                             ║
-║ ${task.description.substring(0, 36).padEnd(40)}║
+${box('📋', task.description)}
 ╠══════════════════════════════════════════╣
 ║ 🎨 视觉风格:                             ║
-║ ${task.visual_style.substring(0, 36).padEnd(40)}║
+${box('🎨', task.visual_style)}
 ╠══════════════════════════════════════════╣
 ║ 💬 台词要求:                             ║
-║ ${task.dialogue_requirement.substring(0, 36).padEnd(40)}║
+${box('💬', task.dialogue_requirement)}
 ╠══════════════════════════════════════════╣
 ║ 📝 特别备注:                             ║
-║ ${(task.special_notes || '无').substring(0, 36).padEnd(40)}║
+${box('📝', task.special_notes || '无')}
 ╠══════════════════════════════════════════╣
-║ 🎯 目标受众: ${task.target_audience.substring(0, 26).padEnd(26)}║
+║ 🎯 目标受众:                             ║
+${box('🎯', task.target_audience)}
 ╚══════════════════════════════════════════╝
 
 请确认以上创意主题是否符合您的预期：
@@ -1512,7 +1561,47 @@ class CreativeThemeGenerator {
 • 回复具体修改意见 → 我将据此调整
 `;
   }
-  
+
+  /**
+   * 【v2.1.15-fix】文本按显示宽度换行（中文按2宽度计），并右补齐到盒宽
+   * @param {string} text - 原始文本
+   * @param {number} width - 每行显示宽度
+   * @returns {string[]} 补齐后的行数组
+   */
+  _wrapBoxLines(text, width) {
+    const lines = [];
+    let current = '';
+    let currentWidth = 0;
+
+    for (const ch of text) {
+      // 换行符直接断行
+      if (ch === '\n') {
+        lines.push(current);
+        current = '';
+        currentWidth = 0;
+        continue;
+      }
+      const w = ch.charCodeAt(0) > 255 ? 2 : 1; // 中文/全角按2宽度
+      if (currentWidth + w > width) {
+        lines.push(current);
+        current = ch;
+        currentWidth = w;
+      } else {
+        current += ch;
+        currentWidth += w;
+      }
+    }
+    if (current) lines.push(current);
+    if (lines.length === 0) lines.push('');
+
+    // 右补齐到统一盒宽
+    return lines.map(l => {
+      let lw = 0;
+      for (const ch of l) lw += ch.charCodeAt(0) > 255 ? 2 : 1;
+      return l + ' '.repeat(Math.max(0, width + 2 - lw));
+    });
+  }
+
   /**
    * 根据用户反馈调整任务
    */
