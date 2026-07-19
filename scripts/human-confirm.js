@@ -18,6 +18,7 @@
  * 示例:
  * node scripts/human-confirm.js creative-theme approve "主题很好"
  * node scripts/human-confirm.js requirement reject "需要调整场景"
+ * node scripts/human-confirm.js preproduction approve "可以提交渲染"
  */
 
 const crypto = require('crypto');
@@ -64,10 +65,12 @@ if (!type) {
  console.log(' requirement - 需求清单确认 (Step 3)');
  console.log(' prd - PRD 确认 (Step 4)');
  console.log(' prompt - 提示词审核确认 (Step 5)');
+ console.log(' preproduction - 预生产结果最终确认 (Step 6)');
  console.log('');
  console.log('示例:');
  console.log(' node scripts/human-confirm.js creative-theme approve "主题很好"');
  console.log(' node scripts/human-confirm.js requirement reject "需要调整场景"');
+ console.log(' node scripts/human-confirm.js preproduction approve "可以提交渲染"');
  process.exit(1);
 }
 

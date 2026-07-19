@@ -1756,6 +1756,40 @@ class HyperrealitySystem {
         result.confirmations.prompts = { approved: true, skipped: true };
       }
 
+      // ========== 🆕 Step 6: 预生产结果最终确认 ==========
+      if (!options.skipPreproductionReview) {
+        console.log('\n🎬 [Step 6] 预生产结果最终确认...');
+
+        const preproductionConfirmation = await this._confirmPreproductionResult(
+          productionResult,
+          scriptResult,
+          result.timing,
+          result.confirmations
+        );
+        result.confirmations.preproduction = preproductionConfirmation;
+
+        if (preproductionConfirmation.waitTimeMs) {
+          result.totalWaitTimeMs += preproductionConfirmation.waitTimeMs;
+          _extendDeadlineForWait(preproductionConfirmation.waitTimeMs, '预生产结果');
+        }
+
+        if (!preproductionConfirmation.approved) {
+          console.log('   ❌ 预生产结果未确认,流程中止');
+          result.success = false;
+          result.stages.preproductionReview = {
+            status: 'rejected',
+            reason: preproductionConfirmation.reason || '用户未确认预生产结果',
+            suggestions: preproductionConfirmation.suggestions || []
+          };
+          return result;
+        }
+
+        console.log('   ✅ 预生产结果已确认,进入渲染管线');
+      } else {
+        console.log('\n⚠️ [预生产结果确认] 跳过(调试模式)');
+        result.confirmations.preproduction = { approved: true, skipped: true };
+      }
+
       // ========== P1-2: Render Pipeline Guard 强制检查 ==========
       if (this.pipelineGuard.enabled) {
         console.log('\n🛡️ [PipelineGuard] 启动渲染管线检查...');
@@ -2574,6 +2608,61 @@ class HyperrealitySystem {
       suggestions: confirmPath.suggestions,
       waitTimeMs: confirmPath.waitTimeMs // 【v2.1.16-fix】透传等待时间用于全局截止补偿
     };
+  }
+
+  async _confirmPreproductionResult(productionResult, scriptResult, timing, confirmations) {
+    // Step 6: 预生产结果最终确认
+    const report = this._generatePreproductionReport(productionResult, scriptResult, timing, confirmations);
+
+    const confirmPath = await this._waitForExternalConfirmation('preproduction', report);
+
+    if (confirmPath.approved) {
+      console.log('   ✅ 预生产结果已确认,进入渲染阶段');
+    } else {
+      console.log('   ❌ 预生产结果被拒绝:', confirmPath.reason);
+    }
+
+    return {
+      approved: confirmPath.approved,
+      reviewedAt: new Date().toISOString(),
+      report,
+      reason: confirmPath.reason,
+      suggestions: confirmPath.suggestions,
+      waitTimeMs: confirmPath.waitTimeMs
+    };
+  }
+
+  _generatePreproductionReport(productionResult, scriptResult, timing, confirmations) {
+    const lines = [];
+    lines.push('# 🎬 预生产结果报告');
+    lines.push('');
+    lines.push(`**镜头总数**: ${productionResult.shots?.length || 0}`);
+    lines.push(`**总时长**: ${productionResult.shots?.reduce((s, sh) => s + (sh.duration || 0), 0) || 0} 秒`);
+    lines.push(`**角色数**: ${scriptResult?.blueprint?.characters?.length || 0}`);
+    lines.push(`**提示词数**: ${productionResult.prompts?.length || 0}`);
+    lines.push(`**有效处理时间**: ${Math.round((timing?.effective || 0) / 60000)} 分钟`);
+    lines.push('');
+    lines.push('## 镜头列表');
+    lines.push('');
+    lines.push('| 镜头 | 时长 | 类型 | 场景描述 |');
+    lines.push('|------|------|------|----------|');
+    for (const sh of (productionResult.shots || [])) {
+      lines.push(`| ${sh.shotId || sh.shot_id || '?'} | ${sh.duration || '?'}s | ${sh.sceneType || '?'} | ${(sh.scene || sh.description || '').slice(0, 40)}... |`);
+    }
+    lines.push('');
+    lines.push('## 确认记录');
+    lines.push('');
+    for (const [k, v] of Object.entries(confirmations || {})) {
+      lines.push(`- ${k}: ${v.approved ? '✅ 通过' : '❌ 未通过'}${v.skipped ? ' (跳过)' : ''}`);
+    }
+    lines.push('');
+    lines.push('## 下一步');
+    lines.push('');
+    lines.push('确认后，系统将进入渲染管线（PipelineGuard → RenderingEngine → PostProductionEngine）。');
+    lines.push('');
+    lines.push('**请回复 "确认" 提交预生产结果并进入渲染,或 "修改" 并指出问题**');
+    lines.push('');
+    return lines.join('\n');
   }
 
   /**
