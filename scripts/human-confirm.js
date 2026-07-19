@@ -112,6 +112,25 @@ const confirmPath = path.join(scriptDir, '..', 'hyperreality-system', 'output', 
 // 【v2.1.12】原子写（临时文件 + rename）
 runCoordinator.atomicWriteSync(confirmPath, JSON.stringify(confirmData, null, 2));
 
+// 【v2.1.18-fix】生成确认文件后，同步清理 PENDING.json
+// 防止主流程已死亡时 PENDING.json 残留导致定时任务持续推送
+const CONF_DIR = runCoordinator.CONFIRMATIONS_DIR;
+const PENDING_PATH = path.join(CONF_DIR, 'PENDING.json');
+try {
+  const pendingState = JSON.parse(fs.readFileSync(PENDING_PATH, 'utf8'));
+  if (pendingState && pendingState.pending === true && pendingState.type === type) {
+    const cleared = {
+      pending: false,
+      type,
+      run_id: confirmData.run_id,
+      cleared_at: new Date().toISOString(),
+      reason: '用户已通过 human-confirm.js 确认'
+    };
+    runCoordinator.atomicWriteSync(PENDING_PATH, JSON.stringify(cleared, null, 2));
+    console.log(`   🧹 已同步清理 PENDING.json（${type} 已确认）`);
+  }
+} catch (_) { /* PENDING.json 不存在或不匹配，忽略 */ }
+
 console.log('');
 console.log('╔══════════════════════════════════════════╗');
 console.log(`║ ✅ 已确认: ${type.padEnd(24)} ║`);

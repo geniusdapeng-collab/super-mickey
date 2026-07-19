@@ -59,6 +59,25 @@ function main() {
     process.exit(0);
   }
 
+  // ── 有待确认：先检查 confirmation-*.json 是否已存在（主流程死亡时的兜底）─
+  const confirmJsonPath = path.join(CONF_DIR, `confirmation-${state.type}.json`);
+  if (fs.existsSync(confirmJsonPath)) {
+    // confirmation-*.json 已存在，但 PENDING.json 未清理 → 主流程已死，清理残留状态
+    try {
+      const cleared = {
+        pending: false,
+        type: state.type,
+        run_id: state.run_id,
+        cleared_at: new Date().toISOString(),
+        reason: 'confirmation-*.json 已存在，自动清理残留 PENDING 状态'
+      };
+      const tmp = PENDING_PATH + `.tmp-${process.pid}`;
+      fs.writeFileSync(tmp, JSON.stringify(cleared, null, 2));
+      fs.renameSync(tmp, PENDING_PATH);
+    } catch (_) { }
+    process.exit(0);
+  }
+
   // ── 有待确认：构造去重键 ─────────────────────────────────────────────
   const pushKey = `${state.type}:${state.generated_at || ''}`;
   const marker = readJson(MARKER_PATH);
