@@ -213,3 +213,4 @@ hyperreality-system/_deprecated_scripts/
 *.bak-v2.1.*
 debug_reasoning.json
 _inherit_confirmations.sh
+# Graphify analysis outputs\ngraphify-out/

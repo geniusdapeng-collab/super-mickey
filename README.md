@@ -105,7 +105,7 @@ A **complete pre-production pipeline** that mirrors real film production:
 User Intent → Script Blueprint → Scene Cards → Shot Cards → Prompts → Director Review → Render
 ```
 
-Each stage produces **structured, reviewable artifacts** — not black-box outputs. Every shot is defined by 25 fields. Every shot passes a 6-question director review. Every prompt is optimized through an 8-step pipeline with smart compression.
+Every stage produces **structured, reviewable artifacts** — not black-box outputs. Every shot is defined by 25 fields. Every shot passes a 6-question director review. Every prompt is optimized through an 8-step pipeline with smart compression, followed by a **FieldContentRefiner** post-assembly pass (v2.2-refine) that strips redundant clauses, merges negative constraints, and standardizes empty-shot fields — cutting typical prompts from ~2700 to ~1500 characters without quality loss.
 
 <p align="center">
   <img src="./assets/user-workflow.png" alt="SuperMickey User Workflow" width="100%"/>
