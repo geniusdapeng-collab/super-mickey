@@ -2773,7 +2773,7 @@ class HyperrealitySystem {
   /**
    * 【v2.1.4-fix13-队长优化】格式化提示词:序号+换行+情绪增强
    */
-  _formatPromptWithSequenceNumbers(promptText, isOpening = false) {
+  _formatPromptWithSequenceNumbers(promptText, isOpening = false, shotData = null) {
     if (!promptText || typeof promptText !== 'string') return '(空)';
 
     // 情绪关键词扩展映射
@@ -2840,6 +2840,7 @@ class HyperrealitySystem {
     }
 
     // 片头额外字段(如果是片头)
+    // 【v2.2.1-fix】避免占位符重复：PromptFusion 已写入真实字段，仅当缺失时补真实值或待生成标记
     if (isOpening) {
       const openingFields = [
         { name: 'title_content', label: '主标题内容' },
@@ -2849,8 +2850,16 @@ class HyperrealitySystem {
         { name: 'opening_audio_design', label: '开场音频设计' }
       ];
       for (const of of openingFields) {
+        // 如果 prompt 文本中已有该字段（PromptFusion 已写入真实值），跳过
+        if (promptText.includes(`【${of.label}】`)) continue;
+        // 尝试从 shotData 取真实值
+        const realValue = shotData && shotData[of.name];
         const seqStr = String(seq).padStart(2, '0');
-        lines.push(`${seqStr}.【${of.label}】(片头专属字段,需单独配置)`);
+        if (realValue && String(realValue).trim()) {
+          lines.push(`${seqStr}.【${of.label}】${realValue}`);
+        } else {
+          lines.push(`${seqStr}.【${of.label}】(待片头优化器生成)`);
+        }
         seq++;
       }
     }
@@ -2918,7 +2927,7 @@ class HyperrealitySystem {
       }
       // 【v2.1.4-fix13】使用新格式:序号+换行+情绪增强
       lines.push('```markdown');
-      lines.push(this._formatPromptWithSequenceNumbers(p.prompt, isOpening));
+      lines.push(this._formatPromptWithSequenceNumbers(p.prompt, isOpening, p));
       lines.push('```');
       lines.push('');
       lines.push('---');

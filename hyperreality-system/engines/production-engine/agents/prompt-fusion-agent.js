@@ -1640,7 +1640,14 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
         { key: 'opening_audio_design', label: '开场音频设计' }
       ];
       for (const of of openingFields) {
-        const value = getField(of.key) || shot[of.key] || fields?.[of.key];
+        let value = getField(of.key) || shot[of.key] || fields?.[of.key];
+        // 【v2.2.1-fix】title_animation 在优化器运行前可能为空，从片头设计的 beats 节拍表兜底生成
+        if ((!value || !String(value).trim()) && of.key === 'title_animation') {
+          const beats = shot.opening?.beats || shot._openingDesign?.beats || shot.blueprint?.opening?.beats;
+          if (Array.isArray(beats) && beats.length > 0) {
+            value = beats.map(b => `${b.tStart || b.t_start || 0}-${b.tEnd || b.t_end || 0}s ${b.phase || ''}: ${b.visual || b.camera || ''}`).join('；');
+          }
+        }
         if (value && String(value).trim()) {
           fullPrompt += ` | 【${of.label}】${value}`;
         }
