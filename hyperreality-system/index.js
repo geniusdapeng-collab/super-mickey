@@ -506,6 +506,11 @@ class HyperrealitySystem {
 
         // 将创意主题注入到 metadata 中，供后续链路使用
         metadata._creativeTheme = themeResult.tasks[0];
+        // 【方案A-fix】原始故事文本直通：从 themeResult 传递到 metadata
+        if (themeResult._originalStoryText) {
+          metadata._originalStoryText = themeResult._originalStoryText;
+          metadata._creativeTheme._originalStoryText = themeResult._originalStoryText;
+        }
         
         // 如果用户有调整，应用调整
         if (themeConfirmation.adjustments) {

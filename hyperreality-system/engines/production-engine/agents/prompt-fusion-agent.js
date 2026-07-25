@@ -492,7 +492,7 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
   }
 
   async _fuseSingleShot(shot, ratio, characters, blueprint, shotBudget = null) {
-    const prompt = this._buildBatchPrompt([shot], ratio, characters);
+    const prompt = this._buildBatchPrompt([shot], ratio, characters, blueprint);
     // 【v2.1.4-fix10-P25-fix3】把空 schema 换成带 25 字段键名的完整模板
     // 【P1-4 修复】schema 加 required/requiredArrays/rejectEmptyArray,让质量门真正生效
     const schema = {
@@ -1875,7 +1875,7 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
     return '【台词】' + lines.join('\n');
   }
 
-  _buildBatchPrompt(shots, ratio, characters) {
+  _buildBatchPrompt(shots, ratio, characters, blueprint) {
     const characterInfo = characters.map(c => `- ${c.name}: ${c.description || ''}`).join('\n');
 
     const shotsInfo = shots.map(s => {
@@ -1885,7 +1885,7 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
     }).join('\n');
 
     // 【v2.1.4-fix9-P1】构建导演上下文
-    const directorContext = this._buildDirectorContext(shots);
+    const directorContext = this._buildDirectorContext(shots, blueprint);
 
     const sufficiency = [
       '【字段最低字符数 - 硬性要求,不达标会被打回重写】',
@@ -1959,19 +1959,29 @@ ${sufficiency}
 
   /**
    * 【v2.1.4-fix9-P1】构建导演上下文
+   * 【方案A-fix】增加原始故事文本直通
    */
-  _buildDirectorContext(shots) {
+  _buildDirectorContext(shots, blueprint) {
     // 从第一个 shot 的 blueprint 引用中提取上下文
     const firstShot = shots[0];
-    const blueprint = firstShot?._blueprint || {};
-    const config = blueprint.config || {};
+    const bp = blueprint || firstShot?._blueprint || {};
+    const config = bp.config || {};
+    const meta = bp.metadata || bp.meta || {};
+    const _metadata = config._metadata || bp._metadata || {};
 
-    const title = blueprint.title || config.title || '未命名';
-    const contentTheme = config.content_theme || '';
-    const sceneRequirement = config.scene_requirement || '';
-    const characterDescription = config.character_description || '';
-    const forbiddenScenes = config.forbidden_scenes || [];
-    const keyMessages = config.key_messages || [];
+    const title = bp.title || config.title || _metadata.title || '未命名';
+    const contentTheme = config.content_theme || _metadata.content_theme || '';
+    const sceneRequirement = config.scene_requirement || _metadata.scene_requirement || '';
+    const characterDescription = config.character_description || _metadata.character_description || '';
+    const forbiddenScenes = config.forbidden_scenes || _metadata.forbidden_scenes || [];
+    const keyMessages = config.key_messages || _metadata.key_messages || [];
+    
+    // 【方案A-fix】原始故事文本直通
+    const originalStory = bp._originalStoryText || _metadata._originalStoryText || meta._originalStoryText || '';
+    const storySection = originalStory ? `
+## 📖 原始故事文本（PromptFusion核心依据，必须忠实还原每个细节）
+${originalStory}
+` : '';
 
     return `## 🎬 导演指令上下文
 视频标题:${title}
@@ -1980,7 +1990,7 @@ ${sufficiency}
 角色设定:${characterDescription}
 关键信息:${keyMessages.join(';') || '无'}
 禁止场景:${forbiddenScenes.join('、') || '无'}
-
+${storySection}
 `;
   }
 

@@ -1459,6 +1459,13 @@ class CreativeThemeGenerator {
       tasks: [completedTask],
       quality: quality
     };
+
+    // 【方案A-fix】保留原始故事文本直通下游
+    // 将用户完整输入附加到 result，供后续层（剧本/镜头/PromptFusion）直接消费
+    result._originalStoryText = parseResult.input || '';
+    if (result._originalStoryText) {
+      console.log(`[CreativeThemeGenerator] 📖 原始故事文本已保留，长度: ${result._originalStoryText.length}字符`);
+    }
     
     // 发布事件
     this.eventBus.emit('creative-theme:generated', {
@@ -1526,6 +1533,14 @@ class CreativeThemeGenerator {
       const lines = wrap(text);
       return lines.map(l => `║ ${l}║`).join('\n');
     };
+    
+    // 【方案A-fix】原始故事文本加入确认单，让用户审阅完整内容
+    const originalStory = result._originalStoryText || '';
+    const storyBox = originalStory ? `
+╠══════════════════════════════════════════╣
+║ 📖 原始故事文本（完整版）:               ║
+${box('📖', originalStory)}
+` : '';
 
     return `
 ╔══════════════════════════════════════════╗
@@ -1551,7 +1566,7 @@ ${box('💬', task.dialogue_requirement)}
 ${box('📝', task.special_notes || '无')}
 ╠══════════════════════════════════════════╣
 ║ 🎯 目标受众:                             ║
-${box('🎯', task.target_audience)}
+${box('🎯', task.target_audience)}${storyBox}
 ╚══════════════════════════════════════════╝
 
 请确认以上创意主题是否符合您的预期：

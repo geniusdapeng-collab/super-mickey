@@ -40,6 +40,11 @@ class ScriptEngine {
       metadata._creativeThemeTone = metadata._creativeTheme.tone;
       metadata._creativeThemeVisualStyle = metadata._creativeTheme.visual_style;
       metadata._creativeThemeTargetAudience = metadata._creativeTheme.target_audience;
+      // 【方案A-fix】原始故事文本从 CreativeTheme 传递到 metadata，供下游消费
+      if (metadata._creativeTheme._originalStoryText) {
+        metadata._originalStoryText = metadata._creativeTheme._originalStoryText;
+        console.log(`[ScriptEngine] 📖 原始故事文本已接入，长度: ${metadata._originalStoryText.length}字符`);
+      }
       // 【2026-07-17 清理】_creativeThemeDescription 写后无人读，删除
       console.log(`[ScriptEngine] 使用 CreativeTheme 类型: ${metadata._creativeTheme.type}`);
     }

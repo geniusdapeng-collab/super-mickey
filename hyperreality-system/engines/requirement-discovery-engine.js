@@ -225,6 +225,10 @@ class BaseDiscoveryAgent {
 
     const prompt = this._buildPrompt(input);
     
+    // 【方案A-fix】原始故事文本注入：从 input 中提取并追加到 prompt
+    const originalStory = input._originalStoryText || input.original_story_text || '';
+    const fullPrompt = originalStory ? `${prompt}\n\n## 📖 原始故事文本（需求分析的核心依据）\n${originalStory}` : prompt;
+    
     // 超时保护
     const timeoutPromise = new Promise((_, reject) => {
       setTimeout(() => reject(new Error('LLM 调用超时')), this.timeoutMs);
@@ -243,7 +247,7 @@ class BaseDiscoveryAgent {
         // 改用普通 mode + 手动解析 JSON
         if (this.name === 'SceneArchitect') {
           const result = await Promise.race([
-            this.llmEngine.reason(prompt, { 
+            this.llmEngine.reason(fullPrompt, { 
               maxTokens: 4000, 
               temperature: 1.0,
               timeoutMs: this.timeoutMs,
@@ -259,7 +263,7 @@ class BaseDiscoveryAgent {
         }
         
         const result = await Promise.race([
-          this.llmEngine.reasonStructured(prompt, useSchema, { 
+          this.llmEngine.reasonStructured(fullPrompt, useSchema, { 
             maxTokens: 4000, 
             temperature: 1.0,
             timeoutMs: this.timeoutMs 
@@ -269,7 +273,7 @@ class BaseDiscoveryAgent {
         return result.data || result;
       } else if (typeof this.llmEngine.generate === 'function') {
         const result = await Promise.race([
-          this.llmEngine.generate(prompt, { maxTokens: 4000, temperature: 1.0 }),
+          this.llmEngine.generate(fullPrompt, { maxTokens: 4000, temperature: 1.0 }),
           timeoutPromise
         ]);
         responseText = result.content || '';

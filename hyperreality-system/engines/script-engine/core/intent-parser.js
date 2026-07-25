@@ -369,7 +369,9 @@ class IntentParser {
         world_setting: analysis.world_setting || metadata.world_setting || 'default',
         featured_beast_id: analysis.featured_beast_id || metadata.featured_beast_id || null,
         // v1.2.7-fix-A8: 移除 示例角色 硬编码，改为通用默认值
-        protagonist: metadata.protagonist || 'protagonist'
+        protagonist: metadata.protagonist || 'protagonist',
+        // 【方案A-fix】原始故事文本直通下游，保留用户完整输入
+        _originalStoryText: metadata._originalStoryText || metadata._creativeTheme?._originalStoryText || ''
       },
       constraints: {
         // v2.1.4-fix13-审计修复: 超级小香宝标准 3000

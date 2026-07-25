@@ -215,6 +215,13 @@ ${sceneOptions}
     const keyMessages = config.key_messages || _metadata.key_messages || [];
     const creativeIntensity = config.creativeIntensity || _metadata.creativeIntensity || blueprint.config?.creativeIntensity || 0.5;
     
+    // 【方案A-fix】原始故事文本直通：从 blueprint metadata 获取
+    const originalStory = blueprint._originalStoryText || _metadata._originalStoryText || meta._originalStoryText || '';
+    const storySection = originalStory ? `
+## 📖 原始故事文本（镜头设计的核心依据，必须忠实还原）
+${originalStory}
+` : '';
+    
     return `## 🎬 导演指令上下文
 视频标题：${title}
 内容主题：${contentTheme}
@@ -226,7 +233,7 @@ ${sceneOptions}
 关键信息：${keyMessages.join('；') || '无'}
 禁止场景：${forbiddenScenes.join('、') || '无'}
 禁止元素：全息投影、虚拟空间、未来感、霓虹特效、元宇宙、数字空间、抽象几何
-`;
+${storySection}`;
   }
 
   _fallback(shots) {

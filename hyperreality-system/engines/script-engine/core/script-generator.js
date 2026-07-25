@@ -224,6 +224,17 @@ ${meta.featured_beast_id ? '- 主角异兽：' + meta.featured_beast_id : ''}
 - 平台：${(meta.target_platform || []).join(', ') || '通用平台'}
 - 语言：${meta.language || '中文'}
 ${(() => {
+  // 【方案A-fix】原始故事文本直通：将用户完整故事原文注入剧本LLM
+  const originalStory = meta._originalStoryText || meta._creativeTheme?.original_story_text || '';
+  if (originalStory) {
+    return `
+## 📖 原始故事文本（核心依据，必须忠实还原）
+${originalStory}
+`;
+  }
+  return '';
+})()}
+${(() => {
   // 【审计修复】消费上游已被提取却从未进入剧本 prompt 的关键字段:
   // 主题情绪(tone)/视觉风格(visual_style)/目标受众(target_audience)/情绪画像(_emotionProfile)/PRD创意核心(_prd)
   // 此前这些字段在 script-engine/index.js 被写入 metadata 后全库无人消费, 剧本 LLM 完全看不到风格与受众要求
