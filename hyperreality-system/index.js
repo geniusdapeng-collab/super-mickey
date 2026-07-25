@@ -2883,7 +2883,6 @@ class HyperrealitySystem {
       const hasConstraints = typeof p.prompt === 'string' && p.prompt.includes('角色一致性') || false;
       const charCount = p.promptCharCount || (typeof p.prompt === 'string' ? p.prompt.length : 0);
       // 【v2.2.1-fix】统计字段数（片头5专属字段计入）
-      const promptText = typeof p.prompt === 'string' ? p.prompt : '';
       const isOpening = p.shotId === 'SC00' || p.shotId === 'S00' || p.sceneType === 'opening';
       const baseFieldCount = (promptText.match(/【/g) || []).length;
       const openingExtra = isOpening
