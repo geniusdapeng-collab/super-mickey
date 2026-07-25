@@ -1356,6 +1356,10 @@ class CreativeThemeGenerator {
     this.qualityChecker = new QualityChecker();
     this.eventBus = options.eventBus || new EventBus();
     
+    // ⭐ v2.2.1-hotfix: 保存 llmEngine 到主类（此前只注入 typeResolver，
+    // 导致 needsLLM 判断恒 false，LLM 提取被静默跳过）
+    this.llmEngine = options.llmEngine || null;
+    
     // ⭐ v2.1.8: LLM 动态类型配置生成器
     this.typeResolver = new DynamicTypeResolver({
       llmEngine: options.llmEngine || null,

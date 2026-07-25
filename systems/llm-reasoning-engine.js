@@ -16,7 +16,7 @@ class LLMEngine {
     this.conversationHistory = [];
     this.stats = { totalCalls: 0, totalTokens: 0, totalDuration: 0, errors: 0 };
     this.mode = options.mode || 'production';
-    this.baseUrl = options.baseUrl || 'https://agent-gw.kimi.com/coding/v1/chat/completions';
+    this.baseUrl = options.baseUrl || process.env.LLM_ENDPOINT || 'https://agent-gw.kimi.com/coding/v1/chat/completions';
     this.apiKey = options.apiKey || process.env.KIMI_API_KEY || process.env.MOONSHOT_API_KEY || process.env.KIMI_PLUGIN_API_KEY;
 
     // 【P0-13 修复】apiKey 缺失时标记为不可用，避免 401 无意义重试

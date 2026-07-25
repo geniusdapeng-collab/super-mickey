@@ -1068,6 +1068,14 @@ class HyperrealitySystem {
 
       // 【修复】应用运行时 agentConfig(解决配置不生效问题)
       this.productionEngine.updateAgentConfig(baseAgentConfig);
+      
+      // ⭐ v2.2.1-fix: 原始故事文本注入生产引擎蓝图（PromptFusion 上下文三源兜底的全覆盖）
+      const _storyText = metadata._originalStoryText || metadata._creativeTheme?._originalStoryText || '';
+      if (_storyText) {
+        adapted._originalStoryText = _storyText;
+        adapted._metadata = { ...(adapted._metadata || {}), _originalStoryText: _storyText };
+        adapted.config = { ...(adapted.config || {}), _originalStoryText: _storyText };
+      }
 
       productionResult = await this.productionEngine.produce(adapted, baseAgentConfig);
 
@@ -2062,7 +2070,8 @@ class HyperrealitySystem {
           openingShot = openingShotId
             ? productionResult.shots.find(s => (s.shotId || s.shot_id) === openingShotId)
             : productionResult.shots.find(s => isOpeningShot(s));
-          if (openingShot) {
+          // 【v2.2.1-fix】幂等守卫：审核前已完成片头优化则跳过，避免元数据污染
+          if (openingShot && !openingShot.title_content) {
             console.log('\n🎬 [OpeningTitleOptimizer] 片头专属字段优化...');
             try {
               const optimizer = new OpeningTitleOptimizer({

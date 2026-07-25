@@ -730,6 +730,10 @@ class FieldCheckAgent extends BaseAgent {
     const ruleIssues = this.ruleChecker.check(flatShot);
     report.issues.push(...ruleIssues);
     console.log(`[FieldCheckAgent] RuleChecker 完成：${ruleIssues.length} 项问题`);
+    // 【v2.2.1-fix】打印具体规则名和描述，便于发现误报
+    for (const issue of ruleIssues.slice(0, 20)) {
+      console.log(`   📏 [${issue.severity || '?'}] ${issue.field_cn || issue.field_en || ''}: ${issue.description || issue.message || ''}`);
+    }
 
     // 第二层：LLM语义检查（用展平后的 shot）
     if (this.llmChecker.llm) {
