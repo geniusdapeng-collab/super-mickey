@@ -759,8 +759,8 @@ class FieldCompleter {
       result.duration_sec = this._deriveDuration(result.type, result.difficulty);
     }
     
-    // creative_style
-    if (result.creative_style === undefined) {
+    // creative_style（放宽到 null/空字符串都兜底）
+    if (result.creative_style == null || result.creative_style === '') {
       result.creative_style = this._deriveCreativeStyle(result.type, result.difficulty, result.theme || input);
     }
     

@@ -2785,7 +2785,7 @@ class HyperrealitySystem {
     lines.push('');
     lines.push(`**镜头总数**: ${productionResult.shots?.length || 0}`);
     lines.push(`**总时长**: ${productionResult.shots?.reduce((s, sh) => s + (sh.duration || 0), 0) || 0} 秒`);
-    lines.push(`**角色数**: ${scriptResult?.blueprint?.characters?.length || 0}`);
+    lines.push(`**角色数**: ${scriptResult?.blueprint?.character_system?.characters?.length || scriptResult?.blueprint?.characters?.length || 0}`);
     lines.push(`**提示词数**: ${productionResult.prompts?.length || 0}`);
     lines.push(`**有效处理时间**: ${Math.round((timing?.effective || 0) / 60000)} 分钟`);
     lines.push('');
@@ -2831,7 +2831,13 @@ class HyperrealitySystem {
       type,
       content,
       runId: this._runId || null,
-      shouldAbort: () => this._shutdownRequested === true
+      shouldAbort: () => this._shutdownRequested === true,
+      onPoll: () => {
+        // 【fix】确认等待期间喂 HealthMonitor 心跳，防止误判死亡
+        if (this.stabilityShield?.updateHeartbeat) {
+          this.stabilityShield.updateHeartbeat('ProductionEngine');
+        }
+      }
     });
   }
 

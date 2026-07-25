@@ -271,6 +271,9 @@ async function waitForExternalConfirmation(opts) {
       log(`   ⏳ 等待确认中... (${elapsedMins}分钟) — 等待时间不计入流程总时间`);
     }
 
+    // 【fix】确认等待期间保持心跳，防止 HealthMonitor 误判 Agent 死亡
+    if (onPoll) { try { onPoll(); } catch (_) { /* 心跳回调失败不影响轮询 */ } }
+
     await new Promise(resolve => setTimeout(resolve, checkInterval));
   }
 }

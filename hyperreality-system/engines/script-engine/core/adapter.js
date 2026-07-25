@@ -40,6 +40,10 @@ class ScriptBlueprintAdapter {
       // 世界观设定
       worldSetting: this._adaptWorldSetting(blueprint),
       
+      // 【fix】透传原始 blueprint 的 meta 和 character_system，供 CONTRACT 校验使用
+      meta: blueprint.meta || {},
+      character_system: blueprint.character_system || { characters: [] },
+      
       // 元数据
       metadata: {
         blueprint_id: blueprint.blueprint_id,
