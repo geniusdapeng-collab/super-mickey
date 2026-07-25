@@ -27,6 +27,16 @@ class Phase1SceneDesign extends PhaseExecutor {
     this.log('PHASE-1', 'SceneDesign + OpeningDesign 并行启动...');
 
     try {
+      // 【fix】补全 genre/mood 映射，防止 OpeningDesignAgent 收到"题材=通用 情绪=epic"
+      if (adaptedBlueprint) {
+        if (!adaptedBlueprint.genre && adaptedBlueprint.type) {
+          adaptedBlueprint.genre = adaptedBlueprint.type;
+        }
+        if (!adaptedBlueprint.mood && adaptedBlueprint.tone) {
+          adaptedBlueprint.mood = adaptedBlueprint.tone;
+        }
+      }
+
       // 并行执行两个 Agent
       const [sdResult, odResult] = await this._runParallel({
         'scene-design': this.agents.sceneDesign.process(this.cloneShots(shots), adaptedBlueprint),

@@ -61,7 +61,7 @@ class OpeningTitleOptimizer extends BaseAgent {
     const meta = blueprint._metadata || blueprint.config?._metadata || {};
     const episodeNumber = meta.episodeNumber || meta.series?.currentEpisode || 1;
     const totalEpisodes = meta.totalEpisodes || meta.series?.totalEpisodes || 1;
-    const genre = blueprint.genre || '科普';
+    const genre = blueprint.genre || blueprint.type || '通用';
     const style = blueprint.style || 'REAL';
     const targetAudience = blueprint.targetAudience || '通用受众';
     
@@ -148,7 +148,7 @@ ${existingPrompt.substring(0, 300)}...
     try {
       const { designTypography } = require('../../../../systems/opening-cinematic/typography-designer');
       const { designAudio } = require('../../../../systems/opening-cinematic/opening-audio-architect');
-      const genre = blueprint.genre || '通用';
+      const genre = blueprint.genre || blueprint.type || '通用';
       const mood = meta.mood || 'epic';
       const typo = designTypography({ genre, mood });
       const au = designAudio({ mood, durationSec: 8 });

@@ -1408,7 +1408,7 @@ class CreativeThemeGenerator {
     let type = extractedFields.type || this.fieldCompleter._inferTypeWeighted(parseResult.input);
     
     // ⭐ v2.1.8: LLM 动态类型配置解析（TYPE_LIBRARY 未命中或推断为null时）
-    if (!type || (!TYPE_LIBRARY[type] && !this._normalizeTypeName(type))) {
+    if (!type || (!TYPE_LIBRARY[type] && !this.fieldCompleter._normalizeTypeName(type))) {
       // 【v2.1.15-fix 主题漂移】类型标签仅作缓存键与兜底名；
       // 完整用户输入通过 context.userInput 全量传给 LLM。
       // 原实现只把输入截断为20字符+context全空 → LLM只能自由发挥 → "故宫的晨钟"式漂移

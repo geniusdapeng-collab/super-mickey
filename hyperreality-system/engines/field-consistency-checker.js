@@ -343,10 +343,7 @@ class FieldConsistencyChecker {
             fieldA: 'timeline',
             fieldB: 'camera_movement',
             message: `时间轴节拍"${beat.label || beat.time}"含高潮/爆发，但camera_movement无快速运镜`,
-            fixable: true,
-            fix: (f) => ({
-              camera_movement: `${f.camera_movement}; T00:${beat.time}快速推轨+手持晃动，强化冲击感`
-            })
+            fixable: false // 【fix】追加"T00:5快速推轨+手持晃动"会违反"运镜只写一种方式"精炼约束，改为仅报告
           });
         }
       }
@@ -362,10 +359,7 @@ class FieldConsistencyChecker {
             fieldA: 'timeline',
             fieldB: 'camera_movement',
             message: `时间轴节拍"${beat.label || beat.time}"含建立/平静，但camera_movement无稳定运镜`,
-            fixable: true,
-            fix: (f) => ({
-              camera_movement: `T00:${beat.time}缓慢稳定构图; ${f.camera_movement}`
-            })
+            fixable: false // 【fix】追加"T00:缓慢稳定构图"同样违反精炼约束
           });
         }
       }
@@ -457,10 +451,7 @@ class FieldConsistencyChecker {
           fieldA: 'timeline',
           fieldB: 'action',
           message: `时间轴节拍"${beat.label || beat.time}"描述动作"${beatActions[0]}"，但action字段未包含`,
-          fixable: true,
-          fix: (f) => ({
-            action: `${f.action}; T00:${beat.time}${beatActions[0]}`
-          })
+          fixable: false // 【fix】禁止向 action 追加 "T00:9推" 式残片，留给定向补齐轮由 LLM 完整改写
         });
       }
     }
@@ -791,7 +782,15 @@ class FieldConsistencyChecker {
     const hasCostumeRef = costumeKeywords.some(k => character.includes(k.toLowerCase()));
 
     if (!hasCostumeRef) {
-      issues.push({ severity: 'warning', fieldA: 'character', fieldB: 'costume', message: '角色描述没有引用服装字段的内容', fixable: true, fix: (f) => ({ character: `${f.character}, 身着${f.costume}` }) });
+      issues.push({
+        severity: 'warning', fieldA: 'character', fieldB: 'costume',
+        message: '角色描述没有引用服装字段的内容', fixable: true,
+        fix: (f) => {
+          const costumeHead = String(f.costume || '').replace(/^(.*?穿)/, '').slice(0, 8);
+          if (costumeHead && String(f.character).includes(costumeHead)) return {}; // 已含，不重复
+          return { character: `${f.character}（着装与【服装】字段一致）` };
+        }
+      });
     }
     return issues;
   }
