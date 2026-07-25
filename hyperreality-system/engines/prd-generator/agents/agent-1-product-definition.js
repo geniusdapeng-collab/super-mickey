@@ -23,12 +23,15 @@ class ProductDefinitionAgent {
     const { type, theme, duration_sec, target_audience, description } = upstreamFields;
 
     // 1. 项目定义
+    // ⭐ v2.2.1-fix: 原始故事文本作为最高事实源注入 PRD
+    const originalStory = upstreamFields._originalStoryText || upstreamFields.original_story_text || '';
     const projectDefinition = {
       projectId: uuidv4(),
       projectName: this._extractProjectName(theme),
       version: '1.0.0',
       createdAt: new Date().toISOString(),
-      sourceIntent: description || theme
+      sourceIntent: originalStory || description || theme,
+      _originalStoryText: originalStory
     };
 
     // 2. 产品定位

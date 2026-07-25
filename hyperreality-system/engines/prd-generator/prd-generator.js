@@ -330,7 +330,11 @@ class PRDGenerator {
     const summary = prd.prdSummary || generateSummary(prd);
     
     // ⭐ v2.2.1-fix: PRD 文档携带用户原始输入，供下游剧本/提示词生成参考
-    const originalStory = prd._originalStoryText || prd.original_story_text || '';
+    const originalStory = prd.projectDefinition?._originalStoryText 
+      || prd.projectDefinition?.original_story_text
+      || prd._originalStoryText
+      || prd.original_story_text
+      || '';
     const originalStorySection = originalStory
       ? `\n\n---\n\n## 📖 用户原始输入（创作素材源）\n\n> 以下原始素材是用户提供的故事蓝本，剧本生成和提示词设计必须以此为核心依据：\n\n${originalStory}\n`
       : '';
