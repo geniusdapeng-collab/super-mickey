@@ -2542,6 +2542,65 @@ class HyperrealitySystem {
    */
 
   /**
+   * ⭐ v2.2.1-fix: 审核前片头专属5字段优化（此前仅调用未定义，导致标题动画字段停留占位符）
+   * 幂等：5 字段齐全且非占位符则跳过
+   */
+  async _optimizeOpeningTitle(productionResult, result, metadata) {
+    const shots = productionResult?.shots || [];
+    const isOpening = (s) => s && (s.sceneType === 'opening' || /^(S?C?00($|-|_)|OP|opening|intro)/i.test(String(s.shotId || s.shot_id || '')));
+    const openingShot = shots.find(isOpening) || shots[0];
+    if (!openingShot) return;
+    const hasReal = (v) => typeof v === 'string' && v.length > 0 && !v.includes('待片头优化器生成') && !v.includes('需单独配置');
+    if (hasReal(openingShot.title_animation) && hasReal(openingShot.title_content) && hasReal(openingShot.subtitle_content)
+      && hasReal(openingShot.title_font_design) && hasReal(openingShot.opening_audio_design)) {
+      return; // 已完整，幂等跳过
+    }
+    console.log('\n🎬 [OpeningTitleOptimizer] 审核前片头专属字段优化...');
+    const optimizer = new OpeningTitleOptimizer({
+      llmTimeout: 120000,
+      llmMaxRetries: 2,
+      llmModel: process.env.STORMAXE_LLM_FAST_MODEL || process.env.STORMAXE_LLM_MODEL || 'kimi-k2p6'
+    });
+    optimizer.setDeadline(Date.now() + 180000);
+    const themeMeta = metadata?._creativeTheme || {};
+    const blueprint = (result?.stages?.adapter && Object.keys(result.stages.adapter).length > 0)
+      ? result.stages.adapter
+      : { title: result?.title || metadata?.title || themeMeta.theme || '未命名',
+          type: metadata?.type || themeMeta.type,
+          target_audience: metadata?.target_audience || themeMeta.target_audience };
+    const optimized = await optimizer.optimize(openingShot, blueprint);
+    if (optimized && !optimized.degraded) {
+      openingShot.title_content = optimized.title_content;
+      openingShot.subtitle_content = optimized.subtitle_content;
+      openingShot.title_animation = optimized.title_animation;
+      openingShot.title_font_design = optimized.title_font_design;
+      openingShot.opening_audio_design = optimized.opening_audio_design;
+      openingShot.title = optimized.title_content || openingShot.title;
+      openingShot.subtitle = optimized.subtitle_content || openingShot.subtitle;
+      if (productionResult.prompts && productionResult.prompts.length > 0) {
+        const promptOpening = productionResult.prompts.find(isOpening) || productionResult.prompts[0];
+        if (promptOpening) {
+          promptOpening.title_content = optimized.title_content;
+          promptOpening.subtitle_content = optimized.subtitle_content;
+          promptOpening.title_animation = optimized.title_animation;
+          promptOpening.title_font_design = optimized.title_font_design;
+          promptOpening.opening_audio_design = optimized.opening_audio_design;
+          promptOpening.title = optimized.title_content || promptOpening.title;
+          promptOpening.subtitle = optimized.subtitle_content || promptOpening.subtitle;
+        }
+      }
+      console.log(' ✅ 审核前片头优化完成 | 主标题:', optimized.title_content);
+    } else {
+      console.warn(' ⚠️ 审核前片头优化降级，使用 fallback 补全5字段');
+      openingShot.title_content = openingShot.title_content || result?.title || '未命名';
+      openingShot.subtitle_content = openingShot.subtitle_content || '第1集';
+      openingShot.title_animation = optimized?.title_animation || '主标题以动效模式入场（0-20% 钩子悬念 → 20-60% 标题成型为情绪峰值 → 60-100% 定格收束），副标题延迟 0.5 秒跟进，整体 3-5 秒';
+      openingShot.title_font_design = openingShot.title_font_design || '粗体无衬线字体,白色,带微阴影';
+      openingShot.opening_audio_design = openingShot.opening_audio_design || '环境音渐起,配合标题入场';
+    }
+  }
+
+  /**
    * ⭐ v2.2.1-fix: LLM 引擎自动接线 —— 禁止静默降级为本地规则
    */
   _resolveLLMEngine(options = {}) {
