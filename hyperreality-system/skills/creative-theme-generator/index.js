@@ -1371,6 +1371,8 @@ class CreativeThemeGenerator {
    */
   async generate(input) {
     console.log('[CreativeThemeGenerator] 开始解析用户输入...');
+    // ⭐ v2.2.1-fix: 记录用户原始输入，确认单必须完整携带
+    this._lastInput = typeof input === 'string' ? input : JSON.stringify(input, null, 2);
     
     // Step 1: 解析输入场景（含规范化）
     const parseResult = this.inputParser.parse(input);
@@ -1380,6 +1382,24 @@ class CreativeThemeGenerator {
     const extractedFields = this._extractFields(parseResult);
     console.log(`[CreativeThemeGenerator] 用户已定义字段: ${Object.keys(extractedFields).filter(k => !['pressureAnchors', '_source'].includes(k)).join(', ')}`);
     
+    // ⭐ v2.2.1-fix: 自由文本场景（A/D/E）且有 LLM 时，用 LLM 从原文提取 12 字段
+    const needsLLM = ['A', 'D', 'E'].includes(parseResult.scene)
+      && (!extractedFields.theme || !extractedFields.type);
+    if (needsLLM && this.llmEngine) {
+      try {
+        const llmFields = await this._extractFieldsWithLLM(parseResult.input);
+        for (const [k, v] of Object.entries(llmFields)) {
+          if (extractedFields[k] === undefined && v !== undefined && v !== '') {
+            extractedFields[k] = v;
+          }
+        }
+        console.log(`[CreativeThemeGenerator] 🧠 LLM 字段提取完成: ${Object.keys(llmFields).join(', ')}`);
+      } catch (e) {
+        console.warn(`[CreativeThemeGenerator] ⚠️ LLM 字段提取失败: ${e.message}`);
+        extractedFields._degraded = 'llm_extract_failed';
+      }
+    }
+
     // Step 3: 选择压力锚点
     let type = extractedFields.type || this.fieldCompleter._inferTypeWeighted(parseResult.input);
     
@@ -1477,6 +1497,48 @@ class CreativeThemeGenerator {
     return result;
   }
   
+  /**
+   * ⭐ v2.2.1-fix: LLM 字段提取（自由文本场景）
+   */
+  async _extractFieldsWithLLM(text) {
+    const prompt = `你是创意主题结构化提取器。从用户自由表达的视频创意中，提取以下 12 个标准字段，只输出严格 JSON，不要 markdown，不要解释：
+{
+ "type": "视频类型（从：电影剧情/硬科幻/武侠动作/恐怖悬疑/自然纪录片/商业广告/科普教育/音乐MV/家庭温情/浪漫爱情/喜剧荒诞/历史战争/社会现实/艺术实验/运动竞技/美食文化/文化遗产/旅游推广 中选最贴切的一个）",
+ "theme": "主题（10字以内，提炼而非摘抄原文）",
+ "description": "内容描述（80字以内，概括故事核心）",
+ "duration_sec": 60,
+ "creative_style": 0.6,
+ "tone": "情绪基调（4-8字）",
+ "dialogue_requirement": "台词要求（30字以内）",
+ "visual_style": "视觉风格（40字以内，含可参考的影片美学）",
+ "special_notes": "特别备注/技术要求（40字以内，没有则填空字符串）",
+ "target_audience": "目标受众（15字以内）",
+ "difficulty": "难度（低/中/高/极高）"
+}
+规则：duration_sec 取文中明确时长，没有则按内容复杂度给 45-60；creative_style 为 0.3-0.9 的小数；所有字段必须存在。
+用户输入：
+${text}`;
+    let content = '';
+    if (typeof this.llmEngine.generate === 'function') {
+      const r = await this.llmEngine.generate(prompt, { maxTokens: 2000, temperature: 1 });
+      content = r.content || '';
+    } else if (typeof this.llmEngine.reason === 'function') {
+      const r = await this.llmEngine.reason(prompt, { maxTokens: 2000, temperature: 1 });
+      content = r.content || '';
+    } else if (typeof this.llmEngine.chat === 'function') {
+      const r = await this.llmEngine.chat('你是严格输出 JSON 的结构化提取器。', prompt, 1);
+      content = r.content || r.data || '';
+    } else {
+      throw new Error('LLM 引擎无可用调用方法');
+    }
+    const m = content.match(/\{[\s\S]*\}/);
+    if (!m) throw new Error('LLM 输出中未找到 JSON');
+    const parsed = JSON.parse(m[0]);
+    if (parsed.duration_sec) parsed.duration_sec = parseInt(parsed.duration_sec, 10) || 60;
+    if (parsed.creative_style) parsed.creative_style = Math.min(0.95, Math.max(0.3, parseFloat(parsed.creative_style) || 0.6));
+    return parsed;
+  }
+
   /**
    * 从解析结果中提取字段
    */

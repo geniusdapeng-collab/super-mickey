@@ -78,9 +78,9 @@ class RenderPipelineGuard {
           const text = prompt.prompt || '';
           const hasCharacter = /protagonist|角色|character|主角|人物/i.test(text);
           if (!hasCharacter) return { pass: true };
-          // v6.5.60-fix: 支持古装/神话服装 + 现代职业服装
-          // 【修复 P1-1】服装检查去领域化：不绑定特定项目角色
-          const hasCostumeLock = /身穿|wearing|dressed in|in a|古装|战甲|铠甲|armor|甲胄|战袍|道服|职业装|正装/i.test(text);
+          // v2.2.1-fix: 修复误报——25字段标准中服装是独立【服装】字段，或在角色描述中以"着/穿...装/服"出现
+          const hasSeparateCostumeField = /【服装】[^【】]{10,}/.test(text);
+          const hasCostumeLock = hasSeparateCostumeField || /身穿|wearing|dressed in|in a|古装|战甲|铠甲|armor|甲胄|战袍|道服|职业装|正装|锁子黄金甲|凤翅紫金冠|藕丝步云履|虎皮裙|飞凤帽|着[^，。；]{1,}(装|服|衫|袍|褂|裙|甲)|戏服|西装|中山装|童装|制服|工装|旗袍|礼裙/i.test(text);
           return {
             pass: hasCostumeLock,
             message: hasCostumeLock ? null : 'Prompt未明确锁定角色服装',

@@ -20,6 +20,7 @@ const { PandaCineForgeAdapter } = require('./engines/panda-cineforge-adapter');
 const { CreativeIntensityEngine } = require('./engines/script-engine/core/creative-intensity-engine');
 const { CreativeIntensityRecommender } = require('./engines/script-engine/core/creative-intensity-engine');
 const { OpeningTitleOptimizer } = require('./engines/production-engine/agents/opening-title-optimizer');
+const { PortraitResolver } = require('./engines/portrait-resolver');
 const { routeAndEnhance } = require('./skills/hollywood-cinematography/cinematography-skill-router');
 const { FieldGuard } = require('./engines/field-guard');
 const ErrorCodes = require('./config/error-codes');
@@ -91,14 +92,17 @@ class HyperrealitySystem {
     const { ConfigIsolator } = require('./utils/config-isolator');
     const isolatedOptions = ConfigIsolator.isolate(options);
     this.options = isolatedOptions;
+    
+    // ⭐ v2.2.1-fix: LLM 引擎自动接线 —— 禁止静默降级为本地规则
+    this.llmEngine = this._resolveLLMEngine(isolatedOptions);
 
     this.requirementListBuilder = new RequirementListBuilder(isolatedOptions.requirementListBuilder);
     
     // ⭐ v2.1.8: 需求洞察引擎 - 基于上游 12 字段进行深度业务洞察
     this.requirementDiscoveryEngine = new RequirementDiscoveryEngine({
-      llmEngine: options.productionEngine?.agentConfig?.llmEngine || options.llmEngine || null,
-      timeoutMs: 720000, // 【v2.1.8-fix】12 分钟总预算
-      agentTimeoutMs: 180000 // 【v2.1.8-fix】180 秒/Agent
+      llmEngine: this.llmEngine,
+      timeoutMs: 720000,
+      agentTimeoutMs: 180000
     });
     this.creativeIntensityEngine = new CreativeIntensityEngine(options.creativeIntensityEngine);
     // 【2026-07-17 修复】创意指数推荐器（历史完播率反馈闭环）
@@ -123,10 +127,10 @@ class HyperrealitySystem {
 
     // ⭐ v2.1.9: PRD 生成器 - Step 3.5 产品需求文档生成
     this.prdGenerator = new PRDGenerator({
-      llmEngine: options.productionEngine?.agentConfig?.llmEngine || options.llmEngine || null,
-      timeoutMs: 600000, // 10 分钟总预算
-      agent2TimeoutMs: 120000, // Agent 2: 2 分钟
-      agent3TimeoutMs: 180000, // Agent 3: 3 分钟
+      llmEngine: this.llmEngine,
+      timeoutMs: 600000,
+      agent2TimeoutMs: 120000,
+      agent3TimeoutMs: 180000,
       budgetProfile: options.budgetProfile || null
     });
 
@@ -297,7 +301,7 @@ class HyperrealitySystem {
     // ⭐ v2.1.7: 创意主题生成器（全链路最开头）
     this.creativeThemeGenerator = new CreativeThemeGenerator({
       eventBus: this.eventBus,
-      llmEngine: options.productionEngine?.agentConfig?.llmEngine || options.llmEngine || null
+      llmEngine: this.llmEngine
     });
 
     this.version = '2.0.0';
@@ -1735,6 +1739,33 @@ class HyperrealitySystem {
         }
       }
 
+      // ⭐ v2.2.1-fix: 片头专属5字段在审核前生成，审核报告必须是完整30字段
+      try {
+        await this._optimizeOpeningTitle(productionResult, result, metadata);
+      } catch (e) {
+        console.warn(' ⚠️ 审核前片头优化异常（不阻断流程）:', e.message);
+      }
+
+      // ⭐ v2.2.1-fix: 定妆照双模式解析（审核前）
+      try {
+        console.log('\n🖼️ [PortraitResolver] 定妆照双模式解析...');
+        const characters = scriptResult?.character_system?.characters
+          || scriptResult?.blueprint?.character_system?.characters
+          || productionResult?.blueprint?.characters || [];
+        const portraitResolver = new PortraitResolver({
+          charactersDir: path.join(__dirname, '..', 'characters')
+        });
+        const resolved = portraitResolver.resolve(productionResult.prompts || [], characters);
+        result.stages.portraitResolver = {
+          bindings: resolved.bindings,
+          uploadedCount: resolved.bindings.filter(b => b.mode === 'uploaded').length,
+          textCount: resolved.bindings.filter(b => b.mode === 'text').length
+        };
+        console.log(` ✅ 定妆照解析完成: 上传 ${result.stages.portraitResolver.uploadedCount} 个 / 文字 ${result.stages.portraitResolver.textCount} 个`);
+      } catch (e) {
+        console.warn(` ⚠️ 定妆照解析失败（不阻断流程）: ${e.message}`);
+      }
+
       // ========== 🆕 提示词审核确认环节 ==========
       if (!options.skipPromptReview) {
         console.log('\n📝 [提示词审核] 等待人工确认...');
@@ -2502,6 +2533,38 @@ class HyperrealitySystem {
    */
 
   /**
+   * ⭐ v2.2.1-fix: LLM 引擎自动接线 —— 禁止静默降级为本地规则
+   */
+  _resolveLLMEngine(options = {}) {
+    const injected = options.llmEngine || options.productionEngine?.agentConfig?.llmEngine;
+    if (injected) {
+      console.log('[LLM接线] 使用调用方注入的 LLM 引擎');
+      return injected;
+    }
+    try {
+      const { LLMEngine } = require('../systems/llm-reasoning-engine');
+      const fs = require('fs');
+      const hasKey = !!(process.env.KIMI_API_KEY || process.env.MOONSHOT_API_KEY
+        || process.env.KIMI_PLUGIN_API_KEY || process.env.OPENCLAW_CONFIG
+        || fs.existsSync('/root/.openclaw/openclaw.json'));
+      if (!hasKey) {
+        console.warn('⚠️ [LLM接线] 未检测到任何 LLM 凭据，LLM 驱动环节将显式降级');
+        return null;
+      }
+      const engine = new LLMEngine({
+        model: process.env.STORMAXE_LLM_MODEL || 'kimi-k2p6',
+        maxTokens: 32000,
+        timeoutMs: 600000
+      });
+      console.log(`[LLM接线] 已按环境配置自动创建 LLM 引擎 | model=${engine.model}`);
+      return engine;
+    } catch (e) {
+      console.warn(`⚠️ [LLM接线] LLM 引擎自动创建失败: ${e.message}`);
+      return null;
+    }
+  }
+
+  /**
    * 生成最小可用 PRD(fallback)
    * v2.1.9: 当 PRD 生成失败时提供兜底
    */
@@ -2812,14 +2875,21 @@ class HyperrealitySystem {
     lines.push('|------|------|--------|--------|----------|----------|--------|');
 
     for (const p of prompts) {
-      const hasImages = p.characterRef && p.characterRef !== 'NONE';
-      // v2.0.4-fix: 检查 timelineString 是否存在
-      const hasTimeline = !!(p.timelineString && p.timelineString.length > 3);
+      const promptText = typeof p.prompt === 'string' ? p.prompt : '';
+      const hasImages = (p.characterRef && p.characterRef !== 'NONE')
+        || (promptText.includes('【定妆照】') && !/【定妆照】\s*[，。]/.test(promptText));
+      const hasTimeline = !!(p.timelineString && p.timelineString.length > 3)
+        || promptText.includes('【时间轴】');
       const hasConstraints = typeof p.prompt === 'string' && p.prompt.includes('角色一致性') || false;
       const charCount = p.promptCharCount || (typeof p.prompt === 'string' ? p.prompt.length : 0);
-      // 【v2.1.4-fix13】统计字段数
-      const fieldCount = (p.prompt?.match(/【/g) || []).length;
-      const isOpening = p.shotId === 'SC00' || p.sceneType === 'opening';
+      // 【v2.2.1-fix】统计字段数（片头5专属字段计入）
+      const promptText = typeof p.prompt === 'string' ? p.prompt : '';
+      const isOpening = p.shotId === 'SC00' || p.shotId === 'S00' || p.sceneType === 'opening';
+      const baseFieldCount = (promptText.match(/【/g) || []).length;
+      const openingExtra = isOpening
+        ? ['title_content','subtitle_content','title_animation','title_font_design','opening_audio_design']
+          .filter(k => p[k] && String(p[k]).trim()).length : 0;
+      const fieldCount = baseFieldCount + openingExtra;
       // 【v2.2.0】片头30字段(25标准+5片头专属), 内容镜头25字段
       const expectedFields = isOpening ? 30 : 25;
       const fieldStatus = fieldCount >= expectedFields ? '✅' : (fieldCount >= expectedFields - 3 ? '⚠️' : '❌');
@@ -2834,7 +2904,10 @@ class HyperrealitySystem {
       const isOpening = p.shotId === 'SC00' || p.sceneType === 'opening';
       lines.push(`### ${p.shotId}${isOpening ? '(片头·30字段)' : '(内容·25字段)'}`);
       const charCount = p.promptCharCount || (typeof p.prompt === 'string' ? p.prompt.length : 0);
-      lines.push(`**长度**: ${charCount} 字符 | **定妆照**: ${p.characterRef && p.characterRef !== 'NONE' ? '有' : '无'} | **时间轴**: ${p.timelineString || '无'}`);
+      const _promptText = typeof p.prompt === 'string' ? p.prompt : '';
+      const _hasImg = (p.characterRef && p.characterRef !== 'NONE') || _promptText.includes('【定妆照】');
+      const _tlMatch = _promptText.match(/【时间轴】([^，。\n]{0,80})/);
+      lines.push(`**长度**: ${charCount} 字符 | **定妆照**: ${_hasImg ? '有' : '无'} | **时间轴**: ${p.timelineString || (_tlMatch ? _tlMatch[1].trim().slice(0, 60) + '…' : '无')}`);
       lines.push('');
       // v2.0.4-fix: 显示人物介绍卡片
       if (p.characterCards && p.characterCards.length > 0) {
