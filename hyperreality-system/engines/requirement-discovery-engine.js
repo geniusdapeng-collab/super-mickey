@@ -363,13 +363,21 @@ class AudienceProfiler extends BaseDiscoveryAgent {
 
   _buildPrompt(input) {
     const { type, theme, tone, description, target_audience } = input;
-    return `基于以下视频主题，分析目标受众画像：
+    return `你是一位操过多个全球爆款短片的传播策略师。基于视频主题做受众分析，但你输出的不是"人群标签"，而是"这群人为什么会在第3秒停下来、在第50秒转发"。
 
 视频类型: ${type}
 核心主题: ${theme}
 情绪基调: ${tone || '未指定'}
 主题描述: ${description || '未提供'}
 用户指定受众: ${target_audience || '未指定'}
+
+【分析心法】
+1. emotionTriggers 必须写到具体画面级：不是'匠人精神感人'，而是'老匠人颤抖的手与一整车人的安危之间的张力'——每个触发点都要能直接翻译成镜头。
+2. painPoints 写现代生活的缺失感（快节奏/技艺消逝/承诺稀缺），不写生理痛点。
+3. contentExpectations 至少包含一条'无需字幕也能看懂的视觉叙事'类全球化要求，和一条'可复述可转发的钉子台词'类传播要求。
+4. secondaryAudience 写'有具体记忆关联的人'（去过京都的游客/手艺人），不写泛人群。
+
+【原始故事文本是核心依据】所有结论必须能从原文细节里找到出处，禁止套模板。
 
 请输出 JSON 格式的受众分析：
 {
@@ -540,12 +548,17 @@ class RiskAssessor extends BaseDiscoveryAgent {
 
   _buildPrompt(input) {
     const { type, theme, visual_style, special_notes } = input;
-    return `基于以下视频主题，评估技术风险与业务约束：
+    return `你是一位既懂 AI 视频生成模型能力边界、又懂影视制作的技术制片人。评估的核心问题是：这个故事里哪些画面是当前视频生成模型最容易翻车的？翻车了会不会毁掉全片？
 
 视频类型: ${type}
 核心主题: ${theme}
 视觉风格: ${visual_style || '未指定'}
 特殊要求: ${special_notes || '无'}
+
+【评估心法】
+1. 只评'致命级画面'：精细手部动作（系扣/咬绳/穿引）、大尺度木构透视、跨时空闪回的角色呼应、万人大场面——凡是模型弱项+故事泪点重叠的地方，才是 high。
+2. 每条 mitigation 必须是可执行的镜头语言方案：'拆分为2-3个连续特写降低单镜头动作复杂度'、'用仰拍局部+声音设计暗示规模代替全景人群'——禁止'加强质量控制'类废话。
+3. businessConstraints 必须包含：全球观众零背景知识可懂、无字幕依赖、无虚构特效元素（真实祭典/纪实类）。
 
 请输出 JSON 格式：
 {
@@ -620,12 +633,18 @@ class ReferenceCurator extends BaseDiscoveryAgent {
 
   _buildPrompt(input) {
     const { type, theme, tone, visual_style } = input;
-    return `基于以下视频主题，推荐对标参考案例：
+    return `你是一位泡在片库里的剪辑指导。推荐对标案例的唯一标准是：这部片子里有哪一个具体手法，可以直接搬进我们这条片子？
 
 视频类型: ${type}
 核心主题: ${theme}
 情绪基调: ${tone || '未指定'}
 视觉风格: ${visual_style || '未指定'}
+
+【推荐心法】
+1. filmReferences 的 keyTakeaway 必须写'手法'不写'主题'：坏例子'体现了匠人精神'；好例子'用手部特写与日常细节承载情感重量，全程无配乐煽情'。
+2. 至少一部同文化语境的东方克制系参考（是枝裕和/小津/职人纪录片），至少一部不同语境但同情绪结构的参考（让观众知道这种感动是全球通用的）。
+3. adReferences 选 60-90 秒内完成完整情感弧线的标杆（Apple新春短片级），takeaway 写'弧线结构'。
+4. styleReferences 写可执行的视听策略：'冷暖色调区分闪回时空'、'声音先行：号子声承担叙事'。
 
 请输出 JSON 格式：
 {
