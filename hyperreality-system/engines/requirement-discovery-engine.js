@@ -854,7 +854,9 @@ class RequirementDiscoveryEngine {
     const allowed = [
       'type', 'theme', 'duration_sec', 'tone', 'visual_style',
       'dialogue_requirement', 'special_notes', 'target_audience',
-      'creative_style', 'difficulty', 'description'
+      'creative_style', 'difficulty', 'description',
+      // 【方案A-fix】原始故事文本透传
+      '_originalStoryText', 'original_story_text'
     ];
     
     const sanitized = {};
@@ -872,11 +874,24 @@ class RequirementDiscoveryEngine {
   generateMarkdown(discoveryResult) {
     const { upstreamFields, audienceProfile, sceneStructure, riskAssessment, referenceCases } = discoveryResult;
     
+    // 【方案A-fix】原始故事文本加入需求洞察确认单
+    const originalStory = upstreamFields._originalStoryText || upstreamFields.original_story_text || '';
+    const storySection = originalStory ? `
+
+## 📖 原始故事文本（完整版）
+
+> 以下内容是所有需求分析的核心依据，请核对 LLM 是否正确理解了故事的关键细节：
+
+${originalStory}
+
+---
+` : '';
+    
     return `# 业务需求对齐清单
 
 > 系统: 超级小香宝 v2.1.8
 > 生成时间: ${new Date().toISOString()}
-
+${storySection}
 ---
 
 ## 一、上游已确认内容

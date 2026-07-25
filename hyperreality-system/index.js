@@ -530,7 +530,11 @@ class HyperrealitySystem {
       const stage0Start = Date.now();
 
       // 从上游 CreativeThemeGenerator 获取 12 字段
-      const upstreamFields = metadata._creativeTheme || {};
+      const upstreamFields = {
+        ...metadata._creativeTheme,
+        // 【方案A-fix】原始故事文本透传到需求洞察
+        _originalStoryText: metadata._originalStoryText || metadata._creativeTheme?._originalStoryText || ''
+      };
       
       // 调用需求洞察引擎
       let discoveryResult;
