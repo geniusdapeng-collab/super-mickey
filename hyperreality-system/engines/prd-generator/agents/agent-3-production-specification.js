@@ -45,6 +45,12 @@ class ProductionSpecificationAgent extends BaseAgent {
       ? `\n【用户修改意见】\n${userModifications.map((m, i) => `${i + 1}. ${m}`).join('\n')}\n\n以上修改意见必须体现在制作规格中（视觉风格、角色设计、场景规划等方面）。`
       : '';
     
+    // ⭐ v2.2.1-fix: 注入用户原始故事文本，制作规格需贴合原始素材
+    const originalStory = discoveryResult._originalStoryText || discoveryResult.original_story_text || '';
+    const originalStorySection = originalStory
+      ? `\n【用户原始输入（制作依据）】\n${originalStory}\n\n以上原始素材是用户提供的完整故事，制作规格中的角色设计、场景规划、台词要求必须与原始素材保持一致。`
+      : '';
+    
     return `你是一位资深视频制作总监，正在制定详细的制作规格。
 
 【产品定义】
@@ -139,7 +145,7 @@ class ProductionSpecificationAgent extends BaseAgent {
 7. shotMapping 必须与 scenes 一一对应，每个场景预估1-6个镜头
 8. shotBreakdownHint 从以下选择：establishing, wide, medium, close-up, extreme-close-up, POV, drone, tracking, static
 9. 角色 portraitPath 留空字符串（系统后续填充），但需标注是否需要生成定妆照
-10. 只输出 JSON，不要任何 markdown 代码块标记，不要解释文本${userModificationsSection}`;
+10. 只输出 JSON，不要任何 markdown 代码块标记，不要解释文本${originalStorySection}${userModificationsSection}`;
   }
 
   _parseResult(result, discoveryResult) {

@@ -98,6 +98,16 @@ class PRDGenerator {
         ...deliveryResult
       };
       
+      // ⭐ v2.2.1-fix: 透传用户原始故事文本到 PRD，供下游消费
+      const originalStory = discoveryResult.upstreamFields?._originalStoryText 
+        || discoveryResult.upstreamFields?.original_story_text
+        || discoveryResult._originalStoryText
+        || discoveryResult.original_story_text
+        || '';
+      if (originalStory) {
+        prd._originalStoryText = originalStory;
+      }
+      
       // 结构校验 + fallback 填充
       console.log(`[PRDGenerator] 🔍 结构校验...`);
       const validated = this._validateAndFill(prd);
@@ -319,6 +329,12 @@ class PRDGenerator {
   generateMarkdown(prd) {
     const summary = prd.prdSummary || generateSummary(prd);
     
+    // ⭐ v2.2.1-fix: PRD 文档携带用户原始输入，供下游剧本/提示词生成参考
+    const originalStory = prd._originalStoryText || prd.original_story_text || '';
+    const originalStorySection = originalStory
+      ? `\n\n---\n\n## 📖 用户原始输入（创作素材源）\n\n> 以下原始素材是用户提供的故事蓝本，剧本生成和提示词设计必须以此为核心依据：\n\n${originalStory}\n`
+      : '';
+    
     return `# 产品需求文档（PRD）
 
 > 项目：${prd.projectDefinition?.projectName || '未命名'} | 版本：${prd.projectDefinition?.version || '1.0.0'}
@@ -335,7 +351,7 @@ class PRDGenerator {
 | 场景 | ${prd.scenePlan?.scenes?.length || 0} 场景 / ${prd.scenePlan?.shotMapping?.reduce((s, m) => s + (m.estimatedShots || 0), 0) || 0} 预估镜头 |
 | 角色 | ${prd.characterSystem?.characters?.map(c => c.name).join(', ') || '无'} |
 
-**核心钩子**：${prd.creativeCore?.creativeHook || '未指定'}
+**核心钩子**：${prd.creativeCore?.creativeHook || '未指定'}${originalStorySection}
 
 ---
 

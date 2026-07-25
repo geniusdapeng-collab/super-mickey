@@ -48,6 +48,12 @@ class CreativeDirectionAgent extends BaseAgent {
       ? `\n【用户修改意见】\n${userModifications.map((m, i) => `${i + 1}. ${m}`).join('\n')}\n\n以上修改意见必须体现在创意核心中。`
       : '';
     
+    // ⭐ v2.2.1-fix: 注入用户原始故事文本，供导演视角提炼参考
+    const originalStory = discoveryResult._originalStoryText || discoveryResult.original_story_text || '';
+    const originalStorySection = originalStory
+      ? `\n【用户原始输入（创作素材源）】\n${originalStory}\n\n以上原始素材是用户提供的完整故事，请从中提炼核心意象、钉子台词、情感锚点，转化为导演视角的创意语言。`
+      : '';
+    
     return `你是一位资深视频导演/制片人，正在将客户的业务需求转化为产品制作需求。
 
 【业务需求输入】
@@ -90,7 +96,7 @@ class CreativeDirectionAgent extends BaseAgent {
 5. endingType 必须从枚举选择：开放式, 闭合式, 悬念式, 升华式, 反转式
 6. 所有字段必须存在，不能为 null
 7. 时间线完整性：如果主题涉及"发展"、"历史"、"演变"、"变迁"等时间跨度概念，必须覆盖完整历史时间线（从最早的起源/起源事件开始，而非默认从1949年或现代开始）。例如"中国铁路发展"必须从晚清/京张铁路/詹天佑等起源讲起，而非仅从1949年开始
-8. 只输出 JSON，不要任何 markdown 代码块标记，不要解释文本${userModificationsSection}`;
+8. 只输出 JSON，不要任何 markdown 代码块标记，不要解释文本${originalStorySection}${userModificationsSection}`;
   }
 
   _parseResult(result) {
