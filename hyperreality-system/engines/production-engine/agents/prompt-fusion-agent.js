@@ -1888,7 +1888,12 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
     const shotsInfo = shots.map(s => {
       const pureDialogue = s.dialogue?.lines?.map(l => l.content).join('; ') ||
                           (s.dialogue ? this._extractPureDialogue(s.dialogue) : '');
-      return `${s.shotId}(${s.duration || '?'}s): ${s.scene || ''} | ${s.mood || ''} | ${pureDialogue} | 运镜:${s.cameraString || ''} | 灯光:${s.lightingString || ''}`;
+      let info = `${s.shotId}(${s.duration || '?'}s): ${s.scene || ''} | ${s.mood || ''} | ${pureDialogue} | 运镜:${s.cameraString || ''} | 灯光:${s.lightingString || ''}`;
+      // 【架构-L3】技能上下文注入本镜头指令区（LLM 生成 25 字段时原生吸收）【fix-3A2】
+      if (s._skillContext) {
+        info += `\n## 🎬 好莱坞技能增强（必须融入 25 字段，不是附加说明）\n${s._skillContext}\n要求：【导演意图】【运镜】【灯光设计】【情绪】字段必须体现上述技法的具体手法；技能禁止词并入【负面约束】字段。`;
+      }
+      return info;
     }).join('\n');
 
     // 【v2.1.4-fix9-P1】构建导演上下文

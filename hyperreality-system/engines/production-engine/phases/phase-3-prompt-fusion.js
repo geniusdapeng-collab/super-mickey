@@ -71,6 +71,22 @@ class Phase3PromptFusion extends PhaseExecutor {
         this.log('PHASE-3', '⚡ fastMode 配置已下发：retries=1（timeout不变）');
       }
       
+      // 【架构-L3】技能预匹配：在 PromptFusion 逐镜头生成前完成【fix-3A1】
+      const { routeAndEnhanceV2 } = require('../../../skills/hollywood-cinematography/cinematography-skill-router');
+      const skillPlan = routeAndEnhanceV2(shots, { minScore: 5, maxSkillsPerShot: 2 });
+      shots = shots.map(s => {
+        const plan = skillPlan.get(s.shotId || s.shot_id);
+        if (plan && plan.contextText) {
+          s._skillContext = plan.contextText;
+          s._skillMatched = plan.matched;
+        }
+        return s;
+      });
+      this.log('SKILL-PREMATCH', `技能预匹配完成: ${[...skillPlan.values()].filter(p => p.matched.length).length}/${shots.length} 镜头命中`);
+      // 计量落盘（L4 遥测）
+      result.stages = result.stages || {};
+      result.stages.skillPrematch = [...skillPlan.entries()].map(([shotId, p]) => ({ shotId, ...p.matched.length ? { skills: p.matched.map(m => m.file), injection: 'pre' } : { skills: [], injection: 'none' } }));
+
       const pfResult = await this.agents.promptFusion.process(
         this.cloneShots(shots), 
         adaptedBlueprint,
