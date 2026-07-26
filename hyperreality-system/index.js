@@ -524,6 +524,12 @@ class HyperrealitySystem {
         }
 
       } catch (err) {
+        // 【DXB-fix】确认门崩溃属于流程性故障，继续跑只会产出全模板垃圾，必须中止
+        if (/onPoll|confirmation|确认/.test(err.message)) {
+          result.success = false;
+          result.errors.push({ stage: 'CreativeThemeConfirmation', message: err.message, fatal: true });
+          return result;
+        }
         console.warn(`   ⚠️ 创意主题生成失败: ${err.message}，继续原有链路`);
         result.errors.push({ stage: 'CreativeThemeGenerator', message: err.message });
       }

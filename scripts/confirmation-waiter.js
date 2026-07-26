@@ -48,6 +48,9 @@ async function waitForExternalConfirmation(opts) {
   const runId = opts.runId || null;
   const shouldAbort = typeof opts.shouldAbort === 'function' ? opts.shouldAbort : () => false;
   const log = typeof opts.log === 'function' ? opts.log : (...a) => console.log(...a);
+  // 【DXB-fix】onPoll 必须由 opts 解构，否则轮询循环引用裸变量抛 ReferenceError，
+  // 导致确认门崩溃、流程绕过人工确认、上游创意主题字段断流（全 undefined）
+  const onPoll = typeof opts.onPoll === 'function' ? opts.onPoll : null;
 
   const outputDir = runCoordinator.CONFIRMATIONS_DIR;
   if (!fs.existsSync(outputDir)) {

@@ -433,16 +433,20 @@ class FieldContentRefiner {
  * 统一替换为标准短句
  */
  _normalizeBrightConstraint(body, shot) {
- // 从sections检测是否空镜(更可靠, 因为shot可能未传入)
- const hasCharacter = shot && (typeof shot === 'object') && (
- shot.character === undefined ||
- (typeof shot.character === 'string' && !/无角色|无人物|空镜/.test(shot.character)) ||
- (shot.character && typeof shot.character === 'object')
- );
- return hasCharacter
- ? '主体面部明亮清晰，阴影保留层次不死黑'
- : '主体照度均匀，画面无死黑区域';
- }
+    // 【DXB-fix】调用方可能不传 shot 或结构不符，先从 body 其余字段推断是否空镜
+    let hasCharacter;
+    if (shot && typeof shot === 'object') {
+      hasCharacter = shot.character === undefined
+        || (typeof shot.character === 'string' && !/无角色|无人物|空镜/.test(shot.character))
+        || (shot.character && typeof shot.character === 'object');
+    } else {
+      // shot 缺失时，从已拼装的正文中找角色痕迹（定妆照/角色字段有实质内容即非空镜）
+      hasCharacter = !/无角色出场|无人物|空镜/.test(String(body || ''));
+    }
+    return hasCharacter
+      ? '主体面部明亮清晰，阴影保留层次不死黑'
+      : '主体照度均匀，画面无死黑区域';
+  }
 
  // ==================== 6. 节奏: 删除与时间轴重复的逐秒描述 ====================
 
