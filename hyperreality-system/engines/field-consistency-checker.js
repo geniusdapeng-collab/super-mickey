@@ -545,9 +545,11 @@ class FieldConsistencyChecker {
           fieldB: 'camera_movement',
           message: '动作缓慢但运镜没有稳定/缓慢',
           fixable: true,
-          fix: (f) => ({
-            camera_movement: `slow static camera, stable composition; ${f.camera_movement}`
-          })
+          fix: (f) => {
+          const hasMove = /拉远|推近|横移|跟拍|摇|升降|移动|拉镜|推镜/.test(String(f.camera_movement || ''));
+          if (hasMove) return {}; // 已有明确运动设计，不追加矛盾描述
+          return { camera_movement: `稳定缓慢运镜，匀速无顿挫；${f.camera_movement}` };
+        }
         });
       }
     }
@@ -602,12 +604,12 @@ class FieldConsistencyChecker {
         fix: (f) => {
           // 以composition为准修正camera_movement
           const sizeMap = {
-            wide: 'wide establishing shot',
-            medium: 'medium shot framing',
-            close: 'close-up focusing',
-            extreme: 'extreme close-up macro'
+            wide: '远景建立镜头',
+            medium: '中景取景',
+            close: '近景聚焦',
+            extreme: '大特写微距'
           };
-          return { camera_movement: `${sizeMap[compSize]}; ${f.camera_movement}` };
+          return { camera_movement: `${sizeMap[compSize]}；${f.camera_movement}` };
         }
       });
     }
@@ -788,7 +790,7 @@ class FieldConsistencyChecker {
         fix: (f) => {
           const costumeHead = String(f.costume || '').replace(/^(.*?穿)/, '').slice(0, 8);
           if (costumeHead && String(f.character).includes(costumeHead)) return {}; // 已含，不重复
-          return { character: `${f.character}（着装与【服装】字段一致）` };
+          return { character: `${f.character}（着装与服装字段一致）` };
         }
       });
     }

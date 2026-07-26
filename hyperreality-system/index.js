@@ -634,6 +634,8 @@ class HyperrealitySystem {
         const enhancedMetadata = {
           ...metadata,
           ...scriptEngineMeta,
+          // 【fix】用户传入的标题优先，禁止被需求清单的默认值覆盖
+          title: metadata.title || scriptEngineMeta.title,
           // 显式保留 characters:用户传入的优先(含 portraitPaths 等详细信息)
           characters: metadata.characters || scriptEngineMeta.characters || [],
           // 【v2.1.4】保留原始metadata中的系列信息(用户传入的优先)
@@ -2587,6 +2589,25 @@ class HyperrealitySystem {
           promptOpening.opening_audio_design = optimized.opening_audio_design;
           promptOpening.title = optimized.title_content || promptOpening.title;
           promptOpening.subtitle = optimized.subtitle_content || promptOpening.subtitle;
+          // 【fix】回写已固化的 prompt 文本，保证5字段与优化器结果一致
+          if (typeof promptOpening.prompt === 'string') {
+            const fieldMap = [
+              ['主标题内容', optimized.title_content],
+              ['副标题内容', optimized.subtitle_content],
+              ['标题动画设计', optimized.title_animation],
+              ['标题字体设计', optimized.title_font_design],
+              ['开场音频设计', optimized.opening_audio_design]
+            ];
+            for (const [label, value] of fieldMap) {
+              if (!value) continue;
+              const re = new RegExp(`【${label}】[^|【]*`);
+              if (re.test(promptOpening.prompt)) {
+                promptOpening.prompt = promptOpening.prompt.replace(re, `【${label}】${value} `);
+              } else {
+                promptOpening.prompt += ` | 【${label}】${value}`;
+              }
+            }
+          }
         }
       }
       console.log(' ✅ 审核前片头优化完成 | 主标题:', optimized.title_content);

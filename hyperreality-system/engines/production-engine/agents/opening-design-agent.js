@@ -122,10 +122,24 @@ class OpeningDesignAgent extends BaseAgent {
     const meta = blueprint._metadata || blueprint.config?._metadata || {};
     const isSeries = meta.isSeries || false;
     const episodeNumber = meta.episodeNumber || 1;
+    // 【fix】从 blueprint 补齐已确认元数据（找不到时的兜底）
+    const themeMeta = blueprint?._creativeTheme || blueprint?.creativeTheme || {};
+    const genre = blueprint?.type || themeMeta.type || '通用';
+    const mood = blueprint?.tone || themeMeta.tone || 'epic';
+    const visualStyle = blueprint?.visual_style || themeMeta.visual_style || 'cinematic';
+    const characters = blueprint?.characterSystem?.characters || blueprint?.characters || [];
+    const protagonistDesc = characters.find(c => c.role === '主角' || c.role === 'protagonist');
+    const protagonistLabel = protagonistDesc
+      ? `${protagonistDesc.name}（${(protagonistDesc.appearance || '').slice(0, 20)}…）`
+      : (blueprint?.protagonist || '主角');
 
     return `## 片头信息
 标题: ${title}
 类型: ${isSeries ? '系列第' + episodeNumber + '集' : '单集'}
+题材: ${genre}
+情绪基调: ${mood}
+视觉风格: ${visualStyle}
+主角: ${protagonistLabel}
 画幅: ${blueprint.config?.aspectRatio || '16:9'}
 
 ## 任务
