@@ -1,0 +1,21 @@
+{
+ "types": ["drama", "action", "comedy", "horror", "suspense", "thriller", "war", "sci-fi", "loneliness", "micro-expression", "documentary", "fantasy"],
+ "type_alias": { "剧情": "drama", "动作": "action", "喜剧": "comedy", "恐怖": "horror", "悬疑": "suspense", "惊悚": "thriller", "战争": "war", "科幻": "sci-fi", "孤独": "loneliness", "微表情": "micro-expression", "纪录": "documentary", "奇幻": "fantasy" },
+ "emotions": ["epic", "tense", "emotional", "romantic", "rainy-night", "dance", "mysterious", "tender", "redemption", "suspenseful", "lonely", "farewell", "grief", "joy", "oriental-restraint", "quiet-in-chaos", "heartbreak", "shocked", "anger-suppressed", "broken", "hollow", "suffocating", "absurd", "raw-real", "vintage-elegant", "no-response", "soul-alone", "tense-reserved", "midnight-awake", "neurotic-humor", "outgoing", "horror", "fear", "disgust", "panic", "violent", "contempt", "sarcasm", "trance", "method-acting", "epiphany", "out-of-body"],
+ "emotion_alias": {
+ "sadness": "grief", "sad": "grief", "melancholy": "grief", "哀伤": "grief", "悲伤": "grief", "悲恸": "grief",
+ "amazed": "joy", "amazing": "joy", "喜悦": "joy", "幸福": "joy",
+ "serene": "oriental-restraint", "calm": "oriental-restraint", "quiet": "oriental-restraint", "静谧": "oriental-restraint", "克制": "oriental-restraint", "东方克制": "oriental-restraint", "凝视": "oriental-restraint",
+ "tender": "tender", "warm": "tender", "温情": "tender", "深情": "tender",
+ "tense": "tense", "紧张": "tense", "悬念": "tense", "紧张追逐": "tense",
+ "nostalgic": "farewell", "告别": "farewell", "离别": "farewell",
+ "awe": "epic", "史诗": "epic",
+ "lonely": "lonely", "孤独": "lonely",
+ "心碎": "heartbreak", "heartbroken": "heartbreak", "心碎时刻": "heartbreak",
+ "紧张内敛": "tense-reserved",
+ "情感": "emotional", "救赎": "redemption", "雨夜": "rainy-night", "神秘": "mysterious", "舞蹈": "dance", "悬疑": "suspenseful", "恐怖": "horror", "浪漫": "romantic", "荒诞": "absurd", "粗粝真实": "raw-real", "复古优雅": "vintage-elegant", "无人回应": "no-response", "灵魂独行": "soul-alone", "震惊": "shocked", "惊讶": "shocked", "惊讶凝固": "shocked", "愤怒": "anger-suppressed", "愤怒克制": "anger-suppressed", "破碎": "broken", "空洞": "hollow", "窒息": "suffocating", "窒息感": "suffocating", "话唠爆发": "neurotic-humor", "热情外放": "outgoing", "恐惧颤抖": "fear", "厌恶皱眉": "disgust", "午夜独醒": "midnight-awake", "神经质幽默": "neurotic-humor", "热闹中的寂静": "quiet-in-chaos"
+ },
+ "camera_modes": ["static", "push", "handheld", "steadicam", "aerial", "tracking", "any"],
+ "camera_alias": { "固定机位": "static", "静置": "static", "static": "static", "缓推": "push", "推近": "push", "push_in": "push", "dolly_in": "push", "手持": "handheld", "handheld": "handheld", "斯坦尼康": "steadicam", "steadicam": "steadicam", "航拍": "aerial", "aerial": "aerial", "跟拍": "tracking", "横移": "tracking" },
+ "camera_conflicts": { "static": ["handheld"], "push": ["handheld"], "tracking": [], "handheld": [], "steadicam": [], "aerial": [] }
+}

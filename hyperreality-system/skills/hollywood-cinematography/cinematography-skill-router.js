@@ -570,6 +570,160 @@ if (require.main === module) {
   console.log(JSON.stringify(result.report, null, 2));
 }
 
+// ============================================================
+// 匹配引擎 2.0（Phase 2）：结构化双端标签 + 硬约束 + 多样性 + 回退链
+// 优先读编译索引 skills-index.json，缺失时回退旧 buildSkillIndex()（双轨）
+// ============================================================
+
+const TAXONOMY = require('./taxonomy.json');
+const COMPILED_INDEX_PATH = path.join(__dirname, 'skills-index.json');
+
+function loadCompiledIndex() {
+ try {
+ if (fs.existsSync(COMPILED_INDEX_PATH)) {
+ const data = JSON.parse(fs.readFileSync(COMPILED_INDEX_PATH, 'utf8'));
+ if (Array.isArray(data.skills) && data.skills.length > 0) return data.skills;
+ }
+ } catch (e) {
+ console.warn(`[SkillRouter V2] 编译索引读取失败，回退文件名解析: ${e.message}`);
+ }
+ // 回退：从旧索引构建器重建为 V2 元数据形态
+ const legacy = buildSkillIndex();
+ const skills = new Map();
+ for (const list of Object.values(legacy)) {
+ for (const item of list) {
+ if (skills.has(item.file)) continue;
+ const m = item.meta;
+ skills.set(item.file, {
+ file: m.filename,
+ skill_id: m.filename.replace('.md', ''),
+ domain: m.type_zh === '微表情' ? 'acting' : 'cinematography',
+ type: TAXONOMY.type_alias[m.type_zh] || m.type,
+ director: m.director_zh || '',
+ emotions: [TAXONOMY.emotion_alias[m.emotion_zh] || m.emotion].filter(Boolean),
+ camera_modes: m.shotType ? [m.shotType] : []
+ });
+ }
+ }
+ return [...skills.values()];
+}
+
+/** shot 侧结构化元数据（不再靠正则猜） */
+function normalizeShotMeta(shot) {
+ const rawMood = String(shot.mood || shot.emotion || shot.emotional_target?.emotion || '').toLowerCase().trim();
+ const rawCam = String(shot.camera?.movement || shot.cameraString || shot.cameraMovement || '').toLowerCase();
+ let cameraMode = 'any';
+ for (const [alias, mode] of Object.entries(TAXONOMY.camera_alias)) {
+ if (rawCam && rawCam.includes(alias.toLowerCase())) { cameraMode = mode; break; }
+ }
+ return {
+ shotId: shot.shotId || shot.shot_id,
+ type: 'drama',
+ emotion: TAXONOMY.emotion_alias[rawMood] || rawMood || '',
+ cameraMode,
+ director: '',
+ intensity: shot._creativeIntensity || null
+ };
+}
+
+function matchSkillsV2(shotMeta, opts = {}) {
+ const { limit = 2, minScore = 5, usedSkillRatio = {} } = opts;
+ const skills = loadCompiledIndex();
+
+ const scored = [];
+ for (const skill of skills) {
+ let score = 0;
+ const reasons = [];
+
+ // 硬约束：运镜冲突直接排除（配回退链，见函数尾）
+ const shotCam = shotMeta.cameraMode || 'any';
+ const skillCams = skill.camera_modes.length ? skill.camera_modes : ['any'];
+ const conflict = (TAXONOMY.camera_conflicts[shotCam] || []).some(c => skillCams.includes(c));
+ if (conflict && !skillCams.includes('any')) {
+ scored.push({ skill, score: -999, excluded: 'camera-conflict' });
+ continue;
+ }
+
+ // 情绪匹配（主信号）
+ if (shotMeta.emotion && skill.emotions.includes(shotMeta.emotion)) { score += 30; reasons.push('emotion'); }
+ // 类型匹配
+ if (shotMeta.type && skill.type === shotMeta.type) { score += 10; reasons.push('type'); }
+ // 跨域补偿：acting 技能适配所有类型
+ if (skill.domain === 'acting' && shotMeta.emotion && skill.emotions.includes(shotMeta.emotion)) { score += 12; reasons.push('acting-cross-domain'); }
+ // 运镜兼容加分
+ if (shotCam !== 'any' && skillCams.includes(shotCam)) { score += 8; reasons.push('camera'); }
+ // 导演亲和
+ if (shotMeta.director && skill.director === shotMeta.director) { score += 15; reasons.push('director'); }
+ // 创意档位
+ if (shotMeta.intensity && skill.intensity_range) {
+ const [lo, hi] = skill.intensity_range;
+ const lv = 'L' + shotMeta.intensity;
+ if (lv >= lo && lv <= hi) { score += 5; reasons.push('intensity'); }
+ }
+ // 多样性惩罚：本 run 内已被 >1/3 镜头使用的技能降权
+ const ratio = usedSkillRatio[skill.file] || 0;
+ if (ratio > 0.34) score -= 12;
+
+ scored.push({ skill, score, reasons });
+ }
+
+ let top = scored.filter(s => s.score >= minScore && !s.excluded)
+ .sort((a, b) => b.score - a.score).slice(0, limit);
+ // 回退链：硬约束杀光时，放宽运镜约束取情绪最高分并标记 fallback
+ if (top.length === 0) {
+ const relaxed = scored.filter(s => s.reasons?.includes('emotion') && s.score > -999)
+ .sort((a, b) => b.score - a.score).slice(0, 1);
+ relaxed.forEach(r => { r.fallback = true; r.score = Math.max(r.score, minScore); });
+ top = relaxed;
+ }
+ return top;
+}
+
+/** 技能上下文文本构建：供 PromptFusion 生成前注入（L3 主通道） */
+function buildSkillContextText(matched) {
+ const parts = [];
+ for (const m of matched) {
+ const skillPath = path.join(SKILL_LIB_ROOT, m.skill.file);
+ const enh = extractSkillEnhancement(skillPath);
+ if (!enh) continue;
+ const tag = `${m.skill.type}_${m.skill.director || '通用'}_${m.skill.emotions.join('/')}${m.fallback ? '(回退匹配)' : ''}`;
+ const block = [`◆ 技能「${tag}」（匹配分 ${m.score}）`];
+ if (enh.shotBlock) block.push(`镜头手法: ${enh.shotBlock.slice(0, 120)}`);
+ if (enh.emotionBlock) block.push(`情绪设计: ${enh.emotionBlock.slice(0, 100)}`);
+ if (enh.forbiddenBlock) block.push(`禁止词: ${enh.forbiddenBlock.slice(0, 100)}`);
+ parts.push(block.join('\n'));
+ }
+ return parts.join('\n\n').slice(0, 900); // 单镜头技能上下文总长封顶 900 字符
+}
+
+/**
+ * 批量预匹配（供 Phase 3 主通道调用）
+ * @returns {Map} shotId → { matched, contextText }
+ */
+function routeAndEnhanceV2(shots, opts = {}) {
+ const { minScore = 5, maxSkillsPerShot = 2 } = opts;
+ const plan = new Map();
+ const useCount = {};
+ for (const shot of shots) {
+ const meta = normalizeShotMeta(shot);
+ const ratio = {};
+ const total = Math.max(shots.length, 1);
+ for (const [f, c] of Object.entries(useCount)) ratio[f] = c / total;
+ const matched = matchSkillsV2(meta, { limit: maxSkillsPerShot, minScore, usedSkillRatio: ratio });
+ matched.forEach(m => { useCount[m.skill.file] = (useCount[m.skill.file] || 0) + 1; });
+ plan.set(meta.shotId, {
+ matched: matched.map(m => ({ file: m.skill.file, score: m.score, fallback: !!m.fallback, reasons: m.reasons || [] })),
+ contextText: buildSkillContextText(matched)
+ });
+ }
+ return plan;
+}
+
+module.exports.matchSkillsV2 = matchSkillsV2;
+module.exports.normalizeShotMeta = normalizeShotMeta;
+module.exports.routeAndEnhanceV2 = routeAndEnhanceV2;
+module.exports.buildSkillContextText = buildSkillContextText;
+
 module.exports = {
   buildSkillIndex,
   extractShotMetadata,
