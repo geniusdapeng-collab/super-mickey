@@ -1603,6 +1603,16 @@ class HyperrealitySystem {
         result.errors.push({ stage: 'DirectorSkills', message: err.message });
       }
 
+      // 【架构-L4】技能命中遥测：append 到 usage-stats.jsonl，供淘汰零命中技能、发现覆盖空洞【fix-3D】
+      try {
+        const statsPath = require('path').join(__dirname, 'skills/hollywood-cinematography/usage-stats.jsonl');
+        const record = {
+          run_id: this._runId, ts: new Date().toISOString(),
+          title: metadata.title, shots: (result.stages.skillPrematch || [])
+        };
+        require('fs').appendFileSync(statsPath, JSON.stringify(record) + '\n');
+      } catch (_) { /* 遥测失败不影响主流程 */ }
+
       // ========== P2-5: Director Optimization Agent 导演优化 ==========
       if (this.directorOptimizationAgent.enabled) {
         console.log('\n🎬 [DirectorOptimizationAgent] 导演优化...');
@@ -3001,8 +3011,8 @@ class HyperrealitySystem {
     lines.push('## 镜头总览');
     lines.push('');
     // v2.0.4-fix: 增加时间轴字符串和字符数统计列
-    lines.push('| 镜头 | 时长 | 字符数 | 字段数 | 有定妆照 | 有时间轴 | 有约束 |');
-    lines.push('|------|------|--------|--------|----------|----------|--------|');
+    lines.push('| 镜头 | 时长 | 字符数 | 字段数 | 技能命中 | 有定妆照 | 有时间轴 | 有约束 |');
+    lines.push('|------|------|--------|--------|----------|----------|----------|--------|');
 
     for (const p of prompts) {
       const promptText = typeof p.prompt === 'string' ? p.prompt : '';
@@ -3022,7 +3032,12 @@ class HyperrealitySystem {
       // 【v2.2.0】片头30字段(25标准+5片头专属), 内容镜头25字段
       const expectedFields = isOpening ? 30 : 25;
       const fieldStatus = fieldCount >= expectedFields ? '✅' : (fieldCount >= expectedFields - 3 ? '⚠️' : '❌');
-      lines.push(`| ${p.shotId} | ${p.duration || '?'}s | ${charCount} | ${fieldStatus} ${fieldCount}/${expectedFields} | ${hasImages ? '✓' : '✗'} | ${hasTimeline ? '✓' : '✗'} | ${hasConstraints ? '✓' : '✗'} |`);
+      // 【fix-3C】技能命中列：从 shot._skillMatched 或 shot._appliedSkills 读取
+      const skillInfo = (p._skillMatched || p._appliedSkills || [])
+        .map(m => (m.file || '').replace('.md',''))
+        .filter(Boolean)
+        .join('、') || '—';
+      lines.push(`| ${p.shotId} | ${p.duration || '?'}s | ${charCount} | ${fieldStatus} ${fieldCount}/${expectedFields} | ${skillInfo} | ${hasImages ? '✓' : '✗'} | ${hasTimeline ? '✓' : '✗'} | ${hasConstraints ? '✓' : '✗'} |`);
     }
 
     lines.push('');
