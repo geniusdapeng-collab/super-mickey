@@ -203,13 +203,15 @@ function extractShotMetadata(shot) {
     isDance: false
   };
   
-  const desc = (shot.description || shot.prompt || '').toLowerCase();
+  const desc = (shot.description || shot.scene || shot.sceneDesc || shot.prompt || '').toLowerCase(); // 【fix-1A1】scene 入扫描
   // 【v2.1.4-fix9-P8】安全获取camera字符串：强制转换为字符串
   const cameraStr = String(shot.cameraString || '');
   const cameraMovementStr = String(shot.cameraMovement || '');
   const cameraObjStr = (typeof shot.camera === 'string' ? shot.camera : '');
   const camera = (cameraStr || cameraMovementStr || cameraObjStr).toLowerCase();
-  const mood = (shot.mood || shot.emotion || '').toLowerCase();
+  const MOOD_SYNONYM_MAP = { 'sadness':'grief','sad':'grief','grief':'grief','heartbroken':'heartbreak','amazed':'joy','amazing':'joy','awe':'epic','serene':'oriental-restraint','calm':'oriental-restraint','quiet':'oriental-restraint','tender':'tender','tense':'tense','warm':'tender','nostalgic':'farewell','melancholy':'grief','lonely':'lonely' }; // 【fix-1A2】
+  const rawMood = String(shot.mood || shot.emotion || (shot.emotional_target && shot.emotional_target.emotion) || '').toLowerCase().trim();
+  const mood = (MOOD_SYNONYM_MAP[rawMood] || rawMood);
   // 【v2.1.4-patch2】兼容lighting对象/字符串两种格式
   const lighting = (shot.lightingString || (typeof shot.lighting === 'string' ? shot.lighting : '') || '').toLowerCase();
   
@@ -228,8 +230,11 @@ function extractShotMetadata(shot) {
   else if (/定场|establishing/i.test(camera + desc)) meta.shotType = 'establishing';
   if (/IMAX|imax/i.test(camera + desc + lighting)) meta.tech = 'IMAX';
   
-  // 检测情绪
-  if (/史诗|epic|grand/i.test(mood + desc)) { meta.emotion = 'epic'; meta.isEpic = true; }
+  // 检测情绪（归一后的 mood 优先）【fix-1A3】
+  if (mood && MOOD_SYNONYM_MAP[rawMood]) { meta.emotion = mood; }
+  else if (/哀伤|悲恸|悲伤|心碎|grief/i.test(mood + desc)) meta.emotion = 'grief';
+  else if (/克制|静谧|安静|restraint/i.test(mood + desc)) meta.emotion = 'oriental-restraint';
+  else if (/史诗|epic|grand/i.test(mood + desc)) { meta.emotion = 'epic'; meta.isEpic = true; }
   else if (/舞蹈|dance|dancing/i.test(desc + camera)) { meta.emotion = 'dance'; meta.isDance = true; }
   else if (/无人回应|no.response/i.test(mood + desc)) meta.emotion = 'lonely';
   else if (/灵魂独行|soul.alone/i.test(mood + desc)) { meta.emotion = 'lonely'; meta.isLonely = true; }
@@ -271,6 +276,7 @@ function extractShotMetadata(shot) {
   if (/夜|night|黑暗/i.test(desc + mood)) meta.hasNight = true;
   if (/航拍|aerial|helicopter/i.test(camera + desc)) meta.hasAerial = true;
   
+  meta.rawCamera = cameraStr || cameraMovementStr || cameraObjStr; // 【fix-1A3】运镜原文透传评分器
   return meta;
 }
 
@@ -309,12 +315,34 @@ function matchSkills(shotMeta, limit = 3) {
     });
   }
   
+  // 优先级3.5：微表情演技技能跨类型匹配（36 个 acting 技能 type=micro-expression，
+  // 此前剧情片永远够不到；情绪命中时给独立通道）【fix-1A4】
+  if (shotMeta.emotion) {
+    const actingKey = 'micro-expression_' + shotMeta.emotion;
+    (index[actingKey] || []).forEach(item => {
+      candidates.set(item.file, (candidates.get(item.file) || 0) + 18);
+    });
+    // 兼容复合情绪键（如 微表情_tense-reserved）：包含即命中
+    Object.keys(index).forEach(k => {
+      if (k.startsWith('micro-expression_') && k.includes('_' + shotMeta.emotion)) {
+        index[k].forEach(item => {
+          candidates.set(item.file, (candidates.get(item.file) || 0) + 12);
+        });
+      }
+    });
+  }
+
   // 优先级4：类型匹配
   if (shotMeta.type) {
+    // 【fix-1A5】按文件去重后只加一次（+5→+1）：同一文件挂在 6 个索引键下，
+    // 不去重会被重复加分，同类型技能集体灌水霸榜
+    const blanketSeen = new Set();
     Object.keys(index).forEach(k => {
       if (k.startsWith(shotMeta.type + '_')) {
         index[k].forEach(item => {
-          candidates.set(item.file, (candidates.get(item.file) || 0) + 5);
+          if (blanketSeen.has(item.file)) return;
+          blanketSeen.add(item.file);
+          candidates.set(item.file, (candidates.get(item.file) || 0) + 1);
         });
       }
     });
@@ -353,6 +381,15 @@ function matchSkills(shotMeta, limit = 3) {
     });
   }
   
+  // 【fix-1A6】运镜冲突惩罚：定镜/缓推镜头配手持技能是反指导
+  const FIXED_CAM = /static|固定机位|静置|push_in|缓推|dolly_in/i;
+  if (FIXED_CAM.test(String(shotMeta.rawCamera || ''))) {
+    for (const [file, score] of candidates.entries()) {
+      if (/手持|handheld/i.test(file)) candidates.set(file, score - 15); // 手持与定镜直接冲突
+      else if (/斯坦尼康|steadicam/i.test(file)) candidates.set(file, score - 6); // 斯坦尼康半兼容缓推，轻扣
+    }
+  }
+
   // 排序并返回top N
   const sorted = [...candidates.entries()]
     .sort((a, b) => b[1] - a[1])
@@ -418,6 +455,7 @@ function injectSkillEnhancement(shot, matchedSkills) {
     director: s.meta.director_zh,
     emotion: s.meta.emotion_zh
   }));
+  enhanced._skillForbidden = forbidTerms || ''; // 【fix-1B】供【负面约束】合并
   
   const skillTag = `[CINEMATIC_SKILL] ${matchedSkills.map(s => s.meta.type_zh + '_' + s.meta.director_zh + '_' + s.meta.emotion_zh).join(' | ')}`;
   const cameraLine = cameraTerms ? `Camera增强: ${cameraTerms}` : '';
@@ -455,9 +493,19 @@ function routeAndEnhance(shots, options = {}) {
   
   const enhancedShots = shots.map((shot, idx) => {
     const meta = extractShotMetadata(shot);
-    const matched = matchSkills(meta, maxSkillsPerShot)
+    let matched = matchSkills(meta, maxSkillsPerShot)
       .filter(s => s.score >= minScore);
-    
+
+    // 【fix-1A6】冲突惩罚把唯一匹配也扣死时，回退取原始最高分并标记 fallback
+    if (matched.length === 0 && meta.rawCamera) {
+      const relaxed = matchSkills({ ...meta, rawCamera: '' }, 1)
+        .filter(s => s.score >= minScore);
+      if (relaxed.length > 0) {
+        relaxed[0].fallback = true;
+        matched = relaxed;
+      }
+    }
+
     if (matched.length === 0) {
       report.skippedShots++;
       report.details.push({ shotIdx: idx, status: 'no_match', meta });

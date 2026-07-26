@@ -27,14 +27,18 @@ class Phase1SceneDesign extends PhaseExecutor {
     this.log('PHASE-1', 'SceneDesign + OpeningDesign 并行启动...');
 
     try {
-      // 【fix】补全 genre/mood 映射，防止 OpeningDesignAgent 收到"题材=通用 情绪=epic"
+      // 【fix-1C】补全 genre/mood/theme 映射，防止 OpeningDesignAgent 收到"题材=通用 情绪=epic"
       if (adaptedBlueprint) {
-        if (!adaptedBlueprint.genre && adaptedBlueprint.type) {
-          adaptedBlueprint.genre = adaptedBlueprint.type;
+        const ct = adaptedBlueprint._creativeTheme || adaptedBlueprint.metadata?._creativeTheme || {};
+        if (!adaptedBlueprint.genre) {
+          adaptedBlueprint.genre = adaptedBlueprint.type || ct.type || null;
         }
-        if (!adaptedBlueprint.mood && adaptedBlueprint.tone) {
-          adaptedBlueprint.mood = adaptedBlueprint.tone;
+        if (!adaptedBlueprint.mood) {
+          adaptedBlueprint.mood = adaptedBlueprint.tone || ct.tone || null;
         }
+        if (!adaptedBlueprint.theme && ct.theme) adaptedBlueprint.theme = ct.theme;
+        if (!adaptedBlueprint.targetAudience && ct.target_audience) adaptedBlueprint.targetAudience = ct.target_audience;
+        if (!adaptedBlueprint.description && ct.description) adaptedBlueprint.description = ct.description;
       }
 
       // 并行执行两个 Agent

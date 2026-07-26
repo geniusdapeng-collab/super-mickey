@@ -1085,6 +1085,8 @@ class HyperrealitySystem {
         adapted.config = { ...(adapted.config || {}), _originalStoryText: _storyText };
       }
 
+      adapted._creativeTheme = metadata._creativeTheme || adapted._creativeTheme || null;
+
       productionResult = await this.productionEngine.produce(adapted, baseAgentConfig);
 
       // 【接线4 修复】场景规划一致性检查：PRD scenePlan vs 实际生成
@@ -1547,7 +1549,7 @@ class HyperrealitySystem {
         }
       }
 
-      // ========== 🆕 好莱坞导演技能注入 ==========
+      // ========== 🆕 好莱坞导演技能注入（fix-1B：注入 25 字段提示词内部） ==========
       console.log('\n🎬 [Director Skills] 好莱坞导演技能注入...');
       try {
         const { enhancedShots, report } = routeAndEnhance(productionResult.shots, {
@@ -1555,14 +1557,32 @@ class HyperrealitySystem {
           maxSkillsPerShot: 2
         });
 
-        // 更新 shots
-        const oldShots = productionResult.shots; // 【v2.1.6-fix-bug37】保存旧 shots 用于元数据保留
-        productionResult.shots = enhancedShots;
+        // 【fix-1B】技能增强写进 25 字段提示词内部，替换旧的"裸贴 prompt 末尾"
+        // 旧写法在 MERGE-GUARD 与报告格式化下不可见、不生效
+        const _injectSkillIntoPromptFields = (shot) => {
+          const skills = shot._appliedSkills;
+          if (!skills || skills.length === 0 || !shot.prompt) return shot;
+          const skillTag = skills.map(s => `${s.type}_${s.director}_${s.emotion}${s.fallback ? '(回退匹配)' : ''}`).join('、');
+          const skillRef = `【技能增强】本镜技法参考好莱坞技能库：${skillTag}，运镜与光影按该导演该情绪的标准手法执行`;
+          let p = shot.prompt;
+          if (/【导演意图】/.test(p)) {
+            p = p.replace(/(【导演意图】[^【]*)/, `$1${skillRef}；`);
+          } else {
+            p = skillRef + '。 | ' + p;
+          }
+          if (shot._skillForbidden && /【负面约束】/.test(p)) {
+            p = p.replace(/(【负面约束】[^【]*)/, `$1, ${shot._skillForbidden}`);
+          }
+          shot.prompt = p;
+          return shot;
+        };
+        productionResult.shots = enhancedShots.map(_injectSkillIntoPromptFields);
 
-        // 【v2.1.6-fix-bug37+38】不可变更新保留元数据 + O(1) 同步 prompts
+        // 【fix-1B】同步 prompt 文本到 prompts 数组（旧版只同步两个元数据键）
+        const oldShots = productionResult.shots;
         productionResult.shots = this.dualSync.immutableUpdate(oldShots, productionResult.shots);
         this.dualSync.syncShotsToPrompts('DirectorSkills', productionResult.shots, productionResult.prompts, [
-          'directorStyle', '_appliedSkills'
+          'prompt', 'directorStyle', '_appliedSkills'
         ]);
 
         console.log(`   ✅ 导演技能注入完成`);
