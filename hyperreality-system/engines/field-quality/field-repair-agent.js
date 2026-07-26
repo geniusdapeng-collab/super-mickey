@@ -302,7 +302,7 @@ class RuleRepairer {
       // 覆盖 director_instruction/constraint/lighting/camera_movement/composition/
       // bright_constraint/character_constraint/timeline/pacing/costume/transition
       if (issue.issueType === IssueType.INCOMPLETE && typeof current === 'string' && current.trim()) {
-        const completed = this._completeElements(fieldEn, current, issue, prd);
+        const completed = this._completeElements(fieldEn, current, issue, prd, repaired);
         if (completed && completed !== current) {
           repaired[fieldEn] = completed;
           actions.push(new RepairAction({
@@ -352,7 +352,7 @@ class RuleRepairer {
    * 按 RuleChecker 的判定规则逐字段补齐缺失要素，补齐后受 charMax 约束
    * @returns {string|null} 补齐后的值；无法规则补齐返回 null（留给 LLM）
    */
-  _completeElements(fieldEn, current, issue, prd) {
+  _completeElements(fieldEn, current, issue, prd, repaired = null) {
     const spec = SPEC_MAP[fieldEn];
     const cap = (text) => {
       if (!spec || spec.charMax >= 9999) return text;
@@ -431,7 +431,7 @@ class RuleRepairer {
       }
       case 'costume': {
         // 【v2.2-refine】空镜不补服装模板(原逻辑给空镜/工装镜头拼"外套:合身外套"四件套)
-        const charText = String(repaired.character || repaired.角色 || '');
+        const charText = String((repaired && (repaired.character || repaired.角色)) || '');
         if (/无角色|无人物|无指定角色|空镜/.test(charText)) {
           return '无角色出场，本字段不适用';
         }

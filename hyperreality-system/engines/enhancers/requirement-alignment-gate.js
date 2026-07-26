@@ -142,7 +142,13 @@ class RequirementAlignmentGate {
       let match;
       while ((match = pattern.exec(text)) !== null) {
         const sceneName = match[1];
-        if (sceneName.length >= 2 && !this.sceneExcludeWords.includes(sceneName) && !characters.includes(sceneName)) {
+        // 【A201-fix】过滤以虚词/代词结尾的碎片和常见口语碎片，消除误报
+        const FRAGMENT_STOP = /[和与的了是有只在那我你他她它们，。、？！—…]$/;
+        if (sceneName.length >= 2
+          && !FRAGMENT_STOP.test(sceneName)
+          && !/^(总有|那只|这只|一只|没有|什么|怎么)/.test(sceneName)
+          && !this.sceneExcludeWords.includes(sceneName)
+          && !characters.includes(sceneName)) {
           if (!scenes.includes(sceneName)) scenes.push(sceneName);
         }
       }
