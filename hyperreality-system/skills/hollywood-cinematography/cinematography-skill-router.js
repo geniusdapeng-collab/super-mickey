@@ -719,11 +719,6 @@ function routeAndEnhanceV2(shots, opts = {}) {
  return plan;
 }
 
-module.exports.matchSkillsV2 = matchSkillsV2;
-module.exports.normalizeShotMeta = normalizeShotMeta;
-module.exports.routeAndEnhanceV2 = routeAndEnhanceV2;
-module.exports.buildSkillContextText = buildSkillContextText;
-
 module.exports = {
   buildSkillIndex,
   extractShotMetadata,
@@ -731,5 +726,9 @@ module.exports = {
   injectSkillEnhancement,
   routeAndEnhance,
   parseSkillFilename,
-  SKILL_LIB_ROOT
+  SKILL_LIB_ROOT,
+  matchSkillsV2,
+  normalizeShotMeta,
+  routeAndEnhanceV2,
+  buildSkillContextText
 };
