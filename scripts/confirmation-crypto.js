@@ -56,6 +56,13 @@ if (!HUMAN_SECRET) {
  console.warn(' 配置方法: export HUMAN_CONFIRMATION_SECRET=$(openssl rand -hex 32)，或写入 .env');
 }
 
+// 【v2.2.8-审计修复】密钥解析惰性化：调用时重新读取环境变量。
+// 旧实现只在模块加载瞬间捕获一次，凡 require 之后才设置 process.env 的调用方
+// （典型：smoke 测试的回退密钥、长驻进程后挂 .env）永远拿不到密钥。
+function currentSecret() {
+ return process.env.HUMAN_CONFIRMATION_SECRET || HUMAN_SECRET;
+}
+
 // nonce 管理（持久化存储，防止重放攻击）
 const NONCE_STORE = path.join(__dirname, '..', '.nonce-store.json');
 const usedNonces = new Set();
@@ -75,11 +82,12 @@ try {
  */
 function generateSignature(type, timestamp, nonce) {
  // 【修复 P1-6】惰性校验：仅在真正需要签名时才失败
- if (!HUMAN_SECRET) {
+ const secret = currentSecret();
+ if (!secret) {
  throw new Error('HUMAN_CONFIRMATION_SECRET 未配置，无法生成确认签名');
  }
  const payload = `${type}:${timestamp}:${nonce}`;
- return crypto.createHmac('sha256', HUMAN_SECRET).update(payload).digest('hex');
+ return crypto.createHmac('sha256', secret).update(payload).digest('hex');
 }
 
 /**
@@ -98,7 +106,8 @@ function generateSignature(type, timestamp, nonce) {
  */
 function verifyConfirmationDetailed(confirmData, type) {
  // 【修复 P1-6】密钥未配置时，任何确认文件都不可信 → 安全拒绝（继续等待人工处理）
- if (!HUMAN_SECRET) {
+ const secret = currentSecret();
+ if (!secret) {
  console.log(' ⛔ 拒绝: HUMAN_CONFIRMATION_SECRET 未配置，签名体系不可用');
  return { ok: false, code: 'no-secret', message: 'HUMAN_CONFIRMATION_SECRET 未配置，签名体系不可用' };
  }

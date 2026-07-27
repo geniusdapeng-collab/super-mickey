@@ -1,5 +1,10 @@
 # 主题多样性审计实施记录
 
+> **状态注记（v2.2.8 审计）**：本文档记录的主题多样性测试引擎
+> （原 `hyperreality-system/engines/theme-diversity-test-engine/`）因入口引用从未提交的
+> `test-suite-generator` 模块、加载即崩，且无活体链路引用，已整体隔离至
+> `legacy/engines/theme-diversity-test-engine/`。本记录保留为历史档案。
+
 ## 2026-06-30 13:57 - 用户确认实施
 - Creator确认按方案实施
 - 7大主题类型确定：科普(EDU)、纪录片(DOC)、家庭聚会(FAMILY)、商业营销(MARKETING)、电影级(CINE)、艺术级(ART)、极致特效(VFX)

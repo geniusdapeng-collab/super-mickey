@@ -1,7 +1,8 @@
-// v2.1.10-fix 冒烟测试 —— 验证核心修复点
+// 冒烟测试 —— 验证核心修复点（版本号以根 package.json 为唯一权威，本文件不登记具体数字）
 const path = require('path');
+const PKG_VERSION = require('./package.json').version;
 
-console.log('=== SuperMickey v2.1.10-fix 冒烟测试 ===\n');
+console.log(`=== SuperMickey v${PKG_VERSION} 冒烟测试 ===\n`);
 
 // 1. 旁白策略判定测试
 console.log('[1/6] 旁白策略判定');

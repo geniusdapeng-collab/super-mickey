@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+require('./systems/env-aliases'); // 【v2.2.8】SUPERMICKEY_* → STORMAXE_* 环境变量别名桥，须最先加载
 /**
  * 预生产标准入口 - SuperMickey（系统版本以根目录 package.json 为唯一权威）
  * 基于 25字段体系

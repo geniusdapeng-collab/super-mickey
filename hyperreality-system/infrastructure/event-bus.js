@@ -229,6 +229,10 @@ class EventBus extends EventEmitter {
         console.log(`[EventBus] 自动清理: ${before - after} 条旧 mutations 已移除`);
       }
     }, this.cleanupInterval);
+    // 【v2.2.8-审计修复】unref：内部清理定时器无权阻止进程退出。
+    // 旧实现漏 unref，凡实例化 EventBus 的脚本/测试（如 tests/module-load-test.js）
+    // 业务逻辑结束后进程被永久挂住；调用方 destroy() 依然可主动清理。
+    this._cleanupTimer.unref();
   }
 
   /**

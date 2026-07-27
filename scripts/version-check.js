@@ -78,8 +78,18 @@ function main() {
     process.exit(1);
   }
 
-  // 版本不一致
+  // 【v2.2.8-审计修复】仅派生缓存漂移不算不一致：
+  // package.json 与 index.js 注释一致、只有 .current-version 陈旧时（如切换分支后），
+  // 自动按 package.json 重写缓存并告警，而不是误报"版本号不一致"阻断流程。
   if (uniqueVersions.length > 1) {
+    const pkgVer = validVersions.find(r => r.name === 'package.json')?.version;
+    const idxVer = validVersions.find(r => r.name === 'index.js 头部注释')?.version;
+    if (pkgVer && idxVer && pkgVer === idxVer) {
+      console.warn(`  ⚠️ 派生缓存 .current-version 陈旧，已按 package.json 重写为 ${pkgVer}`);
+      fs.writeFileSync(path.join(ROOT, '.current-version'), pkgVer + '\n');
+      console.log(`✅ [VersionCheck] 所有版本源一致: ${pkgVer}`);
+      process.exit(0);
+    }
     console.error(`⛔ [VersionCheck] 版本号不一致！发现 ${uniqueVersions.length} 个不同版本:`);
     for (const v of uniqueVersions) {
       const files = validVersions.filter(r => r.version === v).map(r => r.name).join(', ');
@@ -87,7 +97,12 @@ function main() {
     }
 
     if (isFix) {
-      const canonical = validVersions.find(r => r.name === '.current-version')?.version || uniqueVersions[0];
+      // 【v2.2.8-审计修复】权威源纠正：version.txt 明确规定 package.json 是唯一权威来源，
+      // 旧逻辑却把 .current-version（gitignore 的派生缓存，天然陈旧）当作对齐基准，
+      // 会把 package.json 反向降级到缓存里的旧版本。现固定以 package.json 为基准，
+      // .current-version 只作派生重写，永不作为版本来源。
+      const canonical = validVersions.find(r => r.name === 'package.json')?.version || uniqueVersions[0];
+      console.log(`\n🔧 [VersionCheck] 自动修复模式 — 对齐到: ${canonical}（基准：package.json）\n`);
       console.log(`\n🔧 [VersionCheck] 自动修复模式 — 对齐到: ${canonical}\n`);
 
       // 修复 package.json
@@ -113,6 +128,10 @@ function main() {
           console.log(`  ✅ index.js 注释 → ${canonical}`);
         }
       }
+
+      // 派生缓存 .current-version 同步重写（与 package.json 保持一致）
+      fs.writeFileSync(path.join(ROOT, '.current-version'), canonical + '\n');
+      console.log(`  ✅ .current-version → ${canonical}（派生重写）`);
 
       console.log('\n✅ [VersionCheck] 修复完成，请重新提交。');
       process.exit(0);

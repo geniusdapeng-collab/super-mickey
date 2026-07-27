@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+require('./systems/env-aliases'); // 【v2.2.8】SUPERMICKEY_* → STORMAXE_* 环境变量别名桥，须最先加载
 /**
  * PromptFusion 断点续跑脚本
  * 从 Phase 3 子 checkpoint 恢复，只跑未完成的镜头

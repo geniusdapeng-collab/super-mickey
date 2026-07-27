@@ -1,12 +1,11 @@
-#!/usr/bin/env node
-/**
- * PandaCineForge 集成测试
- * 验证 SuperMickey 主链路加载 + PandaCineForge 适配器注入
- */
-
 const path = require('path');
+const PKG_VERSION = require('../package.json').version;
 
-console.log('🧪 [SuperMickey v2.1.0 + PandaCineForge] 集成测试\n');
+console.log(`🧪 [SuperMickey v${PKG_VERSION} + PandaCineForge] 集成测试\n`);
+
+// 【v2.2.8-审计修复】实例收集表：旧实现测试完成后不关闭实例，
+// HealthMonitor 30s 心跳定时器永久挂住事件循环，npm test / CI 永不退出。
+const createdSystems = [];
 
 // 1. 测试适配器加载
 console.log('1. 测试适配器加载...');
@@ -26,6 +25,7 @@ try {
   const system = new HyperRealitySystem({
     pandaCineForge: { enabled: false }
   });
+  createdSystems.push(system);
   console.log('   ✅ 主链路加载成功 | PandaCineForge 禁用:', !system.pandaAdapter.enabled);
   console.log('   ✅ 引擎数量:', Object.keys(system).filter(k => k.includes('Engine') || k.includes('Adapter')).length);
 } catch (e) {
@@ -40,6 +40,7 @@ try {
   const system = new HyperRealitySystem({
     pandaCineForge: { enabled: true, autoStart: false }
   });
+  createdSystems.push(system);
   console.log('   ✅ 主链路加载成功 | PandaCineForge 启用:', system.pandaAdapter.enabled);
   console.log('   ✅ 适配器可用:', system.pandaAdapter.available);
 } catch (e) {
@@ -55,6 +56,7 @@ console.log('4. 测试健康检查...');
     const system = new HyperRealitySystem({
       pandaCineForge: { enabled: true, autoStart: false }
     });
+    createdSystems.push(system);
     const health = await system.pandaAdapter.health();
     console.log('   ✅ 健康检查:', health.status, '| 引擎:', health.engine_available, '| 技能数:', health.skill_count);
   } catch (e) {
@@ -62,4 +64,19 @@ console.log('4. 测试健康检查...');
   }
 
   console.log('\n✅ 集成测试完成');
+
+  // 【v2.2.8-审计修复】收尾：停止全部实例的 HealthMonitor 定时器并显式退出。
+  // gracefulShutdown 失败不阻断退出（清理动作，不影响测试结论）。
+  try {
+    const { gracefulShutdown } = require('../hyperreality-system/utils/graceful-shutdown');
+    for (const inst of createdSystems) {
+      inst._shuttingDown = true;
+      await gracefulShutdown({
+        healthMonitor: inst.productionEngine?.healthMonitor || null,
+        agents: [inst.productionEngine, inst.scriptEngine, inst.renderingEngine].filter(Boolean),
+        timeoutMs: 5000
+      }).catch(() => {});
+    }
+  } catch (_) { /* 清理异常不影响测试结果 */ }
+  process.exit(0);
 })();

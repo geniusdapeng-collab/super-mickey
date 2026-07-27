@@ -229,7 +229,9 @@ try {
   const mdFiles = [];
   (function walk(dir) {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-      if (entry.name === 'node_modules' || entry.name === '.git') continue;
+      // legacy/ 为 v2.2.8 审计设立的退役资产隔离区（见 legacy/README.md），
+      // 内容为冻结历史材料，不参与现行规范字面值扫描。
+      if (entry.name === 'node_modules' || entry.name === '.git' || entry.name === 'legacy') continue;
       const full = path.join(dir, entry.name);
       if (entry.isDirectory()) walk(full);
       else if (entry.isFile() && entry.name.endsWith('.md')) mdFiles.push(full);

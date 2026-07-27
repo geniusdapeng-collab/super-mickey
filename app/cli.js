@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 'use strict';
 
+require('../systems/env-aliases'); // 【v2.2.8】SUPERMICKEY_* → STORMAXE_* 环境变量别名桥，须先于各引擎加载
 const { createLogger } = require('../systems/logger');
 const logger = createLogger('cli');
 

@@ -51,7 +51,7 @@ async function run(args = {}) {
     }
   });
 
-  // 输入: --input <json> | 环境变量 STORMAXE_USER_INTENT | 默认故事输入
+  // 输入: --input <json> | 环境变量 SUPERMICKEY_USER_INTENT（兼容旧名 STORMAXE_USER_INTENT，由 systems/env-aliases.js 桥接） | 默认故事输入
   let intent, metadata = {};
   const inputArgIdx = process.argv.indexOf('--input');
   const inputPath = args.inputPath
@@ -71,7 +71,7 @@ async function run(args = {}) {
       intent = input.intent || input.theme || input.description || JSON.stringify(input);
       metadata = { ...input, title: input.title || 'taotie-ep01' };
     } else {
-      throw new Error('未提供创作意图: 请使用 --input <json> 或 STORMAXE_USER_INTENT');
+      throw new Error('未提供创作意图: 请使用 --input <json> 或环境变量 SUPERMICKEY_USER_INTENT（兼容旧名 STORMAXE_USER_INTENT）');
     }
   }
 

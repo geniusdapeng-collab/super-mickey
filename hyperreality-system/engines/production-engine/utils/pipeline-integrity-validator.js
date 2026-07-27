@@ -1,5 +1,7 @@
 // 引入 LLM 引擎用于语义检查
-const { LLMEngine } = require('./llm-reasoning-engine');
+// 【v2.2.8-审计修复】原引用 './llm-reasoning-engine' 在本目录不存在（真身位于仓库根
+// systems/llm-reasoning-engine.js），模块加载即抛 MODULE_NOT_FOUND；已纠正为真实路径。
+const { LLMEngine } = require('../../../../systems/llm-reasoning-engine');
 // 【v2.2.5-审计修复】长度阈值从唯一真源读取，消除 700/1500/980 三个互相打架的就地硬编码
 const PromptLengthConfig = require('../../../config/prompt-length.js');
 

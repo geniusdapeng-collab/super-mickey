@@ -266,9 +266,11 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
     console.log(`[PromptFusionAgent] 每个镜头预算: ${PER_SHOT_BUDGET}ms (串行模式，不除以镜头数)`);
 
     // 【2026-07-17 camera-coherence】预构建全片邻镜上下文（景别/运镜/转场摘要）
+    // 【v2.2.8-审计修复】原路径 '../../../systems/camera-coherence' 少一级（指向不存在的
+    // hyperreality-system/systems/），try/catch 吞错导致邻镜协调功能静默失效；已纠正。
     this._cameraPlans = null;
     try {
-      const { extractLightPlans } = require('../../../systems/camera-coherence');
+      const { extractLightPlans } = require('../../../../systems/camera-coherence');
       this._cameraPlans = extractLightPlans(shots);
     } catch (e) { this._cameraPlans = null; }
 
@@ -1982,7 +1984,7 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
     let neighborContext = '';
     try {
       if (this._cameraPlans && typeof this._currentShotIdx === 'number') {
-        const { buildNeighborContext } = require('../../../systems/camera-coherence');
+        const { buildNeighborContext } = require('../../../../systems/camera-coherence');
         neighborContext = '\n' + buildNeighborContext(this._cameraPlans, this._currentShotIdx) + '\n';
       }
     } catch (e) { /* 不影响主流程 */ }

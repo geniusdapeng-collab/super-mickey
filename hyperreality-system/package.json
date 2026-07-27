@@ -1,6 +1,6 @@
 {
   "name": "hyperreality-system",
-  "version": "0.1.0",
+  "version": "1.0.8",
   "description": "Hyperreal AI Video System (HAVS) — 面向好莱坞工业级标准的AI视频自动生产系统",
   "main": "index.js",
   "scripts": {
