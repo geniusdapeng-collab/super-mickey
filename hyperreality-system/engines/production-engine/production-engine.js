@@ -1712,6 +1712,15 @@ class ProductionEngine {
       if (!p.includes('灯光') && !p.includes('lighting') && !p.includes('光影')) {
         warnings.push(`${id}: prompt 可能缺少灯光描述`);
       }
+      // 【v2.2.7-fix】台词丢失闭环检查：数据层有台词但渲染产物无【台词】字段 → 硬错误。
+      // 历史事故：归一化把台词写在 shot.dialogue 顶层，组装层只读 fields.dialogue，
+      // 字段整体丢失而数据层校验（shot.dialogue 非空）全部通过——校验必须覆盖渲染产物。
+      const dataHasDialogue = (Array.isArray(shot.dialogueBlocks) && shot.dialogueBlocks.length > 0)
+        || (typeof shot.dialogue === 'string' && shot.dialogue.trim().length > 0)
+        || (typeof shot.dialogueText === 'string' && shot.dialogueText.trim().length > 0);
+      if (dataHasDialogue && !p.includes('【台词】')) {
+        errors.push(`${id}: 数据层存在台词但 prompt 缺失【台词】字段（组装链路回退失败）`);
+      }
     }
 
     // 检查场景覆盖

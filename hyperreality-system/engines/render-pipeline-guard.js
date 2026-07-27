@@ -125,7 +125,25 @@ class RenderPipelineGuard {
         name: '台词格式检查',
         check: (prompt) => {
           const text = prompt.prompt || '';
-          const dialogues = text.match(/【台词】[^【】]+/g) || [];
+          // 【v2.2.7-fix】台词丢失盲区封堵：旧逻辑"无【台词】即放行"，
+          // 数据层有台词但渲染层丢失时全程无告警（本次台词字段整体丢失事故即因此漏检）。
+          const dataDialogue = typeof prompt.dialogue === 'string' ? prompt.dialogue
+            : (typeof prompt.dialogueText === 'string' ? prompt.dialogueText : '');
+          const dataBlocks = Array.isArray(prompt.dialogueBlocks) ? prompt.dialogueBlocks : [];
+          const dataHasDialogue = dataBlocks.length > 0 || dataDialogue.trim().length > 0;
+          if (dataHasDialogue && !/【台词】/.test(text)) {
+            return {
+              pass: false,
+              message: '数据层存在台词，但最终 Prompt 缺失【台词】字段',
+              fix: '检查 PromptFusionAgent 台词组装链路（dialogueBlocks → fields.dialogue → shot.dialogue 回退链）'
+            };
+          }
+          // 【v2.2.7-fix】字段分隔符 ' | ' 不再被误判为台词内容竖杠：
+          // 段内容截取到下一个 ' | 【' 或文本结尾为止
+          const dialogues = [];
+          const dlgRe = /【台词】([\s\S]*?)(?=\s*\|\s*【|$)/g;
+          let dm;
+          while ((dm = dlgRe.exec(text)) !== null) dialogues.push(dm[1]);
           if (dialogues.length === 0) return { pass: true };
           const badDialogues = dialogues.filter(d => /\|/.test(d));
           return {

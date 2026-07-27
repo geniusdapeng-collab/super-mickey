@@ -91,6 +91,16 @@ try {
   if (contentFields.length < 25) {
     warnings.push(`字段解析结果异常：内容镜头仅解析到 ${contentFields.length} 个字段标签，请以 prompt-fusion-agent.js 原文为准`);
   }
+  // 【v2.2.7-fix】台词字段格式规范：从 _renderDialogueBlocks 头部注释实时解析（单一真源）。
+  // 历史事故：规范卡只列字段名、不携带台词的渲染格式，Agent 执行时台词字段整体丢失。
+  const dlgFnStart = src.indexOf('_renderDialogueBlocks(blocks, duration) {');
+  const dlgCommentStart = src.lastIndexOf('格式:', dlgFnStart);
+  const dlgCommentEnd = src.indexOf('\n', dlgCommentStart);
+  if (dlgFnStart > 0 && dlgCommentStart > 0) {
+    report.spec.dialogueFormat = src.slice(dlgCommentStart, dlgCommentEnd).replace(/^[\s*]+/, '').replace(/^格式[:：]/, '').trim();
+  } else {
+    warnings.push('台词格式规范解析失败：请以 prompt-fusion-agent.js _renderDialogueBlocks 原文为准');
+  }
   report.spec.contentFields = contentFields;
   report.spec.openingExclusiveFields = openingFields;
   report.spec.fieldCounts = { content: contentFields.length, opening: contentFields.length + openingFields.length };
@@ -258,6 +268,7 @@ report.spec.discipline = {
   originalStoryPassthrough: '用户输入原文必须原样进入业务需求洞察与 PRD（_originalStoryText 链路），禁止改写省略',
   languageConstraint: '字段正文全部中文；英文仅允许【负面约束】固定短语与【基础】质量锚点词',
   emotionField: '【情绪】字段必须有具体面部/眼神描述，禁止只写关键词',
+  dialogueField: '【台词】字段按上方【台词字段格式】渲染：带角色名+动作触发+情绪副词+说:"台词内容"；数据层有台词的镜头禁止丢字段，无台词镜头（空镜）禁止虚构台词',
   shotDuration: `单镜 3-12 秒，系统上限 15 秒；台词速率基准 ${report.spec.speechRate?.normal} 字/秒、极限 ${report.spec.speechRate?.limit} 字/秒、占镜头时长 ≤${(report.spec.speechRate?.maxDialogueRatio ?? 0.8) * 100}%（唯一真源: config/speech-rate.js）`,
   templatesWarning: 'templates/ 目录仅为中间态参考或弃用指引，禁止作为最终渲染 Prompt 格式与长度依据（镜头卡25字段≠渲染Prompt25字段）',
   specAuthorityMap: 'SPEC-AUTHORITY.md 为规范裁决唯一权威地图，引擎代码 > 文档',
@@ -291,6 +302,9 @@ if (JSON_MODE) {
   of.forEach((label, i) => console.log(`    ${String(f.length + i + 1).padStart(2, '0')}.【${label}】`));
   console.log('');
   console.log(`  【长度标准】组装阶段目标 ${L.targetMin}-${L.targetMax} 字符，硬上限 ${L.hardMax}；精炼完成后交付口径 ≥${L.refinedMin} 且 ≤${L.hardMax}（两阶段口径，唯一真源 config/prompt-length.js）`);
+  if (report.spec.dialogueFormat) {
+    console.log(`  【台词字段格式】${report.spec.dialogueFormat}；台词必须是角色直接对话（带角色名），禁止画外音/旁白；数据层有台词的镜头，最终 Prompt 必须出现【台词】字段，缺失即渲染守卫硬阻断`);
+  }
   console.log('');
   const IF = report.spec.intermediateFormats || {};
   if (IF.creativeTheme) {

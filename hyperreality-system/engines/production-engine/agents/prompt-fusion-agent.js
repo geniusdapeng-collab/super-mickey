@@ -1402,6 +1402,10 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
    */
   _assembleStandardPrompt(shot, fields, ratio) {
     const parts = [];
+    // 【v2.2.7-fix】函数级 duration 定义：_generateBaseline 等处直接引用 duration，
+    // 旧代码依赖 fields.baseline 真值短路才侥幸不炸——fields.baseline 为空的镜头
+    // 会以 ReferenceError 崩掉整个组装。属于长期潜伏bug。
+    const duration = shot.duration || 10;
 
     // 【语言约束】⭐ 新增:强制中文输出
     parts.push('【语言约束】全部字段必须使用中文输出,禁止出现英文单词、英文短语、英文描述。');
@@ -1532,11 +1536,30 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
       }
     } else {
       // 回退:使用旧的 dialogue 字段
-      const dialogueField = getField('dialogue');
+      let dialogueField = getField('dialogue');
+      // 【v2.2.7-fix】台词丢失根因修复：归一化链路把台词写在 shot.dialogue
+      // （SPEAKER|TYPE|EMOTION|TEXT|LIP_SYNC:YES 格式，' || ' 连接）与
+      // shot.dialogueText 顶层，而非 fields.dialogue——旧回退只读 fields，
+      // LLM 未把台词放进 fields 时，台词字段在最终 Prompt 中整体丢失且全程无告警。
+      if (!dialogueField) dialogueField = shot.dialogue || shot.dialogueText || '';
       if (dialogueField) {
-        // 【v2.1.4-fix13】确保台词有【台词】前缀
-        const dialogueText = dialogueField.startsWith('【台词】') ? dialogueField : `【台词】${dialogueField}`;
-        parts.push(dialogueText);
+        // 【v2.2.7-fix】统一格式串（含竖杠，直接进渲染会乱码）→ 转 blocks 渲染为内联格式
+        if (typeof dialogueField === 'string' && dialogueField.includes('|')) {
+          const blocks = this._parseUnifiedDialogueString(dialogueField);
+          if (blocks.length > 0) {
+            const rendered = this._renderDialogueBlocks(blocks, shot.duration || 10);
+            if (rendered) { parts.push(rendered); dialogueField = null; }
+          }
+          if (dialogueField) {
+            // 解析失败则提取纯台词文本，绝不把含竖杠的统一格式串透传到渲染层
+            dialogueField = this._extractPureDialogue(dialogueField);
+          }
+        }
+        if (dialogueField) {
+          // 【v2.1.4-fix13】确保台词有【台词】前缀
+          const dialogueText = String(dialogueField).startsWith('【台词】') ? String(dialogueField) : `【台词】${dialogueField}`;
+          parts.push(dialogueText);
+        }
       }
     }
 
@@ -1860,6 +1883,25 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
       return parts[3].trim();
     }
     return dialogue.trim();
+  }
+
+  /**
+   * 【v2.2.7-fix】解析 v6.37 统一对话格式串为 DIALOGUE_BLOCK 数组
+   * 输入: "SPEAKER|TYPE|EMOTION|TEXT|LIP_SYNC:YES || SPEAKER2|TYPE2|EMOTION2|TEXT2|LIP_SYNC:YES"
+   * 输出: [{ speaker, emotion, line, trigger }]（trigger 缺省由渲染函数兜底）
+   * 解析不出任何一段时返回空数组，调用方回退到纯文本提取。
+   */
+  _parseUnifiedDialogueString(dialogueStr) {
+    if (!dialogueStr || typeof dialogueStr !== 'string') return [];
+    const blocks = [];
+    for (const seg of dialogueStr.split(' || ')) {
+      const parts = seg.split('|').map(s => s.trim());
+      // 标准五段式: SPEAKER|TYPE|EMOTION|TEXT|LIP_SYNC:YES
+      if (parts.length >= 4 && parts[3]) {
+        blocks.push({ speaker: parts[0] || '角色', emotion: parts[2] || 'neutral', line: parts[3] });
+      }
+    }
+    return blocks;
   }
 
   /**

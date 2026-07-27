@@ -150,7 +150,11 @@ function flattenShot(shot) {
   return flat;
 }
 
-const MAX_TOTAL_CHARS = 12000; // 【审计修复】与 prompt-length.js 保持一致
+// 【v2.2.7-fix】与 prompt-length.js 的 SAFE_MAX(11900) 口径对齐。
+// 旧值 12000 注释谎称"与 prompt-length.js 保持一致"，但真源 HARD_MAX 是 3000、
+// SAFE_MAX 是 11900，均不等于 12000。此处校验的是组装前字段数据总量，对应 SAFE_MAX 档。
+const PromptLengthConfig = require('../../config/prompt-length.js');
+const MAX_TOTAL_CHARS = PromptLengthConfig.SAFE_MAX;
 
 /**
  * 【v2.1.14-fix】字段格式硬约束（供 LLM 修复层注入 prompt）

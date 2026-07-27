@@ -30,6 +30,7 @@
 | 原始故事文本直通 | 见提交【方案A-fix】系列 | 用户输入原文必须原样进入需求洞察确认单与 PRD 链路 |
 | 中间环节交付物格式 | `skills/creative-theme-generator/index.js`（确认单）、`engines/requirement-discovery-engine.js`（对齐清单）、`engines/prd-generator/prd-generator.js`（PRD）各自的生成函数 | 创意主题确认单字段、业务需求对齐清单章节、PRD 章节结构以生成函数源码为唯一权威，技能/文档不得自带格式清单 |
 | 内容精炼规则 | `engines/production-engine/agents/field-content-refiner.js` | 六类规则：剥英文前缀/去同义堆叠/分句去重/矛盾仲裁/碎片清理/句级闭合；挂载于组装函数 return 之前 |
+| 台词字段格式 | `engines/production-engine/agents/prompt-fusion-agent.js`（`_renderDialogueBlocks`） | 【台词】[时间戳] 角色 trigger, emotion 说:"line"；数据层有台词的镜头最终 Prompt 必须含【台词】字段（渲染守卫硬阻断），空镜禁止虚构 |
 | 文档陈旧字面值扫描 | `scripts/agent-preflight.js` | 980/990/1400-1500/MAX_PROMPT_LENGTH 等长度字面值无失效标注不得出现于任何 .md 文档，命中即退出码 1；日期快照文件降级为警告 |
 | Agent 技能入口 | `skill/supermickey-studio/SKILL.md` | 随仓库发行的 supermickey-studio 技能，仅做流程编排；规范细节一律以 agent-preflight 规范卡为出口，技能不登记规范 |
 
