@@ -41,7 +41,8 @@
 ### 关键系统常量
 
 ```javascript
-MAX_PROMPT_LENGTH = 980        // 英文字符上限
+// Prompt 长度标准唯一权威源: hyperreality-system/config/prompt-length.js
+// (TARGET 2470-3000 / HARD_MAX 3000, 禁止在本文档登记长度字面数值)
 MAX_DURATION = 15              // 最大时长（秒）
 DEFAULT_RATIO = '16:9'         // 默认横屏
 MAX_CONCURRENT = 3             // 最大并发
