@@ -36,15 +36,27 @@
 | `SKILL.md`（根目录） | 子系统文档 | Realism Enhancement 子系统说明，非系统规范入口 |
 | `docs/` 下各文档 | 参考 | 运营/背景材料，非执行规范 |
 
-## 四、给 AI Agent 的执行前必读清单（Step 0）
+## 四、给 AI Agent 的执行前预检（Step 0）
 
-按以下顺序读取，读完再执行任何生成任务：
+**单命令入口**：
+
+```bash
+node scripts/agent-preflight.js          # 人类可读规范卡
+node scripts/agent-preflight.js --json   # 机器可读 JSON
+```
+
+该命令自动完成：工作区完整性检查（克隆文件丢失防护）、版本号确认、版本三源一致性校验、
+内容镜头/片头字段全量提取（实时解析 prompt-fusion-agent.js，非硬编码）、长度标准读取
+（实时读取 prompt-length.js）、执行纪律输出。退出码 0 = 可执行，1 = 有阻断项必须先修复。
+
+**退出码非 0 时禁止继续执行**；退出码为 0 时，规范卡输出即为执行依据，无需再逐项人工阅读下列文件
+（需要深入实现细节时再读）：
 
 1. 本文件（SPEC-AUTHORITY.md）
 2. `package.json` → 确认版本号
 3. `scripts/version-check.js` 运行结果 → 三源必须一致
-4. `hyperreality-system/engines/production-engine/agents/prompt-fusion-agent.js` → 25/30 字段组装逻辑
+4. `hyperreality-system/engines/production-engine/agents/prompt-fusion-agent.js` → 字段组装逻辑
 5. `hyperreality-system/config/prompt-length.js` → 长度标准
 6. `hyperreality-system/index.js` 审核报告生成段落 → 最终交付物包装格式
 
-**未完成 Step 0 六步阅读的产出，视为未按系统规范执行。**
+**未运行 agent-preflight 或预检未通过的产出，视为未按系统规范执行。**

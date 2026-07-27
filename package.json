@@ -14,7 +14,8 @@
     "version:fix": "node scripts/version-check.js --fix",
     "test": "node tests/module-load-test.js && node tests/panda-cineforge-integration-test.js",
     "summary": "node scripts/generate-system-summary.js",
-    "release:verify": "node scripts/check-project-health.js"
+    "release:verify": "node scripts/check-project-health.js",
+    "agent:preflight": "node scripts/agent-preflight.js"
   },
   "engines": {
     "node": ">=18.0.0"
