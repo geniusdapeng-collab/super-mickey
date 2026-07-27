@@ -535,6 +535,22 @@ cp .env.example .env
 # SEEDREAM_ENDPOINT=your-image-endpoint-id
 ```
 
+### AI Agent 一键接入（推荐）
+
+如果你是通过 AI Agent（Kimi、Claude Code 等）使用本系统，仓库内置了
+`supermickey-studio` 技能（`skill/supermickey-studio/`），安装后对你的 Agent 说
+"用 SuperMickey 系统生成视频提示词"即可触发完整流水线：
+
+```bash
+npm run skill:install                          # 自动探测已知技能目录并安装
+node scripts/install-skill.js --target <dir>   # 或显式指定你的技能目录
+```
+
+技能与系统代码同仓库、同版本演进，规范细节全部以
+`node scripts/agent-preflight.js` 输出的规范卡为唯一出口
+（技能本身不登记规范，杜绝"技能抄了一份旧规范"的漂移问题）。
+不安装技能也不影响系统本身的任何功能——它只是 Agent 侧的快捷入口。
+
 ### Run Pre-Production Pipeline
 
 ```bash

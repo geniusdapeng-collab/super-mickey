@@ -24,13 +24,14 @@
 | 台词速率 | `hyperreality-system/config/speech-rate.js` | 基准 3.5 字/秒、极限 4.5 字/秒、台词占镜头时长 ≤80%；**"4-4.5 字/秒"等旧口径一律无效** |
 | 审核门槛 | `hyperreality-system/config/audit-standards.js` | 内容镜头字段数 ≥25、片头镜头 ≥30（门槛为下限，实际字段数以 prompt-fusion-agent.js 解析为准） |
 | 字段校验分级 | `hyperreality-system/engines/field-standardizer.js` | P0 致命 12 字段、P1 核心 7 字段、导出前 25 字段非空硬检查 |
-| Prompt 长度 | `hyperreality-system/config/prompt-length.js` | TARGET 2470-3000 / HARD_MAX 3000；**990、1400-1500 等旧数字一律无效** |
+| Prompt 长度 | `hyperreality-system/config/prompt-length.js` | 两阶段口径：组装目标 2470-3000 / HARD_MAX 3000；精炼后交付 ≥REFINED_MIN 且 ≤HARD_MAX；**990、1400-1500 等旧数字一律无效** |
 | 审核报告格式 | `hyperreality-system/index.js`（审核报告生成器） | 镜头总览五列核验（字符数/字段数/定妆照/时间轴/约束）+ 7 条审核须知 |
 | 镜头设计卡（中间态） | `templates/shot-card-v4-template.md` | 仅管线内部结构数据，**不是最终渲染 Prompt 格式**，禁止混用 |
 | 原始故事文本直通 | 见提交【方案A-fix】系列 | 用户输入原文必须原样进入需求洞察确认单与 PRD 链路 |
 | 中间环节交付物格式 | `skills/creative-theme-generator/index.js`（确认单）、`engines/requirement-discovery-engine.js`（对齐清单）、`engines/prd-generator/prd-generator.js`（PRD）各自的生成函数 | 创意主题确认单字段、业务需求对齐清单章节、PRD 章节结构以生成函数源码为唯一权威，技能/文档不得自带格式清单 |
 | 内容精炼规则 | `engines/production-engine/agents/field-content-refiner.js` | 六类规则：剥英文前缀/去同义堆叠/分句去重/矛盾仲裁/碎片清理/句级闭合；挂载于组装函数 return 之前 |
 | 文档陈旧字面值扫描 | `scripts/agent-preflight.js` | 980/990/1400-1500/MAX_PROMPT_LENGTH 等长度字面值无失效标注不得出现于任何 .md 文档，命中即退出码 1；日期快照文件降级为警告 |
+| Agent 技能入口 | `skill/supermickey-studio/SKILL.md` | 随仓库发行的 supermickey-studio 技能，仅做流程编排；规范细节一律以 agent-preflight 规范卡为出口，技能不登记规范 |
 
 ## 三、已弃用/仅参考清单（禁止作为执行依据）
 
@@ -38,7 +39,7 @@
 |------|------|------|
 | `templates/prompt-v4-template.md` 旧版内容 | **已弃用** | 8 步结构 / 990 字符上限均已失效，该文件现为指引页 |
 | `SYSTEM.md` 中 v6.x 编号 | 仅子系统历史编号 | 与系统版本无关 |
-| `SKILL.md`（根目录） | 子系统文档 | Realism Enhancement 子系统说明，非系统规范入口 |
+| `REALISM-ENHANCER.md`（根目录） | 子系统文档 | Realism Enhancement 子系统说明，非系统规范入口 |
 | `docs/` 下各文档 | 参考 | 运营/背景材料，非执行规范 |
 
 ## 四、给 AI Agent 的执行前预检（Step 0）
