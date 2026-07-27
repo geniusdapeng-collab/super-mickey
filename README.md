@@ -446,7 +446,9 @@ The system automatically maps emotional targets to professional color science:
 
 ## Realism Enhancement Engine
 
-### 7-Dimensional Realism Model (v6.6.0)
+> 本引擎为生产执行子系统，文中 v6.x 为其内部历史编号，与 SuperMickey 系统版本无关（系统版本以根目录 package.json 为准）。
+
+### 7-Dimensional Realism Model（子系统内部编号 v6.6.0）
 
 > **"Controlled imperfection is more real than perfection itself."**
 
@@ -647,7 +649,7 @@ curl http://localhost:3000/api/capabilities
 project:
   name: SuperMickey AI Video Generation System
   type: ai-video-generation-pipeline
-  version: 6.5.53-beta
+  version: 2.2.2  # 统一以 package.json 为准
 
   agent_capabilities:
     - video_preproduction
@@ -768,7 +770,7 @@ The `ProductionBible` is the central knowledge base for your project:
 
 ## Roadmap
 
-### Current (v6.5.53)
+### Current（当前版本以根目录 package.json 为准）
 - [x] 4 production agents operational
 - [x] 25-field shot card standard
 - [x] 5-dimension quality scoring

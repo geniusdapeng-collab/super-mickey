@@ -1,4 +1,6 @@
-# v6.6.0 Realism Enhancement System Documentation
+# Realism Enhancement System — SuperMickey 生产执行子系统文档
+
+> 本文档属于生产执行子系统，其内部历史编号（v6.x）与 SuperMickey 主版本号无关。SuperMickey 系统版本以根目录 package.json 为准。
 
 ## Overview
 
@@ -117,4 +119,4 @@ const enhancer = new RealismPromptEnhancer({
 
 ## Version
 
-v6.6.0
+本引擎内部历史编号 v6.6.0（子系统编号，非 SuperMickey 系统版本）
