@@ -2,7 +2,7 @@
 // hyperreality-system/index.js
 // SuperMickey - 超级小香宝统一入口
 // 深度融合:剧本引擎 → 适配层 → 制作引擎 → 完整镜头
-// 版本:v2.2.4 | 日期:2026-07-28
+// 版本:v2.2.5 | 日期:2026-07-28
 
 require('./engines/process-guard'); // 【审计修复】全局崩溃防护,必须最先加载
 
@@ -279,7 +279,8 @@ class HyperrealitySystem {
 
     this.durationConstraintManager = new DurationConstraintManager({
       maxSingleShot: options.durationConstraint?.maxSingleShot || 15,
-      minSingleShot: options.durationConstraint?.minSingleShot || 5,
+      // 【v2.2.5-审计修复】下限 5→3，与"单镜 3-12 秒"全链路规范对齐
+      minSingleShot: options.durationConstraint?.minSingleShot || 3,
       enabled: options.durationConstraint?.enabled !== false
     });
 
@@ -314,43 +315,65 @@ class HyperrealitySystem {
   }
 
   _setupSignalHandlers() {
-    const signals = ['SIGTERM', 'SIGINT', 'SIGHUP'];
     this._shuttingDown = false; // 【修复 P3-3】防重入 guard
 
-    for (const signal of signals) {
-      process.on(signal, () => {
-        // 【修复 P3-3】统一走 gracefulShutdown，避免 inline 清理与外部工具逻辑分叉
-        if (this._shuttingDown) return;
-        this._shuttingDown = true;
-        this._shutdownRequested = true;
-        console.log(`\n[HyperrealitySystem] 收到 ${signal}，启动 gracefulShutdown...`);
+    // 【v2.2.5-审计修复】信号处理器进程级单例化：
+    // 旧实现每 new 一个实例就 process.on 注册 5 个监听且从不摘除，
+    // 多实例场景（集成测试、长驻服务反复实例化）会导致
+    // ① 同一信号被多个实例重复处理（实测 SIGTERM 触发两次 shutdown）
+    // ② 监听器累积超 10 个触发 MaxListenersExceededWarning
+    // 现改为：进程级注册一次，所有存活实例进入注册表，信号到来时逐个关闭一次。
+    const registry = HyperrealitySystem._instanceRegistry
+      || (HyperrealitySystem._instanceRegistry = new Set());
+    registry.add(this);
 
+    if (HyperrealitySystem._signalHandlersInstalled) return;
+    HyperrealitySystem._signalHandlersInstalled = true;
+
+    const shutdownAll = (signal) => {
+      const instances = [...registry];
+      if (instances.length === 0) return;
+      console.log(`\n[HyperrealitySystem] 收到 ${signal}，启动 gracefulShutdown（${instances.length} 个实例）...`);
+      for (const inst of instances) {
+        // 实例级防重入 guard：每实例只关闭一次
+        if (inst._shuttingDown) continue;
+        inst._shuttingDown = true;
+        inst._shutdownRequested = true;
         // fire-and-forget：gracefulShutdown 自带 timeout guard 和 process.exit
         gracefulShutdown({
-          healthMonitor: this.productionEngine?.healthMonitor || null,
-          agents: [this.productionEngine, this.scriptEngine, this.renderingEngine].filter(Boolean),
+          healthMonitor: inst.productionEngine?.healthMonitor || null,
+          agents: [inst.productionEngine, inst.scriptEngine, inst.renderingEngine].filter(Boolean),
           timeoutMs: 15000
         }).catch(() => process.exit(0));
-      });
+      }
+    };
+
+    const signals = ['SIGTERM', 'SIGINT', 'SIGHUP'];
+    for (const signal of signals) {
+      process.on(signal, () => shutdownAll(signal));
     }
 
     // 未捕获异常处理（保留原有行为，但同样标记 shutdown 防止竞态）
     process.on('uncaughtException', (err) => {
       console.error('[HyperrealitySystem] 未捕获异常:', err.message);
       console.error(err.stack);
-      
-      if (this.eventBus) {
-        this.eventBus.emit('system.fatal', { error: err.message, stack: err.stack });
+
+      for (const inst of registry) {
+        if (inst.eventBus) {
+          inst.eventBus.emit('system.fatal', { error: err.message, stack: err.stack });
+        }
       }
-      
+
       setTimeout(() => process.exit(1), 1000);
     });
-    
+
     process.on('unhandledRejection', (reason, promise) => {
       console.error('[HyperrealitySystem] 未处理 rejection:', reason);
-      
-      if (this.eventBus) {
-        this.eventBus.emit('system.unhandledRejection', { reason: String(reason) });
+
+      for (const inst of registry) {
+        if (inst.eventBus) {
+          inst.eventBus.emit('system.unhandledRejection', { reason: String(reason) });
+        }
       }
     });
   }

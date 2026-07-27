@@ -11,6 +11,8 @@
 
 const fs = require('fs');
 const path = require('path');
+// 【v2.2.5-审计修复】长度上限从唯一真源读取，消除 12000/1500 就地硬编码
+const PromptLengthConfig = require('../config/prompt-length.js');
 
 class RenderPipelineGuard {
   constructor(options = {}) {
@@ -171,9 +173,11 @@ class RenderPipelineGuard {
         name: 'Prompt长度检查',
         check: (prompt) => {
           const text = prompt.prompt || '';
-          // v6.5.60-fix: 25字段系统默认12000字符，旧版8字段系统1500字符
+          // 【v2.2.5-审计修复】25字段系统上限从唯一真源 config/prompt-length.js 读取
+          // （旧值 12000 是真源 HARD_MAX 的 4 倍，溢出防护形同虚设）；
+          // 1500 仅保留给历史 8 字段旧格式 prompt 的兼容校验。
           const is25Field = /【角色】|【场景】|【动作】|【情绪】|【运镜】|【光影】/.test(text);
-          const maxLength = prompt.maxLength || (is25Field ? 12000 : 1500);
+          const maxLength = prompt.maxLength || (is25Field ? PromptLengthConfig.HARD_MAX : 1500);
           return {
             pass: text.length <= maxLength,
             message: text.length <= maxLength ? null : `Prompt ${text.length} 字符，超过 ${maxLength} 上限`,

@@ -581,41 +581,34 @@ node app/cli.js preproduction --input stories/my-story.json
 
 ### Programmatic Usage
 
+系统对外可编程入口是 `HyperrealitySystem`（`hyperreality-system/index.js`）：
+
 ```javascript
-const { SceneCardAgent } = require('./agents/scene-card-agent');
-const { ShotDesignAgentV4 } = require('./agents/shot-design-agent-v4');
-const { PromptEngineAgentV4 } = require('./agents/prompt-engine-agent-v4');
-const { DirectorReviewAgentV4 } = require('./agents/director-review-agent-v4');
+const { HyperrealitySystem } = require('./hyperreality-system');
 
-// Step 1: Generate Scene Card
-const sceneAgent = new SceneCardAgent();
-const sceneCard = await sceneAgent.generate({
-  sceneName: 'The Storm',
-  location: 'mountain ridge',
-  characters: ['alex'],
-  plot: 'Dark clouds gather, wind intensifies',
-  emotionTarget: 'fear',
-  duration: 20
-});
+const system = new HyperrealitySystem();
 
-// Step 2: Generate Shot Cards
-const shotAgent = new ShotDesignAgentV4();
-const shots = await shotAgent.generateShots(sceneCard);
+// 完整预生产管线：创作意图 + 元数据 → 剧本 → 分镜 → 25字段 Prompt → 质检
+const result = await system.create(
+  '一位登山者在暴风雪中寻找避难所',
+  {
+    title: 'Mountain Adventure',
+    target_duration: 60,
+    target_platform: ['youtube', 'tiktok'],
+    style_tags: ['cinematic', 'epic', 'hyper-realistic']
+  }
+);
 
-// Step 3: Generate Prompts
-const promptAgent = new PromptEngineAgentV4();
-for (const shot of shots) {
-  const result = await promptAgent.generate(shot, sceneCard);
-  console.log(`Shot ${shot.shot_id}: ${result.charCount} chars, quality: ${result.quality.score}`);
-}
-
-// Step 4: Director Review
-const director = new DirectorReviewAgentV4();
-for (const shot of shots) {
-  const review = await director.review(shot, sceneCard, [prevShot, nextShot]);
-  console.log(`Shot ${shot.shot_id}: ${review.status} | Score: ${review.fiveDimensions.totalScore}`);
+// result: { success, stages, shots, prompts, errors, confirmations, ... }
+if (result.success) {
+  await system.save(result, './output');
 }
 ```
+
+更细粒度的引擎级调用（剧本引擎 / 生产引擎 / 渲染引擎）见
+`hyperreality-system/engines/` 下各模块头部的用法注释；
+中间环节交付物（创意主题确认单 / 业务需求对齐清单 / PRD）的字段结构
+以各引擎生成函数为唯一权威（见 `SPEC-AUTHORITY.md`）。
 
 ---
 
@@ -649,7 +642,7 @@ curl http://localhost:3000/api/capabilities
 project:
   name: SuperMickey AI Video Generation System
   type: ai-video-generation-pipeline
-  version: 2.2.2  # 统一以 package.json 为准
+  version: 以 package.json 的 version 字段为准（禁止在此登记字面量）
 
   agent_capabilities:
     - video_preproduction

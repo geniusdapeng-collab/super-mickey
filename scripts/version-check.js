@@ -130,6 +130,28 @@ function main() {
   const canonical = uniqueVersions[0];
   console.log(`✅ [VersionCheck] 所有版本源一致: ${canonical}`);
 
+  // 【v2.2.5-审计新增】文档版本字面量扫描：
+  // 历史事故——README "agent-discovery.yaml" 段长期残留 version: 2.2.2 无人发现。
+  // 文档中登记版本字面量必然漂移，此处机器阻断（标注"废弃/失效/历史"的行豁免）。
+  const DOC_SCAN_FILES = ['README.md', 'SYSTEM.md', 'SPEC-AUTHORITY.md', 'CONTRIBUTING.md', 'BUSINESS-VALUE.md'];
+  const staleHits = [];
+  for (const doc of DOC_SCAN_FILES) {
+    const fp = path.join(ROOT, doc);
+    if (!fs.existsSync(fp)) continue;
+    const lines = fs.readFileSync(fp, 'utf-8').split('\n');
+    lines.forEach((line, i) => {
+      const m = line.match(/version[:：]\s*v?(\d+\.\d+\.\d+)/i);
+      if (m && `v${m[1]}` !== canonical && !/废弃|失效|历史|曾|旧版/.test(line)) {
+        staleHits.push(`${doc}:${i + 1} 字面量 v${m[1]} ≠ 当前 ${canonical}`);
+      }
+    });
+  }
+  if (staleHits.length > 0) {
+    console.error(`\n⛔ [VersionCheck] 文档版本字面量漂移（改为"以 package.json 为准"表述，或加失效标注）:`);
+    staleHits.forEach(h => console.error(`    ${h}`));
+    process.exit(1);
+  }
+
   // 提醒更新版本号文件（如果没有 .current-version）
   const currentVersionFile = path.join(ROOT, '.current-version');
   if (!fs.existsSync(currentVersionFile)) {

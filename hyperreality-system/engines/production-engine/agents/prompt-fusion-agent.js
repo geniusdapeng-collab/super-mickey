@@ -152,6 +152,8 @@ class PromptFusionAgent extends BaseAgent {
     // ...
     // 【审计修复】从配置文件读取,不再硬编码
     this.maxPromptLength = options.maxPromptLength || PromptLengthConfig.HARD_MAX || 12000;
+    // 【v2.2.5-审计新增】精炼后交付口径下限，从唯一真源读取（两阶段口径②）
+    this.refinedMinLength = options.refinedMinLength || PromptLengthConfig.REFINED_MIN;
     this.llmTimeout = options.llmTimeout || this.llmTimeout || 300000;
     this.llmMaxRetries = options.llmMaxRetries || 2;
     // v2.1.7: 新增跨字段一致性校验器
@@ -1616,6 +1618,13 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
       fullPrompt = this._truncateStandardPrompt(fullPrompt);
       // 截断可能产生新的断句, 再过一次精炼器的闭合修复
       fullPrompt = this._contentRefiner.refinePrompt(fullPrompt, shot);
+    }
+
+    // 【v2.2.5-审计新增】精炼后下限校验（两阶段口径的②阶段闭环）
+    // 组装阶段目标 2470-3000 在生成侧保证；此处守住精炼后交付口径的地板，
+    // 低于 REFINED_MIN 说明有效细节被过度压缩，记警告但不改写内容（精炼器权威）。
+    if (this._countChars(fullPrompt) < this.refinedMinLength) {
+      console.warn(`[PromptFusionAgent] ⚠️ 镜头 ${shot.shotId} 精炼后仅 ${this._countChars(fullPrompt)} 字符，低于精炼后下限 ${this.refinedMinLength}，请检查上游字段是否过薄`);
     }
 
     // 【v2.2.0】语言检查:检测英文输出并警告

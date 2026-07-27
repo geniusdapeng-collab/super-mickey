@@ -1,4 +1,9 @@
 /**
+ * 【v2.2.5-审计标注】分叉副本 —— 与 scripts/promptforge-director-worker.js 同源不同版
+ * （两副本 diff 达 653 行），且均未被主链路引用。保留作历史参考，
+ * 如需启用请以 scripts/ 版本为基准比对后再决策，禁止双副本并行演进。
+ */
+/**
  * PromptForge Director Worker v6.5.52 (方案F: 超简化单次调用)
  * 子进程隔离，单次LLM调用重写全部镜头Prompt
  * 目标：3-4分钟完成，避免reasoning模式累积

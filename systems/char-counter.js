@@ -1,8 +1,13 @@
+// 【v2.2.5-审计修复】长度阈值从唯一真源 config/prompt-length.js 读取，
+// 旧值 1500 是扩容前废弃规范（现行 TARGET 2470-3000 / HARD_MAX 3000）。
+// 注意：本模块仅被 scripts/promptforge-director-worker.js（legacy）引用。
+const PromptLengthConfig = require('../hyperreality-system/config/prompt-length.js');
+
 class CharCounter {
   constructor() {
-    this.TARGET_MAX = 1500;
-    this.HARD_LIMIT = 1500;
-    this.SAFETY_MARGIN = 20;
+    this.TARGET_MAX = PromptLengthConfig.TARGET_MAX;
+    this.HARD_LIMIT = PromptLengthConfig.HARD_MAX;
+    this.SAFETY_MARGIN = PromptLengthConfig.SAFETY_MARGIN;
   }
 
   count(str) {

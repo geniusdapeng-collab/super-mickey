@@ -16,6 +16,19 @@ const PromptLengthConfig = {
   FORMAT_RESERVE: 100,
   SAFETY_MARGIN: 30,
 
+  /**
+   * 【v2.2.5-审计新增】精炼后下限（两阶段长度口径）
+   * ------------------------------------------------------------
+   * 背景：旧规范要求"内容精炼后长度仍落在 TARGET 区间"，
+   * 但 FieldContentRefiner 的职责就是剥重复/矛盾/碎片（实测 2700~2927 → 1500~1800），
+   * "精炼后 ≥2470"永远不可能成立，Agent 只能注水对抗精炼器——规则自相矛盾。
+   * 现拆成两段口径，全链路统一：
+   *   ① 组装阶段（_assembleStandardPrompt 拼接完成时）：目标 [TARGET_MIN, TARGET_MAX]
+   *   ② 精炼/截断完成后（最终交付校验）：必须满足 REFINED_MIN ≤ 长度 ≤ HARD_MAX
+   * REFINED_MIN 定为 1200：低于此值说明有效细节被过度压缩，视为质量事故。
+   */
+  REFINED_MIN: 1200,
+
   getCreativeTarget(systemTemplateLen) {
     if (typeof systemTemplateLen !== 'number' || systemTemplateLen < 0) {
       systemTemplateLen = 0;
@@ -28,6 +41,12 @@ const PromptLengthConfig = {
   validate(length) {
     if (typeof length !== 'number' || isNaN(length)) return false;
     return length >= this.TARGET_MIN && length <= this.TARGET_MAX;
+  },
+
+  /** 精炼后校验（最终交付口径）：REFINED_MIN ≤ 长度 ≤ HARD_MAX */
+  validateRefined(length) {
+    if (typeof length !== 'number' || isNaN(length)) return false;
+    return length >= this.REFINED_MIN && length <= this.HARD_MAX;
   },
 
   getStatus(length) {

@@ -3,8 +3,11 @@
  */
 class DurationConstraintManager {
   constructor(options = {}) {
+    // 【v2.2.5-审计修复】下限与全链路"单镜 3-12 秒、系统上限 15 秒"规范对齐。
+    // 旧默认 min=5 会把合规的 3-4 秒镜头强制钳到 5 秒，与
+    // agent-preflight / storyboard-validator / shot-duration-allocator 的口径冲突。
     this.maxSingleShot = options.maxSingleShot || 15;
-    this.minSingleShot = options.minSingleShot || 5;
+    this.minSingleShot = options.minSingleShot || 3;
     this.maxTotalDuration = options.maxTotalDuration || 300;
     this.minTotalDuration = options.minTotalDuration || 15;
     this.enabled = options.enabled !== false;
@@ -12,7 +15,7 @@ class DurationConstraintManager {
 
     this.rhythmProfiles = {
       fast: { shotRange: [3, 8], transitionRatio: 0.15, climaxRatio: 1.2 },
-      standard: { shotRange: [5, 15], transitionRatio: 0.10, climaxRatio: 1.0 },
+      standard: { shotRange: [3, 12], transitionRatio: 0.10, climaxRatio: 1.0 },
       slow: { shotRange: [8, 15], transitionRatio: 0.05, climaxRatio: 1.3 }
     };
   }

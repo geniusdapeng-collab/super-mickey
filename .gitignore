@@ -217,3 +217,7 @@ _inherit_confirmations.sh
 
 # 运行时崩溃转储（不进入版本库）
 crash-dump-*.json
+
+# v2.2.5-审计修复：phantom gitlink（无 .gitmodules 的 submodule 指针）已从跟踪移除，
+# 防止本地同名目录被重新误提交
+short-video-system/

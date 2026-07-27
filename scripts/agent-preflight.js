@@ -105,6 +105,7 @@ try {
     targetMin: PromptLengthConfig.TARGET_MIN,
     targetMax: PromptLengthConfig.TARGET_MAX,
     hardMax: PromptLengthConfig.HARD_MAX,
+    refinedMin: PromptLengthConfig.REFINED_MIN,
   };
 } catch (e) {
   blockers.push('长度配置读取失败：hyperreality-system/config/prompt-length.js');
@@ -261,7 +262,7 @@ report.spec.discipline = {
   templatesWarning: 'templates/ 目录仅为中间态参考或弃用指引，禁止作为最终渲染 Prompt 格式与长度依据（镜头卡25字段≠渲染Prompt25字段）',
   specAuthorityMap: 'SPEC-AUTHORITY.md 为规范裁决唯一权威地图，引擎代码 > 文档',
   intermediateFormats: '中间环节交付物（创意主题确认单/业务需求对齐清单/PRD）的字段结构以各引擎模块生成函数为唯一权威，禁止按技能或文档自带的格式清单执行',
-  contentRefiner: '提示词组装完成后必须执行内容精炼（六类规则见上方【内容精炼规则】），再核验长度落于权威区间；精炼环节归属须在交付时说明',
+  contentRefiner: '提示词组装完成后必须执行内容精炼（六类规则见上方【内容精炼规则】），再按两阶段口径核验长度（见上方【长度标准】）；精炼环节归属须在交付时说明',
   skillExecution: '技能库环节（如好莱坞摄影技能路由）必须用镜头真实元数据实际运行匹配逻辑，禁止虚构技能命中',
 };
 
@@ -289,7 +290,7 @@ if (JSON_MODE) {
   console.log(`  【片头专属字段】共 ${of.length} 个（片头镜头 = 上述 ${f.length} + 以下 ${of.length} = ${report.spec.fieldCounts?.opening} 个标签；审核标准 ${report.spec.auditStandards?.openingMin ?? 30}，≥${report.spec.auditStandards?.openingMin ?? 30} 即 ✅）：`);
   of.forEach((label, i) => console.log(`    ${String(f.length + i + 1).padStart(2, '0')}.【${label}】`));
   console.log('');
-  console.log(`  【长度标准】目标 ${L.targetMin}-${L.targetMax} 字符，硬上限 ${L.hardMax}（低于 ${L.targetMin} 必须补足细节密度）`);
+  console.log(`  【长度标准】组装阶段目标 ${L.targetMin}-${L.targetMax} 字符，硬上限 ${L.hardMax}；精炼完成后交付口径 ≥${L.refinedMin} 且 ≤${L.hardMax}（两阶段口径，唯一真源 config/prompt-length.js）`);
   console.log('');
   const IF = report.spec.intermediateFormats || {};
   if (IF.creativeTheme) {

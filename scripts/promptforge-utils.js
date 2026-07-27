@@ -1,3 +1,9 @@
+/**
+ * 【v2.2.5-审计标注】LEGACY 脚本 —— 长度阈值字面值（980/990 等）为扩容前废弃规范。
+ * 现行唯一真源：hyperreality-system/config/prompt-length.js
+ * （组装目标 2470-3000 / HARD_MAX 3000 / 精炼后下限 REFINED_MIN 1200）。
+ * 本脚本不在主链路上，保留作历史参考；新流程请勿以其字面值为准。
+ */
 // scripts/promptforge-utils.js - 提取、清洗、压缩工具
 
 function stripCodeFences(text = '') {

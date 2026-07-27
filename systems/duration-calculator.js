@@ -3,18 +3,23 @@
  * 根据 narration 字数自动计算镜头时长
  */
 
+// 【v2.2.5-审计修复】语速从唯一真源 config/speech-rate.js 读取，
+// 旧值 4.0-5.0 与真源基准（normal 3.5 / limit 4.5）冲突。
+// 注意：本模块当前未被主链路引用（保留作历史参考）。
+const SpeechRate = require('../hyperreality-system/config/speech-rate.js');
+
 class DurationCalculator {
   constructor(config = {}) {
     this.config = {
-      // 语速配置（字/秒）- 按场景类型动态选择
+      // 语速配置（字/秒）- 按场景类型动态选择，全部锚定真源档位
       speechSpeed: {
-        'host': 4.0,        // 开场白 - 偏慢，亲切感
-        'explanation': 4.5,  // 科普讲解 - 标准
-        'interaction': 5.0,  // 互动对话 - 偏快
-        'symptom': 4.5,      // 症状讲解
-        'lab': 4.5,          // 实验室讲解
-        'summary': 4.0,      // 总结 - 偏慢，清晰
-        'default': 4.5
+        'host': SpeechRate.RATES.slow,      // 开场白 - 偏慢，亲切感
+        'explanation': SpeechRate.NORMAL,   // 科普讲解 - 标准
+        'interaction': SpeechRate.RATES.fast, // 互动对话 - 偏快
+        'symptom': SpeechRate.NORMAL,       // 症状讲解
+        'lab': SpeechRate.NORMAL,           // 实验室讲解
+        'summary': SpeechRate.RATES.slow,   // 总结 - 偏慢，清晰
+        'default': SpeechRate.NORMAL
       },
       // API限制
       minDuration: 3,       // 最短3秒

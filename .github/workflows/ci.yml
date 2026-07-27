@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Version consistency check
+        run: node scripts/version-check.js
+
+      - name: Agent preflight (spec authority gate)
+        run: node scripts/agent-preflight.js
+
+      - name: Module load test
+        run: node tests/module-load-test.js
+
+      - name: Integration test
+        run: node tests/panda-cineforge-integration-test.js

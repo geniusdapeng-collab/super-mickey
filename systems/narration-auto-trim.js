@@ -19,20 +19,25 @@
  * 4. 精简后重新验证
  */
 
+// 【v2.2.5-审计修复】语速从唯一真源 config/speech-rate.js 读取，
+// 旧值 4.0-5.0 与真源基准（normal 3.5 / limit 4.5）冲突。
+// 注意：本模块当前未被主链路引用（保留作历史参考）。
+const SpeechRate = require('../hyperreality-system/config/speech-rate.js');
+
 class NarrationAutoTrim {
   constructor(config = {}) {
     this.config = {
-      // 语速配置（字/秒）
+      // 语速配置（字/秒）：慢节奏场景取真源 normal，快节奏取真源 fast，不超真源 limit
       speedMap: {
-        'opening': 4.0,
-        'definition': 4.5,
-        'explanation': 4.5,
-        'demonstration': 4.5,
-        'interaction': 5.0,
-        'transition': 5.0,
-        'highlight': 4.5,
-        'closing': 4.0,
-        'default': 4.5
+        'opening': SpeechRate.RATES.slow,
+        'definition': SpeechRate.NORMAL,
+        'explanation': SpeechRate.NORMAL,
+        'demonstration': SpeechRate.NORMAL,
+        'interaction': SpeechRate.RATES.fast,
+        'transition': SpeechRate.RATES.fast,
+        'highlight': SpeechRate.NORMAL,
+        'closing': SpeechRate.RATES.slow,
+        'default': SpeechRate.NORMAL
       },
       // 安全余量系数（实际容量 = 语速×时长×余量）
       safetyMargin: 0.85,

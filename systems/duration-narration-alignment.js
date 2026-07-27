@@ -8,13 +8,20 @@
  * 解决「时长分配基于估算，但实际 narration 字数随机膨胀」的系统性问题。
  *
  * 挂载点：Stage 7.4（Stage 7.3 之后、Stage 8 之前）
+ *
+ * 【v2.2.5-审计修复】语速从唯一真源 config/speech-rate.js 读取。
+ * 旧值 5.0 字/秒与真源基准 3.5 冲突，会把"超速"误判为"合规"。
+ * 注意：本模块当前未被主链路引用（保留作历史参考），新代码请走
+ * hyperreality-system/utils/dialogue-timing-calculator.js。
  */
+
+const SpeechRate = require('../hyperreality-system/config/speech-rate.js');
 
 class DurationNarrationAlignment {
   constructor(config = {}) {
     this.config = {
-      // 舒适语速（字/秒），与故事板校验器一致
-      comfortSpeed: 5.0,
+      // 舒适语速（字/秒），与唯一真源一致
+      comfortSpeed: SpeechRate.NORMAL,
       // 留白缓冲（秒），结尾镜需要额外留白
       endingBuffer: 1.0,
       // 普通镜头缓冲

@@ -1,5 +1,7 @@
 // 引入 LLM 引擎用于语义检查
 const { LLMEngine } = require('./llm-reasoning-engine');
+// 【v2.2.5-审计修复】长度阈值从唯一真源读取，消除 700/1500/980 三个互相打架的就地硬编码
+const PromptLengthConfig = require('../../../config/prompt-length.js');
 
 /**
  * Pipeline Output Integrity Validator v1.0
@@ -843,15 +845,18 @@ Prompt: ${item.prompt?.slice(0, 300) || '空'}
           check.details.push(`${result.shotId || idx}: prompt为空`);
           this.errors.push(`STAGE-11: ${result.shotId || '镜头' + idx}Prompt为空`);
         }
-        if (result.prompt && result.prompt.length < 700) {
+        // 【v2.2.5-审计修复】阈值对齐唯一真源两阶段口径：
+        // 精炼后交付 prompt 须满足 REFINED_MIN ≤ 长度 ≤ HARD_MAX。
+        // 旧逻辑 <700 报错 / >1500 报错 / 文案却写"超过980上限"，三个数字互不相干且全部是废弃规范。
+        if (result.prompt && result.prompt.length < PromptLengthConfig.REFINED_MIN) {
           check.passed = false;
-          check.details.push(`${result.shotId || idx}: prompt仅${result.prompt.length}字符，严重不足`);
-          this.errors.push(`STAGE-11: ${result.shotId || '镜头' + idx}Prompt仅${result.prompt.length}字符，远低于700字符最低要求`);
+          check.details.push(`${result.shotId || idx}: prompt仅${result.prompt.length}字符，低于精炼后下限${PromptLengthConfig.REFINED_MIN}`);
+          this.errors.push(`STAGE-11: ${result.shotId || '镜头' + idx}Prompt仅${result.prompt.length}字符，低于精炼后下限${PromptLengthConfig.REFINED_MIN}`);
         }
-        if (result.prompt && result.prompt.length > 1500) {
+        if (result.prompt && result.prompt.length > PromptLengthConfig.HARD_MAX) {
           check.passed = false;
           check.details.push(`${result.shotId || idx}: prompt${result.prompt.length}字符超标`);
-          this.errors.push(`STAGE-11: ${result.shotId || '镜头' + idx}Prompt${result.prompt.length}字符超过980上限`);
+          this.errors.push(`STAGE-11: ${result.shotId || '镜头' + idx}Prompt${result.prompt.length}字符超过${PromptLengthConfig.HARD_MAX}上限`);
         }
       });
     }

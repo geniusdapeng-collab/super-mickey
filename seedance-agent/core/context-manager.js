@@ -15,6 +15,26 @@ import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
 
+// ============ 【v2.2.5-审计新增】shell 命令注入防护 ============
+// 本模块所有 ffmpeg/ffprobe 命令以字符串拼接进 shell，assetPath 来自素材清单、
+// inPoint/outPoint/time 可能来自 LLM 生成的时间线——不加校验即存在命令注入面。
+/** 数值参数：强制为有限数字，否则抛错（拒绝字符串注入如 "1; rm -rf /"） */
+function _safeNum(value, name) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) {
+    throw new Error(`[ContextManager] ${name} 必须是有限数字，收到: ${JSON.stringify(value)}`);
+  }
+  return n;
+}
+/** 路径参数：拒绝双引号及 shell 元字符（路径被双引号包裹，含 " 即可逃逸） */
+function _safePath(p, name = 'path') {
+  const s = String(p);
+  if (/["`$;|&<>\n]/.test(s)) {
+    throw new Error(`[ContextManager] ${name} 含非法 shell 字符: ${JSON.stringify(s)}`);
+  }
+  return s;
+}
+
 // ============ 五级分辨率配置 ============
 const RESOLUTION_LEVELS = {
   'proxy': {
@@ -106,7 +126,8 @@ export class ContextManager {
     
     for (const asset of assets) {
       const assetId = this.getAssetId(asset);
-      const proxyPath = path.join(this.proxyDir, `${assetId}_480p.mp4`);
+      assetPath = _safePath(assetPath, 'assetPath');
+    const proxyPath = path.join(this.proxyDir, `${assetId}_480p.mp4`);
       
       // 检查代理文件是否存在
       if (fs.existsSync(proxyPath)) {
@@ -133,6 +154,7 @@ export class ContextManager {
   }
   
   async generateProxy(assetPath, assetId) {
+    assetPath = _safePath(assetPath, 'assetPath');
     const proxyPath = path.join(this.proxyDir, `${assetId}_480p.mp4`);
     
     if (fs.existsSync(proxyPath)) {
@@ -168,9 +190,12 @@ export class ContextManager {
     // 生成裁剪片段
     try {
       const proxyPath = await this.getProxyPath(asset, assetId);
-      const duration = outPoint - inPoint;
+      const safeIn = _safeNum(inPoint, 'inPoint');
+      const safeOut = _safeNum(outPoint, 'outPoint');
+      const duration = safeOut - safeIn;
+      if (duration <= 0) throw new Error(`[ContextManager] 裁剪时长必须为正: ${duration}`);
       
-      const cmd = `ffmpeg -i "${proxyPath}" -ss ${inPoint} -t ${duration} -c copy -y "${cachedPath}"`;
+      const cmd = `ffmpeg -i "${proxyPath}" -ss ${safeIn} -t ${duration} -c copy -y "${cachedPath}"`;
       execSync(cmd, { stdio: 'pipe', timeout: 60000 });
       
       this.cacheMisses++;
@@ -211,7 +236,7 @@ export class ContextManager {
     
     try {
       const proxyPath = await this.getProxyPath(asset, assetId);
-      const time = frameNum / 30; // 假设 30fps
+      const time = _safeNum(frameNum, 'frameNum') / 30; // 假设 30fps
       
       const cmd = `ffmpeg -i "${proxyPath}" -ss ${time} -vframes 1 -q:v 2 -y "${framePath}"`;
       execSync(cmd, { stdio: 'pipe', timeout: 30000 });
@@ -267,7 +292,7 @@ export class ContextManager {
     
     try {
       const proxyPath = await this.getProxyPath(asset, assetId);
-      const cmd = `ffmpeg -i "${proxyPath}" -ss ${time} -vframes 1 -s 160x90 -y "${thumbPath}"`;
+      const cmd = `ffmpeg -i "${proxyPath}" -ss ${_safeNum(time, 'time')} -vframes 1 -s 160x90 -y "${thumbPath}"`;
       execSync(cmd, { stdio: 'pipe', timeout: 30000 });
       return thumbPath;
     } catch (error) {
@@ -317,9 +342,9 @@ export class ContextManager {
     try {
       let cmd;
       if (targetLevel === 'proxy' || targetLevel === 'edit') {
-        cmd = `ffmpeg -i "${originalPath}" -vf "scale=${level.scale}" -c:v ${level.codec} -preset ${level.preset} -crf ${level.crf} -an -y "${outputPath}"`;
+        cmd = `ffmpeg -i "${_safePath(originalPath, 'originalPath')}" -vf "scale=${level.scale}" -c:v ${level.codec} -preset ${level.preset} -crf ${level.crf} -an -y "${outputPath}"`;
       } else {
-        cmd = `ffmpeg -i "${originalPath}" -c:v ${level.codec} -profile:v ${level.profile} -an -y "${outputPath}"`;
+        cmd = `ffmpeg -i "${_safePath(originalPath, 'originalPath')}" -c:v ${level.codec} -profile:v ${level.profile} -an -y "${outputPath}"`;
       }
       
       execSync(cmd, { stdio: 'pipe', timeout: 600000 });
@@ -402,6 +427,7 @@ export class ContextManager {
   }
   
   getProxyPath(asset, assetId) {
+    assetPath = _safePath(assetPath, 'assetPath');
     const proxyPath = path.join(this.proxyDir, `${assetId}_480p.mp4`);
     if (fs.existsSync(proxyPath)) {
       return proxyPath;
@@ -420,7 +446,7 @@ export class ContextManager {
   
   async getDuration(assetPath) {
     try {
-      const cmd = `ffprobe -v error -show_entries format=duration -of csv=p=0 "${assetPath}"`;
+      const cmd = `ffprobe -v error -show_entries format=duration -of csv=p=0 "${_safePath(assetPath, 'assetPath')}"`;
       const duration = execSync(cmd, { encoding: 'utf8', timeout: 10000 });
       return parseFloat(duration.trim());
     } catch {
@@ -430,7 +456,7 @@ export class ContextManager {
   
   async getResolution(assetPath) {
     try {
-      const cmd = `ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 "${assetPath}"`;
+      const cmd = `ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 "${_safePath(assetPath, 'assetPath')}"`;
       const resolution = execSync(cmd, { encoding: 'utf8', timeout: 10000 });
       return resolution.trim();
     } catch {
