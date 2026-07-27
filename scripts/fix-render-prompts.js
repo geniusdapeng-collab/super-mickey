@@ -64,10 +64,13 @@ function extractPromptFromOutput(llmOutput) {
     }
   }
   
-  // 截取到990字符以内
-  if (prompt.length > 990) {
-    console.log(`  ⚠️ Prompt ${prompt.length}字符，截取到990字符`);
-    prompt = prompt.substring(0, 990);
+  // 截取到系统硬上限以内（唯一权威：config/prompt-length.js 的 HARD_MAX，当前 3000）
+  // 【修复】旧逻辑硬编码 990 字符，与扩容后的系统标准脱节，会把合规提示词截断到 1/3
+  const { PromptLengthConfig } = require('../hyperreality-system/config/prompt-length.js');
+  const HARD_MAX = PromptLengthConfig.HARD_MAX;
+  if (prompt.length > HARD_MAX) {
+    console.log(`  ⚠️ Prompt ${prompt.length}字符，截取到${HARD_MAX}字符`);
+    prompt = prompt.substring(0, HARD_MAX);
   }
   
   return prompt.trim();

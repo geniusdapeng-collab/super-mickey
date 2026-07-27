@@ -12,7 +12,7 @@
 <p align="center">
   <a href="https://github.com/geniusdapeng-collab/super-mickey/stargazers"><img src="https://img.shields.io/github/stars/geniusdapeng-collab/super-mickey?style=social" alt="Stars"/></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License"/></a>
-  <a href="#"><img src="https://img.shields.io/badge/Version-6.5.53--beta-green.svg" alt="Version"/></a>
+  <a href="#"><img src="https://img.shields.io/badge/Version-2.2.2-green.svg" alt="Version"/></a>
   <a href="#"><img src="https://img.shields.io/badge/Node.js-%3E%3D24-339933?logo=node.js" alt="Node"/></a>
   <a href="#"><img src="https://img.shields.io/badge/AI--Native-Ready-ff6b6b.svg" alt="AI-Native"/></a>
   <a href="#"><img src="https://img.shields.io/badge/Render-Seedance%202.0-FF6B35" alt="Render"/></a>

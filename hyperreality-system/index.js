@@ -2,7 +2,7 @@
 // hyperreality-system/index.js
 // SuperMickey - 超级小香宝统一入口
 // 深度融合:剧本引擎 → 适配层 → 制作引擎 → 完整镜头
-// 版本:v2.2.1-refine | 日期:2026-07-05
+// 版本:v2.2.2 | 日期:2026-07-27
 
 require('./engines/process-guard'); // 【审计修复】全局崩溃防护,必须最先加载
 

@@ -214,3 +214,6 @@ hyperreality-system/_deprecated_scripts/
 debug_reasoning.json
 _inherit_confirmations.sh
 # Graphify analysis outputs\ngraphify-out/
+
+# 运行时崩溃转储（不进入版本库）
+crash-dump-*.json
