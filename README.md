@@ -1,7 +1,7 @@
 # SuperMickey AI Video Generation System
 
 <p align="center">
-  <img src="./assets/supermickey-logo.png" alt="SuperMickey Logo" width="180"/>
+  <img src="./assets/logo.png" alt="SuperMickey Logo" width="180"/>
 </p>
 
 <p align="center">
@@ -12,8 +12,8 @@
 <p align="center">
   <a href="https://github.com/geniusdapeng-collab/super-mickey/stargazers"><img src="https://img.shields.io/github/stars/geniusdapeng-collab/super-mickey?style=social" alt="Stars"/></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License"/></a>
-  <a href="#"><img src="https://img.shields.io/badge/Version-2.2.2-green.svg" alt="Version"/></a>
-  <a href="#"><img src="https://img.shields.io/badge/Node.js-%3E%3D24-339933?logo=node.js" alt="Node"/></a>
+  <a href="#"><img src="https://img.shields.io/badge/Version-以_package.json_为准-green.svg" alt="Version"/></a>
+  <a href="#"><img src="https://img.shields.io/badge/Node.js-%3E%3D18-339933?logo=node.js" alt="Node"/></a>
   <a href="#"><img src="https://img.shields.io/badge/AI--Native-Ready-ff6b6b.svg" alt="AI-Native"/></a>
   <a href="#"><img src="https://img.shields.io/badge/Render-Seedance%202.0-FF6B35" alt="Render"/></a>
 </p>
@@ -258,7 +258,7 @@ Generates a **Scene Card** that controls the visual direction for all shots in a
 **Purpose:** Breaks scenes into individual shots with **25 structured fields**.
 
 <p align="center">
-  <img src="./assets/shot-card-model.png" alt="Shot Card Data Model" width="100%"/>
+  <img src="./assets/arch-3-shotcard.png" alt="Shot Card Data Model" width="100%"/>
 </p>
 
 **25 Field Categories:**
@@ -346,7 +346,7 @@ Step 8: Closing Anchor        (HIGH — NEVER compressed)
 **Purpose:** Automated quality assurance before rendering — the gatekeeper.
 
 <p align="center">
-  <img src="./assets/director-review-framework.png" alt="Director Review Framework" width="100%"/>
+  <img src="./assets/arch-4-director.png" alt="Director Review Framework" width="100%"/>
 </p>
 
 **Six-Question Review Framework:**
@@ -507,8 +507,8 @@ Each genre automatically adjusts:
 ### Prerequisites
 
 ```bash
-# Node.js 24+ (required for native fetch, structuredClone)
-node --version  # >= 24.0.0
+# Node.js 18+（与 package.json engines 口径一致；native fetch, structuredClone 均可用）
+node --version  # >= 18.0.0
 
 # API Keys (set as environment variables)
 export ARK_API_KEY="your-volcengine-api-key"
@@ -666,7 +666,7 @@ project:
     programmatic: "require('./hyperreality-system/orchestration/super-mickey-saga-adapter.js')"
 
   dependencies:
-    runtime: "Node.js >= 24"
+    runtime: "Node.js >= 18"
     apis:
       - name: "Volcano Engine Seedance 2.0"
         purpose: "Video rendering"
@@ -690,51 +690,53 @@ project:
 ## Project Structure
 
 ```
-supermickey/
-├── agents/                          # 4 Specialized AI Agents
-│   ├── director-review-agent-v4.js  # Quality assurance agent
-│   ├── prompt-engine-agent-v4.js    # Prompt generation agent
-│   ├── scene-card-agent.js          # Visual strategy agent
-│   └── shot-design-agent-v4.js      # Shot design agent
-├── app/                             # CLI Entry Point
-│   ├── cli.js                       # Command-line interface
-│   └── commands/
-│       └── preproduction.js         # Full pipeline command
-├── architecture-v2/                 # Interface Contracts
-│   └── interface-contract-v1.md     # 4-layer IC specification
-├── config/                          # Configuration
-│   ├── production-bible.js          # Project knowledge base
-│   ├── prompt-length.js             # Length constraints
-│   ├── theme-config.js              # 11-genre theme configuration
-│   ├── quality-dimensions.js        # Quality scoring config
-│   └── degradation-matrix.js        # Graceful degradation rules
-├── core/                            # Core Infrastructure
-│   ├── event-bus.js                 # Async agent communication
-│   ├── saga-orchestrator.js         # Distributed transactions
-│   ├── llm-gateway.js               # LLM routing & fallback
-│   ├── immutable-shot.js            # Immutable shot records
-│   ├── prompt-assembly-engine.js    # Prompt construction
-│   ├── render-quality-loop.js       # Quality feedback loop
-│   └── visual-continuity-engine.js  # Continuity tracking
-├── systems/                         # Production Systems
-│   ├── llm-reasoning-engine.js      # LLM abstraction layer
-│   ├── production-bible.js          # Knowledge base loader
-│   ├── light-tier.js                # Lighting classification
-│   ├── quality-scorer.js            # 5-dimension scoring
-│   ├── continuity-manager.js        # Shot continuity
-│   ├── prompt-guardian.js           # Auto prompt repair
-│   ├── preproduction-service.js     # Pipeline orchestrator
-│   ├── realism-prompt-enhancer.js   # 7-dim realism engine
-│   ├── camera-movement-system.js    # 6-base camera movements
-│   └── compliance-checker.js        # 3-level content safety
-├── templates/                       # Output Templates
-│   ├── scene-card-template.md
-│   ├── shot-card-v4-template.md
-│   └── director-review-form.md
-├── characters/                      # Character Reference Images
-├── stories/                         # Story Inputs (JSON)
-└── output/                          # Generated Artifacts
+super-mickey/
+├── app/
+│   ├── cli.js                       # CLI 入口（npm start / npm run preproduction）
+│   └── commands/preproduction.js    # 预生产管线命令
+├── hyperreality-system/             # 主管线系统（index.js 为总控流水线）
+│   ├── config/                      # 规范唯一真源：prompt-length / speech-rate / audit-standards / error-codes
+│   ├── engines/                     # 引擎群：production-engine / prd-generator /
+│   │                                #   requirement-discovery-engine / script-engine / rendering-engine…
+│   ├── skills/                      # 技能库：creative-theme-generator / hollywood-cinematography / panda-cineforge
+│   └── shields/                     # 稳定性防护
+├── systems/                         # 共享组件库（LLM 网关、连续性、合规、定妆照等 100+ 模块）
+├── scripts/
+│   ├── agent-preflight.js           # ★ 执行前单命令入口：全量规范卡（退出码 0 才能继续）
+│   ├── version-check.js             # 版本三源一致性校验
+│   └── internal/                    # 作者内部同步工具（克隆者无需运行）
+├── tests/                           # 模块加载测试 + panda-cineforge 集成测试（npm test）
+├── templates/                       # 中间态模板（镜头卡/场景卡；≠最终渲染 Prompt 格式）
+├── docs/                            # 文档
+├── architecture-v2/                 # 接口契约
+├── seedance-agent/                  # 渲染子系统（内部历史编号 v6.x，与系统版本无关）
+├── seedance-shot-design/            # 渲染子系统（同上）
+├── seedance-director/               # 渲染子系统（同上）
+├── run-preproduction-iron-pot-star.js  # 预生产独立入口（README 示例所用）
+├── SPEC-AUTHORITY.md                # ★ 规范裁决唯一权威地图（引擎代码 > 文档）
+├── SYSTEM.md                        # 系统总览
+└── package.json                     # 系统版本号唯一权威来源
 ```
+
+### 开发者快速上手
+
+```bash
+git clone https://github.com/geniusdapeng-collab/super-mickey.git
+cd super-mickey
+npm install
+
+# 第一步永远是它：一条命令拿到全部现行规范（字段/长度/语速/审核门槛/
+# 中间环节交付物格式/内容精炼规则/执行纪律），并机器阻断陈旧文档
+node scripts/agent-preflight.js        # 退出码必须为 0
+
+npm test                               # 模块加载 + 集成测试
+npm run release:verify                 # 版本三源 + 预检 + 加载测试，发布前自检
+```
+
+**两条铁律**：① 任何"规范是什么"的问题，以 `agent-preflight.js` 规范卡与
+`SPEC-AUTHORITY.md` 权威地图为准，不要从文档段落里抄数值；② 渲染子系统目录
+（seedance-*）内出现的 v6.x 字样为其内部历史编号，与系统版本无关，系统版本
+只看根目录 package.json。
 
 ---
 

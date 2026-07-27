@@ -19,8 +19,10 @@
 |--------|--------------|----------|
 | 系统版本号 | `package.json` → `"version"` | 禁止从 Git tag / 文档标题 / 子系统编号（v6.x）推断 |
 | 版本一致性校验 | `scripts/version-check.js` | 三源校验：`.current-version` / `package.json` / `index.js` 头部注释，提交前必过 |
-| 内容镜头 25 字段 | `hyperreality-system/engines/production-engine/agents/prompt-fusion-agent.js` | 01.【语言约束】→ 25.【角色一致性】，序号化【】标签格式 |
-| 片头镜头 30 字段 | 同上（`isOpening` 分支） | 25 标准 + 5 片头专属：主标题内容 / 副标题内容 / 标题动画设计 / 标题字体设计 / 开场音频设计 |
+| 内容镜头 26 字段 | `hyperreality-system/engines/production-engine/agents/prompt-fusion-agent.js` | 01.【语言约束】→ 26.【角色一致性】，序号化【】标签格式 |
+| 片头镜头 31 字段 | 同上（`isOpening` 分支） | 26 标准 + 5 片头专属：主标题内容 / 副标题内容 / 标题动画设计 / 标题字体设计 / 开场音频设计 |
+| 台词速率 | `hyperreality-system/config/speech-rate.js` | 基准 3.5 字/秒、极限 4.5 字/秒、台词占镜头时长 ≤80%；**"4-4.5 字/秒"等旧口径一律无效** |
+| 审核门槛 | `hyperreality-system/config/audit-standards.js` | 内容镜头字段数 ≥25、片头镜头 ≥30（门槛为下限，实际字段数以 prompt-fusion-agent.js 解析为准） |
 | 字段校验分级 | `hyperreality-system/engines/field-standardizer.js` | P0 致命 12 字段、P1 核心 7 字段、导出前 25 字段非空硬检查 |
 | Prompt 长度 | `hyperreality-system/config/prompt-length.js` | TARGET 2470-3000 / HARD_MAX 3000；**990、1400-1500 等旧数字一律无效** |
 | 审核报告格式 | `hyperreality-system/index.js`（审核报告生成器） | 镜头总览五列核验（字符数/字段数/定妆照/时间轴/约束）+ 7 条审核须知 |

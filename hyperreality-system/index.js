@@ -2,7 +2,7 @@
 // hyperreality-system/index.js
 // SuperMickey - 超级小香宝统一入口
 // 深度融合:剧本引擎 → 适配层 → 制作引擎 → 完整镜头
-// 版本:v2.2.3 | 日期:2026-07-28
+// 版本:v2.2.4 | 日期:2026-07-28
 
 require('./engines/process-guard'); // 【审计修复】全局崩溃防护,必须最先加载
 
@@ -24,6 +24,7 @@ const { PortraitResolver } = require('./engines/portrait-resolver');
 const { routeAndEnhance } = require('./skills/hollywood-cinematography/cinematography-skill-router');
 const { FieldGuard } = require('./engines/field-guard');
 const ErrorCodes = require('./config/error-codes');
+const AUDIT_STANDARDS = require('./config/audit-standards');
 const { StabilityShield } = require('./shields/stability-shield');
 
 // 【修复 P3-3】引入优雅关闭工具，统一 SIGTERM/SIGINT 清理逻辑
@@ -3072,8 +3073,8 @@ class HyperrealitySystem {
 
     lines.push('## ⚠️ 审核须知');
     lines.push('');
-    lines.push('1. 【内容镜头】确认有 25 个字段(序号01-25)');
-    lines.push('2. 【片头镜头】确认有 30 个字段(序号01-30,含5个片头专属字段)');
+    lines.push(`1. 【内容镜头】字段数达到审核标准(≥${AUDIT_STANDARDS.CONTENT_MIN},以镜头总览实测数为准)`);
+    lines.push(`2. 【片头镜头】字段数达到审核标准(≥${AUDIT_STANDARDS.OPENING_MIN},含片头专属字段,以镜头总览实测数为准)`);
     lines.push('3. 确认【情绪】字段有具体面部/眼神描述,不是简单关键词');
     lines.push('4. 确认角色定妆照引用正确');
     lines.push('5. 确认负面约束(暗黑风/金属光泽)已包含');

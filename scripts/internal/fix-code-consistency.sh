@@ -1,4 +1,6 @@
 #!/bin/bash
+# 【内部同步工具】本脚本硬编码了作者本机 workspace 路径，仅用于作者内部环境同步，
+# 不属于通用 CI 流程。克隆本仓库的开发者无需也不应运行本脚本。
 # 代码版本一致性修复脚本
 # 解决 super-mickey/systems/ 与 workspace/systems/ 版本不一致问题
 

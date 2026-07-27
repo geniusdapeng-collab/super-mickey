@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * 预生产标准入口 - SuperMickey v2.1.13
+ * 预生产标准入口 - SuperMickey（系统版本以根目录 package.json 为唯一权威）
  * 基于 25字段体系
  * 完整预生产六步法执行
  *
@@ -38,6 +38,7 @@
 const { HyperrealitySystem } = require('./hyperreality-system');
 const fs = require('fs');
 const path = require('path');
+const SYSTEM_VERSION = require('./package.json').version; // 版本号唯一权威源
 const runCoordinator = require('./scripts/run-coordinator');
 
 // 【v2.1.10-hotfix】确保 HUMAN_CONFIRMATION_SECRET 密钥同步
@@ -190,7 +191,7 @@ async function runPreproduction() {
     title = userIntent.split(/[,。!?;::]/)[0].substring(0, 40) || '未命名主题';
   }
 
-  console.log('🔥 [HyperrealitySystem v2.1.13] 通用预生产启动');
+  console.log(`🔥 [HyperrealitySystem v${SYSTEM_VERSION}] 通用预生产启动`);
   console.log('='.repeat(70));
   console.log(`输入模式: ${parsed.mode === 'structured' ? '结构化JSON' : '字符串'}`);
   console.log(`主题: ${title}`);

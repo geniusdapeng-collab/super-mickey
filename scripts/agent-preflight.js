@@ -29,7 +29,8 @@ const report = { checks: {}, spec: {} };
 /* ---------- 1. 工作区完整性（克隆文件检出丢失防护） ---------- */
 try {
   const status = execSync('git status --short', { cwd: ROOT, encoding: 'utf-8' });
-  const lost = status.split('\n').filter(l => l.startsWith(' D ') || l.startsWith('D  '));
+  // 仅未暂存的检出丢失（' D'）视为工作区不完整；已暂存删除（'D '）属正常变更，不阻断
+  const lost = status.split('\n').filter(l => l.startsWith(' D '));
   if (lost.length > 0) {
     blockers.push(`工作区不完整：${lost.length} 个文件检出丢失（${lost.slice(0, 5).map(l => l.slice(3)).join(', ')}${lost.length > 5 ? ' 等' : ''}）。先执行 git checkout -- . 恢复后再继续`);
     report.checks.worktree = { ok: false, lostFiles: lost.map(l => l.slice(3)) };
@@ -107,6 +108,20 @@ try {
   };
 } catch (e) {
   blockers.push('长度配置读取失败：hyperreality-system/config/prompt-length.js');
+}
+
+/* ---------- 5b. 台词速率与审核门槛（从 config 实时读取，禁止就地硬编码） ---------- */
+try {
+  const SpeechRate = require(path.join(ROOT, 'hyperreality-system/config/speech-rate.js'));
+  report.spec.speechRate = { normal: SpeechRate.NORMAL, limit: SpeechRate.LIMIT, maxDialogueRatio: SpeechRate.MAX_DIALOGUE_RATIO };
+} catch (e) {
+  blockers.push('语速配置读取失败：hyperreality-system/config/speech-rate.js');
+}
+try {
+  const AuditStandards = require(path.join(ROOT, 'hyperreality-system/config/audit-standards.js'));
+  report.spec.auditStandards = { contentMin: AuditStandards.CONTENT_MIN, openingMin: AuditStandards.OPENING_MIN };
+} catch (e) {
+  blockers.push('审核门槛配置读取失败：hyperreality-system/config/audit-standards.js');
 }
 
 /* ---------- 6. 中间环节交付物格式（从三个引擎模块的生成函数源码实时解析） ---------- */
@@ -242,7 +257,7 @@ report.spec.discipline = {
   originalStoryPassthrough: '用户输入原文必须原样进入业务需求洞察与 PRD（_originalStoryText 链路），禁止改写省略',
   languageConstraint: '字段正文全部中文；英文仅允许【负面约束】固定短语与【基础】质量锚点词',
   emotionField: '【情绪】字段必须有具体面部/眼神描述，禁止只写关键词',
-  shotDuration: '单镜 3-12 秒，系统上限 15 秒；台词按 4-4.5 字/秒核验时长匹配',
+  shotDuration: `单镜 3-12 秒，系统上限 15 秒；台词速率基准 ${report.spec.speechRate?.normal} 字/秒、极限 ${report.spec.speechRate?.limit} 字/秒、占镜头时长 ≤${(report.spec.speechRate?.maxDialogueRatio ?? 0.8) * 100}%（唯一真源: config/speech-rate.js）`,
   templatesWarning: 'templates/ 目录仅为中间态参考或弃用指引，禁止作为最终渲染 Prompt 格式与长度依据（镜头卡25字段≠渲染Prompt25字段）',
   specAuthorityMap: 'SPEC-AUTHORITY.md 为规范裁决唯一权威地图，引擎代码 > 文档',
   intermediateFormats: '中间环节交付物（创意主题确认单/业务需求对齐清单/PRD）的字段结构以各引擎模块生成函数为唯一权威，禁止按技能或文档自带的格式清单执行',
@@ -269,9 +284,9 @@ if (JSON_MODE) {
   console.log(`  系统版本: v${version || '?'}（package.json 唯一权威）`);
   console.log(`  工作区完整: ${report.checks.worktree?.ok ? '✅' : '❌'}   版本三源一致: ${report.checks.versionConsistency?.ok ? '✅' : '❌'}`);
   console.log('');
-  console.log(`  【内容镜头字段】共 ${f.length} 个标签（序号 01-${String(f.length).padStart(2, '0')}，【】标签格式；审核标准 25，≥25 即 ✅）：`);
+  console.log(`  【内容镜头字段】共 ${f.length} 个标签（序号 01-${String(f.length).padStart(2, '0')}，【】标签格式；审核标准 ${report.spec.auditStandards?.contentMin ?? 25}，≥${report.spec.auditStandards?.contentMin ?? 25} 即 ✅）：`);
   f.forEach((label, i) => console.log(`    ${String(i + 1).padStart(2, '0')}.【${label}】`));
-  console.log(`  【片头专属字段】共 ${of.length} 个（片头镜头 = 上述 ${f.length} + 以下 ${of.length} = ${report.spec.fieldCounts?.opening} 个标签；审核标准 30，≥30 即 ✅）：`);
+  console.log(`  【片头专属字段】共 ${of.length} 个（片头镜头 = 上述 ${f.length} + 以下 ${of.length} = ${report.spec.fieldCounts?.opening} 个标签；审核标准 ${report.spec.auditStandards?.openingMin ?? 30}，≥${report.spec.auditStandards?.openingMin ?? 30} 即 ✅）：`);
   of.forEach((label, i) => console.log(`    ${String(f.length + i + 1).padStart(2, '0')}.【${label}】`));
   console.log('');
   console.log(`  【长度标准】目标 ${L.targetMin}-${L.targetMax} 字符，硬上限 ${L.hardMax}（低于 ${L.targetMin} 必须补足细节密度）`);

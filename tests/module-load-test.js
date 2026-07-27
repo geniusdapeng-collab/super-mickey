@@ -1,5 +1,6 @@
+const PKG_VERSION = require('../package.json').version;
 /**
- * SuperMickey v2.0.0 模块加载验证测试
+ * SuperMickey 模块加载验证测试（版本号以 package.json 为准）
  * 
  * 运行: node tests/module-load-test.js
  */
@@ -7,7 +8,7 @@
 const assert = require('assert');
 const path = require('path');
 
-console.log('🧪 [SuperMickey v2.0.0] 模块加载验证测试\n');
+console.log(`🧪 [SuperMickey v${PKG_VERSION}] 模块加载验证测试\n`);
 
 const tests = [];
 const errors = [];
@@ -168,5 +169,5 @@ if (failed > 0) {
   console.log('\n❌ 测试未全部通过');
   process.exit(1);
 } else {
-  console.log('\n✅ 所有测试通过！SuperMickey v2.0.0 模块加载正常。');
+  console.log(`\n✅ 所有测试通过！SuperMickey v${PKG_VERSION} 模块加载正常。`);
 }
