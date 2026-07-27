@@ -98,7 +98,7 @@
     "protagonist": "xiaoG"
   },
   "constraints": {
-    "max_prompt_length": 980,
+    "max_prompt_length": "唯一权威源: hyperreality-system/config/prompt-length.js, 禁止登记字面值",
     "reference_image_count": 2,
     "forbidden_elements": ["voiceover", "metal_gloss", "unnatural_eye_color"]
   }
@@ -274,8 +274,8 @@
 
   "prompt": {
     "text": "电影级远景，超写实，Nirath星球硅晶草原...",
-    "length": 976,
-    "max_length": 980
+    "length": "以权威源区间为准",
+    "max_length": "唯一权威源: hyperreality-system/config/prompt-length.js"
   },
 
   "reference_images": [

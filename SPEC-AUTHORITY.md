@@ -26,6 +26,9 @@
 | 审核报告格式 | `hyperreality-system/index.js`（审核报告生成器） | 镜头总览五列核验（字符数/字段数/定妆照/时间轴/约束）+ 7 条审核须知 |
 | 镜头设计卡（中间态） | `templates/shot-card-v4-template.md` | 仅管线内部结构数据，**不是最终渲染 Prompt 格式**，禁止混用 |
 | 原始故事文本直通 | 见提交【方案A-fix】系列 | 用户输入原文必须原样进入需求洞察确认单与 PRD 链路 |
+| 中间环节交付物格式 | `skills/creative-theme-generator/index.js`（确认单）、`engines/requirement-discovery-engine.js`（对齐清单）、`engines/prd-generator/prd-generator.js`（PRD）各自的生成函数 | 创意主题确认单字段、业务需求对齐清单章节、PRD 章节结构以生成函数源码为唯一权威，技能/文档不得自带格式清单 |
+| 内容精炼规则 | `engines/production-engine/agents/field-content-refiner.js` | 六类规则：剥英文前缀/去同义堆叠/分句去重/矛盾仲裁/碎片清理/句级闭合；挂载于组装函数 return 之前 |
+| 文档陈旧字面值扫描 | `scripts/agent-preflight.js` | 980/990/1400-1500/MAX_PROMPT_LENGTH 等长度字面值无失效标注不得出现于任何 .md 文档，命中即退出码 1；日期快照文件降级为警告 |
 
 ## 三、已弃用/仅参考清单（禁止作为执行依据）
 
@@ -47,7 +50,10 @@ node scripts/agent-preflight.js --json   # 机器可读 JSON
 
 该命令自动完成：工作区完整性检查（克隆文件丢失防护）、版本号确认、版本三源一致性校验、
 内容镜头/片头字段全量提取（实时解析 prompt-fusion-agent.js，非硬编码）、长度标准读取
-（实时读取 prompt-length.js）、执行纪律输出。退出码 0 = 可执行，1 = 有阻断项必须先修复。
+（实时读取 prompt-length.js）、中间环节交付物格式提取（实时解析三个引擎模块的生成函数）、
+内容精炼六类规则提取（实时解析 field-content-refiner.js）、文档陈旧字面值扫描
+（980/990/1400-1500/MAX_PROMPT_LENGTH 等字面值无失效标注出现于文档即阻断）、执行纪律输出。
+退出码 0 = 可执行，1 = 有阻断项必须先修复。
 
 **退出码非 0 时禁止继续执行**；退出码为 0 时，规范卡输出即为执行依据，无需再逐项人工阅读下列文件
 （需要深入实现细节时再读）：

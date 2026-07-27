@@ -109,7 +109,133 @@ try {
   blockers.push('长度配置读取失败：hyperreality-system/config/prompt-length.js');
 }
 
-/* ---------- 6. 固定执行纪律（非数值规范，属行为约束） ---------- */
+/* ---------- 6. 中间环节交付物格式（从三个引擎模块的生成函数源码实时解析） ---------- */
+// 与第 4 节同一思路：规范结构只从引擎代码读，不在本脚本硬编码第二份。
+function sliceFn(src, startMarker, endMarker) {
+  const s = src.indexOf(startMarker);
+  if (s < 0) return '';
+  const e = endMarker ? src.indexOf(endMarker, s + startMarker.length) : -1;
+  return src.slice(s, e > s ? e : undefined);
+}
+try {
+  // ① 创意主题确认单：generateConfirmationSummary 盒内字段标签（含原始故事文本盒）
+  const themeSrc = fs.readFileSync(path.join(ROOT, 'hyperreality-system/skills/creative-theme-generator/index.js'), 'utf-8');
+  const themeBody = sliceFn(themeSrc, 'generateConfirmationSummary(result) {', 'adjustTask(result');
+  const themeFields = [];
+  const themeRe = /║\s*(?:\p{Extended_Pictographic}\s*)?([一-龥A-Za-z]+(?:（完整版）)?)\s*:/gu;
+  let tm;
+  while ((tm = themeRe.exec(themeBody)) !== null) {
+    if (!themeFields.includes(tm[1])) themeFields.push(tm[1]);
+  }
+  // 按确认单真实布局排序：原始故事文本盒沉底
+  const storyIdx = themeFields.findIndex(f => f.includes('原始故事文本'));
+  if (storyIdx >= 0) themeFields.push(themeFields.splice(storyIdx, 1)[0]);
+  report.spec.intermediateFormats = report.spec.intermediateFormats || {};
+  report.spec.intermediateFormats.creativeTheme = { authority: 'hyperreality-system/skills/creative-theme-generator/index.js → generateConfirmationSummary', fields: themeFields };
+} catch (e) {
+  blockers.push('创意主题生成器解析失败：hyperreality-system/skills/creative-theme-generator/index.js');
+}
+try {
+  // ② 业务需求对齐清单：generateMarkdown 的 markdown 章节标题
+  const discSrc = fs.readFileSync(path.join(ROOT, 'hyperreality-system/engines/requirement-discovery-engine.js'), 'utf-8');
+  const discBody = sliceFn(discSrc, 'generateMarkdown(discoveryResult) {', 'module.exports');
+  const discSections = [];
+  for (const line of discBody.split('\n')) {
+    const h = line.match(/^(#{2,3})\s+(.+?)#*\s*$/);
+    if (h) discSections.push(h[2].replace(/\$\{[^}]+\}/g, '…').trim());
+  }
+  // 条件插入的原始故事文本段（storySection 模板内）
+  if (/原始故事文本（完整版）/.test(discBody) && !discSections.some(s => s.includes('原始故事文本'))) {
+    discSections.unshift('📖 原始故事文本（完整版）（开头直通）');
+  }
+  report.spec.intermediateFormats.requirementDiscovery = { authority: 'hyperreality-system/engines/requirement-discovery-engine.js → generateMarkdown', sections: discSections };
+} catch (e) {
+  blockers.push('需求洞察引擎解析失败：hyperreality-system/engines/requirement-discovery-engine.js');
+}
+try {
+  // ③ PRD 文档：generateMarkdown 的 markdown 章节标题
+  const prdSrc = fs.readFileSync(path.join(ROOT, 'hyperreality-system/engines/prd-generator/prd-generator.js'), 'utf-8');
+  const prdBody = sliceFn(prdSrc, 'generateMarkdown(prd) {', null);
+  const prdSections = [];
+  for (const line of prdBody.split('\n')) {
+    const h = line.match(/^(#{2})\s+(.+?)#*\s*$/);
+    if (h && !prdSections.includes(h[2].trim())) prdSections.push(h[2].trim());
+  }
+  // 条件插入的用户原始输入段（originalStorySection 模板内，行中匹配）
+  if (/用户原始输入（创作素材源）/.test(prdBody) && !prdSections.some(s => s.includes('用户原始输入'))) {
+    prdSections.splice(1, 0, '📖 用户原始输入（创作素材源）（直通段）');
+  }
+  report.spec.intermediateFormats.prd = { authority: 'hyperreality-system/engines/prd-generator/prd-generator.js → generateMarkdown', sections: prdSections };
+} catch (e) {
+  blockers.push('PRD 生成器解析失败：hyperreality-system/engines/prd-generator/prd-generator.js');
+}
+
+/* ---------- 7. 内容精炼规则（从 field-content-refiner.js 头部注释实时解析） ---------- */
+try {
+  const refinerSrc = fs.readFileSync(path.join(ROOT, 'hyperreality-system/engines/production-engine/agents/field-content-refiner.js'), 'utf-8');
+  const ruleLine = refinerSrc.match(/只精炼内容[:：]\s*([^\n*]+)/);
+  const rules = ruleLine ? ruleLine[1].split('/').map(s => s.trim()).filter(Boolean) : [];
+  const mountLine = refinerSrc.match(/挂载位置[:：]\s*([^\n*]+)/);
+  report.spec.contentRefiner = {
+    authority: 'hyperreality-system/engines/production-engine/agents/field-content-refiner.js',
+    mountPoint: mountLine ? mountLine[1].trim() : 'PromptFusionAgent._assembleStandardPrompt return 之前',
+    rules,
+  };
+} catch (e) {
+  blockers.push('内容精炼器解析失败：hyperreality-system/engines/production-engine/agents/field-content-refiner.js');
+}
+
+/* ---------- 8. 文档陈旧字面值扫描（阻断项：防止"第二份规范"复活） ---------- */
+// 规则：*.md 文档中不得出现长度类陈旧字面值，除非该行带有失效标注；
+// SPEC-AUTHORITY.md 是唯一的"宣告失效"合法载体，豁免；
+// 文件名含日期（YYYY-MM-DD）的为历史快照，降级为警告。
+try {
+  const STALE_PATTERNS = [
+    { re: /MAX_PROMPT_LENGTH\s*=\s*\d+/i, label: 'MAX_PROMPT_LENGTH 字面值' },
+    { re: /max_prompt_length"?\s*[:=]\s*\d+/i, label: 'max_prompt_length 字面值' },
+    { re: /"max_length"\s*:\s*\d+/i, label: 'max_length 字面值' },
+    { re: /(?<![\d.])980(?![\d.])/, label: '980' },
+    { re: /(?<![\d.])990(?![\d.])/, label: '990' },
+    { re: /1400-1500/, label: '1400-1500' },
+  ];
+  const NEGATION_MARKERS = ['无效', '失效', '已弃用', '弃用', '历史遗留', '旧数字', '禁止', '勿再', '不再', '权威源'];
+  const EXEMPT_FILES = new Set(['SPEC-AUTHORITY.md']);
+  const mdFiles = [];
+  (function walk(dir) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (entry.name === 'node_modules' || entry.name === '.git') continue;
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (entry.isFile() && entry.name.endsWith('.md')) mdFiles.push(full);
+    }
+  })(ROOT);
+  const staleHits = [];
+  const staleWarns = [];
+  for (const file of mdFiles) {
+    const rel = path.relative(ROOT, file);
+    if (EXEMPT_FILES.has(path.basename(file))) continue;
+    const isDatedSnapshot = /\d{4}-\d{2}-\d{2}/.test(path.basename(file));
+    const lines = fs.readFileSync(file, 'utf-8').split('\n');
+    lines.forEach((line, idx) => {
+      if (NEGATION_MARKERS.some(m => line.includes(m))) return;
+      for (const p of STALE_PATTERNS) {
+        if (p.re.test(line)) {
+          const hit = `${rel}:${idx + 1} 命中陈旧字面值「${p.label}」`;
+          (isDatedSnapshot ? staleWarns : staleHits).push(hit);
+        }
+      }
+    });
+  }
+  if (staleHits.length > 0) {
+    blockers.push(`文档陈旧字面值 ${staleHits.length} 处（唯一权威源为引擎代码，文档不得登记长度字面值）: ${staleHits.slice(0, 8).join('；')}${staleHits.length > 8 ? ' 等' : ''}`);
+  }
+  staleWarns.forEach(w => warnings.push(`历史快照含陈旧字面值（不阻断）: ${w}`));
+  report.checks.staleLiterals = { ok: staleHits.length === 0, hits: staleHits, snapshotWarnings: staleWarns.length };
+} catch (e) {
+  warnings.push(`陈旧字面值扫描执行失败（${e.message}），跳过`);
+}
+
+/* ---------- 9. 固定执行纪律（非数值规范，属行为约束） ---------- */
 report.spec.discipline = {
   auditReportAuthority: 'hyperreality-system/index.js 提示词审核报告生成器（镜头总览五列核验 + 序号化完整提示词 + 审核须知7条）',
   openingShotRequired: '每部作品必须含片头镜头（shotId=S00/SC00 或 sceneType=opening），片头=内容字段+片头专属字段',
@@ -119,6 +245,9 @@ report.spec.discipline = {
   shotDuration: '单镜 3-12 秒，系统上限 15 秒；台词按 4-4.5 字/秒核验时长匹配',
   templatesWarning: 'templates/ 目录仅为中间态参考或弃用指引，禁止作为最终渲染 Prompt 格式与长度依据（镜头卡25字段≠渲染Prompt25字段）',
   specAuthorityMap: 'SPEC-AUTHORITY.md 为规范裁决唯一权威地图，引擎代码 > 文档',
+  intermediateFormats: '中间环节交付物（创意主题确认单/业务需求对齐清单/PRD）的字段结构以各引擎模块生成函数为唯一权威，禁止按技能或文档自带的格式清单执行',
+  contentRefiner: '提示词组装完成后必须执行内容精炼（六类规则见上方【内容精炼规则】），再核验长度落于权威区间；精炼环节归属须在交付时说明',
+  skillExecution: '技能库环节（如好莱坞摄影技能路由）必须用镜头真实元数据实际运行匹配逻辑，禁止虚构技能命中',
 };
 
 /* ---------- 输出 ---------- */
@@ -146,6 +275,21 @@ if (JSON_MODE) {
   of.forEach((label, i) => console.log(`    ${String(f.length + i + 1).padStart(2, '0')}.【${label}】`));
   console.log('');
   console.log(`  【长度标准】目标 ${L.targetMin}-${L.targetMax} 字符，硬上限 ${L.hardMax}（低于 ${L.targetMin} 必须补足细节密度）`);
+  console.log('');
+  const IF = report.spec.intermediateFormats || {};
+  if (IF.creativeTheme) {
+    console.log('  【中间环节交付物格式】（实时解析自引擎生成函数，唯一权威）');
+    console.log(`    ① 创意主题确认单（${IF.creativeTheme.fields.length} 字段）: ${IF.creativeTheme.fields.join(' / ')}`);
+    console.log(`    ② 业务需求对齐清单（${(IF.requirementDiscovery?.sections || []).length} 节）: ${(IF.requirementDiscovery?.sections || []).join(' / ')}`);
+    console.log(`    ③ PRD 文档（${(IF.prd?.sections || []).length} 节）: ${(IF.prd?.sections || []).join(' / ')}`);
+    console.log('');
+  }
+  if (report.spec.contentRefiner) {
+    const cr = report.spec.contentRefiner;
+    console.log(`  【内容精炼规则】共 ${cr.rules.length} 类（挂载点: ${cr.mountPoint}）: ${cr.rules.join(' / ')}`);
+    console.log('');
+  }
+  console.log(`  【文档陈旧字面值扫描】${report.checks.staleLiterals?.ok ? '未命中 ✅' : '命中 ❌'}（980/990/1400-1500/MAX_PROMPT_LENGTH 等字面值无失效标注不得出现于文档）`);
   console.log('');
   console.log('  【执行纪律】');
   for (const [k, v] of Object.entries(report.spec.discipline)) console.log(`    · ${v}`);
