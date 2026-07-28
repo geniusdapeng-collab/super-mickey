@@ -157,12 +157,15 @@ function extractSection(content, startMarker, endMarker) {
   let sectionLines = [];
   
   for (const line of lines) {
-    if (line.includes(startMarker)) { inSection = true; continue; }
-    if (inSection && (line.includes(endMarker) || line.match(/^#{1,3} /))) {
-      if (line.includes(endMarker)) continue;
-      break;
+    if (!inSection && line.includes(startMarker)) { inSection = true; continue; }
+    if (inSection) {
+      // 【修复】endMarker 命中即结束提取（原实现为 continue 跳过该行继续收集，
+      // 语义错误：endMarker 名不副实，且提取范围强依赖下游恰好出现另一个标题）。
+      // 新语义：endMarker 或任意 Markdown 标题行出现即终止本段。
+      if (endMarker && line.includes(endMarker)) break;
+      if (line.match(/^#{1,3} /)) break;
+      sectionLines.push(line);
     }
-    if (inSection) sectionLines.push(line);
   }
   
   return sectionLines.join('\n').trim();
@@ -170,15 +173,36 @@ function extractSection(content, startMarker, endMarker) {
 
 function extractSkillEnhancement(skillPath) {
   try {
-    const content = fs.readFileSync(skillPath, 'utf-8');
+    let content = fs.readFileSync(skillPath, 'utf-8');
+    // 【修复】剥离 YAML frontmatter：dimensions 行含"镜头类型="字样，
+    // 会劫持 shotBlock 的起始标记（extractSection 从 frontmatter 即开始收集），
+    // 导致所有导演摄影技能的 shotBlock 只剩 minimum_granularity 残片。
+    const fmMatch = content.match(/^---\n[\s\S]*?\n---\n/);
+    if (fmMatch) content = content.slice(fmMatch[0].length);
     
-    return {
+    const enhancement = {
       promptBlock: extractSection(content, 'AI提示词构建', '第五部分'),
       forbiddenBlock: extractSection(content, '禁止词清单', '禁止词'),
       shotBlock: extractSection(content, '镜头类型', '镜头设计'),
       emotionBlock: extractSection(content, '情绪设计', '第四部分'),
       raw: content
     };
+    // 【修复】技能库149个文件原为20行骨架（frontmatter+技能概述+第一部分标题），
+    // 四个增强块恒为空，技能注入"有形无实"。正文块全空时回退提取【技能概述】段的
+    // "定位/核心功能"作为情绪与镜头手法增强源，并告警提示技能正文待补全。
+    const allEmpty = !enhancement.promptBlock && !enhancement.forbiddenBlock
+                  && !enhancement.shotBlock && !enhancement.emotionBlock;
+    if (allEmpty) {
+      const overview = extractSection(content, '## 技能概述', '## 第一部分');
+      const positioning = (overview.match(/\*\*定位\*\*[:：]\s*(.+)/) || [])[1] || '';
+      const coreFn = (overview.match(/\*\*核心功能\*\*[:：]\s*(.+)/) || [])[1] || '';
+      if (positioning.trim()) enhancement.emotionBlock = positioning.trim();
+      if (coreFn.trim()) enhancement.shotBlock = coreFn.trim();
+      if (enhancement.emotionBlock || enhancement.shotBlock) {
+        console.warn(`[SkillRouter] ⚠️ 技能 ${path.basename(skillPath)} 为骨架文件，已回退注入概述段内容，建议补全技能正文`);
+      }
+    }
+    return enhancement;
   } catch (e) {
     return null;
   }
@@ -415,8 +439,11 @@ function extractKeyTerms(blocks, maxTerms = 10) {
     /\b(IMAX|aerial|steadicam|handheld|establishing|volumetric|god.?ray|deep.?focus|anamorphic|tungsten|during|dusk|golden.?hour|neon|noir|cinematic|epic|meditative|low.?key|high.?contrast|shallow.?depth|wide.?angle|telephoto|50mm|85mm|35mm|helicopter|drone|circular.?orbit|push.?in|pull.?out|track|pan|tilt|crane|fluid|smooth|handheld|shaky|steady)\b/gi
   ) || [];
   
+  // 【修复】原写法为字符类（[...]+），会切出"斯/张/定/拍"等单字噪声；
+  // 改为词级交替匹配，只产出完整术语。注意原字符类内的"|"是字面管道符，
+  // 属于连带bug。
   const zhTerms = allText.match(
-    /[史诗|航拍|斯坦尼康|手持|定场|晨光|暮色|黄金时刻|霓虹|黑色电影|氛围|紧张|孤独|浪漫|沉默|宿命]+/g
+    /史诗|航拍|斯坦尼康|手持|定场|晨光|暮色|黄金时刻|霓虹|黑色电影|氛围|紧张|孤独|浪漫|沉默|宿命|环绕|推近|拉远|横移|凝视|剪影|逆光|深焦|浅景深|长镜头|悲伤|哀伤|温情|告别|救赎|雨夜|悬疑|神秘/g
   ) || [];
   
   const seen = new Set();
@@ -439,6 +466,27 @@ function injectSkillEnhancement(shot, matchedSkills) {
   
   const forbiddenBlocks = matchedSkills
     .map(s => s.enhancement?.forbiddenBlock).filter(Boolean);
+  
+  // 【修复】禁止词精准提取：只取清单行（- 开头）的冒号/破折号前短语，
+  // 避免把说明性文字与技法词（斯坦尼康/手持等）误并入负面约束。
+  const extractForbiddenTerms = (blocks, maxTerms = 8) => {
+    const TECH_WORDS = /斯坦尼康|手持|定场|航拍|运镜|镜头|推近|拉远|横移|环绕/;
+    const seen = new Set();
+    const terms = [];
+    for (const b of blocks) {
+      for (const line of b.split('\n')) {
+        const m = line.match(/^\s*[-•]\s*([^：:——,，]+)/);
+        if (!m) continue;
+        const t = m[1].trim();
+        // 排除纯符号行（如 --- 分隔线被误匹配为清单项）
+        if (!t || t.length < 2 || !/[\u4e00-\u9fa5a-zA-Z]/.test(t) || TECH_WORDS.test(t) || seen.has(t)) continue;
+        seen.add(t);
+        terms.push(t);
+        if (terms.length >= maxTerms) return terms.join('; ');
+      }
+    }
+    return terms.join('; ');
+  };
   const cameraBlocks = matchedSkills
     .map(s => s.enhancement?.shotBlock).filter(Boolean);
   const moodBlocks = matchedSkills
@@ -446,7 +494,7 @@ function injectSkillEnhancement(shot, matchedSkills) {
   
   const cameraTerms = extractKeyTerms(cameraBlocks, 8);
   const moodTerms = extractKeyTerms(moodBlocks, 6);
-  const forbidTerms = extractKeyTerms(forbiddenBlocks, 8);
+  const forbidTerms = extractForbiddenTerms(forbiddenBlocks, 8);
   
   enhanced._appliedSkills = matchedSkills.map(s => ({
     file: path.basename(s.skillPath),
