@@ -2,7 +2,7 @@
 // hyperreality-system/index.js
 // SuperMickey - 超级小香宝统一入口
 // 深度融合:剧本引擎 → 适配层 → 制作引擎 → 完整镜头
-// 版本:v2.3.0 | 日期:2026-07-28
+// 版本:v2.3.1 | 日期:2026-07-28
 
 require('./engines/process-guard'); // 【审计修复】全局崩溃防护,必须最先加载
 require('../systems/env-aliases'); // 【v2.2.8】SUPERMICKEY_* → STORMAXE_* 环境变量别名桥
@@ -3163,12 +3163,14 @@ class HyperrealitySystem {
     // 镜头总览
     lines.push('## 🎬 镜头总览');
     // v2.0.4-fix: 增加时间轴和字符数统计列
-    lines.push(`| 镜头ID | 类型 | 时长 | 字符数 | 时间轴 | 状态 |`);
-    lines.push(`|--------|------|------|--------|--------|------|`);
+    lines.push(`| 镜头ID | 类型 | 时长 | 字符数 | 字段数 | 时间轴 | 状态 |`);
+    lines.push(`|--------|------|------|--------|--------|--------|------|`);
     for (const shot of production.shots) {
       const charCount = shot.promptCharCount || (typeof shot.prompt === 'string' ? shot.prompt.length : 0);
+      // 【v2.3.1-fix】补字段数列：与 SPEC-AUTHORITY 核验口径对齐，按【】标签实测
+      const fieldCount = (String(shot.prompt || '').match(/【/g) || []).length;
       const timelineStr = shot.timelineString || '无';
-      lines.push(`| ${shot.shotId} | ${shot.sceneType} | ${shot.duration || shot.timing?.duration || 0}s | ${charCount} | ${timelineStr} | ${shot.status || 'ok'} |`);
+      lines.push(`| ${shot.shotId} | ${shot.sceneType} | ${shot.duration || shot.timing?.duration || 0}s | ${charCount} | ${fieldCount} | ${timelineStr} | ${shot.status || 'ok'} |`);
     }
     lines.push('');
 

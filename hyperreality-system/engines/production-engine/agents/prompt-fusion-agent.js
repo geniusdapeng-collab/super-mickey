@@ -420,7 +420,7 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
     const fullPrompt = this._assembleStandardPrompt(shot, fields, shot.ratio || '16:9');
 
     // 【P2-PROMPT-01 修复】校验promptBase字符数：约束+基础层不应超过总prompt的30%
-    const baseParts = fullPrompt.split(' | ').slice(0, 3); // 约束+基础层+导演指令
+    const baseParts = fullPrompt.split(/ \| |\n(?=\d{2}\.【)/).slice(0, 3); // 约束+基础层+导演指令（兼容 ' | ' 与序号独立行两种排版）
     const promptBase = baseParts.join(' | ');
     const baseRatio = this._countChars(promptBase) / this._countChars(fullPrompt);
     if (baseRatio > 0.5) {
@@ -1402,6 +1402,18 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
   /**
    * 组装标准格式Prompt(按之前正常版本的字段格式)
    */
+  /**
+   * 【v2.3.1-排版】交付层字段格式化：序号 + 独立行
+   * 最终交付 Prompt 由 ' | ' 单行连接改为 "01.【字段】内容" 逐行排列，便于人工审核与渲染排查。
+   * 说明：内部组装/精炼/截断链路仍以 ' | ' 为机器分隔符，仅在 return 前做展示层转换；
+   * 字段计数按【】标签进行（match(/【/g)），与分隔符无关，审核口径不变。
+   */
+  _formatNumberedFields(prompt) {
+    if (!prompt || typeof prompt !== 'string') return prompt;
+    const segs = prompt.split(' | ').map(s => s.trim()).filter(Boolean);
+    return segs.map((s, i) => `${String(i + 1).padStart(2, '0')}.${s}`).join('\n');
+  }
+
   _assembleStandardPrompt(shot, fields, ratio) {
     const parts = [];
     // 【v2.2.7-fix】函数级 duration 定义：_generateBaseline 等处直接引用 duration，
@@ -1688,6 +1700,9 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
       }
     }
 
+    // 【v2.3.1-排版】交付前统一转换为"序号+独立行"格式（替代 ' | ' 单行连接）
+    fullPrompt = this._formatNumberedFields(fullPrompt);
+
     return fullPrompt;
   }
 
@@ -1923,8 +1938,10 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
       const timeStr = `[${String(startTime).padStart(2, '0')}s-${String(endTime).padStart(2, '0')}s]`;
 
       // 构建内联格式
-      const trigger = b.trigger || 'looks at camera';
-      const emotion = b.emotion || 'neutral';
+      // 【v2.3.1-fix】默认值中文化：英文默认值与【语言约束】同文冲突，
+      // 上游缺 trigger/emotion 时英文会直接进入最终 Prompt 且整体占比告警拦不住局部注入
+      const trigger = b.trigger || '看向对方';
+      const emotion = b.emotion || '平静';
       const line = b.line || '';
       const speaker = b.speaker || '角色';
 

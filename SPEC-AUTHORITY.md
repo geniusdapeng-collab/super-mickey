@@ -19,13 +19,13 @@
 |--------|--------------|----------|
 | 系统版本号 | `package.json` → `"version"` | 禁止从 Git tag / 文档标题 / 子系统编号（v6.x）推断 |
 | 版本一致性校验 | `scripts/version-check.js` | 三源校验：`.current-version` / `package.json` / `index.js` 头部注释，提交前必过 |
-| 内容镜头 26 字段 | `hyperreality-system/engines/production-engine/agents/prompt-fusion-agent.js` | 01.【语言约束】→ 26.【角色一致性】，序号化【】标签格式 |
+| 内容镜头 26 字段 | `hyperreality-system/engines/production-engine/agents/prompt-fusion-agent.js` | 01.【语言约束】→ 26.【角色一致性】，序号化【】标签格式；交付排版为"序号+独立行"（01.【字段】逐行排列），' | ' 仅作内部组装分隔符 |
 | 片头镜头 31 字段 | 同上（`isOpening` 分支） | 26 标准 + 5 片头专属：主标题内容 / 副标题内容 / 标题动画设计 / 标题字体设计 / 开场音频设计 |
 | 台词速率 | `hyperreality-system/config/speech-rate.js` | 基准 3.5 字/秒、极限 4.5 字/秒、台词占镜头时长 ≤80%；**"4-4.5 字/秒"等旧口径一律无效** |
 | 审核门槛 | `hyperreality-system/config/audit-standards.js` | 内容镜头字段数 ≥25、片头镜头 ≥30（门槛为下限，实际字段数以 prompt-fusion-agent.js 解析为准） |
 | 字段校验分级 | `hyperreality-system/engines/field-standardizer.js` | P0 致命 12 字段、P1 核心 7 字段、导出前 25 字段非空硬检查 |
 | Prompt 长度 | `hyperreality-system/config/prompt-length.js` | 两阶段口径：组装目标 2470-3000 / HARD_MAX 3000；精炼后交付 ≥REFINED_MIN 且 ≤HARD_MAX；**990、1400-1500 等旧数字一律无效** |
-| 审核报告格式 | `hyperreality-system/index.js`（审核报告生成器） | 镜头总览五列核验（字符数/字段数/定妆照/时间轴/约束）+ 7 条审核须知 |
+| 审核报告格式 | `hyperreality-system/index.js`（审核报告生成器） | 预生产镜头总览八列核验（字符数/字段数/技能命中/定妆照/时间轴/约束）+ 最终报告镜头总览七列（镜头ID/类型/时长/字符数/字段数/时间轴/状态）+ 7 条审核须知 |
 | 镜头设计卡（中间态） | `templates/shot-card-v4-template.md` | 仅管线内部结构数据，**不是最终渲染 Prompt 格式**，禁止混用 |
 | 原始故事文本直通 | 见提交【方案A-fix】系列 | 用户输入原文必须原样进入需求洞察确认单与 PRD 链路 |
 | 中间环节交付物格式 | `skills/creative-theme-generator/index.js`（确认单）、`engines/requirement-discovery-engine.js`（对齐清单）、`engines/prd-generator/prd-generator.js`（PRD）各自的生成函数 | 创意主题确认单字段、业务需求对齐清单章节、PRD 章节结构以生成函数源码为唯一权威，技能/文档不得自带格式清单 |
