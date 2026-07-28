@@ -23,6 +23,10 @@ function parseFilename(name) {
  return { type: '微表情', director: '', emotions: parts[1] ? [parts[1]] : [], camera_modes: [], descriptor: parts.slice(2).join('_') };
  }
  // 摄影技能命名：<类型>_<导演>_<情绪><运镜词>，拆分尾部运镜词、去 IMAX 技术标签
+ // 【v2.3.2】第二槽未注册为导演时按情绪类别处理——孤独_午夜独醒 等技能的情绪此前被吞为空数组
+ if (!KNOWN_DIRECTORS.includes(parts[1])) {
+ return { type: parts[0] || '', director: '', emotions: parts[1] ? [parts[1]] : [], camera_modes: [], descriptor: parts.slice(2).join('_') };
+ }
  const CAM_WORDS = ['手持', '斯坦尼康', '定场', '航拍'];
  const rest = parts.slice(2).join('_');
  const camModes = CAM_WORDS.filter(w => rest.includes(w));

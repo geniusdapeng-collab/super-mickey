@@ -19,6 +19,7 @@
 |--------|--------------|----------|
 | 系统版本号 | `package.json` → `"version"` | 禁止从 Git tag / 文档标题 / 子系统编号（v6.x）推断 |
 | 版本一致性校验 | `scripts/version-check.js` | 三源校验：`.current-version` / `package.json` / `index.js` 头部注释，提交前必过 |
+| 技能路由情绪词表 | `hyperreality-system/skills/hollywood-cinematography/cinematography-skill-router.js`（SKILL_EMOTION_MAP + buildEmotionScanEntries 库实况扫描） | 新技能情绪标签入库即自动可检测，禁止另建情绪词表副本 |
 | 内容镜头 26 字段 | `hyperreality-system/engines/production-engine/agents/prompt-fusion-agent.js` | 01.【语言约束】→ 26.【角色一致性】，序号化【】标签格式；交付排版为"序号+独立行"（01.【字段】逐行排列），' | ' 仅作内部组装分隔符 |
 | 片头镜头 31 字段 | 同上（`isOpening` 分支） | 26 标准 + 5 片头专属：主标题内容 / 副标题内容 / 标题动画设计 / 标题字体设计 / 开场音频设计 |
 | 台词速率 | `hyperreality-system/config/speech-rate.js` | 基准 3.5 字/秒、极限 4.5 字/秒、台词占镜头时长 ≤80%；**"4-4.5 字/秒"等旧口径一律无效** |

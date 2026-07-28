@@ -1,5 +1,5 @@
 {
-  "built_at": "2026-07-26T05:45:20.467Z",
+  "built_at": "2026-07-28T09:29:23.237Z",
   "count": 149,
   "skills": [
     {
@@ -109,7 +109,7 @@
     },
     {
       "file": "剧情_卢卡斯_雨夜斯坦尼康.md",
-      "skill_id": "drama_lucas_rainnight_steadicam",
+      "skill_id": "drama_lucas_rainy_night_steadicam",
       "domain": "cinematography",
       "type": "drama",
       "director": "卢卡斯",
@@ -199,7 +199,7 @@
     },
     {
       "file": "剧情_库布里克_雨夜手持.md",
-      "skill_id": "drama_kubrick_rainnight_handheld",
+      "skill_id": "drama_kubrick_rainy_night_handheld",
       "domain": "cinematography",
       "type": "drama",
       "director": "库布里克",
@@ -814,7 +814,7 @@
     },
     {
       "file": "喜剧_卡梅隆_雨夜斯坦尼康.md",
-      "skill_id": "comedy_cameron_rainnight_steadicam",
+      "skill_id": "comedy_cameron_rainy_night_steadicam",
       "domain": "cinematography",
       "type": "comedy",
       "director": "卡梅隆",
@@ -1057,8 +1057,10 @@
       "skill_id": "loneliness_midnight_awakening",
       "domain": "cinematography",
       "type": "loneliness",
-      "director": "午夜独醒",
-      "emotions": [],
+      "director": "",
+      "emotions": [
+        "midnight-awake"
+      ],
       "camera_modes": [],
       "intensity_range": null,
       "hasManifest": true
@@ -1068,8 +1070,10 @@
       "skill_id": "loneliness_in_the_midst_of_noise",
       "domain": "cinematography",
       "type": "loneliness",
-      "director": "热闹中的寂静",
-      "emotions": [],
+      "director": "",
+      "emotions": [
+        "quiet-in-chaos"
+      ],
       "camera_modes": [],
       "intensity_range": null,
       "hasManifest": true
@@ -1079,8 +1083,10 @@
       "skill_id": "loneliness_mirror_stranger",
       "domain": "cinematography",
       "type": "loneliness",
-      "director": "镜子里的陌生人",
-      "emotions": [],
+      "director": "",
+      "emotions": [
+        "stranger-in-mirror"
+      ],
       "camera_modes": [],
       "intensity_range": null,
       "hasManifest": true
@@ -1308,7 +1314,7 @@
     },
     {
       "file": "微表情_悲伤_哀伤.md",
-      "skill_id": "microexpression_sadness_grief",
+      "skill_id": "microexpression_grief_sorrow",
       "domain": "acting",
       "type": "micro-expression",
       "director": "",

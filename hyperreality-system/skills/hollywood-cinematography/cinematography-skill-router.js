@@ -12,6 +12,53 @@ if (!SKILL_LIB_AVAILABLE) {
 }
 
 // ============================================================
+// 【v2.3.2】导演/情绪词表模块级唯一真源（V1 路由与 V2 normalize 共用）
+// ============================================================
+const SKILL_DIRECTOR_MAP = {
+  '维伦纽瓦': 'villeneuve', '诺兰': 'nolan', '卡梅隆': 'cameron',
+  '卢卡斯': 'lucas', '库布里克': 'kubrick', '斯皮尔伯格': 'spielberg',
+  '斯科塞斯': 'scorsese', '昆汀': 'tarantino', '达米恩': 'chazelle',
+  '韦斯安德森': 'anderson', '索金': 'sorkin', '博伊尔': 'boyle',
+  '大卫林奇': 'lynch', '芬奇': 'fincher', '希区柯克': 'hitchcock',
+  '卡萨维茨': 'cassavetes', '德尼罗': 'deniro', '曼': 'mann',
+  '斯派克琼斯': 'spike-jonze', '黑泽明': 'kurosawa', '奥卡萨姆': 'aucon'
+};
+
+const SKILL_EMOTION_MAP = {
+  '史诗': 'epic', '孤独': 'lonely', '情感': 'emotional',
+  '紧张': 'tense', '浪漫': 'romantic', '告别': 'farewell',
+  '救赎': 'redemption', '温情': 'tender', '雨夜': 'rainy-night',
+  '舞蹈': 'dance', '神秘': 'mysterious', '悬疑': 'suspenseful',
+  '荒诞': 'absurd', '压迫': 'oppressive', '紧张追逐': 'chase-tense',
+  '史诗航拍': 'epic-aerial', '史诗手持': 'epic-handheld',
+  '史诗斯坦尼康': 'epic-steadicam', '史诗定场': 'epic-establishing',
+  '紧张斯坦尼康': 'tense-steadicam', '紧张手持': 'tense-handheld',
+  '浪漫斯坦尼康': 'romantic-steadicam', '浪漫手持': 'romantic-handheld',
+  '舞蹈斯坦尼康': 'dance-steadicam', '舞蹈手持': 'dance-handheld',
+  '恐怖斯坦尼康': 'horror-steadicam', '悬疑手持': 'suspense-handheld',
+  '悬疑斯坦尼康': 'suspense-steadicam', '史诗手持': 'epic-handheld',
+  '紧张定场': 'tense-establishing',
+  '粗粝真实': 'raw-real', '压抑喜悦': 'suppressed-joy',
+  '压抑悲伤': 'suppressed-sadness', '厌恶': 'disgust', '嫌弃': 'scorn',
+  '复杂情绪': 'complex', '复古优雅': 'vintage-elegant',
+  '无人回应': 'no-response', '灵魂独行': 'soul-alone',
+  '喜悦': 'joy', '方法演技': 'method-acting', '恍惚': 'trance',
+  '恐惧': 'fear', '惊恐': 'panic', '恐惧颤抖': 'fear-shake',
+  '哀伤': 'grief', '惊讶凝固': 'frozen-shock', '震惊': 'shocked',
+  '愤怒克制': 'anger-suppressed', '暴烈': 'violent',
+  '战栗': 'shiver', '神经质幽默': 'neurotic-humor',
+  '热情外放': 'outgoing', '紧张内敛': 'tense-reserved',
+  '破碎': 'broken', '心碎时刻': 'heartbreak', '空洞': 'hollow',
+  '灵魂出窍': 'out-of-body', '窒息': 'suffocating',
+  '话唠爆发': 'talking-burst', '冷峻逼近': 'cold-approach',
+  '蔑视': 'contempt', '冷嘲': 'sarcasm', '迷醉': 'intoxicated',
+  '超然状态': 'trance-state', '瞬间启示': 'flash-enlightenment',
+  '无尽雨幕': 'endless-rain', '东方克制': 'oriental-restraint',
+  '热闹中的寂静': 'quiet-in-chaos', '镜子里的陌生人': 'stranger-in-mirror',
+  '午夜独醒': 'midnight-awake'
+};
+
+// ============================================================
 // 技能索引构建
 // ============================================================
 
@@ -28,53 +75,33 @@ function parseSkillFilename(filename) {
     '孤独': 'loneliness', '微表情': 'micro-expression'
   };
   
-  const DIRECTOR_MAP = {
-    '维伦纽瓦': 'villeneuve', '诺兰': 'nolan', '卡梅隆': 'cameron',
-    '卢卡斯': 'lucas', '库布里克': 'kubrick', '斯皮尔伯格': 'spielberg',
-    '斯科塞斯': 'scorsese', '昆汀': 'tarantino', '达米恩': 'chazelle',
-    '韦斯安德森': 'anderson', '索金': 'sorkin', '博伊尔': 'boyle',
-    '大卫林奇': 'lynch', '芬奇': 'fincher', '希区柯克': 'hitchcock',
-    '卡萨维茨': 'cassavetes', '德尼罗': 'deniro', '曼': 'mann',
-    '斯派克琼斯': 'spike-jonze', '黑泽明': 'kurosawa', '奥卡萨姆': 'aucon'
-  };
+  const DIRECTOR_MAP = SKILL_DIRECTOR_MAP;
   
-  const EMOTION_MAP = {
-    '史诗': 'epic', '孤独': 'lonely', '情感': 'emotional',
-    '紧张': 'tense', '浪漫': 'romantic', '告别': 'farewell',
-    '救赎': 'redemption', '温情': 'tender', '雨夜': 'rainy-night',
-    '舞蹈': 'dance', '神秘': 'mysterious', '悬疑': 'suspenseful',
-    '荒诞': 'absurd', '压迫': 'oppressive', '紧张追逐': 'chase-tense',
-    '史诗航拍': 'epic-aerial', '史诗手持': 'epic-handheld',
-    '史诗斯坦尼康': 'epic-steadicam', '史诗定场': 'epic-establishing',
-    '紧张斯坦尼康': 'tense-steadicam', '紧张手持': 'tense-handheld',
-    '浪漫斯坦尼康': 'romantic-steadicam', '浪漫手持': 'romantic-handheld',
-    '舞蹈斯坦尼康': 'dance-steadicam', '舞蹈手持': 'dance-handheld',
-    '恐怖斯坦尼康': 'horror-steadicam', '悬疑手持': 'suspense-handheld',
-    '悬疑斯坦尼康': 'suspense-steadicam', '史诗手持': 'epic-handheld',
-    '紧张定场': 'tense-establishing',
-    '粗粝真实': 'raw-real', '压抑喜悦': 'suppressed-joy',
-    '压抑悲伤': 'suppressed-sadness', '厌恶': 'disgust', '嫌弃': 'scorn',
-    '复杂情绪': 'complex', '复古优雅': 'vintage-elegant',
-    '无人回应': 'no-response', '灵魂独行': 'soul-alone',
-    '喜悦': 'joy', '方法演技': 'method-acting', '恍惚': 'trance',
-    '恐惧': 'fear', '惊恐': 'panic', '恐惧颤抖': 'fear-shake',
-    '哀伤': 'grief', '惊讶凝固': 'frozen-shock', '震惊': 'shocked',
-    '愤怒克制': 'anger-suppressed', '暴烈': 'violent',
-    '战栗': 'shiver', '神经质幽默': 'neurotic-humor',
-    '热情外放': 'outgoing', '紧张内敛': 'tense-reserved',
-    '破碎': 'broken', '心碎时刻': 'heartbreak', '空洞': 'hollow',
-    '灵魂出窍': 'out-of-body', '窒息': 'suffocating',
-    '话唠爆发': 'talking-burst', '冷峻逼近': 'cold-approach',
-    '蔑视': 'contempt', '冷嘲': 'sarcasm', '迷醉': 'intoxicated',
-    '超然状态': 'trance-state', '瞬间启示': 'flash-enlightenment',
-    '无尽雨幕': 'endless-rain', '东方克制': 'oriental-restraint',
-    '热闹中的寂静': 'quiet-in-chaos', '镜子里的陌生人': 'stranger-in-mirror',
-    '午夜独醒': 'midnight-awake'
-  };
+  const EMOTION_MAP = SKILL_EMOTION_MAP;
   
   const type = parts[0] || '';
-  const director = parts[1] || '';
-  const rest = parts.slice(2);
+  let director = parts[1] || '';
+  let rest = parts.slice(2);
+  // 【v2.3.2】槽位感知：第二槽未注册为导演时，它是情绪类别槽
+  // （如 微表情_压抑悲伤_无声落泪 / 微表情_孤独_灵魂独行），
+  // 情绪取第二槽，其后具象修饰记入 emotionDetail，导演置空。
+  // 修复前此类文件被错解为"导演=压抑悲伤"，与编译索引口径分裂。
+  let emotionDetail;
+  if (director && !DIRECTOR_MAP[director]) {
+    const TAXA = (typeof TAXONOMY !== 'undefined' ? TAXONOMY.emotion_alias : {}) || {};
+    if (EMOTION_MAP[director] || TAXA[director] || rest.length === 0) {
+      // 情绪类别槽（如 压抑悲伤/凝视）：情绪取第二槽
+      emotionDetail = rest.length > 0 ? rest.join('_') : undefined;
+      rest = [director];
+    } else if (EMOTION_MAP[rest[0]] || TAXA[rest[0]]) {
+      // 风格修饰槽（如 闪电）：情绪取第三槽，第二槽记为风格修饰
+      emotionDetail = director;
+    } else {
+      emotionDetail = rest.length > 0 ? rest.join('_') : undefined;
+      rest = [director];
+    }
+    director = '';
+  }
   
   let tech = '';
   let shotType = '';
@@ -108,6 +135,7 @@ function parseSkillFilename(filename) {
     director_zh: director,
     emotion: EMOTION_MAP[emotion] || emotion,
     emotion_zh: emotion,
+    emotionDetail,
     shotType,
     tech
   };
@@ -135,8 +163,20 @@ function buildSkillIndex() {
     const key4 = `${meta.director}_${meta.emotion}`;
     const key5 = `${meta.type}_${meta.director}_${meta.shotType}`;
     const key6 = `${meta.type}_${meta.director}_${meta.emotion}`;
-    
-    [key1, key2, key3, key4, key5, key6].forEach(k => {
+
+    const keys = [key1, key2, key3, key4, key5, key6];
+    // 【v2.3.2】canonical 情绪键：taxonomy alias 归一值同名注册，精细/canonical 双向可达
+    const canon = (TAXONOMY.emotion_alias || {})[meta.emotion_zh] || null;
+    if (canon && canon !== meta.emotion) {
+      keys.push(`${meta.type}_${canon}`);
+      keys.push(`${meta.director}_${canon}`);
+      keys.push(`${meta.type}_${meta.director}_${canon}`);
+    }
+    // 【v2.3.2】跨片种情绪键：情绪优先于片种（解决"孤独/动作既是情绪又是片种"的错配）
+    if (meta.emotion) keys.push(`*_${meta.emotion}`);
+    if (canon && canon !== meta.emotion) keys.push(`*_${canon}`);
+
+    keys.forEach(k => {
       if (!index[k]) index[k] = [];
       index[k].push({ file, meta });
     });
@@ -208,6 +248,60 @@ function extractSkillEnhancement(skillPath) {
   }
 }
 
+
+// ============================================================
+// 【v2.3.2】情绪扫描表（库实况自维护）
+// 合并 SKILL_EMOTION_MAP / TAXONOMY.emotion_alias / 技能库实况原生情绪词：
+// 新技能携带新情绪标签入库即自动可检测，无需人工登记词表。
+// ============================================================
+let _emotionScanEntries = null;
+let _emotionScanBuildTime = 0;
+function buildEmotionScanEntries() {
+  if (_emotionScanEntries && Date.now() - _emotionScanBuildTime < 60_000) return _emotionScanEntries;
+  const entries = [];
+  const seen = new Set();
+  const push = (zh, en) => {
+    if (!zh || seen.has(zh) || /手持|斯坦尼康|航拍|定场/.test(zh)) return;
+    seen.add(zh); entries.push([zh, en || zh]);
+  };
+  for (const [zh, en] of Object.entries(SKILL_EMOTION_MAP)) push(zh, en);
+  try {
+    const TAX = require('./taxonomy.json');
+    for (const [k, en] of Object.entries(TAX.emotion_alias || {})) { if (/[\u4e00-\u9fa5]/.test(k)) push(k, en); }
+  } catch (e) {}
+  try {
+    const idx = buildSkillIndex();
+    for (const items of Object.values(idx)) for (const it of items) {
+      if (it.meta && it.meta.emotion_zh) push(it.meta.emotion_zh, it.meta.emotion);
+    }
+  } catch (e) {}
+  entries.sort((a, b) => b[0].length - a[0].length);
+  _emotionScanEntries = entries;
+  _emotionScanBuildTime = Date.now();
+  return entries;
+}
+
+// 【v2.3.2】导演中文名检测（V1/V2 共用）
+function detectDirectorZh(text) {
+  if (!text) return '';
+  for (const zh of Object.keys(SKILL_DIRECTOR_MAP)) {
+    if (text.includes(zh)) return zh;
+  }
+  return '';
+}
+
+// 【v2.3.2】情绪归一到 canonical（taxonomy alias 33 情绪集）：
+// 精细情绪值经共享 zh 标签桥接映射为 canonical，索引侧同名注册，双向可达
+function canonEmotion(en) {
+  if (!en) return en;
+  const TAX = TAXONOMY.emotion_alias || {};
+  if (TAX[en]) return TAX[en];
+  for (const [zh, fine] of Object.entries(SKILL_EMOTION_MAP)) {
+    if (fine === en && TAX[zh]) return TAX[zh];
+  }
+  return en;
+}
+
 // ============================================================
 // 镜头元数据提取
 // ============================================================
@@ -233,7 +327,7 @@ function extractShotMetadata(shot) {
   const cameraMovementStr = String(shot.cameraMovement || '');
   const cameraObjStr = (typeof shot.camera === 'string' ? shot.camera : '');
   const camera = (cameraStr || cameraMovementStr || cameraObjStr).toLowerCase();
-  const MOOD_SYNONYM_MAP = { 'sadness':'grief','sad':'grief','grief':'grief','heartbroken':'heartbreak','amazed':'joy','amazing':'joy','awe':'epic','serene':'oriental-restraint','calm':'oriental-restraint','quiet':'oriental-restraint','tender':'tender','tense':'tense','warm':'tender','nostalgic':'farewell','melancholy':'grief','lonely':'lonely' }; // 【fix-1A2】
+  const MOOD_SYNONYM_MAP = { 'sadness':'grief','sad':'grief','grief':'grief','heartbroken':'heartbreak','amazed':'joy','amazing':'joy','awe':'epic','serene':'oriental-restraint','calm':'oriental-restraint','quiet':'oriental-restraint','tender':'tender','tense':'tense','warm':'tender','nostalgic':'farewell','melancholy':'grief','lonely':'lonely','fear':'fear','scared':'fear','panic':'panic','suffocated':'suffocating','broken':'broken','hollow':'hollow','empty':'hollow','contempt':'contempt','disgusted':'disgust','sarcastic':'sarcasm','intoxicated':'intoxicated','trance':'trance','shocked':'shocked','furious':'violent','enlightened':'flash-enlightenment','outgoing':'outgoing','talkative':'talking-burst','shivering':'fear-shake' }; // 【fix-1A2】【v2.3.2 扩充】
   const rawMood = String(shot.mood || shot.emotion || (shot.emotional_target && shot.emotional_target.emotion) || '').toLowerCase().trim();
   const mood = (MOOD_SYNONYM_MAP[rawMood] || rawMood);
   // 【v2.1.4-patch2】兼容lighting对象/字符串两种格式
@@ -246,6 +340,11 @@ function extractShotMetadata(shot) {
   else if (/喜剧|comedy|funny|laugh/i.test(desc)) meta.type = 'comedy';
   else if (/悬疑|suspense|mystery/i.test(desc)) meta.type = 'suspense';
   else if (/惊悚|thriller/i.test(desc)) meta.type = 'thriller';
+  // 【v2.3.2】补全片种枚举：此前 action/loneliness/micro-expression 永远无法产出，
+  // 导致 10 个动作技能、3 个孤独技能团灭，36 个微表情技能只剩跨类型独木桥
+  else if (/动作片|动作戏|动作场面|^动作|，动作，|追逐|追车|打斗|搏斗|爆炸|枪战|飞车|action|chase|gunfight|explosion/i.test(desc)) meta.type = 'action';
+  else if (/微表情|面部特写|表情特写|大特写/.test(desc)) meta.type = 'micro-expression';
+  else if (/独处|独居|孤身|独自一人|solitude/i.test(desc)) meta.type = 'loneliness';
   
   // 检测镜头类型
   if (/航拍|aerial|helicopter|drone/i.test(camera + desc)) meta.shotType = 'aerial';
@@ -254,7 +353,22 @@ function extractShotMetadata(shot) {
   else if (/定场|establishing/i.test(camera + desc)) meta.shotType = 'establishing';
   if (/IMAX|imax/i.test(camera + desc + lighting)) meta.tech = 'IMAX';
   
+  // 【v2.3.2】技能情绪标签直通扫描：mood 字段优先、场景描述其次。
+  // 修复前识别链仅输出 12 种情绪，技能库 52 个情绪标签中约 40 个永远无法命中
+  if (!meta.emotion) {
+    const moodText = String(shot.mood || shot.emotion || (shot.emotional_target && shot.emotional_target.emotion) || '');
+    for (const [zh, en] of buildEmotionScanEntries()) {
+      if (zh && moodText.includes(zh)) { meta.emotion = en; break; }
+    }
+    if (!meta.emotion) {
+      for (const [zh, en] of buildEmotionScanEntries()) {
+        if (zh && desc.includes(zh)) { meta.emotion = en; break; }
+      }
+    }
+  }
+
   // 检测情绪（归一后的 mood 优先）【fix-1A3】
+  if (!meta.emotion) {
   if (mood && MOOD_SYNONYM_MAP[rawMood]) { meta.emotion = mood; }
   else if (/哀伤|悲恸|悲伤|心碎|grief/i.test(mood + desc)) meta.emotion = 'grief';
   else if (/克制|静谧|安静|restraint/i.test(mood + desc)) meta.emotion = 'oriental-restraint';
@@ -271,6 +385,7 @@ function extractShotMetadata(shot) {
   else if (/温情|tender|warm/i.test(mood + desc)) meta.emotion = 'tender';
   else if (/神秘|mysterious|mystery/i.test(mood + desc)) meta.emotion = 'mysterious';
   else if (/情感|emotional|feelings/i.test(mood + desc)) meta.emotion = 'emotional';
+  }
   
   // 检测导演风格
   if (/维伦纽瓦|villeneuve|dune|arrival/i.test(desc)) meta.director = 'villeneuve';
@@ -301,6 +416,10 @@ function extractShotMetadata(shot) {
   if (/航拍|aerial|helicopter/i.test(camera + desc)) meta.hasAerial = true;
   
   meta.rawCamera = cameraStr || cameraMovementStr || cameraObjStr; // 【fix-1A3】运镜原文透传评分器
+  // 【v2.3.2】情绪末端归一到 canonical 33 集（精细值保留在 emotionFine）
+  meta.emotionFine = meta.emotion;
+  meta.emotion = canonEmotion(meta.emotion);
+
   return meta;
 }
 
@@ -353,6 +472,14 @@ function matchSkills(shotMeta, limit = 3) {
           candidates.set(item.file, (candidates.get(item.file) || 0) + 12);
         });
       }
+    });
+  }
+
+  // 优先级3.6：跨片种情绪通道（+15）——情绪优先于片种，
+  // 解决"孤独/动作既是情绪词又是片种"导致的类型错配死技能
+  if (shotMeta.emotion) {
+    (index[`*_${shotMeta.emotion}`] || []).forEach(item => {
+      candidates.set(item.file, (candidates.get(item.file) || 0) + 15);
     });
   }
 
@@ -496,9 +623,10 @@ function injectSkillEnhancement(shot, matchedSkills) {
   const moodTerms = extractKeyTerms(moodBlocks, 6);
   const forbidTerms = extractForbiddenTerms(forbiddenBlocks, 8);
   
-  enhanced._appliedSkills = matchedSkills.map(s => ({
+  enhanced._appliedSkills = matchedSkills.map((s, i) => ({
     file: path.basename(s.skillPath),
     score: s.score,
+    role: i === 0 ? 'primary' : 'support', // 【v2.3.2】Top2 混合注入的主/辅标注
     type: s.meta.type_zh,
     director: s.meta.director_zh,
     emotion: s.meta.emotion_zh
@@ -529,7 +657,7 @@ function injectSkillEnhancement(shot, matchedSkills) {
 // ============================================================
 
 function routeAndEnhance(shots, options = {}) {
-  const { minScore = 5, maxSkillsPerShot = 2, dryRun = false } = options;
+  const { minScore = 5, maxSkillsPerShot = 2, dryRun = false, diversityPenalty = 10 } = options;
   
   const report = {
     totalShots: shots.length,
@@ -539,10 +667,23 @@ function routeAndEnhance(shots, options = {}) {
     details: []
   };
   
+  // 【v2.3.2】同片多样性惩罚：本片已用过的技能按使用次数降权，
+  // 避免单一技能在一部片子里重复霸榜（如斯皮尔伯格史诗斯坦尼康一片吃3镜）
+  const useCount = {};
+
   const enhancedShots = shots.map((shot, idx) => {
     const meta = extractShotMetadata(shot);
-    let matched = matchSkills(meta, maxSkillsPerShot)
-      .filter(s => s.score >= minScore);
+    let matched = matchSkills(meta, maxSkillsPerShot + 4);
+    if (diversityPenalty > 0) {
+      matched = matched.map(s => {
+        const f = path.basename(s.skillPath);
+        const prior = useCount[f] || 0;
+        return prior > 0 ? { ...s, score: s.score - diversityPenalty * prior, diversityPenalized: prior } : s;
+      }).sort((a, b) => b.score - a.score);
+    }
+    matched = matched
+      .filter(s => s.score >= minScore)
+      .slice(0, maxSkillsPerShot);
 
     // 【fix-1A6】冲突惩罚把唯一匹配也扣死时，回退取原始最高分并标记 fallback
     if (matched.length === 0 && meta.rawCamera) {
@@ -560,7 +701,7 @@ function routeAndEnhance(shots, options = {}) {
       return shot;
     }
     
-    matched.forEach(s => report.skillsUsed.add(path.basename(s.skillPath)));
+    matched.forEach(s => { const f = path.basename(s.skillPath); useCount[f] = (useCount[f] || 0) + 1; report.skillsUsed.add(f); });
     
     if (dryRun) {
       report.details.push({
@@ -664,12 +805,42 @@ function normalizeShotMeta(shot) {
  for (const [alias, mode] of Object.entries(TAXONOMY.camera_alias)) {
  if (rawCam && rawCam.includes(alias.toLowerCase())) { cameraMode = mode; break; }
  }
+ // 【v2.3.2】场景描述参与识别（此前仅 mood 单字段，大量镜头元数据被浪费）
+ const desc = String(shot.description || shot.scene || shot.sceneDesc || shot.prompt || '');
+ // 【v2.3.2】片种识别：此前 type 硬编码 'drama'，动作/孤独/微表情技能的类型分永远无法触发
+ let type = 'drama';
+ if (/科幻|alien|space|planet|starship|robot/i.test(desc)) type = 'sci-fi';
+ else if (/战争|battle|army|soldier|war/i.test(desc)) type = 'war';
+ else if (/恐怖|horror|monster/i.test(desc)) type = 'horror';
+ else if (/喜剧|comedy|funny|laugh/i.test(desc)) type = 'comedy';
+ else if (/悬疑|suspense|mystery/i.test(desc)) type = 'suspense';
+ else if (/惊悚|thriller/i.test(desc)) type = 'thriller';
+ else if (/动作片|动作戏|动作场面|^动作|，动作，|追逐|追车|打斗|搏斗|爆炸|枪战|飞车|action|chase|gunfight|explosion/i.test(desc)) type = 'action';
+ else if (/微表情|面部特写|表情特写|大特写/.test(desc)) type = 'micro-expression';
+ else if (/独处|独居|孤身|独自一人|solitude/i.test(desc)) type = 'loneliness';
+ // 【v2.3.2】情绪归一：alias 命中 → 技能情绪标签直通扫描（mood 优先、desc 其次）→ 原文兜底 → canonical 归一
+ let emotion = TAXONOMY.emotion_alias[rawMood] || '';
+ if (!emotion) {
+ const moodText = String(shot.mood || shot.emotion || shot.emotional_target?.emotion || '');
+ for (const [zh, en] of buildEmotionScanEntries()) {
+ if (zh && moodText.includes(zh)) { emotion = en; break; }
+ }
+ if (!emotion) {
+ for (const [zh, en] of buildEmotionScanEntries()) {
+ if (zh && desc.includes(zh)) { emotion = en; break; }
+ }
+ }
+ }
+ if (!emotion) emotion = rawMood || '';
+ emotion = canonEmotion(emotion);
+ // 【v2.3.2】导演亲和此前恒为空（+15 分通道死路），接入中文名检测
+ const director = detectDirectorZh(desc);
  return {
  shotId: shot.shotId || shot.shot_id,
- type: 'drama',
- emotion: TAXONOMY.emotion_alias[rawMood] || rawMood || '',
+ type,
+ emotion,
  cameraMode,
- director: '',
+ director,
  intensity: shot._creativeIntensity || null
  };
 }
