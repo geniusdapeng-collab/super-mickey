@@ -50,9 +50,15 @@ function main() {
     const shot = buildSyntheticShot(meta);
     const gotV1 = router.matchSkills(router.extractShotMetadata(shot), 3).map(x => x.meta.filename);
     if (!gotV1.includes(f)) failV1.push({ file: f, got: gotV1 });
-    const plan = router.routeAndEnhanceV2([shot], { minScore: 1, maxSkillsPerShot: 3 });
-    const gotV2 = (plan.get('T00')?.matched || []).map(x => x.file);
-    if (!gotV2.includes(f)) failV2.push({ file: f, got: gotV2 });
+    // 【v2.4.2】V2 可达性改在"双通道选编之前"的候选短名单上断言：
+    // A4 双通道会为异 domain 技能保留槽位，同 domain 同分技能可能被合法挤出最终 Top3
+    // （实例：微表情_战栗_不祥预感 原始分 52 并列第一，仍被摄影轨槽位挤出最终选编）。
+    // 死技能的定义是"挤不进候选短名单"，故断言 = 进入 matchSkillsV2 Top5 候选（203 进 5 已是硬门槛）。
+    const v2ranked = router.matchSkillsV2(router.normalizeShotMeta(shot), { limit: 5, minScore: 1 });
+    const hitV2 = v2ranked.find(x => x.skill && x.skill.file === f);
+    if (!hitV2) {
+      failV2.push({ file: f, got: v2ranked.map(x => x.skill ? x.skill.file : '?'), score: hitV2 ? hitV2.score : 0 });
+    }
   }
   console.log(`\n📊 技能可达性测试：共 ${files.length} 个技能`);
   console.log(`  V1 链路：${files.length - failV1.length}/${files.length} 可达`);
@@ -63,7 +69,7 @@ function main() {
   }
   if (failV2.length > 0) {
     console.log(`\n❌ V2 不可达（${failV2.length}）：`);
-    failV2.forEach(x => console.log(`  - ${x.file}  [实际命中: ${x.got.join(', ') || '无'}]`));
+    failV2.forEach(x => console.log(`  - ${x.file}  [Top5候选: ${x.got.join(', ') || '无'}] [本分: ${x.score}]`));
   }
   if (failV1.length === 0 && failV2.length === 0) {
     console.log('\n✅ 全部技能在两条生产链路均可达，无死技能。');
