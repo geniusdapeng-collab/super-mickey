@@ -57,6 +57,9 @@ class FieldContentRefiner {
  // 技术规格统一模板: 全片所有镜头一字不差(消除 H.264/H.265 打架)
  // 可由外部按项目实际画幅注入, 默认 16:9/4K/24fps/MP4
  this.constraintTemplate = options.constraintTemplate || '16:9画幅，4K分辨率，24fps，MP4格式';
+ // 【fix-精炼盲区D】记录模板是否为外部注入: 注入模板尊重原样(可能已含项目分辨率),
+ // 默认模板允许按【基础】字段动态调整分辨率
+ this._templateInjected = !!options.constraintTemplate;
  this.stats = {
  strippedEnPrefix: 0,
  removedFragments: 0,
@@ -193,7 +196,8 @@ class FieldContentRefiner {
  } else if (head === '【基础】') {
  core = this._normalizeBaseline(core);
  } else if (head === '【约束】') {
- core = this._normalizeConstraint(core);
+ // 【fix-精炼盲区D】传入【基础】正文, 供模板分辨率跟随
+ core = this._normalizeConstraint(core, this._getSectionBody(sections, '【基础】') || '');
  } else if (head === '【明亮约束】') {
  core = this._normalizeBrightConstraint(core);
  } else if (head === '【主标题内容】' || head === '【副标题内容】' || head === '【标题动画设计】' || head === '【标题字体设计】' || head === '【开场音频设计】') {
@@ -291,7 +295,10 @@ class FieldContentRefiner {
 
  _stripOneEnPrefix(body) {
  // 开头为纯英文序列(含空格/逗号/点/连字符/斜杠), 以分号/逗号收尾, 且紧跟中文
- const m = body.match(/^\s*([A-Za-z][A-Za-z0-9 .,'\/()\-]{7,}?)[;；,，]\s*(?=[\u4e00-\u9fffT])/);
+ // 【fix-精炼盲区B】向前看补充数字: 摄影字段常以 28mm/240fps/5600K 等数字开头,
+ // 旧正则 (?=[一-鿿T]) 对数字开头字段体永不命中; 前缀起始同步放宽数字,
+ // 配合 _stripLeadingJunk 多轮循环逐段剥净(如 "handheld tracking, 28mm lens, 28mm 手持…")
+ const m = body.match(/^\s*([A-Za-z0-9][A-Za-z0-9 .,'\/()\-]{7,}?)[;；,，]\s*(?=[\u4e00-\u9fffT0-9])/);
  if (!m) return body;
  const prefix = m[1];
  // 保护: 单个无空格技术词不剥(理论上到不了这里, 双保险)
@@ -342,7 +349,8 @@ class FieldContentRefiner {
  _dedupeClauses(body) {
  if (!body || body.length < 40) return body;
  const units = body.split(/(?<=[。；;])/).filter(u => u.trim());
- if (units.length < 3) return body;
+ // 【fix-精炼盲区A】两句结构(原句+重复句)也要去重, 旧阈值<3直接早退, 相邻重复句永不触发
+ if (units.length < 2) return body;
 
  const norm = (s) => s.replace(/[\s。；;，,、：:""'（）()【】\[\]]/g, '');
  const kept = [];
@@ -409,13 +417,27 @@ class FieldContentRefiner {
  /**
  * 【约束】= 画幅/分辨率/帧率/格式
  * 统一替换为 constraintTemplate, 消除 H.264/H.265/48kHz/4:2:2 打架
+ *
+ * 【fix-精炼盲区D】双保险:
+ * 1. 含镜头级创作约束信号(时长/一镜到底/台词/唇形/慢动作/蒙太奇等)时不模板化,
+ *    只做去重——旧实现把"时长10秒,一镜到底,唇形同步开启"整段覆盖为
+ *    "16:9画幅,4K分辨率,24fps,MP4格式", 镜头级渲染约束全灭;
+ * 2. 默认模板分辨率跟随【基础】字段(8K/6K/4K), 不再硬编码 4K,
+ *    消除"基础 8K vs 约束 4K"的自相矛盾。
  */
- _normalizeConstraint(body) {
- const template = this.constraintTemplate;
- // 如果内容与模板本质相同(含画幅/分辨率/帧率/格式), 直接替换为模板
+ _normalizeConstraint(body, baselineBody = '') {
+ // 镜头级创作约束信号: 命中即不模板化
+ if (/时长|一镜到底|台词|唇形|慢动作|蒙太奇|叠化|手持|航拍|斯坦尼康|定场/.test(body)) {
+ return this._dedupeClauses(body);
+ }
  const techPattern = /画幅|分辨率|帧率|fps|格式|MP4|编码|色域/;
  if (techPattern.test(body) && body.length < 120) {
- return template;
+ // 分辨率跟随【基础】( baseline 出现 8K/6K 则模板同步, 否则用调用方注入/默认模板 )
+ const resMatch = String(baselineBody).match(/\b(4K|6K|8K)\b/);
+ if (resMatch && !this._templateInjected) {
+ return this.constraintTemplate.replace(/4K分辨率/, `${resMatch[1]}分辨率`);
+ }
+ return this.constraintTemplate;
  }
  return body;
  }
@@ -459,7 +481,9 @@ class FieldContentRefiner {
  * 规则: 删除含 "X-Y秒" / "T00:XX" 时间标记的分句; 若删完则保留原第一句。
  */
  _stripTimeRedundancy(body) {
- const units = body.split(/(?<=[。；;])/).filter(u => u.trim());
+ // 【fix-精炼盲区C】分句补充逗号: 节奏字段常以逗号连接全句(无。；;),
+ // 旧实现单句仅 1 个 unit 直接早退, 句内 T00 冗余永不清理
+ const units = body.split(/(?<=[。；;，,])/).filter(u => u.trim());
  if (units.length <= 1) return body;
  const qualitative = units.filter(u => !/\d+\s*[-–—~]\s*\d+\s*秒|T\d{2}:\d{2}|\d+-\d+s/i.test(u));
  if (qualitative.length === 0) return units[0]; // 全是时间描述 → 保留第一句保底
