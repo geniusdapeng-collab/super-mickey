@@ -72,8 +72,13 @@ class Phase3PromptFusion extends PhaseExecutor {
       }
       
       // 【架构-L3】技能预匹配：在 PromptFusion 逐镜头生成前完成【fix-3A1】
-      const { routeAndEnhanceV2 } = require('../../../skills/hollywood-cinematography/cinematography-skill-router');
-      const skillPlan = routeAndEnhanceV2(shots, { minScore: 5, maxSkillsPerShot: 2 });
+      const { routeAndEnhanceV2, assignFilmDirector } = require('../../../skills/hollywood-cinematography/cinematography-skill-router');
+      // 【v2.3.3-A2】一部片一位导演：蓝图阶段选定，全片镜头共享同一风格宪法
+      const filmDirectorAssignment = assignFilmDirector(adaptedBlueprint || {});
+      const filmDirector = filmDirectorAssignment.director;
+      const filmGenre = (adaptedBlueprint && (adaptedBlueprint.genre || adaptedBlueprint.type)) || '';
+      this.log('SKILL-PREMATCH', `全片导演选定: ${filmDirector}（来源: ${filmDirectorAssignment.source}）`);
+      const skillPlan = routeAndEnhanceV2(shots, { minScore: 5, maxSkillsPerShot: 2, assignedDirector: filmDirector, filmGenre });
       shots = shots.map(s => {
         const plan = skillPlan.get(s.shotId || s.shot_id);
         if (plan && plan.contextText) {
@@ -85,7 +90,40 @@ class Phase3PromptFusion extends PhaseExecutor {
       this.log('SKILL-PREMATCH', `技能预匹配完成: ${[...skillPlan.values()].filter(p => p.matched.length).length}/${shots.length} 镜头命中`);
       // 计量落盘（L4 遥测）
       result.stages = result.stages || {};
-      result.stages.skillPrematch = [...skillPlan.entries()].map(([shotId, p]) => ({ shotId, ...p.matched.length ? { skills: p.matched.map(m => m.file), injection: 'pre' } : { skills: [], injection: 'none' } }));
+      result.stages.skillPrematch = [...skillPlan.entries()].map(([shotId, p]) => ({
+        shotId,
+        type: p.type,
+        director: p.director,
+        ...p.matched.length ? { skills: p.matched.map(m => m.file), scores: p.matched.map(m => m.score), injection: 'pre' } : { skills: [], injection: 'none' }
+      }));
+      // 【v2.3.3-A7】技能使用遥测落盘：真实命中率/墙纸率/类别分布从此可度量
+      try {
+        const fs = require('fs');
+        const path = require('path');
+        const telemetryDir = path.join(__dirname, '..', '..', '..', '..', 'logs', 'skill-usage');
+        fs.mkdirSync(telemetryDir, { recursive: true });
+        const perShot = [...skillPlan.entries()].map(([shotId, p]) => ({
+          shotId, type: p.type, director: p.director, directorSource: p.directorSource,
+          skills: p.matched.map(m => ({ file: m.file, score: m.score, reasons: m.reasons, fallback: m.fallback }))
+        }));
+        const allUsed = perShot.flatMap(p => p.skills.map(s => s.file));
+        const record = {
+          ts: new Date().toISOString(),
+          task: (adaptedBlueprint && (adaptedBlueprint.task_id || adaptedBlueprint.title)) || null,
+          filmDirector,
+          filmDirectorSource: filmDirectorAssignment.source,
+          filmGenre: filmGenre || null,
+          totalShots: perShot.length,
+          matchedShots: perShot.filter(p => p.skills.length > 0).length,
+          distinctSkills: [...new Set(allUsed)],
+          // 墙纸镜头：无 emotion 命中理由的低分匹配（凑数注入）
+          wallpaperShots: perShot.filter(p => p.skills.length > 0 && !p.skills.some(s => (s.reasons || []).includes('emotion'))).map(p => p.shotId),
+          perShot
+        };
+        fs.appendFileSync(path.join(telemetryDir, 'skill-usage.jsonl'), JSON.stringify(record) + '\n');
+      } catch (telemetryErr) {
+        this.log('SKILL-TELEMETRY', `遥测落盘失败（不影响主流程）: ${telemetryErr.message}`);
+      }
 
       const pfResult = await this.agents.promptFusion.process(
         this.cloneShots(shots), 

@@ -797,8 +797,59 @@ function loadCompiledIndex() {
  return [...skills.values()];
 }
 
+// ============================================================
+// 【v2.3.3-A1】类型识别词表与归一
+// 三级链：shot.genre 结构化字段（上游LLM产出）→ 全片类型先验（蓝图）
+//        → 叙事实体词扫描 → 元关键词扫描（旧行为）→ 'drama' 兜底
+// ============================================================
+
+// genre 字段归一表：接受中英文、主题类型码（CINE/DOC）等多种来料
+const GENRE_TO_SKILL_TYPE = {
+ 'drama': 'drama', '剧情': 'drama', 'cine': 'drama',
+ 'sci-fi': 'sci-fi', 'scifi': 'sci-fi', 'sci_fi': 'sci-fi', '科幻': 'sci-fi',
+ 'war': 'war', '战争': 'war',
+ 'horror': 'horror', '恐怖': 'horror',
+ 'comedy': 'comedy', '喜剧': 'comedy',
+ 'suspense': 'suspense', '悬疑': 'suspense',
+ 'thriller': 'thriller', '惊悚': 'thriller',
+ 'action': 'action', '动作': 'action',
+ 'loneliness': 'loneliness', '孤独': 'loneliness',
+ 'documentary': 'documentary', '纪录': 'documentary', 'doc': 'documentary',
+ 'fantasy': 'fantasy', '奇幻': 'fantasy',
+ 'micro-expression': 'micro-expression', '微表情': 'micro-expression'
+};
+
+function toSkillType(g) {
+ if (!g) return '';
+ const s = String(g).trim();
+ return GENRE_TO_SKILL_TYPE[s.toLowerCase()] || GENRE_TO_SKILL_TYPE[s] || '';
+}
+
+// 叙事实体词表：真实镜头描述里"故事世界"的词，而非"科幻"这种元类型词
+// （火星尘暴里没有"科幻"二字，但有"火星/尘暴/避难舱"）
+// 顺序即优先级，越具体越靠前
+const TYPE_ENTITY_PATTERNS = [
+ ['sci-fi', /火星|月球|太空|星舰|外星|异星|宇航|空间站|避难舱|虫洞|星际|机器人|末世|废土|赛博|异形|飞碟|卫星|深空|行星|银河系|极地科考|飞船|alien|space|planet|starship|robot|sci-?fi|mars|lunar|spaceship/i],
+ ['war', /战场|战壕|士兵|军队|冲锋|阵地|战火|战役|前线|硝烟|军演|抗战|碉堡|装甲|行军|battle|army|soldier|war|battlefield/i],
+ ['horror', /灵异|闹鬼|诡异|古宅|怨灵|咒怨|鬼影|凶宅| horror |monster|haunted/i],
+ ['comedy', /爆笑|搞笑|整蛊|滑稽|乌龙|段子|抖包袱|comedy|funny|laugh/i],
+ ['suspense', /悬疑|谜案|失踪|线索|真凶|suspense|mystery/i],
+ ['thriller', /惊悚|追杀|绑架|密室|thriller/i],
+ ['action', /动作片|动作戏|动作场面|追逐|追车|打斗|搏斗|爆炸|枪战|飞车|跑酷|功夫|武侠|action|chase|gunfight|explosion/i],
+ ['documentary', /纪录|纪实|田野|牧民|部落|迁徙|转场|documentary/i],
+ ['micro-expression', /微表情|面部特写|表情特写|大特写/],
+ ['loneliness', /独处|独居|孤身|独自一人|solitude/i]
+];
+
+function detectTypeByNarrative(desc) {
+ for (const [t, re] of TYPE_ENTITY_PATTERNS) {
+ if (re.test(desc)) return t;
+ }
+ return '';
+}
+
 /** shot 侧结构化元数据（不再靠正则猜） */
-function normalizeShotMeta(shot) {
+function normalizeShotMeta(shot, opts = {}) {
  const rawMood = String(shot.mood || shot.emotion || shot.emotional_target?.emotion || '').toLowerCase().trim();
  const rawCam = String(shot.camera?.movement || shot.cameraString || shot.cameraMovement || '').toLowerCase();
  let cameraMode = 'any';
@@ -807,8 +858,11 @@ function normalizeShotMeta(shot) {
  }
  // 【v2.3.2】场景描述参与识别（此前仅 mood 单字段，大量镜头元数据被浪费）
  const desc = String(shot.description || shot.scene || shot.sceneDesc || shot.prompt || '');
- // 【v2.3.2】片种识别：此前 type 硬编码 'drama'，动作/孤独/微表情技能的类型分永远无法触发
- let type = 'drama';
+ // 【v2.3.3-A1】类型三级链：结构化 genre 字段 → 全片先验 → 叙事实体词 → 元关键词 → drama
+ let type = toSkillType(shot.genre || shot.题材 || (shot.fields && shot.fields.genre) || '');
+ if (!type && opts.filmGenre) type = toSkillType(opts.filmGenre);
+ if (!type) type = detectTypeByNarrative(desc);
+ if (!type) {
  if (/科幻|alien|space|planet|starship|robot/i.test(desc)) type = 'sci-fi';
  else if (/战争|battle|army|soldier|war/i.test(desc)) type = 'war';
  else if (/恐怖|horror|monster/i.test(desc)) type = 'horror';
@@ -818,6 +872,8 @@ function normalizeShotMeta(shot) {
  else if (/动作片|动作戏|动作场面|^动作|，动作，|追逐|追车|打斗|搏斗|爆炸|枪战|飞车|action|chase|gunfight|explosion/i.test(desc)) type = 'action';
  else if (/微表情|面部特写|表情特写|大特写/.test(desc)) type = 'micro-expression';
  else if (/独处|独居|孤身|独自一人|solitude/i.test(desc)) type = 'loneliness';
+ }
+ if (!type) type = 'drama';
  // 【v2.3.2】情绪归一：alias 命中 → 技能情绪标签直通扫描（mood 优先、desc 其次）→ 原文兜底 → canonical 归一
  let emotion = TAXONOMY.emotion_alias[rawMood] || '';
  if (!emotion) {
@@ -833,16 +889,95 @@ function normalizeShotMeta(shot) {
  }
  if (!emotion) emotion = rawMood || '';
  emotion = canonEmotion(emotion);
- // 【v2.3.2】导演亲和此前恒为空（+15 分通道死路），接入中文名检测
- const director = detectDirectorZh(desc);
+ // 【v2.3.3-A2】导演三级链：镜头显式指定 → 全片蓝图选定（一部片一位导演）
+ // → 描述检测（旧行为）；记录来源供遥测与一致性审计
+ let director = '', directorSource = 'none';
+ if (shot.director) {
+ if (SKILL_DIRECTOR_MAP[shot.director]) {
+ director = shot.director; directorSource = 'shot'; // 中文名直取
+ } else {
+ const zh = Object.keys(SKILL_DIRECTOR_MAP).find(k => SKILL_DIRECTOR_MAP[k] === String(shot.director).toLowerCase());
+ if (zh) { director = zh; directorSource = 'shot'; } // 英文名转中文（技能索引统一中文口径）
+ }
+ }
+ if (!director && opts.assignedDirector) {
+ director = opts.assignedDirector;
+ directorSource = 'assigned';
+ }
+ if (!director) {
+ director = detectDirectorZh(desc);
+ if (director) directorSource = 'detected';
+ }
  return {
  shotId: shot.shotId || shot.shot_id,
  type,
  emotion,
  cameraMode,
  director,
+ directorSource,
  intensity: shot._creativeIntensity || null
  };
+}
+
+// ============================================================
+// 【v2.3.3-A2】全片导演选定（一部片一位导演，蓝图阶段确定）
+// 导演从"每镜头的随机标签"升级为"全片的风格宪法"：
+// 一致性（电影不会每镜头换导演）、可复现（重跑风格稳定）、
+// 产品化（用户可指定风格档位）。
+// ============================================================
+
+// 片种 → 默认导演（该导演须在技能库中有作品）
+const FILM_DIRECTOR_TABLE = {
+ 'sci-fi': '维伦纽瓦',
+ 'war': '斯皮尔伯格',
+ 'horror': '大卫林奇',
+ 'suspense': '希区柯克',
+ 'thriller': '芬奇',
+ 'comedy': '韦斯安德森',
+ 'action': '卡梅隆',
+ 'loneliness': '卡萨维茨',
+ 'documentary': '卡萨维茨',
+ 'fantasy': '卢卡斯'
+};
+
+// 剧情片按情绪基调细分导演
+const DRAMA_MOOD_DIRECTOR = [
+ [/史诗|宏大|悲壮|庄严|epic/i, '诺兰'],
+ [/温情|感人|暖|治愈|tender|warm/i, '斯皮尔伯格'],
+ [/哀伤|悲|grief|sad/i, '卡梅隆'],
+ [/孤独|寂寞|lonely/i, '黑泽明'],
+ [/浪漫|romantic/i, '斯派克琼斯'],
+ [/紧张|压迫|tense/i, '芬奇']
+];
+
+/**
+ * 为全片选定一位导演
+ * @param {object} blueprint 蓝图（可含 genre/type/mood/tone/description/title/director）
+ * @returns {{director: string, source: string}} 导演中文名与选定来源
+ */
+function assignFilmDirector(blueprint = {}) {
+ // 1. 显式指定优先（用户风格档位的未来入口）
+ const explicit = blueprint.director || (blueprint.config && blueprint.config.director) || blueprint._metadata && blueprint._metadata.director || '';
+ if (explicit) {
+ if (SKILL_DIRECTOR_MAP[explicit]) return { director: explicit, source: 'explicit' };
+ const zh = Object.keys(SKILL_DIRECTOR_MAP).find(k => SKILL_DIRECTOR_MAP[k] === String(explicit).toLowerCase());
+ if (zh) return { director: zh, source: 'explicit' };
+ }
+ // 2. 非剧情片种 → 片种默认导演
+ const genreText = String(blueprint.genre || blueprint.type || '');
+ let g = toSkillType(genreText);
+ // 蓝图类型缺失/为主题码时，扫描标题与描述里的叙事实体词
+ if (!g) g = detectTypeByNarrative(`${blueprint.title || ''} ${blueprint.description || ''} ${blueprint.theme || ''}`);
+ if (g && g !== 'drama' && g !== 'micro-expression' && FILM_DIRECTOR_TABLE[g]) {
+ return { director: FILM_DIRECTOR_TABLE[g], source: 'genre:' + g };
+ }
+ // 3. 剧情片 → 按情绪基调细分
+ const mood = String(blueprint.mood || blueprint.tone || blueprint.description || blueprint.title || '');
+ for (const [re, d] of DRAMA_MOOD_DIRECTOR) {
+ if (re.test(mood)) return { director: d, source: 'mood' };
+ }
+ // 4. 兜底：斯皮尔伯格（剧情片最大公约数，技能覆盖最全）
+ return { director: '斯皮尔伯格', source: 'default' };
 }
 
 function matchSkillsV2(shotMeta, opts = {}) {
@@ -898,21 +1033,61 @@ function matchSkillsV2(shotMeta, opts = {}) {
  return top;
 }
 
+// 【v2.3.3-A3】按完整条目截取：bullet 要么整条保留，要么整条舍弃，
+// 杜绝旧实现 slice(0,120) 把指令砍在句子中间（"插入特"/"- 配"）
+function takeCompleteItems(text, budget) {
+ if (!text) return '';
+ const items = text.split(/\n(?=\s*(?:\*\*|[-•]))/).map(s => s.trim()).filter(Boolean);
+ const picked = [];
+ let used = 0;
+ for (const it of items) {
+ if (used + it.length > budget && picked.length > 0) break;
+ picked.push(it);
+ used += it.length + 1;
+ if (used >= budget) break;
+ }
+ return picked.join('\n');
+}
+
 /** 技能上下文文本构建：供 PromptFusion 生成前注入（L3 主通道） */
 function buildSkillContextText(matched) {
+ // 【v2.3.3-A3】主辅剂量分级：主技能全量、辅技能半量（主/辅语义与总分控兼顾）
+ const BUDGETS = [
+ { shot: 500, emotion: 350, forbidden: 400 }, // 主技能
+ { shot: 300, emotion: 200, forbidden: 250 } // 辅技能
+ ];
  const parts = [];
+ let idx = 0;
  for (const m of matched) {
  const skillPath = path.join(SKILL_LIB_ROOT, m.skill.file);
  const enh = extractSkillEnhancement(skillPath);
  if (!enh) continue;
- const tag = `${m.skill.type}_${m.skill.director || '通用'}_${m.skill.emotions.join('/')}${m.fallback ? '(回退匹配)' : ''}`;
- const block = [`◆ 技能「${tag}」（匹配分 ${m.score}）`];
- if (enh.shotBlock) block.push(`镜头手法: ${enh.shotBlock.slice(0, 120)}`);
- if (enh.emotionBlock) block.push(`情绪设计: ${enh.emotionBlock.slice(0, 100)}`);
- if (enh.forbiddenBlock) block.push(`禁止词: ${enh.forbiddenBlock.slice(0, 100)}`);
+ const budget = BUDGETS[Math.min(idx, BUDGETS.length - 1)];
+ idx++;
+ // 【v2.3.3-A3】标签带文件名：两个不同技能不再共用同一归一化标签（撞车修复）
+ const role = idx === 1 ? '主' : '辅';
+ const tag = `${m.skill.file}（${m.skill.type}/${m.skill.director || '通用'}/${m.skill.emotions.join('/')}${m.fallback ? '，回退匹配' : ''}）`;
+ const block = [`◆ 技能「${tag}」（${role}，匹配分 ${m.score}）`];
+ if (enh.shotBlock) block.push(`镜头手法:\n${takeCompleteItems(enh.shotBlock, budget.shot)}`);
+ if (enh.emotionBlock) block.push(`情绪设计:\n${takeCompleteItems(enh.emotionBlock, budget.emotion)}`);
+ // 【v2.3.3-A6预热】时间轴分配入链：技能里的镜头节奏指导此前从未被注入
+ const tlLine = (enh.promptBlock || '').split('\n').find(l => /时间轴/.test(l));
+ if (tlLine) {
+ const tl = tlLine.replace(/^\s*\*\*时间轴分配\*\*[:：]\s*/, '').trim();
+ if (tl && tl.length <= 220) block.push(`时间轴: ${tl}`);
+ }
+ if (enh.forbiddenBlock) block.push(`禁止词:\n${takeCompleteItems(enh.forbiddenBlock, budget.forbidden)}`);
  parts.push(block.join('\n'));
  }
- return parts.join('\n\n').slice(0, 900); // 单镜头技能上下文总长封顶 900 字符
+ // 单镜头技能上下文总长封顶 1800 字符（主技能约800 + 辅技能约800 均可整块保留）
+ const out = [];
+ let total = 0;
+ for (const part of parts) {
+ if (total + part.length > 1800 && out.length > 0) break;
+ out.push(part);
+ total += part.length + 2;
+ }
+ return out.join('\n\n');
 }
 
 /**
@@ -920,17 +1095,22 @@ function buildSkillContextText(matched) {
  * @returns {Map} shotId → { matched, contextText }
  */
 function routeAndEnhanceV2(shots, opts = {}) {
- const { minScore = 5, maxSkillsPerShot = 2 } = opts;
+ const { minScore = 5, maxSkillsPerShot = 2, assignedDirector = '', filmGenre = '' } = opts;
  const plan = new Map();
  const useCount = {};
  for (const shot of shots) {
- const meta = normalizeShotMeta(shot);
+ // 【v2.3.3】导演/类型三级链接入：assignedDirector 来自蓝图选定，filmGenre 为全片类型先验
+ const meta = normalizeShotMeta(shot, { assignedDirector, filmGenre });
  const ratio = {};
  const total = Math.max(shots.length, 1);
  for (const [f, c] of Object.entries(useCount)) ratio[f] = c / total;
  const matched = matchSkillsV2(meta, { limit: maxSkillsPerShot, minScore, usedSkillRatio: ratio });
  matched.forEach(m => { useCount[m.skill.file] = (useCount[m.skill.file] || 0) + 1; });
  plan.set(meta.shotId, {
+ // 【v2.3.3-A7】遥测元数据透传：类型/导演/来源随 plan 落盘
+ type: meta.type,
+ director: meta.director,
+ directorSource: meta.directorSource,
  matched: matched.map(m => ({ file: m.skill.file, score: m.score, fallback: !!m.fallback, reasons: m.reasons || [] })),
  contextText: buildSkillContextText(matched)
  });
@@ -949,5 +1129,8 @@ module.exports = {
   matchSkillsV2,
   normalizeShotMeta,
   routeAndEnhanceV2,
-  buildSkillContextText
+  buildSkillContextText,
+  assignFilmDirector,
+  toSkillType,
+  detectTypeByNarrative
 };

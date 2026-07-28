@@ -48,6 +48,7 @@ ${sceneOptions}
     {
       "shotId": "SC01",
       "scene": "具体场景描述，包含墙面材质、灯光类型、家具设备",
+      "genre": "镜头影片类型（从 drama/sci-fi/war/horror/comedy/suspense/thriller/action/loneliness/documentary/fantasy 中选一个最贴切的）",
       "mood": "情绪关键词和氛围描述",
       "action": "角色动作描述（含肢体语言、走位）",
       "makeup": "角色妆容描述（妆容风格+发型+面部细节，20-40字）",
@@ -133,6 +134,7 @@ ${sceneOptions}
       return {
         ...shot,
         scene: scene,
+        genre: designed.genre || shot.genre || '', // 【v2.3.3-A1】镜头级影片类型字段，供技能路由三级识别
         mood: designed.mood || shot.mood || '',
         action: designed.action || shot.action || '',
         // ⭐ v2.1.7: 新增化妆/道具
@@ -185,6 +187,7 @@ ${sceneOptions}
 4. makeup: 角色妆容（根据场景自动推导：手术室→无菌无妆，战场→汗水/泥土，舞会→精致妆容，日常→素颜/淡妆，20-40字）
 5. props: 关键道具（从台词和场景中推断具体物品：手持物、桌面物品、背景物件，20-40字）
 6. emotional_target: 情绪目标（1个词）
+7. genre: 镜头影片类型，从 drama/sci-fi/war/horror/comedy/suspense/thriller/action/loneliness/documentary/fantasy 中选一个最贴切的（依据故事世界判断：火星/太空→sci-fi，战场/军队→war，不要默认 drama）
 
 【强制约束 - 违反则输出无效】
 - 场景描述必须包含具体物理细节：墙面材质、灯光类型、家具/设备、地面材质
@@ -192,7 +195,7 @@ ${sceneOptions}
 - 光线必须是真实光源：荧光灯、LED顶灯、窗光、无影灯、自然光
 - 角色必须在真实地面站立，背景必须是真实墙面
 
-输出JSON: {"shots": [{"shotId":"SC01","scene":"具体场景描述，50-80字","mood":"...","action":"...","makeup":"...","props":"...","emotional_target":"..."}]}
+输出JSON: {"shots": [{"shotId":"SC01","scene":"具体场景描述，50-80字","genre":"sci-fi等类型词","mood":"...","action":"...","makeup":"...","props":"...","emotional_target":"..."}]}
 
 【电影场景设计心法（写实之上的第二层要求）】
 1. 每个场景都是情绪的容器：先定情绪，再选材质。夜戏悬念=深木色+灯笼暖光+大面积暗部；晨戏释放=青灰/金色天光+通透空气感。材质、光源、色彩必须联手说同一种情绪。
