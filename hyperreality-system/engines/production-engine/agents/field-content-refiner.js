@@ -604,7 +604,15 @@ class FieldContentRefiner {
  [/淡入淡出|淡入|淡出/, '淡入淡出转场'], [/硬切|切镜|直接切/, '硬切转场']
  ];
  for (const [pattern, label] of types) {
- if (pattern.test(body)) return `${label}，衔接下一镜头`;
+ if (pattern.test(body)) {
+ // 【fix-转场保真】含创作内容的转场描述只闭合不覆盖——旧实现对命中类型词的
+ // 字段一律改写为"xx转场，衔接下一镜头。", 镜头级创作细节(衔接画面/情绪意图)全灭。
+ // 仅当正文只是干类型词/英文枚举(无创作内容)时才标准化。
+ const bare = String(body).replace(/[，,。；;\s]/g, '');
+ const isBareType = bare.length <= 10 || /^[A-Za-z_\s,]+$/.test(String(body).trim());
+ if (isBareType) return `${label}，衔接下一镜头`;
+ return this._ensureClosure(body);
+ }
  }
  return body;
  }
