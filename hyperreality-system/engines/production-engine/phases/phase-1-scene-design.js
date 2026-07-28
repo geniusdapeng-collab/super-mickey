@@ -39,6 +39,13 @@ class Phase1SceneDesign extends PhaseExecutor {
         if (!adaptedBlueprint.theme && ct.theme) adaptedBlueprint.theme = ct.theme;
         if (!adaptedBlueprint.targetAudience && ct.target_audience) adaptedBlueprint.targetAudience = ct.target_audience;
         if (!adaptedBlueprint.description && ct.description) adaptedBlueprint.description = ct.description;
+        // 【v2.4.0-B3】全片导演前置：蓝图阶段选定，场景设计即感知风格宪法
+        try {
+          const { assignFilmDirector } = require('../../../skills/hollywood-cinematography/cinematography-skill-router');
+          const fd = assignFilmDirector(adaptedBlueprint);
+          adaptedBlueprint.filmDirector = fd.director;
+          adaptedBlueprint.filmDirectorSource = fd.source;
+        } catch (e) { /* 风格指南缺失不阻断主流程 */ }
       }
 
       // 并行执行两个 Agent

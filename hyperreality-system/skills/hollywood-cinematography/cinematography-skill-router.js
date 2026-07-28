@@ -72,7 +72,8 @@ function parseSkillFilename(filename) {
   const TYPE_MAP = {
     '剧情': 'drama', '动作': 'action', '喜剧': 'comedy', '恐怖': 'horror',
     '悬疑': 'suspense', '惊悚': 'thriller', '战争': 'war', '科幻': 'sci-fi',
-    '孤独': 'loneliness', '微表情': 'micro-expression'
+    '孤独': 'loneliness', '微表情': 'micro-expression',
+    '纪录': 'documentary', '奇幻': 'fantasy' // 【v2.4.0】新赛道片种
   };
   
   const DIRECTOR_MAP = SKILL_DIRECTOR_MAP;
@@ -345,6 +346,10 @@ function extractShotMetadata(shot) {
   else if (/动作片|动作戏|动作场面|^动作|，动作，|追逐|追车|打斗|搏斗|爆炸|枪战|飞车|action|chase|gunfight|explosion/i.test(desc)) meta.type = 'action';
   else if (/微表情|面部特写|表情特写|大特写/.test(desc)) meta.type = 'micro-expression';
   else if (/独处|独居|孤身|独自一人|solitude/i.test(desc)) meta.type = 'loneliness';
+  // 【v2.4.0】补全纪录/奇幻片种枚举：taxonomy 早有别名但 V1 检测链缺失，
+  // 新赛道技能（纪录/奇幻）在 V1 链路团灭，与 v2.3.2 动作片修复同因
+  else if (/纪录|纪实|田野|牧民|部落|迁徙|documentary/i.test(desc)) meta.type = 'documentary';
+  else if (/奇幻|神话|神兽|异兽|fantasy/i.test(desc)) meta.type = 'fantasy';
   
   // 检测镜头类型
   if (/航拍|aerial|helicopter|drone/i.test(camera + desc)) meta.shotType = 'aerial';
@@ -767,11 +772,61 @@ if (require.main === module) {
 const TAXONOMY = require('./taxonomy.json');
 const COMPILED_INDEX_PATH = path.join(__dirname, 'skills-index.json');
 
+// 【v2.4.0-B1】结构化编译产物优先（scripts/compile-skills.js 生成），
+// 旧编译索引次之，文件名解析兜底。三级来源统一归一为运行形态。
+const COMPILED_V2_PATH = path.join(__dirname, 'skills-compiled.json');
+
+// 运镜模式归一（历史编译产物中 '定场' 为中文残留）
+const CAMERA_MODE_NORM = { '定场': 'establishing', '航拍': 'aerial', '手持': 'handheld', '斯坦尼康': 'steadicam', '跟拍': 'tracking', '推近': 'push' };
+
+function normalizeSkillEntry(s) {
+ const triggers = s.triggers || {};
+ return {
+ file: s.file,
+ skill_id: s.skill_id || (s.file || '').replace('.md', ''),
+ domain: s.domain || (triggers.subjects && triggers.subjects.includes('person') ? 'acting' : 'cinematography'),
+ type: s.type || (triggers.types || [])[0] || 'drama',
+ director: s.director || '',
+ emotions: (s.emotions && s.emotions.length ? s.emotions : (triggers.emotions || [])).filter(Boolean),
+ camera_modes: (s.camera_modes && s.camera_modes.length ? s.camera_modes : (triggers.camera_modes || []))
+ .map(m => CAMERA_MODE_NORM[m] || m).filter(Boolean),
+ intensity_range: s.intensity_range || null,
+ tier: s.tier || 'B',
+ subjects: s.subjects || (triggers.subjects || ['any']),
+ oneLiner: s.oneLiner || '',
+ blocks: s.blocks || null // B1 起携带结构化块（含 qc 质检清单）
+ };
+}
+
+// 【v2.4.0-B4】冷藏清单（scripts/skill-lifecycle-report.js 生成维护）
+const QUARANTINE_PATH = path.join(__dirname, 'skills-quarantine.json');
+let _quarantine = null;
+function loadQuarantine() {
+ if (_quarantine) return _quarantine;
+ _quarantine = new Set();
+ try {
+ if (fs.existsSync(QUARANTINE_PATH)) {
+ const q = JSON.parse(fs.readFileSync(QUARANTINE_PATH, 'utf8'));
+ (q.quarantine || []).forEach(f => _quarantine.add(f));
+ }
+ } catch (e) { /* 冷藏清单损坏不阻断主流程 */ }
+ return _quarantine;
+}
+const QUARANTINE = loadQuarantine();
+
 function loadCompiledIndex() {
+ try {
+ if (fs.existsSync(COMPILED_V2_PATH)) {
+ const data = JSON.parse(fs.readFileSync(COMPILED_V2_PATH, 'utf8'));
+ if (Array.isArray(data.skills) && data.skills.length > 0) return data.skills.map(normalizeSkillEntry);
+ }
+ } catch (e) {
+ console.warn(`[SkillRouter] 结构化编译产物读取失败，尝试旧索引: ${e.message}`);
+ }
  try {
  if (fs.existsSync(COMPILED_INDEX_PATH)) {
  const data = JSON.parse(fs.readFileSync(COMPILED_INDEX_PATH, 'utf8'));
- if (Array.isArray(data.skills) && data.skills.length > 0) return data.skills;
+ if (Array.isArray(data.skills) && data.skills.length > 0) return data.skills.map(normalizeSkillEntry);
  }
  } catch (e) {
  console.warn(`[SkillRouter V2] 编译索引读取失败，回退文件名解析: ${e.message}`);
@@ -794,7 +849,7 @@ function loadCompiledIndex() {
  });
  }
  }
- return [...skills.values()];
+ return [...skills.values()].map(normalizeSkillEntry);
 }
 
 // ============================================================
@@ -846,6 +901,40 @@ function detectTypeByNarrative(desc) {
  if (re.test(desc)) return t;
  }
  return '';
+}
+
+// ============================================================
+// 【v2.4.0-A4】主体检测：演技技能只对"有脸的镜头"开火
+// 人化动物主体（企鹅/蝙蝠/异兽等）纳入演技适用范围——
+// Nirath 内容体系里它们是角色；空镜/物体镜一律不注入面部表演。
+// ============================================================
+const SUBJECT_PERSON_RE = /他|她|老人|男孩|女孩|男人|女人|儿童|孩子|工人|工头|乐队|牧民|地质学家|游客|列车长|司机|医生|护士|士兵|父亲|母亲|爸爸|妈妈|演员|角色|人物|主角|少女|少年|夫妇|兄弟|姐妹|老师|学生|小贩|婴儿|宝宝|爷爷|奶奶|面部|脸|眼|手|指|笑容|眼泪|企鹅|蝙蝠|骆驼|异兽|神兽|狼|鹰|马|犬|猫|熊|鹿|狐/;
+const SUBJECT_CLOSE_RE = /大特写|特写|近景|面部|微表情/;
+const SUBJECT_WIDE_RE = /远景|全景|大全景|航拍|空镜|俯拍/;
+
+function detectSubject(shot) {
+ const text = `${shot.description || ''} ${shot.scene || ''} ${shot.action || ''} ${shot.character || ''} ${shot.角色 || ''}`;
+ const hasPerson = SUBJECT_PERSON_RE.test(text) || !!shot.character || !!shot.portraits;
+ const shotScale = SUBJECT_CLOSE_RE.test(text) ? 'close'
+ : (SUBJECT_WIDE_RE.test(text) ? 'wide' : (hasPerson ? 'medium' : 'unknown'));
+ return { hasPerson, shotScale };
+}
+
+// 【v2.4.0-A6】技能时间轴按镜头实际时长等比缩放：
+// 技能正文的时间码以约10秒弧长为基准（如 0-3秒/3-5秒/5-7秒/7-10秒），
+// 缩放后写入镜头时间轴，让技能节奏真正落到时长分配上。
+function scaleSkillTimeline(timelineText, durationSec) {
+ if (!timelineText || !durationSec || durationSec <= 0) return timelineText || '';
+ const segs = [];
+ const re = /(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)\s*秒([^，。,；;]*)/g;
+ let m, maxEnd = 0;
+ while ((m = re.exec(timelineText)) !== null) {
+ segs.push({ a: parseFloat(m[1]), b: parseFloat(m[2]), desc: m[3].trim() });
+ if (m[2] > maxEnd) maxEnd = parseFloat(m[2]);
+ }
+ if (segs.length === 0 || maxEnd <= 0) return timelineText;
+ const k = durationSec / maxEnd;
+ return segs.map(s => `${(s.a * k).toFixed(1)}-${(s.b * k).toFixed(1)}秒${s.desc}`).join('，');
 }
 
 /** shot 侧结构化元数据（不再靠正则猜） */
@@ -915,6 +1004,7 @@ function normalizeShotMeta(shot, opts = {}) {
  cameraMode,
  director,
  directorSource,
+ subject: detectSubject(shot), // 【v2.4.0-A4】主体/景别，供演技技能门控与剂量分级
  intensity: shot._creativeIntensity || null
  };
 }
@@ -998,6 +1088,19 @@ function matchSkillsV2(shotMeta, opts = {}) {
  continue;
  }
 
+ // 【v2.4.0-A4】主体门控：无人物主体的镜头不注入演技技能
+ // （"无声落泪的面部图谱"不该注入拍乐器滑行的空镜）
+ if (skill.domain === 'acting' && shotMeta.subject && !shotMeta.subject.hasPerson) {
+ scored.push({ skill, score: -999, excluded: 'no-person-subject' });
+ continue;
+ }
+
+ // 【v2.4.0-B4】冷藏技能默认排除（遥测连续零开火技能进入冷藏区）
+ if (QUARANTINE.has(skill.file)) {
+ scored.push({ skill, score: -998, excluded: 'quarantine' });
+ continue;
+ }
+
  // 情绪匹配（主信号）
  if (shotMeta.emotion && skill.emotions.includes(shotMeta.emotion)) { score += 30; reasons.push('emotion'); }
  // 类型匹配
@@ -1008,12 +1111,16 @@ function matchSkillsV2(shotMeta, opts = {}) {
  if (shotCam !== 'any' && skillCams.includes(shotCam)) { score += 8; reasons.push('camera'); }
  // 导演亲和
  if (shotMeta.director && skill.director === shotMeta.director) { score += 15; reasons.push('director'); }
- // 创意档位
- if (shotMeta.intensity && skill.intensity_range) {
+ // 创意档位（v2.4.0 修复：强度 0-1 浮点归一为 L0-L5 档位再比较，
+ // 旧实现 'L0.92' 字符串比较恒不命中，该通道形同虚设）
+ if (shotMeta.intensity != null && skill.intensity_range) {
  const [lo, hi] = skill.intensity_range;
- const lv = 'L' + shotMeta.intensity;
+ const lv = 'L' + Math.max(0, Math.min(5, Math.round(Number(shotMeta.intensity) * 5)));
  if (lv >= lo && lv <= hi) { score += 5; reasons.push('intensity'); }
  }
+ // 【v2.4.0-B1】质量分级微调：S 级优先进、C 级（可疑组合/待重构）靠后
+ if (skill.tier === 'S') score += 3;
+ else if (skill.tier === 'C') score -= 3;
  // 多样性惩罚：本 run 内已被 >1/3 镜头使用的技能降权
  const ratio = usedSkillRatio[skill.file] || 0;
  if (ratio > 0.34) score -= 12;
@@ -1050,7 +1157,8 @@ function takeCompleteItems(text, budget) {
 }
 
 /** 技能上下文文本构建：供 PromptFusion 生成前注入（L3 主通道） */
-function buildSkillContextText(matched) {
+function buildSkillContextText(matched, opts = {}) {
+ const { shotScale = 'unknown', duration = 0 } = opts;
  // 【v2.3.3-A3】主辅剂量分级：主技能全量、辅技能半量（主/辅语义与总分控兼顾）
  const BUDGETS = [
  { shot: 500, emotion: 350, forbidden: 400 }, // 主技能
@@ -1062,19 +1170,24 @@ function buildSkillContextText(matched) {
  const skillPath = path.join(SKILL_LIB_ROOT, m.skill.file);
  const enh = extractSkillEnhancement(skillPath);
  if (!enh) continue;
- const budget = BUDGETS[Math.min(idx, BUDGETS.length - 1)];
+ let budget = BUDGETS[Math.min(idx, BUDGETS.length - 1)];
  idx++;
+ // 【v2.4.0-A4】剂量分级：远景里的演技技能降半量（脸都看不清，不给特写级指导）
+ if (m.skill && m.skill.domain === 'acting' && shotScale === 'wide') {
+ budget = BUDGETS[BUDGETS.length - 1];
+ }
  // 【v2.3.3-A3】标签带文件名：两个不同技能不再共用同一归一化标签（撞车修复）
  const role = idx === 1 ? '主' : '辅';
  const tag = `${m.skill.file}（${m.skill.type}/${m.skill.director || '通用'}/${m.skill.emotions.join('/')}${m.fallback ? '，回退匹配' : ''}）`;
  const block = [`◆ 技能「${tag}」（${role}，匹配分 ${m.score}）`];
  if (enh.shotBlock) block.push(`镜头手法:\n${takeCompleteItems(enh.shotBlock, budget.shot)}`);
  if (enh.emotionBlock) block.push(`情绪设计:\n${takeCompleteItems(enh.emotionBlock, budget.emotion)}`);
- // 【v2.3.3-A6预热】时间轴分配入链：技能里的镜头节奏指导此前从未被注入
+ // 【v2.4.0-A6】时间轴按镜头实际时长缩放后入链：技能节奏正式落到时长分配
  const tlLine = (enh.promptBlock || '').split('\n').find(l => /时间轴/.test(l));
  if (tlLine) {
- const tl = tlLine.replace(/^\s*\*\*时间轴分配\*\*[:：]\s*/, '').trim();
- if (tl && tl.length <= 220) block.push(`时间轴: ${tl}`);
+ let tl = tlLine.replace(/^\s*\*\*时间轴分配\*\*[:：]\s*/, '').trim();
+ if (duration > 0) tl = scaleSkillTimeline(tl, duration);
+ if (tl && tl.length <= 260) block.push(`时间轴: ${tl}`);
  }
  if (enh.forbiddenBlock) block.push(`禁止词:\n${takeCompleteItems(enh.forbiddenBlock, budget.forbidden)}`);
  parts.push(block.join('\n'));
@@ -1094,6 +1207,21 @@ function buildSkillContextText(matched) {
  * 批量预匹配（供 Phase 3 主通道调用）
  * @returns {Map} shotId → { matched, contextText }
  */
+// 【v2.4.0-A4】双通道选编：演技技能与摄影技能分轨，互不挤占。
+// 修复旧制"两个演技技能占满 Top2、摄影技能零注入"的编制事故。
+function pickDualTrack(ranked, maxSkillsPerShot) {
+ if (ranked.length === 0) return [];
+ const picked = [ranked[0]];
+ const wantDomain = ranked[0].skill.domain === 'acting' ? 'cinematography' : 'acting';
+ const partner = ranked.find(s => (s.skill.domain || 'cinematography') === wantDomain);
+ if (partner && picked.length < maxSkillsPerShot) picked.push(partner);
+ for (const s of ranked) {
+ if (picked.length >= maxSkillsPerShot) break;
+ if (!picked.includes(s)) picked.push(s);
+ }
+ return picked.slice(0, maxSkillsPerShot);
+}
+
 function routeAndEnhanceV2(shots, opts = {}) {
  const { minScore = 5, maxSkillsPerShot = 2, assignedDirector = '', filmGenre = '' } = opts;
  const plan = new Map();
@@ -1104,18 +1232,126 @@ function routeAndEnhanceV2(shots, opts = {}) {
  const ratio = {};
  const total = Math.max(shots.length, 1);
  for (const [f, c] of Object.entries(useCount)) ratio[f] = c / total;
- const matched = matchSkillsV2(meta, { limit: maxSkillsPerShot, minScore, usedSkillRatio: ratio });
+ const ranked = matchSkillsV2(meta, { limit: maxSkillsPerShot + 4, minScore, usedSkillRatio: ratio });
+ const matched = pickDualTrack(ranked, maxSkillsPerShot);
  matched.forEach(m => { useCount[m.skill.file] = (useCount[m.skill.file] || 0) + 1; });
  plan.set(meta.shotId, {
  // 【v2.3.3-A7】遥测元数据透传：类型/导演/来源随 plan 落盘
  type: meta.type,
  director: meta.director,
  directorSource: meta.directorSource,
- matched: matched.map(m => ({ file: m.skill.file, score: m.score, fallback: !!m.fallback, reasons: m.reasons || [] })),
- contextText: buildSkillContextText(matched)
+ subject: meta.subject,
+ matched: matched.map(m => ({ file: m.skill.file, score: m.score, fallback: !!m.fallback, reasons: m.reasons || [], domain: m.skill.domain || 'cinematography' })),
+ contextText: buildSkillContextText(matched, { shotScale: meta.subject.shotScale, duration: shot.duration || 0 })
  });
  }
  return plan;
+}
+
+// ============================================================
+// 【v2.4.0-B2】LLM 语义路由 V3：结构化触发器粗筛 Top8 →
+// LLM 读"镜头卡 + 候选技能一句话清单"精选并给出理由。
+// llmCaller 为注入式依赖（生产环境由 phase-3 提供），
+// 无 caller 或 LLM 异常时自动降级 V2 打分——语义层永不阻断生产。
+// ============================================================
+
+function buildSkillSelectionPrompt(shot, meta, candidates) {
+ const roster = candidates.map((c, i) =>
+ `${i + 1}. ${c.skill.file}｜类型=${c.skill.type}｜导演=${c.skill.director || '通用'}｜情绪=${(c.skill.emotions || []).join('/')}\n 简介: ${c.skill.oneLiner || '（无）'}`
+ ).join('\n');
+ return `你是电影摄影指导。为下面这个镜头从候选技能中精选最多 2 个最合适的电影技能。
+
+【镜头】类型=${meta.type} 情绪=${meta.emotion || '未明'} 运镜=${meta.cameraMode} 导演风格=${meta.director || '未定'}
+【画面】${String(shot.description || shot.scene || '').slice(0, 200)}
+
+【候选技能】
+${roster}
+
+要求：
+1. 只选真正服务这个镜头的技能，宁缺毋滥（可以只选 1 个）
+2. 演技类技能只在镜头有人物面部时选择
+3. 输出 JSON：{"picks":[{"file":"技能文件名","reason":"一句话理由"}]}`;
+}
+
+function parseLLMPicks(llmResult, candidates) {
+ const files = new Set(candidates.map(c => c.skill.file));
+ let obj = llmResult;
+ if (typeof llmResult === 'string') {
+ const m = llmResult.match(/\{[\s\S]*\}/);
+ try { obj = m ? JSON.parse(m[0]) : null; } catch (e) { obj = null; }
+ }
+ if (!obj || !Array.isArray(obj.picks)) return [];
+ return obj.picks
+ .filter(p => p && files.has(p.file))
+ .map(p => ({ file: p.file, reason: String(p.reason || '').slice(0, 120) }));
+}
+
+async function routeAndEnhanceV3(shots, opts = {}) {
+ const { minScore = 5, maxSkillsPerShot = 2, assignedDirector = '', filmGenre = '', llmCaller = null } = opts;
+ const plan = new Map();
+ const useCount = {};
+ for (const shot of shots) {
+ const meta = normalizeShotMeta(shot, { assignedDirector, filmGenre });
+ const ratio = {};
+ const total = Math.max(shots.length, 1);
+ for (const [f, c] of Object.entries(useCount)) ratio[f] = c / total;
+ const ranked = matchSkillsV2(meta, { limit: 8, minScore, usedSkillRatio: ratio });
+
+ let matched = null;
+ let router = 'v2-score';
+ // B2 语义精选：候选超过编制时交 LLM 裁决
+ if (llmCaller && ranked.length > maxSkillsPerShot) {
+ try {
+ const llmResult = await llmCaller(buildSkillSelectionPrompt(shot, meta, ranked));
+ const picks = parseLLMPicks(llmResult, ranked);
+ if (picks.length > 0) {
+ matched = picks.slice(0, maxSkillsPerShot).map(p => {
+ const src = ranked.find(r => r.skill.file === p.file);
+ return { ...src, llmReason: p.reason };
+ });
+ router = 'v3-llm';
+ }
+ } catch (e) {
+ console.warn(`[SkillRouter V3] LLM 精选异常，降级 V2: ${e.message}`);
+ }
+ }
+ if (!matched) matched = pickDualTrack(ranked, maxSkillsPerShot);
+
+ matched.forEach(m => { useCount[m.skill.file] = (useCount[m.skill.file] || 0) + 1; });
+ plan.set(meta.shotId, {
+ type: meta.type,
+ director: meta.director,
+ directorSource: meta.directorSource,
+ subject: meta.subject,
+ router,
+ matched: matched.map(m => ({ file: m.skill.file, score: m.score, fallback: !!m.fallback, reasons: m.reasons || [], domain: m.skill.domain || 'cinematography', llmReason: m.llmReason || null })),
+ contextText: buildSkillContextText(matched, { shotScale: meta.subject.shotScale, duration: shot.duration || 0 })
+ });
+ }
+ return plan;
+}
+
+// 【v2.4.0-B3】技能质检块读取：评审环节拉取命中技能的质检清单与禁止词
+function getSkillQCBlocks(files) {
+ const idx = loadCompiledIndex();
+ return (files || [])
+ .map(f => idx.find(s => s.file === f))
+ .filter(Boolean)
+ .map(s => ({
+ file: s.file,
+ qc: (s.blocks && s.blocks.qc) || [],
+ forbidden: (s.blocks && s.blocks.forbidden) || []
+ }));
+}
+
+// 机械合规检查：禁止词（冒号前短语）残留在最终提示词中即记违规
+function checkSkillCompliance(text, qcEntry) {
+ const violations = [];
+ for (const f of (qcEntry.forbidden || [])) {
+ const term = String(f).split(/[：:]/)[0].trim();
+ if (term && term.length >= 2 && /[一-龥a-zA-Z]/.test(term) && text.includes(term)) violations.push(term);
+ }
+ return violations;
 }
 
 module.exports = {
@@ -1129,8 +1365,14 @@ module.exports = {
   matchSkillsV2,
   normalizeShotMeta,
   routeAndEnhanceV2,
+  routeAndEnhanceV3,
   buildSkillContextText,
   assignFilmDirector,
   toSkillType,
-  detectTypeByNarrative
+  detectTypeByNarrative,
+  detectSubject,
+  scaleSkillTimeline,
+  pickDualTrack,
+  getSkillQCBlocks,
+  checkSkillCompliance
 };

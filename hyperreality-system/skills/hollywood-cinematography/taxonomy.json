@@ -178,6 +178,7 @@
     "anxious": "tense"
   },
   "camera_modes": [
+    "establishing",
     "static",
     "push",
     "handheld",
@@ -201,18 +202,48 @@
     "航拍": "aerial",
     "aerial": "aerial",
     "跟拍": "tracking",
-    "横移": "tracking"
+    "横移": "tracking",
+    "定场": "establishing",
+    "establishing": "establishing",
+    "环绕": "steadicam",
+    "orbit": "steadicam",
+    "拉远": "push",
+    "拉出": "push",
+    "pull_out": "push",
+    "俯拍": "aerial",
+    "无人机": "aerial"
   },
   "camera_conflicts": {
     "static": [
-      "handheld"
+      "handheld",
+      "steadicam",
+      "tracking",
+      "aerial"
     ],
     "push": [
-      "handheld"
+      "handheld",
+      "aerial"
     ],
-    "tracking": [],
-    "handheld": [],
-    "steadicam": [],
-    "aerial": []
+    "tracking": [
+      "static"
+    ],
+    "handheld": [
+      "static",
+      "establishing",
+      "aerial"
+    ],
+    "steadicam": [
+      "static",
+      "aerial"
+    ],
+    "aerial": [
+      "static",
+      "establishing",
+      "handheld",
+      "steadicam"
+    ],
+    "establishing": [
+      "handheld"
+    ]
   }
 }

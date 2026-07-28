@@ -232,6 +232,11 @@ ${sceneOptions}
 ${originalStory}
 ` : '';
     
+    // 【v2.4.0-B3】全片导演风格注入：场景设计与技能路由共享同一位导演
+    const filmDirectorLine = blueprint.filmDirector
+      ? `\n全片导演风格：${blueprint.filmDirector}（一部片一位导演，场景光线与运镜质感向其靠齐）`
+      : '';
+
     return `## 🎬 导演指令上下文
 视频标题：${title}
 内容主题：${contentTheme}
@@ -242,7 +247,7 @@ ${originalStory}
 角色设定：${characterDescription}
 关键信息：${keyMessages.join('；') || '无'}
 禁止场景：${forbiddenScenes.join('、') || '无'}
-禁止元素：全息投影、虚拟空间、未来感、霓虹特效、元宇宙、数字空间、抽象几何
+禁止元素：全息投影、虚拟空间、未来感、霓虹特效、元宇宙、数字空间、抽象几何${filmDirectorLine}
 ${storySection}`;
   }
 

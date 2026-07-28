@@ -72,13 +72,21 @@ class Phase3PromptFusion extends PhaseExecutor {
       }
       
       // 【架构-L3】技能预匹配：在 PromptFusion 逐镜头生成前完成【fix-3A1】
-      const { routeAndEnhanceV2, assignFilmDirector } = require('../../../skills/hollywood-cinematography/cinematography-skill-router');
+      const { routeAndEnhanceV3, assignFilmDirector, getSkillQCBlocks, checkSkillCompliance } = require('../../../skills/hollywood-cinematography/cinematography-skill-router');
       // 【v2.3.3-A2】一部片一位导演：蓝图阶段选定，全片镜头共享同一风格宪法
       const filmDirectorAssignment = assignFilmDirector(adaptedBlueprint || {});
       const filmDirector = filmDirectorAssignment.director;
       const filmGenre = (adaptedBlueprint && (adaptedBlueprint.genre || adaptedBlueprint.type)) || '';
       this.log('SKILL-PREMATCH', `全片导演选定: ${filmDirector}（来源: ${filmDirectorAssignment.source}）`);
-      const skillPlan = routeAndEnhanceV2(shots, { minScore: 5, maxSkillsPerShot: 2, assignedDirector: filmDirector, filmGenre });
+      // 【v2.4.0-B2】LLM 语义路由：结构化触发器粗筛 Top8 后由 LLM 精选；
+      // caller 注入失败/异常时自动降级 V2 打分，语义层永不阻断生产
+      const skillLlmCaller = this.agents.promptFusion ? async (prompt) => {
+        try {
+          const r = await this.agents.promptFusion._callLLM(prompt, { required: ['picks'] }, () => null, { critical: false });
+          return r && r.result ? r.result : null;
+        } catch (e) { return null; }
+      } : null;
+      const skillPlan = await routeAndEnhanceV3(shots, { minScore: 5, maxSkillsPerShot: 2, assignedDirector: filmDirector, filmGenre, llmCaller: skillLlmCaller });
       shots = shots.map(s => {
         const plan = skillPlan.get(s.shotId || s.shot_id);
         if (plan && plan.contextText) {
@@ -103,8 +111,8 @@ class Phase3PromptFusion extends PhaseExecutor {
         const telemetryDir = path.join(__dirname, '..', '..', '..', '..', 'logs', 'skill-usage');
         fs.mkdirSync(telemetryDir, { recursive: true });
         const perShot = [...skillPlan.entries()].map(([shotId, p]) => ({
-          shotId, type: p.type, director: p.director, directorSource: p.directorSource,
-          skills: p.matched.map(m => ({ file: m.file, score: m.score, reasons: m.reasons, fallback: m.fallback }))
+          shotId, type: p.type, director: p.director, directorSource: p.directorSource, router: p.router || 'v2-score',
+          skills: p.matched.map(m => ({ file: m.file, score: m.score, reasons: m.reasons, fallback: m.fallback, domain: m.domain, llmReason: m.llmReason || null }))
         }));
         const allUsed = perShot.flatMap(p => p.skills.map(s => s.file));
         const record = {
@@ -145,6 +153,36 @@ class Phase3PromptFusion extends PhaseExecutor {
 
       // 【v2.2.0-Phase3】台词-镜头时长映射检查
       const timingCheckedShots = await this._checkDialogueTiming(newShots, adaptedBlueprint);
+
+      // 【v2.4.0-B3】技能质检进评审：被注入技能的质检清单成为验收标准，
+      // 生成与裁决用同一套尺度；机械违规（技能禁止词残留）在此拦截
+      try {
+        let qcChecked = 0;
+        const qcViolations = [];
+        for (const s of timingCheckedShots) {
+          const files = (s._skillMatched || []).map(m => m.file);
+          if (files.length === 0) continue;
+          const entries = getSkillQCBlocks(files);
+          const finalText = [s.prompt, s.enhanced_prompt, s.fusionText, s.director_instruction].filter(Boolean).join('\n');
+          const violations = entries.flatMap(e =>
+            checkSkillCompliance(finalText, e).map(term => ({ skill: e.file, term }))
+          );
+          s._skillQC = {
+            skills: files,
+            checklistCount: entries.reduce((n, e) => n + e.qc.length, 0),
+            violations
+          };
+          qcChecked++;
+          if (violations.length > 0) {
+            qcViolations.push({ shotId: s.shotId || s.shot_id, violations });
+          }
+        }
+        result.stages = result.stages || {};
+        result.stages.skillQC = { checked: qcChecked, violatedShots: qcViolations.length, details: qcViolations };
+        this.log('SKILL-QC', `技能质检: ${qcChecked} 镜头受检，${qcViolations.length} 镜头存在技能禁止词残留`);
+      } catch (qcErr) {
+        this.log('SKILL-QC', `技能质检异常（不影响主流程）: ${qcErr.message}`);
+      }
 
       result.llmStats.promptFusion = pfResult.timing;
       
