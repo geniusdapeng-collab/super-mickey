@@ -892,6 +892,7 @@ const TYPE_ENTITY_PATTERNS = [
  ['thriller', /惊悚|追杀|绑架|密室|thriller/i],
  ['action', /动作片|动作戏|动作场面|追逐|追车|打斗|搏斗|爆炸|枪战|飞车|跑酷|功夫|武侠|action|chase|gunfight|explosion/i],
  ['documentary', /纪录|纪实|田野|牧民|部落|迁徙|转场|documentary/i],
+ ['fantasy', /奇幻|神话|神兽|异兽|精灵|魔法|仙侠|fantasy/i],
  ['micro-expression', /微表情|面部特写|表情特写|大特写/],
  ['loneliness', /独处|独居|孤身|独自一人|solitude/i]
 ];
@@ -961,6 +962,8 @@ function normalizeShotMeta(shot, opts = {}) {
  else if (/动作片|动作戏|动作场面|^动作|，动作，|追逐|追车|打斗|搏斗|爆炸|枪战|飞车|action|chase|gunfight|explosion/i.test(desc)) type = 'action';
  else if (/微表情|面部特写|表情特写|大特写/.test(desc)) type = 'micro-expression';
  else if (/独处|独居|孤身|独自一人|solitude/i.test(desc)) type = 'loneliness';
+ else if (/纪录|纪实|documentary/i.test(desc)) type = 'documentary';
+ else if (/奇幻|神话|神兽|异兽|fantasy/i.test(desc)) type = 'fantasy';
  }
  if (!type) type = 'drama';
  // 【v2.3.2】情绪归一：alias 命中 → 技能情绪标签直通扫描（mood 优先、desc 其次）→ 原文兜底 → canonical 归一
