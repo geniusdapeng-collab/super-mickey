@@ -30,7 +30,7 @@
 
 - [What is SuperMickey?](#what-is-supermickey)
 - [Why SuperMickey?](#why-supermickey)
-- [🆕 What's New — v2.3.x](#-whats-new--v23x)
+- [🔥 What's New](#-whats-new)
 - [🎯 Business Value: Results, Not Tools](#-business-value-results-not-tools)
 - [System Architecture](#system-architecture)
 - [The Four Production Agents](#the-four-production-agents)
@@ -70,28 +70,25 @@ The system currently powers the **Nirath** cinematic universe (a hyper-realistic
 
 | Metric | Value |
 |--------|-------|
-| **Current Version** | v2.3.2 |
-| **Implementation Code** | 118,000+ lines, hand-written — zero dependency padding |
-| **Repository Scale** | 660 files / 166,000+ total text lines |
+| **Implementation Code** | 118,000+ lines, hand-forged — zero bloat, all muscle |
+| **Hollywood Skill Arsenal** | 149 director-grade skills, every one battle-ready |
 | **Architecture Layers** | 4 + Shared Kernel |
 | **Specialized Agents** | 4 production agents |
 | **Shot-Level Fields** | 25 structured fields |
 | **Quality Dimensions** | 5-dimension scoring |
-| **Hollywood Director Skills** | 149 skills — fully fleshed, 0 placeholders |
-| **Realism Dimensions** | 7-dimensional enhancement |
-| **Thematic Genres** | 11 types |
+| **Realism Engine** | 7-dimensional cinematic realism |
+| **Thematic Genres** | 11 worlds, one engine |
 | **Narrative Modes** | dramatic / educational / documentary / commercial / lifelog |
 
 > **Built for AI Agents, engineered for humans.** Every module is designed to be programmatically discoverable, executable by autonomous agents, and human-reviewable at every stage.
 
 ---
 
-## 🆕 What's New — v2.3.x
+## 🔥 What's New
 
-- **v2.3.2 — Skill Library Fully Revived**: all **149 Hollywood industrial skills** are now filled with production-grade content and wired into the **Cinematography Skill Router** — dead skills went from 43 to **0**.
-- **v2.3.1 — Delivery-Grade Reporting**: shot deliverables switched to numbered-line formatting, with Chinese-first dialogue (台词) defaults and field-count columns in the overview report.
-- **v2.3.0 — Skill Factory Complete**: the Hollywood Skill Factory finished filling all 149 skills — sci-fi, action, comedy, war, horror, drama (incl. Villeneuve & Nolan signature sets), micro-expression, dance and more.
-- **v2.2-refine — FieldContentRefiner**: post-assembly pass strips redundant clauses and merges negative constraints, compressing typical prompts from ~2700 to ~1500 characters with no quality loss.
+- **The 149-Skill Arsenal Is Complete.** Every Hollywood industrial skill — Villeneuve-scale sci-fi, Nolan-grade drama, micro-expression mastery, war, horror, comedy, dance — fully forged and wired into the **Cinematography Skill Router**. Zero placeholders. Zero dead weight.
+- **Prompts on a Diet, Quality on Steroids.** Our **FieldContentRefiner** post-assembly pass strips redundancy and merges negative constraints — typical prompts drop from ~2700 to ~1500 characters, and the shots only get sharper.
+- **Delivery-Grade Everything.** Numbered-line shot reports, dialogue-first defaults, field-count auditing — every deliverable is built for one-click handoff, not archaeology.
 
 ---
 
@@ -116,7 +113,7 @@ A **complete pre-production pipeline** that mirrors real film production:
 User Intent → Script Blueprint → Scene Cards → Shot Cards → Prompts → Director Review → Render
 ```
 
-Every stage produces **structured, reviewable artifacts** — not black-box outputs. Every shot is defined by 25 fields. Every shot passes a 6-question director review. Every prompt is optimized through an 8-step pipeline with smart compression, followed by a **FieldContentRefiner** post-assembly pass (v2.2-refine) that strips redundant clauses, merges negative constraints, and standardizes empty-shot fields — cutting typical prompts from ~2700 to ~1500 characters without quality loss.
+Every stage produces **structured, reviewable artifacts** — not black-box outputs. Every shot is defined by 25 fields. Every shot passes a 6-question director review. Every prompt is optimized through an 8-step pipeline with smart compression, followed by a **FieldContentRefiner** post-assembly pass that strips redundant clauses, merges negative constraints, and standardizes empty-shot fields — cutting typical prompts from ~2700 to ~1500 characters without quality loss.
 
 <p align="center">
   <img src="./assets/user-workflow.png" alt="SuperMickey User Workflow" width="100%"/>
@@ -798,7 +795,7 @@ The `ProductionBible` is the central knowledge base for your project:
 - [x] 5-dimension quality scoring
 - [x] 6-question director review
 - [x] 8-step prompt generation with smart compression
-- [x] 149 Hollywood cinematography skills — all fleshed, 0 dead (v2.3.2)
+- [x] 149 Hollywood cinematography skills — all fleshed, zero dead
 - [x] 7-dimension realism enhancement
 - [x] 11 thematic genres
 - [x] 4-layer architecture with interface contracts
