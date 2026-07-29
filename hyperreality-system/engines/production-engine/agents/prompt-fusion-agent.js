@@ -6,6 +6,7 @@
  */
 const { BaseAgent } = require('./base-agent');
 const { FieldContentRefiner } = require('./field-content-refiner');
+const { SemanticRefinementPass } = require('./semantic-refinement-pass');
 const { normalizeFields, makeGetter } = require('../../field-standardizer');
 const { FieldConsistencyChecker } = require('../../field-consistency-checker');
 const { FALLBACK_SCENES, renderFallbackAction } = require('../../../config/neutral-fallbacks');
@@ -159,8 +160,16 @@ class PromptFusionAgent extends BaseAgent {
     // v2.1.7: 新增跨字段一致性校验器
     this.consistencyChecker = new FieldConsistencyChecker({ strict: true, logLevel: 'warn' });
     // 【v2.2-refine】25字段内容精炼器: 拼接完成后做内容级精炼(不改字段结构)
+    // 【v2.4.5-fix】注入模板分辨率对齐【基础】8K 锚点，消除"基础8K vs 约束4K"自相矛盾
     this._contentRefiner = new FieldContentRefiner({
-      constraintTemplate: '16:9画幅，4K分辨率，24fps，MP4格式'
+      constraintTemplate: '16:9画幅，8K分辨率，24fps，MP4格式'
+    });
+
+    // 【v2.4.5 新增】三段式混合生产·阶段3：语义精炼层（转正）
+    // LLM 输出 → PromptDeliveryGuard 硬闸机 → 不过自动回退规则精炼结果
+    this._semanticPass = new SemanticRefinementPass({
+      callLLM: (prompt, schema, fallbackFn, opts) => this._callLLM(prompt, schema, fallbackFn, opts),
+      enabled: options.semanticRefinement !== false
     });
 
     // 【v2.1.11-重构】保存生产画像，用于写实校验强度分级
@@ -373,7 +382,7 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
           const shotFields = this._extractFieldsFromShot(shot);
           if (Object.keys(shotFields).some(k => shotFields[k])) {
             console.log(`  ⚠️ 使用已有字段组装 prompt(非降级)`);
-            results[i] = this._buildShotResult(shot, shotFields, false, '使用已有字段组装');
+            results[i] = await this._buildShotResult(shot, shotFields, false, '使用已有字段组装');
           } else {
             console.warn(`  ❌ ${shot.shotId} 无任何可用数据,规则兜底`);
             results[i] = this._fallbackSingleShot(shot, ratio);
@@ -427,7 +436,7 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
       console.warn(`[PromptFusionAgent] ⚠️ 镜头 ${shot.shotId} promptBase占比过高(${ (baseRatio * 100).toFixed(1) }%), 可能影响场景描述质量`);
     }
 
-    return {
+    return this._finalizeShotResult(shot, {
       ...shot,
       ...expandedFields,
       fields,
@@ -436,7 +445,34 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
       promptCharCount: this._countChars(fullPrompt),
       degraded: isDegraded,
       degradeReason: isDegraded ? degradeReason : null
-    };
+    });
+  }
+
+  /**
+   * 【v2.4.5 新增】三段式混合生产·阶段3挂载点（转正）
+   * 语义精炼层在规则精炼之后执行：LLM 输出 → PromptDeliveryGuard 硬闸机 →
+   * 任一不过自动回退到规则精炼结果。语义动作日志挂到 shot.semanticRefinement。
+   */
+  async _finalizeShotResult(shot, result) {
+    if (!this._semanticPass || !this._semanticPass.enabled) return result;
+    try {
+      const r = await this._semanticPass.refine(result.prompt, shot);
+      if (r.applied) {
+        result.prompt = r.prompt;
+        result.promptCharCount = this._countChars(r.prompt);
+      } else if (r.fallbackReason && r.fallbackReason !== 'disabled') {
+        console.warn(`[PromptFusionAgent] ${shot.shotId} 语义精炼回退: ${r.fallbackReason}`);
+      }
+      result.semanticRefinement = {
+        applied: r.applied,
+        actions: r.actions || [],
+        fallbackReason: r.fallbackReason || null
+      };
+    } catch (e) {
+      console.warn(`[PromptFusionAgent] ${shot.shotId} 语义精炼异常，保持规则精炼结果: ${e.message}`);
+      result.semanticRefinement = { applied: false, actions: [], fallbackReason: `异常:${e.message}` };
+    }
+    return result;
   }
 
   /**
@@ -555,7 +591,8 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
     // 【P0-PROMPT-05 修复】autoFix 修改 fields 后,重新组装 prompt,确保 prompt 反映修复后的字段
     const fullPrompt = this._assembleStandardPrompt(shot, fields, ratio);
 
-    return {
+    // 【v2.4.5】三段式·阶段3：语义精炼（守卫回退保护在 _finalizeShotResult 内）
+    return this._finalizeShotResult(shot, {
       ...shot,
       ...expandedFields,
       fields,
@@ -564,7 +601,7 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
       promptCharCount: this._countChars(fullPrompt),
       degraded: finalDegraded, // 【P1-4 修复】真实降级标记
       degradeReason: finalDegradeReason
-    };
+    });
   }
 
   /**
@@ -691,7 +728,19 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
     for (const f of _getRequiredFieldsForShot(shot)) {
       fields[f] = this._dynamicDefaultValue(f, shot);
     }
-    return this._buildShotResult(shot, fields);
+    // 【v2.4.5】快速兜底是无 LLM 紧急路径：跳过语义精炼层（LLM 不可用），保持同步直接组装
+    const fullPrompt = this._assembleStandardPrompt(shot, fields, shot.ratio || '16:9');
+    return {
+      ...shot,
+      ...fields,
+      fields,
+      fusionText: fields.scene || '',
+      prompt: fullPrompt,
+      promptCharCount: this._countChars(fullPrompt),
+      degraded: true,
+      degradeReason: '主LLM超时,通过重试补全生成',
+      semanticRefinement: { applied: false, actions: [], fallbackReason: 'fastFallback路径跳过' }
+    };
   }
 
   /**
@@ -784,7 +833,7 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
         const stillEmpty = _getRequiredFieldsForShot(shotClone).filter(f => !fields[f] || String(fields[f]).trim() === '');
         if (stillEmpty.length === 0) {
           console.log(`  ✅ 补全成功,所有字段已填充`);
-          return this._buildShotResult(shotClone, fields);
+          return await this._buildShotResult(shotClone, fields);
         }
         console.log(`  ⚠️ 仍有 ${stillEmpty.length} 字段为空,继续重试...`);
       } catch (e) {
@@ -795,7 +844,7 @@ scene≥120, lighting≥150, composition≥100, action≥120, camera_movement≥
     // 【修复】重试用完仍有缺失,返回当前已填充的字段(不强制兜底为默认值)
     // 原因:部分字段有值比全部模板化更好,保留 LLM 已生成的内容
     console.warn(`  ⚠️ 补全重试耗尽,返回已有字段(${Object.keys(fields).filter(k => fields[k]).length}/${_getRequiredFieldsForShot(shotClone).length} 已填充)`);
-    return this._buildShotResult(shotClone, fields);
+    return await this._buildShotResult(shotClone, fields);
   }
 
   // 【v2.1.0】最小 LLM 降级:用缩短的 prompt + 剧本上下文推断字段,保留创作灵气

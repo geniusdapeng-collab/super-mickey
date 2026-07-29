@@ -121,6 +121,20 @@ test('P4-2: FPVModeEnhancer 可加载', () => {
   assert.strictEqual(fpv.enabled, true, '默认应启用（模块级）');
 });
 
+// ===== 三段式混合生产（v2.4.5）=====
+test('P5-1: PromptDeliveryGuard 可加载', () => {
+  const { PromptDeliveryGuard } = require('../hyperreality-system/engines/production-engine/agents/prompt-delivery-guard');
+  const g = new PromptDeliveryGuard();
+  assert.strictEqual(typeof g.verify, 'function', 'verify 方法应存在');
+});
+
+test('P5-2: SemanticRefinementPass 可加载（需注入 callLLM）', () => {
+  const { SemanticRefinementPass } = require('../hyperreality-system/engines/production-engine/agents/semantic-refinement-pass');
+  const p = new SemanticRefinementPass({ callLLM: async () => ({ result: null }) });
+  assert.strictEqual(typeof p.refine, 'function', 'refine 方法应存在');
+  assert.throws(() => new SemanticRefinementPass(), '未注入 callLLM 应抛错');
+});
+
 // ===== 功能验证测试 =====
 test('P3-1: 情绪意图解析功能', () => {
   const { EmotionIntentParser } = require('../hyperreality-system/engines/emotion/emotion-intent-parser');
