@@ -159,6 +159,30 @@ test('SP-3: MarketingComplianceGuard 可加载', () => {
   assert.strictEqual(g.check('【台词】[00s-03s] 主播 说:"全网最低价。"').pass, false, '极限词应阻断');
 });
 
+test('DM-1: 珍妮纺织机·数据挖掘引擎 全模块可加载', () => {
+  const { JennyLoomEngine } = require('../hyperreality-system/engines/data-mining-engine');
+  const { ProductInfoCollector } = require('../hyperreality-system/engines/data-mining-engine/agents/product-info-collector');
+  const { ReviewMiner } = require('../hyperreality-system/engines/data-mining-engine/agents/review-miner');
+  const { CompetitorScout } = require('../hyperreality-system/engines/data-mining-engine/agents/competitor-scout');
+  const { CrossVerifier } = require('../hyperreality-system/engines/data-mining-engine/agents/cross-verifier');
+  const { DossierBinder } = require('../hyperreality-system/engines/data-mining-engine/agents/dossier-binder');
+  const DossierSchema = require('../hyperreality-system/engines/data-mining-engine/contracts/dossier-schema');
+  const SummaryCards = require('../hyperreality-system/engines/data-mining-engine/contracts/summary-cards');
+  const { EvidenceLedger } = require('../hyperreality-system/engines/data-mining-engine/pipeline/evidence-ledger');
+  const { validateHandoff } = require('../hyperreality-system/engines/data-mining-engine/pipeline/handoff-validator');
+  const { DossierStore } = require('../hyperreality-system/engines/data-mining-engine/pipeline/dossier-store');
+  const engine = new JennyLoomEngine();
+  assert.strictEqual(typeof engine.plan, 'function');
+  assert.strictEqual(typeof engine.assemble, 'function');
+  assert.strictEqual(typeof engine.consume, 'function');
+  assert.strictEqual(typeof JennyLoomEngine.deriveProductId, 'function');
+  assert.strictEqual(typeof DossierSchema.validate, 'function');
+  assert.strictEqual(typeof SummaryCards.makeAllCards, 'function');
+  assert.strictEqual(typeof validateHandoff, 'function');
+  [ProductInfoCollector, ReviewMiner, CompetitorScout, CrossVerifier, DossierBinder, EvidenceLedger, DossierStore]
+    .forEach(C => assert.strictEqual(typeof C, 'function'));
+});
+
 test('SP-4: MarketingBriefParser 可加载', () => {
   const { MarketingBriefParser } = require('../hyperreality-system/skills/marketing-brief');
   const p = new MarketingBriefParser();

@@ -72,7 +72,9 @@ class ProductPortraitBranch {
           category: p.category || p.类目 || '',
           sellingPoints: p.sellingPoints || p.卖点 || [],
           materials: p.materials || (p.productHero && p.productHero.materials) || [],
-          heroImageId: p.heroImageId || (p.productHero && p.productHero.heroImageId) || null
+          heroImageId: p.heroImageId || (p.productHero && p.productHero.heroImageId) || null,
+          // 【珍妮纺织机对接】情报档案的商品图 manifest 透传（预填搜图阶段用）
+          referenceManifest: p.referenceManifest || p.reference_manifest || null
         };
       })
       .filter(p => p.name);
@@ -124,6 +126,31 @@ class ProductPortraitBranch {
           `${base} 实拍 高清`.trim(),
           `${base} 白底图`.trim()
         ];
+    // 【珍妮纺织机对接】情报档案已带商品图 manifest 时，预填参考图：
+    // 免重复检索，执行方仅需核对图片真实性与型号一致性
+    const manifest = product.referenceManifest || product.reference_manifest || null;
+    const prefilled = manifest && Array.isArray(manifest.reference_images) && manifest.reference_images.length > 0
+      ? manifest.reference_images
+      : (manifest && Array.isArray(manifest.referenceImages) ? manifest.referenceImages : []);
+    if (prefilled.length > 0) {
+      return {
+        stage: 'reference-search',
+        executor: 'prefilled', // 情报档案预填，免外部检索
+        prefilledFrom: manifest.product_id ? `商品情报档案 ${manifest.product_id}` : '商品情报档案',
+        queries,
+        minImages: this.minReferenceImages,
+        requirements: [
+          '核对预填参考图的真实性（禁止 AI 生成图/概念图冒充）',
+          '系列化产品逐张核对型号标识与发售信息，剔除同系列旧款/近似款',
+          '预填图不足或核对不通过时，按 queries 补检'
+        ],
+        referenceImages: prefilled.map(img => ({
+          url: img.url, source: img.source || '', angle: img.angle || '',
+          localPath: img.localPath || null
+        })),
+        status: 'pending'
+      };
+    }
     return {
       stage: 'reference-search',
       executor: 'external', // spec 模式下由 Agent/人工执行联网搜索

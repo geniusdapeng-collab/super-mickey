@@ -2,7 +2,7 @@
 // hyperreality-system/index.js
 // SuperMickey - 超级小香宝统一入口
 // 深度融合:剧本引擎 → 适配层 → 制作引擎 → 完整镜头
-// 版本:v2.10.1 | 日期:2026-07-29
+// 版本:v2.11.0 | 日期:2026-07-29
 
 require('./engines/process-guard'); // 【审计修复】全局崩溃防护,必须最先加载
 require('../systems/env-aliases'); // 【v2.2.8】SUPERMICKEY_* → STORMAXE_* 环境变量别名桥
@@ -494,6 +494,68 @@ class HyperrealitySystem {
         this._globalDeadline = globalDeadline;
         console.log(`   ⏱️ [${stepName}] 确认等待 ${Math.round(waitTimeMs/60000)} 分钟已补偿到全局截止时间（新截止: ${new Date(globalDeadline).toISOString()}）`);
       };
+
+      // ========== 🧵 Layer -2: 数据挖掘引擎（珍妮纺织机）==========
+      // 情报层：营销/商品模式在主题生成之前产出《商品情报档案》。
+      // 纪律：可选增强、永不阻断主流程——任何异常捕获后降级继续；
+      //      档案命中即复用，未命中产出采集任务书（spec）或直接装配（有回填数据时）。
+      try {
+        const dmInput = metadata.dataMining
+          || (metadata.brief && typeof metadata.brief === 'object' && metadata.brief.product
+              ? { name: metadata.brief.product, brand: metadata.brief.brand?.name, category: metadata.brief.category }
+              : null);
+        if (dmInput && dmInput.name) {
+          const stageNeg2Start = Date.now();
+          console.log('🧵 [Layer -2] 珍妮纺织机·数据挖掘 - 商品情报档案...');
+          const { JennyLoomEngine } = require('./engines/data-mining-engine');
+          const dmEngine = new JennyLoomEngine({
+            mode: options.dataMiningMode || process.env.SUPERMICKEY_DATA_MINING_MODE || 'spec',
+            executor: options.dataMiningExecutor
+          });
+          const dmProductId = JennyLoomEngine.deriveProductId(dmInput);
+
+          let dmResult = null;
+          if (options.dataMiningRaw) {
+            // 执行方已完成检索回填：直接装配
+            dmResult = dmEngine.assemble(dmEngine.plan(dmInput).trace_id, dmInput, options.dataMiningRaw);
+          } else if (dmEngine.reusable(dmProductId, Boolean(options.dataMiningRefresh))) {
+            // 档案命中且未过期：零耗时复用
+            dmResult = { ok: true, reused: true, ...dmEngine.consume(dmInput) };
+          } else if ((options.dataMiningMode || process.env.SUPERMICKEY_DATA_MINING_MODE) === 'api' && options.dataMiningExecutor) {
+            dmResult = await dmEngine.run(dmInput);
+          } else {
+            // spec 模式：产出采集任务书，由执行 Agent 就地检索后回填再装配
+            const planOut = dmEngine.plan(dmInput);
+            dmResult = { ok: true, spec_tasks: planOut, note: '商品情报采集任务书已生成，执行方检索回填后调用 assemble 完成装订' };
+          }
+
+          result.stages.dataMining = { data: dmResult, timing: Date.now() - stageNeg2Start, product_id: dmProductId };
+
+          // 档案就绪：摘要卡注入 metadata，Brief 自动回填
+          if (dmResult && dmResult.cards) {
+            metadata._dataDossier = { product_id: dmProductId, cards: dmResult.cards, stale: Boolean(dmResult.stale) };
+            if (metadata.brief && typeof metadata.brief === 'object' && dmResult.cards.brief_card) {
+              try {
+                const { MarketingBriefParser } = require('./skills/marketing-brief');
+                const parser = new MarketingBriefParser();
+                const enriched = parser.applyBriefCard(metadata.brief, dmResult.cards.brief_card);
+                if (enriched.filled.length > 0) {
+                  metadata.brief = enriched.raw;
+                  console.log(`   📥 Brief 已由情报档案自动回填: ${enriched.filled.join(' / ')}`);
+                }
+              } catch (e) {
+                console.warn(`   ⚠️ Brief 情报回填失败（不阻断）: ${e.message}`);
+              }
+            }
+            console.log(`   ✅ 商品情报档案就绪 (${result.stages.dataMining.timing}ms)${dmResult.reused ? ' [复用]' : ''} | 摘要卡已注入下游`);
+          } else if (dmResult && dmResult.spec_tasks) {
+            console.log(`   📋 情报采集任务书已生成 (${result.stages.dataMining.timing}ms)，等待执行回填`);
+          }
+        }
+      } catch (dmErr) {
+        console.warn(`   ⚠️ 珍妮纺织机异常（不阻断主流程）: ${dmErr.message}`);
+        result.errors.push({ stage: 'DataMiningEngine', message: dmErr.message });
+      }
 
       // ========== 🆕 Layer -1: 创意主题生成与确认 ==========
       // 【v2.1.8-强制流程】Step 2: 创意主题生成 + 人工确认（不可跳过）

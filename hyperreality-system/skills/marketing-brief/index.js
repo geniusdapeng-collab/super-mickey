@@ -60,6 +60,39 @@ class MarketingBriefParser {
   }
 
   /**
+   * 【珍妮纺织机对接】用情报档案 Brief 摘要卡自动回填空缺字段
+   * ------------------------------------------------------------
+   * 只填"用户没填"的字段，用户手填内容永远优先（档案是参谋不是替代）。
+   * @param {object} raw  原始 Brief（normalize 之前的输入）
+   * @param {object} card 珍妮纺织机产出的 brief_card
+   * @returns {{raw: object, filled: string[]}} 回填后的 raw 与实际回填的字段清单
+   */
+  applyBriefCard(raw = {}, card = {}) {
+    if (!card || card.card !== 'brief_card') return { raw, filled: [] };
+    const filled = [];
+    const next = { ...raw };
+
+    if (!next.product && card.product) { next.product = card.product; filled.push('product'); }
+    if (!next.category && card.category) { next.category = card.category; filled.push('category'); }
+    const hasPoints = Array.isArray(next.sellingPoints) ? next.sellingPoints.length > 0 : Boolean(next.sellingPoints);
+    if (!hasPoints && Array.isArray(card.sellingPoints) && card.sellingPoints.length > 0) {
+      next.sellingPoints = card.sellingPoints.slice(0, 3);
+      filled.push('sellingPoints');
+    }
+    if ((!next.audience || next.audience === '平台泛人群') && card.audience) {
+      next.audience = card.audience; filled.push('audience');
+    }
+    if (!next.competitor && card.competitor) { next.competitor = card.competitor; filled.push('competitor'); }
+    next.productHero = next.productHero || {};
+    if (!next.productHero.heroImageId && card.productHero && card.productHero.heroImageId) {
+      next.productHero.heroImageId = card.productHero.heroImageId;
+      filled.push('productHero.heroImageId');
+    }
+    if (filled.length > 0) next._dataDossierNote = card.evidence_note || '字段由商品情报档案自动回填';
+    return { raw: next, filled };
+  }
+
+  /**
    * 生成 Brief 确认单（与创意主题确认单同规格的盒式文本）
    */
   generateConfirmationSheet(brief) {
