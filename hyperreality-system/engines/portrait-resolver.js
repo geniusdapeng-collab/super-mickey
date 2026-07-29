@@ -16,9 +16,10 @@ class PortraitResolver {
    * 解析定妆照
    * @param {Array} prompts - 镜头提示词数组
    * @param {Array} characters - 角色定义数组
+   * @param {Object} studioManifest - 【v2.8.0】PortraitStudio 定妆照集 manifest（可选，优先于目录扫描）
    * @returns {Object} { bindings: [...] }
    */
-  resolve(prompts, characters) {
+  resolve(prompts, characters, studioManifest = null) {
     const bindings = [];
     
     // 扫描上传的定妆照
@@ -28,7 +29,21 @@ class PortraitResolver {
       const charName = char.name || char.id || '';
       const charId = char.id || char.name || '';
       
-      // 尝试匹配上传文件
+      // 【v2.8.0】第一优先级：PortraitStudio 定妆照集中已完成的产物
+      const studioPortraits = this._matchStudioPortraits(charName, charId, studioManifest);
+      
+      if (studioPortraits.length > 0) {
+        bindings.push({
+          character: charName,
+          mode: 'studio',
+          source: `portrait-set://${charId || charName}`,
+          portraits: studioPortraits,
+          file: studioPortraits[0].outputFile
+        });
+        continue;
+      }
+      
+      // 第二优先级：上传文件匹配
       const matchedFile = this._matchUploadedPortrait(charName, charId, uploadedFiles);
       
       if (matchedFile) {
@@ -54,6 +69,29 @@ class PortraitResolver {
     this._injectIntoPrompts(prompts, bindings);
     
     return { bindings };
+  }
+
+  /**
+   * 【v2.8.0】从 PortraitStudio 定妆照集 manifest 匹配角色定妆照产物
+   */
+  _matchStudioPortraits(charName, charId, manifest) {
+    if (!manifest || !Array.isArray(manifest.characters)) return [];
+    const nameLower = (charName || '').toLowerCase();
+    const idLower = (charId || '').toLowerCase();
+    
+    const entry = manifest.characters.find(c =>
+      (c.characterName || '').toLowerCase() === nameLower ||
+      (c.characterId || '').toLowerCase() === idLower
+    );
+    if (!entry) return [];
+    
+    return (entry.portraits || [])
+      .filter(p => p.status === 'completed' && p.outputFile)
+      .map(p => ({
+        angle: p.angle,
+        angleName: p.angleName,
+        outputFile: p.outputFile
+      }));
   }
 
   _scanUploadedPortraits() {

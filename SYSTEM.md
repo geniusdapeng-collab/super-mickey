@@ -25,6 +25,7 @@
 | 后期合成 | `post-production-pipeline.js` | 字幕烧录+合并+交付 |
 | 生产引擎 | `production-engine.js` | 批量渲染任务调度 |
 | 定妆照硬拦截 | `portrait-guard.js` | 双系列通用定妆照强制提交闸机 |
+| 定妆照工作室 | `hyperreality-system/engines/portrait-studio/` | 定妆照生成环节：角色分级多角度定妆+商品搜图分支链路+定妆照集交付 |
 
 ### 山海经专属业务层
 

@@ -229,6 +229,25 @@ test('P2-4: 需求对齐闸机功能', () => {
   assert.ok(result.score >= 0 && result.score <= 1, '分数应在 0-1 之间');
 });
 
+// ===== PortraitStudio: 定妆照工作室（定妆照生成环节） =====
+test('PS-1: PortraitStudio 可加载', () => {
+  const { PortraitStudio } = require('../hyperreality-system/engines/portrait-studio');
+  const studio = new PortraitStudio();
+  assert.strictEqual(typeof studio.plan, 'function', 'plan 方法应存在');
+  assert.strictEqual(typeof studio.execute, 'function', 'execute 方法应存在');
+  assert.strictEqual(typeof studio.finalize, 'function', 'finalize 方法应存在');
+  assert.strictEqual(studio.needsConfirmation(), true, '默认交互模式需确认');
+});
+
+test('PS-2: PortraitResolver 支持定妆照集 manifest 第三参数', () => {
+  const { PortraitResolver } = require('../hyperreality-system/engines/portrait-resolver');
+  const resolver = new PortraitResolver({ charactersDir: '/nonexistent-dir' });
+  const { bindings } = resolver.resolve([], [{ id: 'x', name: 'X' }], {
+    characters: [{ characterId: 'x', characterName: 'X', portraits: [{ angle: 'front_full', status: 'completed', outputFile: '/p/x.png' }] }]
+  });
+  assert.strictEqual(bindings[0].mode, 'studio', '应优先命中 studio 模式');
+});
+
 // 运行测试
 let passed = 0;
 let failed = 0;

@@ -2,7 +2,7 @@
 // hyperreality-system/index.js
 // SuperMickey - 超级小香宝统一入口
 // 深度融合:剧本引擎 → 适配层 → 制作引擎 → 完整镜头
-// 版本:v2.7.0 | 日期:2026-07-28
+// 版本:v2.8.0 | 日期:2026-07-29
 
 require('./engines/process-guard'); // 【审计修复】全局崩溃防护,必须最先加载
 require('../systems/env-aliases'); // 【v2.2.8】SUPERMICKEY_* → STORMAXE_* 环境变量别名桥
@@ -22,6 +22,8 @@ const { CreativeIntensityEngine } = require('./engines/script-engine/core/creati
 const { CreativeIntensityRecommender } = require('./engines/script-engine/core/creative-intensity-engine');
 const { OpeningTitleOptimizer } = require('./engines/production-engine/agents/opening-title-optimizer');
 const { PortraitResolver } = require('./engines/portrait-resolver');
+// ⭐ v2.8.0: 定妆照工作室（定妆照生成环节，产出固定交付项"定妆照集"）
+const { PortraitStudio } = require('./engines/portrait-studio');
 const { routeAndEnhance } = require('./skills/hollywood-cinematography/cinematography-skill-router');
 const { FieldGuard } = require('./engines/field-guard');
 const ErrorCodes = require('./config/error-codes');
@@ -459,6 +461,7 @@ class HyperrealitySystem {
       errors: [],
       timing: {},
       confirmations: {}, // 记录确认状态
+      deliverables: {}, // 【v2.8.0】固定交付项挂载点（定妆照集等）
       totalWaitTimeMs: 0 // 【v2.1.10-hotfix】累计等待确认时间，不计入有效时间
     };
 
@@ -1817,6 +1820,115 @@ class HyperrealitySystem {
         console.warn(' ⚠️ 审核前片头优化异常（不阻断流程）:', e.message);
       }
 
+      // ⭐ v2.8.0: 定妆照生成环节（PortraitStudio，审核前）
+      // 角色按戏份重要性分级配角度；商品走独立分支链路（搜参考图→抠图/白底/光影→风格化）
+      // 交互模式：输出计划 → 人工确认 → 执行；批量模式：免询问自动执行
+      // 定妆照为增强交付项：失败/拒绝不阻断主流程
+      try {
+        const portraitCharacters = scriptResult?.character_system?.characters
+          || scriptResult?.blueprint?.character_system?.characters
+          || productionResult?.blueprint?.characters || [];
+        const portraitProducts = metadata.products
+          || metadata.brief?.products
+          || (metadata.brief?.product ? [metadata.brief.product] : [])
+          || (metadata.productHero ? [{ name: metadata.product || metadata.title, productHero: metadata.productHero }] : [])
+          || [];
+
+        const portraitStudio = new PortraitStudio({
+          mode: (options.batchMode || options.autoConfirmPortraits) ? 'auto' : 'interactive',
+          executor: options.portraitExecutor || 'spec',
+          outputDir: path.join(__dirname, '..', 'deliverables', 'portraits')
+        });
+
+        const portraitPlan = portraitStudio.plan({
+          characters: portraitCharacters,
+          products: portraitProducts,
+          prompts: productionResult.prompts || [],
+          prd: result.stages.prdGeneration?.data || {},
+          blueprint: result.stages.adapter || {},
+          sceneContext: {
+            typicalScene: result.stages.adapter?.typical_scene
+              || result.stages.adapter?.world_setting
+              || null
+          }
+        });
+
+        if (portraitPlan.characterTasks.length > 0 || portraitPlan.productTasks.length > 0) {
+          console.log('\n🖼️ [PortraitStudio] 定妆照生成计划已就绪');
+          console.log(`   角色 ${portraitPlan.characterTasks.length} 个 / 商品 ${portraitPlan.productTasks.length} 个`);
+
+          let portraitApproved = true;
+          let portraitRejectedReason = null;
+
+          if (portraitStudio.needsConfirmation() && !options.skipPortraitReview) {
+            console.log('\n🖼️ [定妆照生成] 等待人工确认...');
+            const portraitConfirmation = await this._waitForExternalConfirmation('portrait-generation', portraitPlan.summary);
+            result.confirmations.portraitGeneration = portraitConfirmation;
+
+            if (portraitConfirmation.waitTimeMs) {
+              result.totalWaitTimeMs += portraitConfirmation.waitTimeMs;
+              _extendDeadlineForWait(portraitConfirmation.waitTimeMs, '定妆照生成');
+            }
+
+            portraitApproved = portraitConfirmation.approved;
+            if (!portraitApproved) {
+              portraitRejectedReason = portraitConfirmation.reason || '用户未确认定妆照生成';
+              console.log(`   ⏭️ 定妆照生成被跳过: ${portraitRejectedReason}（不阻断主流程）`);
+            }
+          } else {
+            result.confirmations.portraitGeneration = {
+              approved: true,
+              skipped: true,
+              reason: portraitStudio.mode === 'auto' ? '批量模式：系统自动决策生成定妆照' : 'skipPortraitReview 指定跳过确认'
+            };
+            console.log(`   ⚡ [定妆照生成] ${portraitStudio.mode === 'auto' ? '批量模式自动决策' : '确认已跳过'}，直接执行`);
+          }
+
+          if (portraitApproved) {
+            const portraitExecResult = await portraitStudio.execute(portraitPlan, options.portraitRuntime || {});
+            const portraitSet = portraitStudio.finalize(portraitPlan, {
+              title: metadata.title || '未命名',
+              runId: this._runId,
+              generatedAt: new Date().toISOString()
+            });
+
+            result.stages.portraitStudio = {
+              status: 'completed',
+              mode: portraitStudio.mode,
+              executor: portraitStudio.executorType,
+              characters: portraitSet.stats.characterCount,
+              products: portraitSet.stats.productCount,
+              totalPortraits: portraitSet.stats.totalPortraits,
+              completedPortraits: portraitSet.stats.completedPortraits,
+              pendingPortraits: portraitSet.stats.pendingPortraits,
+              errors: portraitExecResult.errors || []
+            };
+
+            // 固定交付项：定妆照集
+            result.deliverables.portraitSet = {
+              manifestPath: portraitSet.manifestPath,
+              docPath: portraitSet.docPath,
+              stats: portraitSet.stats,
+              visualStyleAnchor: portraitSet.manifest.visualStyleAnchor
+            };
+
+            console.log(`   ✅ 定妆照集已交付: ${portraitSet.stats.characterCount} 角色 / ${portraitSet.stats.productCount} 商品 / 共 ${portraitSet.stats.totalPortraits} 张`);
+            console.log(`      📄 ${portraitSet.docPath}`);
+          } else {
+            result.stages.portraitStudio = {
+              status: 'skipped',
+              reason: portraitRejectedReason
+            };
+          }
+        } else {
+          console.log('\n🖼️ [PortraitStudio] 未识别到需要定妆的角色或商品，跳过');
+          result.stages.portraitStudio = { status: 'skipped', reason: 'no-characters-or-products' };
+        }
+      } catch (e) {
+        console.warn(` ⚠️ 定妆照生成环节异常（不阻断流程）: ${e.message}`);
+        result.stages.portraitStudio = { status: 'failed', error: e.message };
+      }
+
       // ⭐ v2.2.1-fix: 定妆照双模式解析（审核前）
       try {
         console.log('\n🖼️ [PortraitResolver] 定妆照双模式解析...');
@@ -1826,13 +1938,23 @@ class HyperrealitySystem {
         const portraitResolver = new PortraitResolver({
           charactersDir: path.join(__dirname, '..', 'characters')
         });
-        const resolved = portraitResolver.resolve(productionResult.prompts || [], characters);
+        // 【v2.8.0】优先消费 PortraitStudio 定妆照集产物，其次目录扫描，最后文字兜底
+        let studioManifest = null;
+        if (result.deliverables?.portraitSet?.manifestPath) {
+          try {
+            studioManifest = JSON.parse(fs.readFileSync(result.deliverables.portraitSet.manifestPath, 'utf8'));
+          } catch (e) {
+            console.warn(` ⚠️ 定妆照集 manifest 读取失败（回退目录扫描）: ${e.message}`);
+          }
+        }
+        const resolved = portraitResolver.resolve(productionResult.prompts || [], characters, studioManifest);
         result.stages.portraitResolver = {
           bindings: resolved.bindings,
+          studioCount: resolved.bindings.filter(b => b.mode === 'studio').length,
           uploadedCount: resolved.bindings.filter(b => b.mode === 'uploaded').length,
           textCount: resolved.bindings.filter(b => b.mode === 'text').length
         };
-        console.log(` ✅ 定妆照解析完成: 上传 ${result.stages.portraitResolver.uploadedCount} 个 / 文字 ${result.stages.portraitResolver.textCount} 个`);
+        console.log(` ✅ 定妆照解析完成: 定妆照集 ${result.stages.portraitResolver.studioCount} 个 / 上传 ${result.stages.portraitResolver.uploadedCount} 个 / 文字 ${result.stages.portraitResolver.textCount} 个`);
       } catch (e) {
         console.warn(` ⚠️ 定妆照解析失败（不阻断流程）: ${e.message}`);
       }
