@@ -66,10 +66,16 @@ class ProductHeroDesigner {
     return `全片商品一致性锁定：英雄照统一绑定 ${heroId}，LOGO 固定${logoPos}，界面配色与英雄照角度跨镜一致，禁止同片出现第二种商品外观`;
   }
 
-  /** 按镜头承接卖点轮换特写锚点（确定性，同镜同结果） */
+  /** 按镜头承接卖点轮换特写锚点（语义优先 + hash 兜底，保持确定性） */
   _pickCloseup(shot, hero) {
     const closeups = Array.isArray(hero.closeups) ? hero.closeups.filter(Boolean) : [];
     if (!closeups.length) return '商品核心功能区特写';
+    // 【v2.9.0-fix】语义优先：镜头卖点/场景/动作文本命中特写关键词时直接对齐，
+    // 避免"换电池镜头分到摄像头开孔"式的语义错位；无命中回退确定性轮换
+    const semantic = `${shot.sellingPoint || ''}|${shot.scene || ''}|${shot.action || ''}`;
+    const hit = closeups.find(c =>
+      String(c).split(/[、/]/).some(k => k.length >= 2 && semantic.includes(k)));
+    if (hit) return hit;
     const h = String(shot.shotId || 'S0').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
     return closeups[h % closeups.length];
   }

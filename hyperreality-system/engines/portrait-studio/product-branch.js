@@ -200,6 +200,37 @@ class ProductPortraitBranch {
     sections.push('约束：以处理后的白底基准图为唯一外观参考，商品外观/LOGO/配色 100% 忠于实物，禁止虚构细节，商业摄影级品质');
     return sections.join('\n');
   }
+
+  /**
+   * 【v2.9.0 新增】风格化闸机（可执行，非声明）
+   * stylization 启动前必须调用：真实参考图未回填/数量不足/来源未核验 → 阻断。
+   * 此前 referenceBinding 只是 spec 文本声明，执行方跳过阶段1 凭空生成时
+   * 没有任何代码能拦截——本闸机补上这一层。
+   * @param {object} task plan() 产出的商品定妆照任务
+   * @returns {{ready:boolean, blocked:boolean, reasons:string[]}}
+   */
+  checkStylizationReady(task = {}) {
+    const reasons = [];
+    const stages = task.stages || task; // 兼容 stages 嵌套与平铺两种任务结构
+    const search = stages.referenceSearch || {};
+    const images = Array.isArray(search.referenceImages) ? search.referenceImages : [];
+    if (images.length < this.minReferenceImages) {
+      reasons.push(`真实参考图不足：${images.length}/${this.minReferenceImages}（阶段1 reference-search 未完成回填）`);
+    }
+    const noSource = images.filter(i => !i.source);
+    if (noSource.length > 0) {
+      reasons.push(`${noSource.length} 张参考图缺来源标注（须可溯源至官网/官方社媒/官方旗舰店）`);
+    }
+    const aiLike = images.filter(i => i.aiGenerated === true);
+    if (aiLike.length > 0) {
+      reasons.push('参考图含 AI 生成图：禁止以生成图/概念图冒充真实商品图');
+    }
+    const processing = stages.processing || {};
+    if (reasons.length === 0 && !processing.outputBaseImage) {
+      reasons.push('阶段2 基准图未产出（outputBaseImage 未回填）：先完成抠图/白底/光影统一');
+    }
+    return { ready: reasons.length === 0, blocked: reasons.length > 0, reasons };
+  }
 }
 
 module.exports = { ProductPortraitBranch, MIN_REFERENCE_IMAGES };

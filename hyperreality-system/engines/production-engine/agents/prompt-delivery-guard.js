@@ -45,7 +45,9 @@ class PromptDeliveryGuard {
    */
   verify(promptText, shot = {}) {
     const issues = [];
-    const text = String(promptText || '');
+    // 【v2.9.0-fix】交付排版为"序号+独立行"（_formatNumberedFields 产物）时，
+    // 行首序号会被多行字段体（如台词块）捕获造成误报；入口防御性剥离序号前缀，兼容两种排版
+    const text = String(promptText || '').replace(/^\s*\d{1,2}\.\s*(?=【)/gm, '');
     const names = this._fieldNames(text);
     const isOpening = shot.sceneType === 'opening' || shot.shotId === 'SC00' || shot.shotId === 'S00';
     // 【v2.5.0】平台蓝图：台词速率/场景链校验按 Profile 分流（电影叙事 vs 社媒营销）
@@ -241,6 +243,62 @@ class PromptDeliveryGuard {
     if (typeof c === 'string') return c === 'NONE' || c.trim() === '';
     if (typeof c === 'object' && (c.name === 'NONE' || c.empty === true)) return true;
     return false;
+  }
+
+  /**
+   * 【v2.9.0 新增】作品级交付校验（营销包纪律）
+   * 单镜校验 verify() 只能看一棵树，本方法看整片森林：
+   *   1. 作品必须含片头镜头（sceneType=opening 或 S00/SC00）——执行纪律硬性要求，
+   *      营销片同样适用（片头豁免营销场景链字段，由 fusion agent 分支保证）
+   *   2. 单镜时长必须落在平台蓝图时长带内
+   *   3. 镜头数 >2 时禁止全部同长（时长分配器未生效的典型特征）
+   *   4. 总时长与 brief 目标时长容差 ±15%
+   * @param {Array} shots 作品镜头数组 [{shotId, sceneType, duration, platform}]
+   * @param {object} [options] { platform, targetDuration }
+   * @returns {{pass:boolean, issues:string[]}}
+   */
+  verifyPackage(shots = [], options = {}) {
+    const issues = [];
+    const list = Array.isArray(shots) ? shots : [];
+    if (list.length === 0) {
+      return { pass: false, issues: ['作品镜头为空'] };
+    }
+
+    // 1. 片头镜头在场
+    const hasOpening = list.some(s =>
+      s.sceneType === 'opening' || s.shotId === 'S00' || s.shotId === 'SC00');
+    if (!hasOpening) {
+      issues.push('作品缺片头镜头（执行纪律：每部作品必须含片头，含主/副标题与片头动效5专属字段）');
+    }
+
+    // 2. 蓝图时长带
+    const profile = resolveProfile(list[0] || {}, options.blueprint || {});
+    const band = (options.platform ? resolveProfile({ platform: options.platform }) : profile).shotDuration;
+    if (band) {
+      for (const s of list) {
+        const d = Number(s.duration) || 0;
+        if (d > 0 && (d < band.min || d > band.max)) {
+          issues.push(`镜头${s.shotId}时长${d}s越出蓝图时长带[${band.min}-${band.max}]`);
+        }
+      }
+    }
+
+    // 3. 禁止全部同长
+    const durations = list.map(s => Number(s.duration) || 0).filter(d => d > 0);
+    if (durations.length > 2 && new Set(durations).size === 1) {
+      issues.push(`全部${durations.length}个镜头时长相同（${durations[0]}s）：时长分配机制未生效，禁止手写均分`);
+    }
+
+    // 4. 总时长容差
+    if (Number(options.targetDuration) > 0) {
+      const total = durations.reduce((a, b) => a + b, 0);
+      const target = Number(options.targetDuration);
+      if (Math.abs(total - target) / target > 0.15) {
+        issues.push(`总时长${total}s与目标${target}s偏差超过±15%`);
+      }
+    }
+
+    return { pass: issues.length === 0, issues };
   }
 }
 

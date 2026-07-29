@@ -68,15 +68,21 @@ class BgmStrategyDesigner {
   /** 从镜头时间轴/台词块构建卡点映射（确定性推导，非虚构） */
   _buildBeatMap(shot, duration) {
     const beats = [];
+    const seen = new Set();
     const dlg = Array.isArray(shot.dialogueBlocks) ? shot.dialogueBlocks : [];
-    for (const b of dlg) {
-      const s = Math.max(0, Math.min(duration, Number(b.start) || 0));
-      beats.push(`T${s}s:台词起→轻鼓点垫底`);
-    }
+    // 【v2.9.0-fix】start 缺失时按块序号均摊估算 + 去重，
+    // 修复多台词块镜头卡点映射全部塌缩为 "T0s:台词起" 重复文案的问题
+    dlg.forEach((b, i) => {
+      const est = Math.round((duration / Math.max(1, dlg.length)) * i);
+      const s = Math.max(0, Math.min(duration, Number(b.start) || est));
+      const line = `T${s}s:台词起→轻鼓点垫底`;
+      if (!seen.has(line)) { seen.add(line); beats.push(line); }
+    });
     if (Array.isArray(shot.timelineBeats)) {
       for (const t of shot.timelineBeats) {
         const sec = Math.max(0, Math.min(duration, Number(t.t) || 0));
-        if (t.event) beats.push(`T${sec}s:${t.event}→重拍`);
+        const line = t.event ? `T${sec}s:${t.event}→重拍` : null;
+        if (line && !seen.has(line)) { seen.add(line); beats.push(line); }
       }
     }
     if (!beats.length) beats.push(`T0s:进场重拍`, `T${duration}s:段落末拍衔接`);

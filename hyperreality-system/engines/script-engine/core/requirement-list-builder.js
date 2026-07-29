@@ -763,12 +763,14 @@ EDU=教育科普, SOC=社媒短视频, ADV=商业广告, DOC=纪录片, DRAMA=�
 
     // 补全画幅
     if (!completed.aspectRatio) {
-      const platformToRatio = {
-        '抖音': '9:16', '快手': '9:16', '小红书': '9:16', '视频号': '9:16',
-        'B站/YouTube': '16:9', '朋友圈': '9:16', '户外大屏': '16:9'
-      };
-      // v1.2.5-fix: 默认横屏16:9,队长明确要求所有内容为横屏
-      completed.aspectRatio = platformToRatio[completed.platform] || '16:9';
+      // 【v2.9.0-fix】画幅以 platform-profiles 蓝图为唯一权威源，禁止就地登记字面值
+      // （此前小红书在此表登记为 9:16，与蓝图 3:4 冲突——双写漂移修复）
+      const { PROFILES } = require('../../../config/platform-profiles.js');
+      const PLATFORM_KEY = { '抖音': 'douyin', '小红书': 'xiaohongshu', 'B站/YouTube': 'cinematic', '户外大屏': 'cinematic' };
+      const profileKey = PLATFORM_KEY[completed.platform];
+      completed.aspectRatio = (profileKey && PROFILES[profileKey] && PROFILES[profileKey].ratio)
+        || ({ '快手': '9:16', '视频号': '9:16', '朋友圈': '9:16' }[completed.platform])
+        || '16:9';
       completed.aspectRatioInferred = true;
     }
 
