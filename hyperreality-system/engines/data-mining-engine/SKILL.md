@@ -140,6 +140,19 @@ input
 3. 分发：六张摘要卡 + 落盘 `data/dossiers/{product_id}/`（dossier.json +
    images/manifest.json）+ 索引登记（默认 30 天 stale，可配置）。
 
+## 四点五、人工确认闸（与创意主题确认同级）
+
+档案装订完成后、注入下游之前，必须过人工确认：
+
+1. 系统生成《商品情报档案确认单》（盒式，confirmation-sheet.js），
+   摆出影响下游决策的关键事实：档案编号、商品、价格带（含置信度）、
+   商品图数量与英雄照编号、卖点候选、竞品、证据条数，以及全部情报缺口。
+2. 走系统标准确认通道（type: data-mining-dossier），等待 approve/reject。
+3. **确认通过**：摘要卡注入 metadata._dataDossier，Brief 自动回填。
+4. **驳回**：情报层整体退出本次任务，主流程无情报继续（不阻塞）。
+5. 复用命中的档案同样要过确认闸（确认的是"这份旧情报还能不能用"）。
+6. 批量模式（batchMode / skipDataMiningReview）免询问自动通过。
+
 ## 五、下游消费契约（六张摘要卡）
 
 各环节只拿切片，不读全档（防情报过载冲垮下游上下文）：

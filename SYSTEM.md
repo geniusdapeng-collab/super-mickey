@@ -26,6 +26,7 @@
 | 生产引擎 | `production-engine.js` | 批量渲染任务调度 |
 | 定妆照硬拦截 | `portrait-guard.js` | 双系列通用定妆照强制提交闸机 |
 | 定妆照工作室 | `hyperreality-system/engines/portrait-studio/` | 定妆照生成环节：角色分级多角度定妆+商品搜图分支链路+定妆照集交付 |
+| 数据挖掘引擎（珍妮纺织机） | `hyperreality-system/engines/data-mining-engine/` | Stage -2 情报层：五Agent流水线采集商品情报/评价/竞品，交叉验证后装订《商品情报档案》（含商品图 manifest），人工确认闸后六张摘要卡分发下游 |
 
 ### 山海经专属业务层
 

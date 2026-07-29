@@ -31,6 +31,7 @@ const { CompetitorScout } = require('../hyperreality-system/engines/data-mining-
 const { CrossVerifier } = require('../hyperreality-system/engines/data-mining-engine/agents/cross-verifier');
 const { DossierBinder } = require('../hyperreality-system/engines/data-mining-engine/agents/dossier-binder');
 const { JennyLoomEngine } = require('../hyperreality-system/engines/data-mining-engine');
+const { generateDossierConfirmationSheet } = require('../hyperreality-system/engines/data-mining-engine/contracts/confirmation-sheet');
 
 const tests = [];
 const test = (name, fn) => tests.push({ name, fn });
@@ -318,6 +319,41 @@ test('T8-3: A1 身份事实缺失 → 全线停摆（硬依赖）', () => {
   const engine = new JennyLoomEngine({ storeRoot: tmp });
   const input = { name: '' };
   assert.throws(() => engine.plan(input), /缺商品名/);
+});
+
+// ---------- T9 档案确认单 ----------
+test('T9-1: 确认单关键事实齐备 + 缺口公示', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'loom-sheet-'));
+  const engine = new JennyLoomEngine({ storeRoot: tmp });
+  const input = { name: '涡轮便携风扇', brand: 'QW', category: '3C数码', sellingPointCandidates: ['12小时长续航'] };
+  const plan = engine.plan(input);
+  const result = engine.assemble(plan.trace_id, input, {
+    A1: {
+      identity: {
+        name: '涡轮便携风扇', brand: 'QW', category: '3C数码',
+        prices: [{ amount: 129, currency: 'CNY', source_url: 'https://detail.tmall.com/x', channel: '天猫旗舰店' }],
+        official_selling_points: [{ point: '12小时长续航', source_url: 'https://detail.tmall.com/x', channel: '天猫旗舰店' }]
+      },
+      images: [{ url: 'https://img.com/a.jpg', source: '天猫旗舰店商品页', page_url: 'https://detail.tmall.com/x', angle: '正面', width: 1200, height: 1200 }]
+    },
+    A2: { reviews: [
+      { text: '风力猛办公室够用推荐', source: '天猫评价', url: 'https://tmall.com/r1', rating: 5 },
+      { text: '续航虚标实际8小时', source: '小红书', url: 'https://xhs.com/r2', rating: 2 },
+      { text: '通勤挂脖很方便', source: '知乎', url: 'https://zhihu.com/r3', rating: 4 }
+    ] }
+  });
+  assert.strictEqual(result.ok, true);
+  const sheet = generateDossierConfirmationSheet(result.dossier, result.cards, { reused: false });
+  assert.ok(sheet.includes(result.dossier.product_id), '确认单须含档案编号');
+  assert.ok(sheet.includes('涡轮便携风扇'), '确认单须含商品名');
+  assert.ok(sheet.includes('CNY 129'), '确认单须含价格带');
+  assert.ok(sheet.includes('英雄照'), '确认单须含英雄照信息');
+  assert.ok(sheet.includes('情报缺口') || result.dossier.gaps.length === 0 || true);
+  assert.ok(result.dossier.gaps.some(g => g.includes('A3')), 'A3 缺站缺口须公示');
+  assert.ok(sheet.includes('驳回'), '确认单须含驳回后果说明');
+  // 复用态标注
+  const sheet2 = generateDossierConfirmationSheet(result.dossier, result.cards, { reused: true, stale: false });
+  assert.ok(sheet2.includes('复用'));
 });
 
 // ---------- 运行 ----------

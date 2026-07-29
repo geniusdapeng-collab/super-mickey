@@ -2,7 +2,7 @@
 // hyperreality-system/index.js
 // SuperMickey - 超级小香宝统一入口
 // 深度融合:剧本引擎 → 适配层 → 制作引擎 → 完整镜头
-// 版本:v2.11.0 | 日期:2026-07-29
+// 版本:v2.12.0 | 日期:2026-07-29
 
 require('./engines/process-guard'); // 【审计修复】全局崩溃防护,必须最先加载
 require('../systems/env-aliases'); // 【v2.2.8】SUPERMICKEY_* → STORMAXE_* 环境变量别名桥
@@ -531,23 +531,54 @@ class HyperrealitySystem {
 
           result.stages.dataMining = { data: dmResult, timing: Date.now() - stageNeg2Start, product_id: dmProductId };
 
-          // 档案就绪：摘要卡注入 metadata，Brief 自动回填
+          // 档案就绪 → 【人工确认闸】确认后才允许注入下游（与创意主题确认同级）
           if (dmResult && dmResult.cards) {
-            metadata._dataDossier = { product_id: dmProductId, cards: dmResult.cards, stale: Boolean(dmResult.stale) };
-            if (metadata.brief && typeof metadata.brief === 'object' && dmResult.cards.brief_card) {
-              try {
-                const { MarketingBriefParser } = require('./skills/marketing-brief');
-                const parser = new MarketingBriefParser();
-                const enriched = parser.applyBriefCard(metadata.brief, dmResult.cards.brief_card);
-                if (enriched.filled.length > 0) {
-                  metadata.brief = enriched.raw;
-                  console.log(`   📥 Brief 已由情报档案自动回填: ${enriched.filled.join(' / ')}`);
-                }
-              } catch (e) {
-                console.warn(`   ⚠️ Brief 情报回填失败（不阻断）: ${e.message}`);
+            const { generateDossierConfirmationSheet } = require('./engines/data-mining-engine/contracts/confirmation-sheet');
+            const sheet = generateDossierConfirmationSheet(dmResult.dossier, dmResult.cards, {
+              reused: Boolean(dmResult.reused), stale: Boolean(dmResult.stale)
+            });
+            console.log(sheet);
+
+            let dmApproved = true;
+            let dmRejectReason = null;
+            if (!(options.batchMode || options.skipDataMiningReview)) {
+              console.log('\n🧵 [商品情报档案] 等待人工确认...');
+              const dmConfirmation = await this._waitForExternalConfirmation('data-mining-dossier', sheet);
+              result.confirmations.dataMining = dmConfirmation;
+              if (dmConfirmation.waitTimeMs) {
+                result.totalWaitTimeMs += dmConfirmation.waitTimeMs;
+                _extendDeadlineForWait(dmConfirmation.waitTimeMs, '商品情报档案');
               }
+              dmApproved = dmConfirmation.approved;
+              dmRejectReason = dmConfirmation.reason || null;
+            } else {
+              result.confirmations.dataMining = { approved: true, batchMode: true };
             }
-            console.log(`   ✅ 商品情报档案就绪 (${result.stages.dataMining.timing}ms)${dmResult.reused ? ' [复用]' : ''} | 摘要卡已注入下游`);
+
+            if (dmApproved) {
+              // 确认通过：摘要卡注入 metadata，Brief 自动回填
+              metadata._dataDossier = { product_id: dmProductId, cards: dmResult.cards, stale: Boolean(dmResult.stale) };
+              if (metadata.brief && typeof metadata.brief === 'object' && dmResult.cards.brief_card) {
+                try {
+                  const { MarketingBriefParser } = require('./skills/marketing-brief');
+                  const parser = new MarketingBriefParser();
+                  const enriched = parser.applyBriefCard(metadata.brief, dmResult.cards.brief_card);
+                  if (enriched.filled.length > 0) {
+                    metadata.brief = enriched.raw;
+                    console.log(`   📥 Brief 已由情报档案自动回填: ${enriched.filled.join(' / ')}`);
+                  }
+                } catch (e) {
+                  console.warn(`   ⚠️ Brief 情报回填失败（不阻断）: ${e.message}`);
+                }
+              }
+              result.stages.dataMining.status = 'confirmed';
+              console.log(`   ✅ 商品情报档案已确认 (${result.stages.dataMining.timing}ms)${dmResult.reused ? ' [复用]' : ''} | 摘要卡已注入下游`);
+            } else {
+              // 驳回：情报层整体退出，主流程继续（无档案运行）
+              result.stages.dataMining.status = 'rejected';
+              result.stages.dataMining.reason = dmRejectReason || '用户未确认商品情报档案';
+              console.log(`   ⏭️ 情报档案被驳回（${result.stages.dataMining.reason}），主流程无情报继续`);
+            }
           } else if (dmResult && dmResult.spec_tasks) {
             console.log(`   📋 情报采集任务书已生成 (${result.stages.dataMining.timing}ms)，等待执行回填`);
           }
