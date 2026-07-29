@@ -29,6 +29,9 @@
  *      - 把创意核心前提逐条对照事实基线
  *      - 命中禁用宣称/前提矛盾 → conflicts 非空 → 阻断，业务洞察与 PRD 禁止开始
  *
+ * 【v2.10.1 修复】禁用宣称派生补全：领域法定禁用表述（按品类关键词归类）
+ * + Brief 级 forbiddenClaims 自定义注入；创意冲突检查同步支持直白禁用词命中。
+ *
  * PRD 融合点：verify() 输出 factRedLines（事实红线），
  * PRD 生成器必须原样继承进"制作约束"章节，镜头设计层不得突破。
  */
@@ -91,6 +94,22 @@ const CATEGORY_DIMENSIONS = {
   '食品': CATEGORY_PACKS.food.dims,
   '其他': ['使用前提', '能力边界', '官方口径']
 };
+
+/**
+ * 【v2.10.1 新增】领域法定禁用表述（广告法/行业监管口径）
+ * ------------------------------------------------------------
+ * 与具体商品事实无关，命中品类即一律禁用——弥补"仅从事实反推禁用宣称"
+ * 覆盖不到的法定红线（如汽车"自动驾驶"、食品"治病功效"、美妆"医美级"）。
+ * match 复用品类扩展包归类正则（可命中多个取并集），汽车为独立补充域。
+ */
+const DOMAIN_FORBIDDEN = [
+  { match: /汽车|车辆|电动车|驾驶|车企/, claims: ['自动驾驶', '无人驾驶', '脱手驾驶', '解放双手'] },
+  { match: CATEGORY_PACKS.food.match, claims: ['治疗功效', '替代药物', '治病', '药用功效', '包治'] },
+  { match: CATEGORY_PACKS.beauty.match, claims: ['医美级', '药妆', '医学级', '永久效果', '根治'] },
+  { match: CATEGORY_PACKS.service.match, claims: ['保证收益', '100%通过率', '包治百病', '百分百治好'] },
+  { match: CATEGORY_PACKS.hardware.match, claims: ['永不过时', '终身免费升级'] },
+  { match: CATEGORY_PACKS.apparel.match, claims: ['百分百纯棉（无检测依据）', '绝不褪色'] }
+];
 
 class ProductTruthChecker {
   /**
@@ -208,13 +227,13 @@ class ProductTruthChecker {
       prerequisites: pick('绑定', 'App', '联网', '账号', '前提', '配对'),
       boundaries: pick('边界', '离线', '独立', '兼容', '适配', '续航'),
       officialClaims: pick('口径', '宣传', '官方'),
-      // 禁用宣称：从前提与边界反推——凡与"必须具备的条件"矛盾的说法一律禁用
-      forbiddenClaims: this._deriveForbidden(notes)
+      // 禁用宣称：从前提与边界反推 + 领域法定禁用表述 + Brief 自定义注入
+      forbiddenClaims: this._deriveForbidden(notes, brief)
     };
   }
 
   /** 从调研记录反推禁用宣称（提取全部前提物，避免只取首个匹配造成语义漏网） */
-  _deriveForbidden(notes) {
+  _deriveForbidden(notes, brief = {}) {
     const forbidden = [];
     for (const n of notes) {
       const fact = String(n.fact || '');
@@ -227,6 +246,19 @@ class ProductTruthChecker {
       if (/不支持|无法|不能|暂未/.test(fact)) {
         forbidden.push(`禁止宣称支持该能力（事实：${fact.slice(0, 40)}）`);
       }
+    }
+    // 【v2.10.1】领域法定禁用表述：命中品类即注入，与事实无关一律禁用
+    const category = String(brief.category || '');
+    for (const domain of DOMAIN_FORBIDDEN) {
+      if (domain.match.test(category)) {
+        for (const claim of domain.claims) {
+          forbidden.push(`禁止使用"${claim}"（领域法定禁用表述，与商品事实无关一律禁用）`);
+        }
+      }
+    }
+    // 【v2.10.1】Brief 级自定义禁用宣称注入（直白禁用词，创意文本出现即冲突）
+    for (const c of (Array.isArray(brief.forbiddenClaims) ? brief.forbiddenClaims : [])) {
+      forbidden.push(`禁止使用"${String(c)}"（Brief 自定义禁用）`);
     }
     return forbidden;
   }
@@ -242,6 +274,20 @@ class ProductTruthChecker {
     const conflicts = [];
     const creativeText = [creative.premise, creative.hooks, creative.scenes].filter(Boolean).join('；');
     for (const rule of baseline.forbiddenClaims) {
+      // 【v2.10.1】直白禁用词命中（领域法定/Brief 自定义）：创意文本出现禁用词本身即冲突
+      const literal = rule.match(/禁止使用"(.+?)"/);
+      if (literal) {
+        const banned = literal[1];
+        if (creativeText.includes(banned)) {
+          conflicts.push({
+            type: '创意前提与事实矛盾',
+            banned,
+            evidence: creativeText.slice(0, 60),
+            rule
+          });
+        }
+        continue;
+      }
       const m = rule.match(/禁止宣称"脱离(.+?)独立使用"/);
       if (!m) continue;
       // 逐个前提物做等价表述命中（含同义家族：App≈应用、手机≈电话/移动端）

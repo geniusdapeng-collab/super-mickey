@@ -166,7 +166,7 @@ class ProductPortraitBranch {
           {
             step: 'matting',
             name: '主体抠图',
-            instruction: `将${product.name}主体从参考图背景中精确分离，边缘无锯齿无残留，透明底 PNG`
+            instruction: `将${product.name}主体从参考图背景中精确分离，边缘无锯齿无残留，透明底 PNG；【v2.10.1】透明通道素材（带 alpha 的 PNG/WebP）须先按 alpha 合成白底再抠图，禁止直接读取 RGB 通道（透明区 RGB 为脏数据）`
           },
           {
             step: 'white_base',

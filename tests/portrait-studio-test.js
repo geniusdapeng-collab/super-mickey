@@ -44,6 +44,12 @@ const PRODUCTS = [
   { id: 'qw-office', name: '千问办公', category: 'AI办公软件', sellingPoints: ['一键生成PPT'], materials: ['磨砂玻璃质感UI卡片'] }
 ];
 
+// 【v2.10.1】实物类夹具：服务类商品（千问办公）在 v2.10.0 起走品牌履约链路，
+// 物理链路断言必须使用实物类商品，禁止拿服务类夹具断言抠图/白底
+const PHYSICAL_PRODUCTS = [
+  { id: 'lipstick-01', name: '云纱口红', category: '美妆 口红', sellingPoints: ['哑光不拔干'], materials: ['丝绒哑光膏体', '磨砂金属外壳'] }
+];
+
 const VISUAL_STYLE = {
   renderStyle: '超写实CG渲染，8K画质',
   tone: '枯黄草原暖金色调',
@@ -127,32 +133,51 @@ test('C1: 商品任务三段式分支结构完整', () => {
 
 test('C2: 参考图搜索任务含查询词与真实图硬性要求', () => {
   const branch = new ProductPortraitBranch();
+  // 服务类：强制官方真实物料
   const [t] = branch.plan({ products: PRODUCTS, visualStyle: VISUAL_STYLE });
   const rs = t.stages.referenceSearch;
   assert.ok(rs.queries.length >= 2, '应至少 2 条搜索词');
   assert.ok(rs.queries[0].includes('千问办公'), '搜索词应含商品名');
-  assert.ok(rs.requirements.some(r => r.includes('真实商品图')), '应强制真实商品图');
+  assert.ok(rs.requirements.some(r => r.includes('官方真实物料')), '服务类应强制官方真实物料');
   assert.ok(rs.requirements.some(r => r.includes('官方')), '应优先官方渠道');
+  // 实物类：强制真实商品图
+  const [pt] = branch.plan({ products: PHYSICAL_PRODUCTS, visualStyle: VISUAL_STYLE });
+  assert.ok(pt.stages.referenceSearch.requirements.some(r => r.includes('真实商品图')), '实物类应强制真实商品图');
 });
 
 test('C3: 处理管线含抠图/白底/光影三步', () => {
   const branch = new ProductPortraitBranch();
-  const [t] = branch.plan({ products: PRODUCTS, visualStyle: VISUAL_STYLE });
-  const steps = t.stages.processing.pipeline.map(s => s.step);
+  // 实物类：matting → white_base → lighting_unify
+  const [pt] = branch.plan({ products: PHYSICAL_PRODUCTS, visualStyle: VISUAL_STYLE });
+  const steps = pt.stages.processing.pipeline.map(s => s.step);
   assert.deepStrictEqual(steps, ['matting', 'white_base', 'lighting_unify']);
-  const lighting = t.stages.processing.pipeline.find(s => s.step === 'lighting_unify');
+  const lighting = pt.stages.processing.pipeline.find(s => s.step === 'lighting_unify');
   assert.ok(lighting.instruction.includes('低角度自然日光'), '光影统一应对齐视觉系统');
+  // 服务类：crop_normalize + lighting_unify，且禁止抠图去背景
+  const [st] = branch.plan({ products: PRODUCTS, visualStyle: VISUAL_STYLE });
+  const sSteps = st.stages.processing.pipeline.map(s => s.step);
+  assert.deepStrictEqual(sSteps, ['crop_normalize', 'lighting_unify']);
+  assert.ok(!sSteps.includes('matting'), '服务类禁止抠图去背景');
 });
 
 test('C4: 风格化 5 视角且强制绑定基准图、禁止虚构', () => {
   const branch = new ProductPortraitBranch();
-  const [t] = branch.plan({ products: PRODUCTS, visualStyle: VISUAL_STYLE });
-  const styl = t.stages.stylization;
-  assert.strictEqual(styl.referenceBinding, 'outputBaseImage', '必须绑定处理后基准图');
-  assert.strictEqual(styl.portraits.length, 5);
-  for (const p of styl.portraits) {
+  // 实物类：忠于实物 + 材质锚点
+  const [pt] = branch.plan({ products: PHYSICAL_PRODUCTS, visualStyle: VISUAL_STYLE });
+  const pStyl = pt.stages.stylization;
+  assert.strictEqual(pStyl.referenceBinding, 'outputBaseImage', '必须绑定处理后基准图');
+  assert.strictEqual(pStyl.portraits.length, 5);
+  for (const p of pStyl.portraits) {
     assert.ok(p.prompt.includes('忠于实物'), `${p.viewName} prompt 应含忠于实物约束`);
-    assert.ok(p.prompt.includes('磨砂玻璃质感UI卡片'), '应含材质锚点');
+    assert.ok(p.prompt.includes('丝绒哑光膏体'), '应含材质锚点');
+  }
+  // 服务类：忠于官方实物（品牌视觉资产绑定）
+  const [st] = branch.plan({ products: PRODUCTS, visualStyle: VISUAL_STYLE });
+  const sStyl = st.stages.stylization;
+  assert.strictEqual(sStyl.portraits.length, 5);
+  for (const p of sStyl.portraits) {
+    assert.ok(p.prompt.includes('忠于官方实物'), `${p.viewName} prompt 应含忠于官方实物约束`);
+    assert.ok(p.prompt.includes('磨砂玻璃质感UI卡片'), '应含视觉识别锚点');
   }
 });
 

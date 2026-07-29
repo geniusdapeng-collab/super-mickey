@@ -33,6 +33,20 @@ const FN_TO_TYPE = {
   opening: 'host'           // → opening 片头
 };
 
+// 【v2.10.1 修复】职能 → _priority 角色键
+// _priority 表键是分配器规范角色名（demonstration/explanation/discovery/closing/opening），
+// 与 FN_TO_TYPE 的值域（hook/summary/host）是两套别名；回退与归一路径必须先经此映射，
+// 禁止直接拿营销职能原名查 _priority（否则 demo 与 cta 同权、片头独大，节奏倒挂）。
+const FN_TO_ROLE = {
+  hook: 'discovery',
+  demo: 'demonstration',
+  ugc: 'interaction',
+  seeding: 'explanation',
+  editing: 'highlight',
+  cta: 'closing',
+  opening: 'opening'
+};
+
 class MarketingDurationBridge {
   /**
    * 为营销镜头骨架分配时长（长短不一，节奏曲线驱动）
@@ -48,6 +62,8 @@ class MarketingDurationBridge {
     const profile = resolveProfile({ platform });
     const band = profile.shotDuration || { min: 3, max: 12 };
     const warnings = [];
+    // 【v2.10.1】蓝图未覆盖平台的回退警告透传，禁止静默降级
+    if (profile.fallbackWarning) warnings.push(profile.fallbackWarning);
 
     // 1) 组装分配器输入：职能映射 type，台词字数驱动语音基线；mustAlone 强制一镜一句不合并
     const narrations = shots.map(s => ({
@@ -74,8 +90,17 @@ class MarketingDurationBridge {
         allocated = this._fallbackAllocate(shots, totalDuration, band);
       }
     } else {
-      warnings.push('分配器未产出（预算过紧），回退带内加权分配');
-      allocated = this._fallbackAllocate(shots, totalDuration, band);
+      // 【v2.10.1 修复】L2 超载时优先复用分配器压缩态时长做带内等比收缩——
+      // 压缩态已编码重要性/语速语义，比职能权重盲分更贴近节奏曲线；
+      // 仅在无压缩态数据时才回退职能权重分配。
+      const compressed = result && Array.isArray(result.narrations) ? result.narrations : null;
+      if (compressed && compressed.length === shots.length) {
+        warnings.push('分配器L2超载：采用压缩态时长带内等比收缩（保留重要性语义）');
+        allocated = this._bandFitAllocate(shots, compressed, totalDuration, band);
+      } else {
+        warnings.push('分配器未产出（预算过紧），回退带内加权分配');
+        allocated = this._fallbackAllocate(shots, totalDuration, band);
+      }
     }
     allocated = this._normalizeTotal(allocated, totalDuration, band);
 
@@ -101,9 +126,20 @@ class MarketingDurationBridge {
     return Math.max(band.min, Math.min(band.max, Math.round(v)));
   }
 
+  /** 带内等比收缩：以分配器压缩态时长为底，等比缩至预算内并收敛蓝图时长带 */
+  _bandFitAllocate(shots, compressed, total, band) {
+    const byId = {};
+    compressed.forEach(n => { byId[n.id] = n; });
+    const sumC = compressed.reduce((a, n) => a + (Number(n.compressedDuration) || 0), 0) || 1;
+    return shots.map(s => {
+      const c = Number(byId[s.shotId] && byId[s.shotId].compressedDuration) || band.min;
+      return { shotId: s.shotId, fn: s.fn, duration: this._clamp((c * total) / sumC, band) };
+    });
+  }
+
   /** 回退分配：按职能重要性加权，在蓝图时长带内拉开长短 */
   _fallbackAllocate(shots, total, band) {
-    const weights = shots.map(s => this._priority(s.fn));
+    const weights = shots.map(s => this._priorityOf(s.fn));
     const sumW = weights.reduce((a, b) => a + b, 0) || 1;
     return shots.map((s, i) => ({
       shotId: s.shotId,
@@ -117,7 +153,7 @@ class MarketingDurationBridge {
     let diff = total - allocated.reduce((a, s) => a + s.duration, 0);
     let guard = 0;
     // 先加后减：按 fn 优先级排序轮流调整，保持长短结构
-    const order = [...allocated].sort((a, b) => this._priority(b.fn) - this._priority(a.fn));
+    const order = [...allocated].sort((a, b) => this._priorityOf(b.fn) - this._priorityOf(a.fn));
     while (diff !== 0 && guard < 40) {
       guard++;
       for (const s of order) {
@@ -131,9 +167,14 @@ class MarketingDurationBridge {
     return allocated;
   }
 
-  _priority(fn) {
-    return { demonstration: 3, opening: 2, explanation: 2, discovery: 1, highlight: 1, interaction: 1, closing: 1 }[fn] || 1;
+  /** 职能 → 角色 → 优先级（统一入口，禁止直接拿 fn 查 _priority） */
+  _priorityOf(fn) {
+    return this._priority(FN_TO_ROLE[fn] || fn);
+  }
+
+  _priority(role) {
+    return { demonstration: 3, opening: 2, explanation: 2, discovery: 1, highlight: 1, interaction: 1, closing: 1 }[role] || 1;
   }
 }
 
-module.exports = { MarketingDurationBridge, FN_TO_TYPE };
+module.exports = { MarketingDurationBridge, FN_TO_TYPE, FN_TO_ROLE };

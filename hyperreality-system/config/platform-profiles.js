@@ -89,6 +89,43 @@ const PROFILES = {
     safeArea: { note: '避开右侧 120px 与底部 280px', rightRailPx: 120, bottomPx: 280, topPx: 120 },
     subtitleLanguage: 'en',
     copyStyle: 'aesthetic 首帧美学，英文短句，克制收尾'
+  },
+  // ========== 【v2.10.1 新增】国内主流平台补全 ==========
+  'wechat-channels': {
+    name: '微信视频号',
+    ratio: '9:16',
+    shotDuration: { min: 2, max: 5 },
+    speechRate: { normal: 4.2, limit: 5.2 },
+    hook: { windowSec: 3, productInHook: true, styles: ['question', 'value-preview', 'conflict'] },
+    cta: { required: false, position: 'final' },
+    onscreenText: { mode: 'designed' },
+    safeArea: { note: '避开右侧 120px 操作栏与底部 300px 文案区', rightRailPx: 120, bottomPx: 300, topPx: 120 },
+    subtitleLanguage: 'zh',
+    copyStyle: '熟人社交语境，真实分享感，转化话术克制不硬广'
+  },
+  kuaishou: {
+    name: '快手',
+    ratio: '9:16',
+    shotDuration: { min: 2, max: 5 },
+    speechRate: { normal: 4.5, limit: 5.5 },
+    hook: { windowSec: 3, productInHook: true, styles: ['question', 'conflict', 'data-shock'] },
+    cta: { required: true, position: 'final' },
+    onscreenText: { mode: 'designed' },
+    safeArea: { note: '避开右侧 120px 操作栏与底部 320px 文案区', rightRailPx: 120, bottomPx: 320, topPx: 120 },
+    subtitleLanguage: 'zh',
+    copyStyle: '老铁式真实口语，强信任背书，转化话术直接'
+  },
+  bilibili: {
+    name: 'B站（哔哩哔哩）',
+    ratio: '16:9',
+    shotDuration: { min: 3, max: 10 },
+    speechRate: { normal: 4.0, limit: 5.0 },
+    hook: { windowSec: 5, productInHook: false, styles: ['question', 'value-preview', 'data-shock'] },
+    cta: { required: false, position: 'final' },
+    onscreenText: { mode: 'designed' },
+    safeArea: { note: '横屏无右侧操作栏，避开底部 90px 进度条遮挡区', rightRailPx: 0, bottomPx: 90, topPx: 60 },
+    subtitleLanguage: 'zh',
+    copyStyle: '社区语境，信息密度高，允许梗化表达，忌硬广口吻'
   }
 };
 
@@ -96,11 +133,17 @@ const DEFAULT_PROFILE = PROFILES.cinematic;
 
 /**
  * 解析镜头所属平台 Profile（逐级回退：shot.platform > blueprint.platform > cinematic）
+ * 【v2.10.1】蓝图未覆盖平台回退时禁止静默——输出 fallbackWarning，
+ * 调用方须把该警告透传至执行日志/交付物 warnings，提示人工复核营销场景链适用性。
  */
 function resolveProfile(shot = {}, blueprint = {}) {
   const key = shot.platform || blueprint.platform || 'cinematic';
   const profile = PROFILES[key] || DEFAULT_PROFILE;
-  return { ...profile, platformKey: PROFILES[key] ? key : 'cinematic' };
+  const out = { ...profile, platformKey: PROFILES[key] ? key : 'cinematic' };
+  if (!PROFILES[key]) {
+    out.fallbackWarning = `平台"${key}"未在蓝图库覆盖，已回退系统全局档（cinematic）；营销场景链校验与画面文字政策可能不适用，请人工复核`;
+  }
+  return out;
 }
 
 /** 生成约束模板字符串（蓝图驱动的 constraintTemplate 唯一来源） */
