@@ -48,6 +48,14 @@ class MarketingBriefParser {
     brief.audience = brief.audience || '平台泛人群';
     brief.duration = Number(brief.duration) > 0 ? Number(brief.duration) : 30;
 
+    // 【v2.6.0】P1-4 商品定妆照：营销片禁止虚构商品外观，英雄照实拍绑定为纪律项
+    brief.productHero = brief.productHero || {};
+    if (!brief.productHero.heroImageId) {
+      issues.push('缺商品英雄照实拍绑定 productHero.heroImageId（营销片禁止虚构商品外观）');
+    } else if (!/^[A-Z0-9]+-[A-Z]+-\d{3}$/.test(brief.productHero.heroImageId)) {
+      issues.push(`英雄照编号格式不规范:"${brief.productHero.heroImageId}"（应为 前缀-类别-序号，如 QW-HERO-001）`);
+    }
+
     return { brief, issues };
   }
 
@@ -71,6 +79,7 @@ class MarketingBriefParser {
       L('目标时长', `${brief.duration}s`),
       L('品牌色', brief.brand.color || '未指定（花字/CTA 用默认品牌主色位）'),
       L('CTA', brief.ctaText || '平台默认（TikTok: Follow for more · Link in bio）'),
+      L('英雄照', brief.productHero && brief.productHero.heroImageId ? `实拍绑定 ${brief.productHero.heroImageId}` : '⚠️ 未绑定（渲染前必须补齐）'),
       brief.competitor ? L('竞品参照', brief.competitor) : null,
       '╠══════════════════════════════════════════╣',
       '║ 结构铁律:                                ║',

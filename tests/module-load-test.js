@@ -166,6 +166,27 @@ test('SP-4: MarketingBriefParser 可加载', () => {
   assert.strictEqual(typeof p.generateConfirmationSheet, 'function', '确认单方法应存在');
 });
 
+test('SP-5: ProductHeroDesigner 可加载', () => {
+  const { ProductHeroDesigner } = require('../hyperreality-system/engines/production-engine/agents/product-hero-designer');
+  const d = new ProductHeroDesigner();
+  assert.strictEqual(typeof d.designAnchor, 'function', 'designAnchor 方法应存在');
+  assert.strictEqual(typeof d.designConsistency, 'function', 'designConsistency 方法应存在');
+});
+
+test('SP-6: BgmStrategyDesigner 可加载', () => {
+  const { BgmStrategyDesigner } = require('../hyperreality-system/engines/production-engine/agents/bgm-strategy-designer');
+  const d = new BgmStrategyDesigner();
+  assert.strictEqual(typeof d.design, 'function', 'design 方法应存在');
+});
+
+test('SP-7: MarketingSkillRouter 可加载（20 营销技能）', () => {
+  const { MarketingSkillRouter } = require('../hyperreality-system/skills/social-marketing/marketing-skill-router');
+  const r = new MarketingSkillRouter();
+  assert.strictEqual(typeof r.match, 'function', 'match 方法应存在');
+  assert.strictEqual(r.listAll().length, 20, '应装载 20 个营销技能');
+  assert.ok(r.listAll().every(s => s.type === 'marketing' && s.domain === 'marketing'), '营销域标签应统一');
+});
+
 // ===== 功能验证测试 =====
 test('P3-1: 情绪意图解析功能', () => {
   const { EmotionIntentParser } = require('../hyperreality-system/engines/emotion/emotion-intent-parser');

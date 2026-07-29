@@ -154,6 +154,36 @@ class PromptDeliveryGuard {
       for (const hit of compliance.hits) {
         issues.push(`合规阻断[${hit.level}] ${hit.field}字段命中"${hit.word}":${hit.reason}`);
       }
+      // 7. 【v2.6.0 P1-4】商品锚点纪律：营销镜头商品必须实拍绑定，禁止虚构外观
+      if (!isOpening) {
+        if (!names.includes('商品锚点')) {
+          issues.push('社媒营销镜头缺【商品锚点】字段');
+        } else {
+          const anchor = this._fieldBody(text, '商品锚点');
+          if (!/实拍绑定（[A-Z0-9]+-[A-Z]+-\d{3}）/.test(anchor)) issues.push('【商品锚点】缺有效英雄照实拍绑定编号（禁止虚构商品外观）');
+          if (!/LOGO锚点/.test(anchor)) issues.push('【商品锚点】缺 LOGO 锚点');
+          if (!/特写锚点/.test(anchor)) issues.push('【商品锚点】缺卖点特写锚点');
+        }
+        if (!names.includes('商品一致性')) issues.push('社媒营销镜头缺【商品一致性】字段');
+      }
+      // 8. 【v2.6.0 P1-6】配乐纪律：卡点映射 + 版权红线 + 尾镜高潮对齐
+      if (!isOpening) {
+        if (!names.includes('配乐')) {
+          issues.push('社媒营销镜头缺【配乐】字段');
+        } else {
+          const bgm = this._fieldBody(text, '配乐');
+          if (/《[^》]+》/.test(bgm)) issues.push('【配乐】指定具体曲目（版权红线：只写风格类型与卡点策略）');
+          if (!/卡点映射/.test(bgm)) issues.push('【配乐】缺卡点映射');
+          if (!/版权策略/.test(bgm)) issues.push('【配乐】缺版权策略声明');
+          if (shot.isFinal && !/高潮点对齐/.test(bgm)) issues.push('尾镜【配乐】缺高潮点对齐声明');
+          const bgmDuration = Number(shot.duration) || 0;
+          const bre = /T(\d+)s/g;
+          let bm;
+          while ((bm = bre.exec(bgm)) !== null) {
+            if (parseInt(bm[1], 10) > bgmDuration) issues.push(`【配乐】卡点时间戳越界:T${bm[1]}s>镜头${bgmDuration}s`);
+          }
+        }
+      }
     }
 
     // 5. 必备锚点

@@ -75,12 +75,15 @@ const MKT_FIELDS = [
   '【动作】手指在手机上敲下一行字按下发送，PPT 页面在屏上翻飞生成，人物向后靠上椅背长出一口气',
   '【道具】手机、笔记本电脑、咖啡杯（半凉）',
   '【定妆照】绑定白领定妆照 V1：黑框眼镜、浅灰衬衫',
+  '【商品锚点】千问办公英雄照实拍绑定（QW-HERO-001），禁止虚构商品外观与 UI 元素；材质锚点：磨砂玻璃质感UI卡片、金属边框倒角；LOGO锚点：界面左上角，占画面不小于 5%；卖点特写锚点：生成按钮按下瞬间',
+  '【商品一致性】全片商品一致性锁定：英雄照统一绑定 QW-HERO-001，LOGO 固定界面左上角，界面配色与英雄照角度跨镜一致，禁止同片出现第二种商品外观',
   '【台词】[00s-04s] 白领 盯着屏幕, 惊喜 说:"咖啡没凉，活干完了。"',
   '【时间轴】T00:00 - 疲惫全景 [运镜:手持推近];T00:02 - 敲字;T00:03 - PPT 翻飞生成',
   '【情绪】眼神从疲惫到瞳孔点亮，嘴角不自觉上扬，眉毛挑起一次，肩膀随呼气松开',
   '【节奏】前 1 秒压抑，后 3 秒释放，卡点剪辑',
   '【转场】PPT 页面翻飞叠化至下一镜',
   '【音频】键盘敲击声、消息提示音、卡点鼓点，PPT 生成完成音效上扬',
+  '【配乐】风格类型：phonk 鼓点电子（平台热歌类型，不指定具体曲目）；BPM：142；卡点映射：T0s:台词起→轻鼓点垫底；T3s:PPT 翻飞→重拍；人声与声床配比：台词出现时声床自动 ducking -6dB，人声清晰度优先；能量曲线随镜头推进上行，段落末拍（T4s）预留下一镜切入重拍；版权策略：AI 生成风格类似曲目，零版权风险，禁止引用任何受版权保护的具体曲目',
   '【负面约束】no watermark, no garbled text, no blurry; 禁止系统水印，禁止乱码',
   '【角色约束】本镜仅白领一人',
   '【角色一致性】黑框眼镜、浅灰衬衫跨镜一致',
@@ -130,6 +133,21 @@ assert('花字超 12 字被拦截', !g5.pass && g5.issues.some(i => i.includes('
 const finalShot = { ...MKT_SHOT, isFinal: true };
 const g6 = guard.verify(MKT_FIELDS, finalShot);
 assert('尾镜缺 CTA 被拦截', !g6.pass && g6.issues.some(i => i.includes('CTA')));
+
+console.log('\n📋 M2 商品锚点与配乐守卫链');
+const noAnchor = MKT_FIELDS.replace(/ \| 【商品锚点】[^|]*/, '');
+assert('缺商品锚点被拦截', !guard.verify(noAnchor, MKT_SHOT).pass);
+const fakeAnchor = MKT_FIELDS.replace('实拍绑定（QW-HERO-001）', '实拍绑定（待绑定）');
+assert('英雄照待绑定被拦截（禁虚构商品外观）', guard.verify(fakeAnchor, MKT_SHOT).issues.some(i => i.includes('实拍绑定编号')));
+const noConsistency = MKT_FIELDS.replace(/ \| 【商品一致性】[^|]*/, '');
+assert('缺商品一致性被拦截', !guard.verify(noConsistency, MKT_SHOT).pass);
+const noBgm = MKT_FIELDS.replace(/ \| 【配乐】[^|]*/, '');
+assert('缺配乐被拦截', !guard.verify(noBgm, MKT_SHOT).pass);
+const songNamed = MKT_FIELDS.replace('phonk 鼓点电子', '《apt.》同款热歌');
+assert('指定具体曲目被拦截（版权红线）', guard.verify(songNamed, MKT_SHOT).issues.some(i => i.includes('版权红线')), guard.verify(songNamed, MKT_SHOT).issues.join(';'));
+const beatOverflow = MKT_FIELDS.replace('T3s:PPT 翻飞→重拍', 'T9s:PPT 翻飞→重拍');
+assert('卡点时间戳越界被拦截', guard.verify(beatOverflow, MKT_SHOT).issues.some(i => i.includes('越界')));
+assert('尾镜缺高潮点对齐被拦截', guard.verify(MKT_FIELDS, finalShot).issues.some(i => i.includes('高潮点对齐')));
 
 console.log('\n📋 精炼器·营销画幅分流');
 const refiner = new FieldContentRefiner({ constraintTemplate: '16:9画幅，8K分辨率，24fps，MP4格式' });

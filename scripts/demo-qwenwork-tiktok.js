@@ -11,6 +11,8 @@
 const { MarketingBriefParser } = require('../hyperreality-system/skills/marketing-brief');
 const { resolveProfile, constraintTemplateOf } = require('../hyperreality-system/config/platform-profiles');
 const { OnscreenTextDesigner } = require('../hyperreality-system/engines/production-engine/agents/onscreen-text-designer');
+const { ProductHeroDesigner } = require('../hyperreality-system/engines/production-engine/agents/product-hero-designer');
+const { BgmStrategyDesigner } = require('../hyperreality-system/engines/production-engine/agents/bgm-strategy-designer');
 const { PromptDeliveryGuard } = require('../hyperreality-system/engines/production-engine/agents/prompt-delivery-guard');
 
 // ========== 1. Brief 输入（基于千问办公公开产品信息整理） ==========
@@ -23,7 +25,13 @@ const rawBrief = {
   platform: 'tiktok',
   brand: { color: '阿里橙' },
   ctaText: 'Try QwenWork today · Link in bio',
-  duration: 30
+  duration: 30,
+  productHero: {
+    heroImageId: 'QW-HERO-001',
+    materials: ['磨砂玻璃质感UI卡片', '金属边框倒角'],
+    logo: { position: '界面左上角', minSizePct: 5 },
+    closeups: ['生成按钮按下瞬间', 'PPT 翻页动效', '钉钉同步弹窗']
+  }
 };
 
 const parser = new MarketingBriefParser();
@@ -36,12 +44,15 @@ console.log(parser.generateConfirmationSheet(brief));
 
 // ========== 2. 三个样例镜头（钩子/演示/CTA 尾镜） ==========
 const designer = new OnscreenTextDesigner();
+const heroDesigner = new ProductHeroDesigner();
+const bgmDesigner = new BgmStrategyDesigner();
 const guard = new PromptDeliveryGuard();
 const blueprint = { platform: 'tiktok' };
 
 const shots = [
   {
     shotId: 'T01', duration: 4, isFinal: false, platform: 'tiktok',
+    timelineBeats: [{ t: 0, event: '疲惫全景进场' }, { t: 2, event: '咖啡杯放下' }],
     sellingPoint: '一句话生成全套PPT',
     dialogueBlocks: [{ line: 'Still building slides at midnight?', start: 0, end: 4, action: '揉着太阳穴', emo: '自嘲' }],
     fields: {
@@ -72,6 +83,7 @@ const shots = [
   },
   {
     shotId: 'T02', duration: 5, isFinal: false, platform: 'tiktok',
+    timelineBeats: [{ t: 1, event: '首页封面生成' }, { t: 2, event: '内页连续翻飞' }],
     sellingPoint: '任务级交付，不止回答',
     dialogueBlocks: [
       { line: 'One sentence. A full deck.', start: 0, end: 3, action: '盯着屏幕', emo: '笃定' },
@@ -105,6 +117,7 @@ const shots = [
   },
   {
     shotId: 'T03', duration: 4, isFinal: true, platform: 'tiktok',
+    timelineBeats: [{ t: 1, event: '台灯熄灭' }, { t: 3, event: 'CTA 定格' }],
     sellingPoint: '深度钉钉集成',
     dialogueBlocks: [{ line: 'Your evenings are yours again.', start: 0, end: 3, action: '背包起身', emo: '轻快' }],
     fields: {
@@ -136,7 +149,7 @@ const shots = [
 ];
 
 // ========== 3. 组装 + 守卫终验 ==========
-const FIELD_ORDER = ['语言约束', '导演意图', '基础', '约束', '场景', '灯光设计', '明亮约束', '构图', '色彩/色调', '景深', '运镜', '角色', '服装', '化妆', '动作', '道具', '定妆照', '台词', '时间轴', '情绪', '节奏', '转场', '音频', '画面文字设计', '负面约束', '角色约束', '角色一致性'];
+const FIELD_ORDER = ['语言约束', '导演意图', '基础', '约束', '场景', '灯光设计', '明亮约束', '构图', '色彩/色调', '景深', '运镜', '角色', '服装', '化妆', '动作', '道具', '定妆照', '商品锚点', '商品一致性', '台词', '时间轴', '情绪', '节奏', '转场', '音频', '配乐', '画面文字设计', '负面约束', '角色约束', '角色一致性'];
 
 console.log('\n===== 3. 镜头提示词（模块实跑组装 + 守卫终验） =====');
 const results = [];
@@ -149,12 +162,17 @@ for (const shot of shots) {
     const pad = n => String(n).padStart(2, '0');
     return `[${pad(b.start)}s-${pad(b.end)}s] 白领 ${b.action || ''}, ${b.emo || '平静'} 说:"${b.line}"`;
   }).join('\n');
+  // 【商品锚点】【商品一致性】由 ProductHeroDesigner 实跑生成（P1-4）
+  const heroAnchor = heroDesigner.designAnchor(shot, brief).fieldText;
+  const heroConsistency = heroDesigner.designConsistency(brief);
+  // 【配乐】由 BgmStrategyDesigner 实跑生成（P1-6）
+  const bgm = bgmDesigner.design(shot, profile, brief).fieldText;
   // 【画面文字设计】由 OnscreenTextDesigner 实跑生成
   const textDesign = designer.design(shot, profile, brief).fieldText;
   // 【负面约束】营销分支（与 prompt-fusion-agent 同款）
   const negative = 'no watermark, no platform UI, no garbled text, no distorted typography, no blurry, no low quality, no deformed hands; 禁止系统水印，禁止乱码与扭曲文字，禁止平台界面元素入画';
 
-  const bodies = { ...shot.fields, 约束: constraint, 台词: dlg, 画面文字设计: textDesign, 负面约束: negative };
+  const bodies = { ...shot.fields, 约束: constraint, 台词: dlg, 商品锚点: heroAnchor, 商品一致性: heroConsistency, 配乐: bgm, 画面文字设计: textDesign, 负面约束: negative };
   const prompt = FIELD_ORDER.map(f => `【${f}】${bodies[f]}`).join(' | ');
   const g = guard.verify(prompt, shot);
   results.push({ shot, prompt, guard: g });

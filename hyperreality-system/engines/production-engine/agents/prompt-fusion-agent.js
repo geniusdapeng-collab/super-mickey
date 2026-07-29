@@ -8,6 +8,8 @@ const { BaseAgent } = require('./base-agent');
 const { FieldContentRefiner } = require('./field-content-refiner');
 const { SemanticRefinementPass } = require('./semantic-refinement-pass');
 const { OnscreenTextDesigner } = require('./onscreen-text-designer');
+const { ProductHeroDesigner } = require('./product-hero-designer');
+const { BgmStrategyDesigner } = require('./bgm-strategy-designer');
 const { resolveProfile, isSocialCommerce, constraintTemplateOf } = require('../../../config/platform-profiles.js');
 const { normalizeFields, makeGetter } = require('../../field-standardizer');
 const { FieldConsistencyChecker } = require('../../field-consistency-checker');
@@ -176,6 +178,9 @@ class PromptFusionAgent extends BaseAgent {
 
     // 【v2.5.0 新增】社媒营销包：画面文字设计器（三层文字体系）
     this._onscreenTextDesigner = new OnscreenTextDesigner();
+    // 【v2.6.0 新增】社媒营销包：商品定妆照设计器 + 配乐策略设计器
+    this._productHeroDesigner = new ProductHeroDesigner();
+    this._bgmStrategyDesigner = new BgmStrategyDesigner();
 
     // 【v2.1.11-重构】保存生产画像，用于写实校验强度分级
     this.productionProfile = options.productionProfile || null;
@@ -1595,6 +1600,25 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
     const portraitsField = getField('portraits');
     if (portraitsField) parts.push(`【定妆照】${portraitsField}`);
 
+    // 【商品锚点】【商品一致性】⭐ v2.6.0 社媒营销包 P1-4：商品英雄照实拍绑定
+    const _socialProfile = resolveProfile(shot, shot.blueprint || {});
+    if (isSocialCommerce(_socialProfile) && shot.sceneType !== 'opening') {
+      const brief = shot.marketingBrief || {};
+      const heroAnchorField = getField('product_anchor', 'productAnchor', 'productHeroAnchor');
+      if (heroAnchorField) {
+        parts.push(`【商品锚点】${heroAnchorField}`);
+      } else {
+        const anchor = this._productHeroDesigner.designAnchor(shot, brief);
+        if (anchor.fieldText) parts.push(`【商品锚点】${anchor.fieldText}`);
+      }
+      const heroConsistencyField = getField('product_consistency', 'productConsistency');
+      if (heroConsistencyField) {
+        parts.push(`【商品一致性】${heroConsistencyField}`);
+      } else {
+        parts.push(`【商品一致性】${this._productHeroDesigner.designConsistency(brief)}`);
+      }
+    }
+
     // 台词
     // 【v2.1.6】优先使用 dialogueBlocks 渲染为 Seedance 2.0 内联格式
     if (shot.dialogueBlocks && Array.isArray(shot.dialogueBlocks) && shot.dialogueBlocks.length > 0) {
@@ -1663,6 +1687,17 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
     // 【音频】
     const audioField = getField('audio');
     if (audioField) parts.push(`【音频】${audioField}`);
+
+    // 【配乐】⭐ v2.6.0 社媒营销包 P1-6：BGM 策略（卡点映射/人声配比/高潮对齐/版权红线）
+    if (isSocialCommerce(_socialProfile) && shot.sceneType !== 'opening') {
+      const bgmField = getField('bgm', 'music', 'soundtrack');
+      if (bgmField) {
+        parts.push(`【配乐】${bgmField}`);
+      } else {
+        const bgm = this._bgmStrategyDesigner.design(shot, _socialProfile, shot.marketingBrief || {});
+        if (bgm.fieldText) parts.push(`【配乐】${bgm.fieldText}`);
+      }
+    }
 
     // 【画面文字设计】⭐ v2.5.0 社媒营销包：营销镜头强制三层文字（字幕条/卖点花字/CTA）
     const _platformProfile = resolveProfile(shot, shot.blueprint || {});
