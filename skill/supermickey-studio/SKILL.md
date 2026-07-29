@@ -26,7 +26,7 @@ description: SuperMickey 视频提示词生成器（完整执行版）。当用�
    默认分支为 master，clone 得到的 HEAD 即"最新系统代码"。
 2. 确认当前版本号：只读克隆下来的 `package.json` 的 `"version"` 字段，记录于执行日志。该字段是 SuperMickey 系统版本号的唯一权威来源。
 3. 运行规范预检：`node scripts/agent-preflight.js`，退出码必须为 0；非 0 先修复再继续。
-4. 阅读并理解当前版本的系统架构、约束栈、提示词规范、输出格式定义、平台蓝图（config/platform-profiles.js）。
+4. 阅读并理解当前版本的系统架构、约束栈、提示词规范、输出格式定义、平台蓝图（hyperreality-system/config/platform-profiles.js）。
 
 > ⚠️ 版本识别强制约束：
 > - 禁止通过 Git tag 列表、tag 版本号大小比较、文档标题、目录名、子系统内部编号推断"最新版本"。
