@@ -187,6 +187,23 @@ test('SP-7: MarketingSkillRouter 可加载（20 营销技能）', () => {
   assert.ok(r.listAll().every(s => s.type === 'marketing' && s.domain === 'marketing'), '营销域标签应统一');
 });
 
+test('SP-8: PlatformVariantFanner 可加载', () => {
+  const { PlatformVariantFanner } = require('../hyperreality-system/engines/production-engine/agents/platform-variant-fanner');
+  const f = new PlatformVariantFanner();
+  assert.strictEqual(typeof f.fanOut, 'function', 'fanOut 方法应存在');
+  assert.strictEqual(typeof f.renderMatrixTable, 'function', 'renderMatrixTable 方法应存在');
+});
+
+test('SP-9: HookPerformanceStore 可加载', () => {
+  const os = require('os');
+  const path = require('path');
+  const { HookPerformanceStore } = require('../hyperreality-system/engines/production-engine/agents/hook-performance-store');
+  const s = new HookPerformanceStore({ file: path.join(os.tmpdir(), `hook-load-${Date.now()}.json`) });
+  assert.strictEqual(typeof s.record, 'function', 'record 方法应存在');
+  assert.strictEqual(typeof s.recommend, 'function', 'recommend 方法应存在');
+  assert.deepStrictEqual(s.recommend('tiktok', ['a']), [{ style: 'a', evidence: null }], '空库应回退默认序');
+});
+
 // ===== 功能验证测试 =====
 test('P3-1: 情绪意图解析功能', () => {
   const { EmotionIntentParser } = require('../hyperreality-system/engines/emotion/emotion-intent-parser');

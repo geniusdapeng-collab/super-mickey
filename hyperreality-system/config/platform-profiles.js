@@ -50,7 +50,8 @@ const PROFILES = {
       bottomPx: 320,
       topPx: 120
     },
-    subtitleLanguage: 'en'
+    subtitleLanguage: 'en',
+    copyStyle: '原生感英文字幕，口语化 VO，弱化广告感'
   },
   douyin: {
     name: '抖音',
@@ -61,7 +62,8 @@ const PROFILES = {
     cta: { required: true, position: 'final' },
     onscreenText: { mode: 'designed' },
     safeArea: { note: '避开右侧 120px 操作栏与底部 320px 文案区', rightRailPx: 120, bottomPx: 320, topPx: 120 },
-    subtitleLanguage: 'zh'
+    subtitleLanguage: 'zh',
+    copyStyle: '大字幕强 CTA，节奏快信息密，转化话术直接'
   },
   xiaohongshu: {
     name: '小红书',
@@ -72,7 +74,8 @@ const PROFILES = {
     cta: { required: false, position: 'final' },
     onscreenText: { mode: 'designed' },
     safeArea: { note: '避开底部 240px 文案区', rightRailPx: 0, bottomPx: 240, topPx: 100 },
-    subtitleLanguage: 'zh'
+    subtitleLanguage: 'zh',
+    copyStyle: '审美先行，价值预览式文案，弱化硬广'
   },
   'instagram-reels': {
     name: 'Instagram Reels',
@@ -84,7 +87,8 @@ const PROFILES = {
     cta: { required: false, position: 'final' },
     onscreenText: { mode: 'designed' },
     safeArea: { note: '避开右侧 120px 与底部 280px', rightRailPx: 120, bottomPx: 280, topPx: 120 },
-    subtitleLanguage: 'en'
+    subtitleLanguage: 'en',
+    copyStyle: 'aesthetic 首帧美学，英文短句，克制收尾'
   }
 };
 
