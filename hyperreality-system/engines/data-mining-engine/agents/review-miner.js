@@ -56,6 +56,18 @@ const AUTO_LEXICON_EXT = {
   空间尺寸: ['后排', '空间', '头部空间', '腿部', '储物', '后备箱']
 };
 
+/** 【v2.12.1 新增】SaaS/AI 产品品类扩展词库（经 input.aspectLexiconExt 注入启用）
+ *  通用 ASPECT_LEXICON 为实物商品导向，AI 办公/软件类评价（生成质量/模板/积分额度）
+ *  全量漏匹配会导致 pain_points/pros/cons 为空；本词库覆盖软件品类高频方面 */
+const SAAS_LEXICON_EXT = {
+  生成质量: ['生成质量', '效果', '准确', '能用', '成品', '返工', '可用'],
+  模板设计: ['模板', '排版', '好看', '颜值', '设计', '美观'],
+  速度效率: ['速度', '分钟', '效率', '快', '慢', '等待', '省时'],
+  生态集成: ['钉钉', '飞书', '生态', '同步', '打通', '连接器', '集成'],
+  稳定可靠: ['稳定', '崩溃', '卡顿', '乱码', '失败', '报错', 'bug', '闪退'],
+  价格额度: ['价格', '积分', '额度', '免费', '付费', '订阅', '贵', '划算']
+};
+
 /** 场景提炼模式：人群/时刻/地点线索 */
 const SCENE_PATTERNS = [
   { re: /给孩子|给宝宝|给娃|孩子用|婴儿|宝宝/g, persona: '母婴人群' },
@@ -265,4 +277,4 @@ class ReviewMiner {
   }
 }
 
-module.exports = { ReviewMiner, ASPECT_LEXICON, ROOT_CAUSE_MAP, AUTO_LEXICON_EXT };
+module.exports = { ReviewMiner, ASPECT_LEXICON, ROOT_CAUSE_MAP, AUTO_LEXICON_EXT, SAAS_LEXICON_EXT };

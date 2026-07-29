@@ -95,7 +95,7 @@ class MarketingDurationBridge {
       // 仅在无压缩态数据时才回退职能权重分配。
       const compressed = result && Array.isArray(result.narrations) ? result.narrations : null;
       if (compressed && compressed.length === shots.length) {
-        warnings.push('分配器L2超载：采用压缩态时长带内等比收缩（保留重要性语义）');
+        warnings.push('分配器L2超载：采用压缩态时长带内等比收缩（保留重要性语义）。提示：镜头数>10时L2压缩为预期行为，单镜落蓝图时长带且作品级校验通过即可放行；如需更宽时长带请在平台蓝图层调整');
         allocated = this._bandFitAllocate(shots, compressed, totalDuration, band);
       } else {
         warnings.push('分配器未产出（预算过紧），回退带内加权分配');

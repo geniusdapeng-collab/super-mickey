@@ -86,6 +86,9 @@ const CATEGORY_PACKS = {
   }
 };
 
+/** 【v2.12.1】硬件包中的纯物理维度：仅对真实硬件商品有意义，软件/SaaS 命中硬件包时剔除 */
+const HARDWARE_PHYSICAL_ONLY_DIMS = ['续航与充电方式', '兼容机型/系统'];
+
 /** 向后兼容：旧扁平表（已废弃，保留导出防外部引用断裂） */
 const CATEGORY_DIMENSIONS = {
   '3C': CATEGORY_PACKS.hardware.dims,
@@ -125,6 +128,16 @@ class ProductTruthChecker {
       if (pack.match.test(category)) {
         packs.push(key);
         for (const d of pack.dims) if (!dims.includes(d)) dims.push(d);
+      }
+    }
+    // 【v2.12.1 修复】hardware 包的「智能」关键词会误命中软件品类（如"AI智能办公平台"）：
+    // software 命中且品类含明确软件语义时，剔除硬件包中的纯物理维度（续航/兼容机型），
+    // 保留跨品类仍有意义的维度（绑定/App依赖、联网依赖、账号生态依赖、离线能力边界）
+    const softwareish = packs.includes('software') && /SaaS|软件|平台|云|App|应用|系统/i.test(String(category));
+    if (softwareish && packs.includes('hardware')) {
+      for (const d of HARDWARE_PHYSICAL_ONLY_DIMS) {
+        const i = dims.indexOf(d);
+        if (i !== -1) dims.splice(i, 1);
       }
     }
     for (const d of (Array.isArray(customDims) ? customDims : [])) {
@@ -237,7 +250,11 @@ class ProductTruthChecker {
     const forbidden = [];
     for (const n of notes) {
       const fact = String(n.fact || '');
-      if (/必须|需要|依赖|绑定/.test(fact)) {
+      // 【v2.12.1 修复】否定极性豁免：「不/无需/免/摆脱 + 依赖/绑定/连接/搭配」为否定句，
+      // 产品本来就不依赖该前提物，"脱离X独立使用"恰是事实本身；
+      // 此前只做关键词存在性匹配，否定句被误当肯定前提，反推出语义反转的红线（误阻断）
+      const negated = /(不|无不|无需|无须|不需要|免|摆脱).{0,8}(依赖|绑定|连接|搭配|配合)/.test(fact);
+      if (!negated && /必须|需要|依赖|绑定/.test(fact)) {
         const targets = this._extractTargets(fact);
         if (targets.length > 0) {
           forbidden.push(`禁止宣称"脱离${targets.join('/')}独立使用"（事实：${this._truncateFact(fact, 40)}）`);
