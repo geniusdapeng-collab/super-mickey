@@ -4,6 +4,7 @@
  * ProductTruthChecker（产品调研与事实校验闸机）
  * ------------------------------------------------------------
  * 【v2.9.0 新增】社媒营销包 · 事实真实性基线
+ * 【v2.10.0 改造】调研维度开放化：通用底座+品类扩展包+自定义并集，支持任意商品与服务类型
  *
  * 定位：Brief 确认之后、业务需求洞察之前的阻断式环节。
  * 营销片的头号翻车头风险不是极限词，而是"创意前提与产品真实能力矛盾"
@@ -32,43 +33,122 @@
  * PRD 生成器必须原样继承进"制作约束"章节，镜头设计层不得突破。
  */
 
-/** 品类预设调研维度（可按品类扩展） */
+/**
+ * 品类调研维度（v2.10.0 开放化改造）
+ * ------------------------------------------------------------
+ * 三层开放结构，禁止把维度写成单一品类（如 3C 硬件）的硬编码：
+ *
+ *   层1 UNIVERSAL_DIMENSIONS  通用底座——任何商品/服务必查，与品类无关
+ *   层2 CATEGORY_PACKS        品类扩展包——关键词模糊归类（非枚举校验），
+ *                              一个品类可命中多个包，维度取并集
+ *   层3 brief.customDimensions Brief 自定义维度——执行方/用户按商品特性补充
+ *
+ * 品类未命中任何扩展包时：用通用底座 + 引导执行方补充自定义维度，
+ * 禁止静默降级为弱调研。
+ */
+
+/** 通用底座：任何商品或服务的事实校验都绕不开的四个问题 */
+const UNIVERSAL_DIMENSIONS = [
+  '使用前提与依赖条件',   // 用它之前必须先具备什么（设备/账号/预约/资质/门店……）
+  '能力/效果边界',        // 它做不到什么、什么情况下打折扣
+  '官方宣传口径',         // 官方怎么说的，宣称上限在哪
+  '价格与购买履约方式'    // 怎么买、怎么交付、履约链路是什么
+];
+
+/** 品类扩展包：match 为归类正则（模糊匹配，非枚举），dims 为该品类追加的必查维度 */
+const CATEGORY_PACKS = {
+  hardware: {
+    match: /3C|数码|硬件|穿戴|家电|电子|设备|智能|眼镜|耳机|手机|平板|手表/,
+    dims: ['绑定/App依赖', '联网依赖', '账号生态依赖', '离线能力边界', '续航与充电方式', '兼容机型/系统']
+  },
+  software: {
+    match: /软件|SaaS|APP|App|应用|平台|系统|工具|办公|云|AI助手/,
+    dims: ['平台与终端兼容', '账号体系与数据归属', '数据安全与隐私', '免费/付费功能边界', '更新与服务政策']
+  },
+  food: {
+    match: /食品|零食|饮料|饮品|保健|餐饮|茶|咖啡|酒/,
+    dims: ['配料与致敏原', '保质期与储存', '生产资质', '食用方法与禁忌人群']
+  },
+  beauty: {
+    match: /美妆|护肤|化妆|洗护|面膜|精华|防晒/,
+    dims: ['肤质适配', '功效依据（备案/临床）', '禁用人群', '使用方法与频次']
+  },
+  apparel: {
+    match: /服饰|服装|鞋|箱包|配饰|家居|家纺|家具|床品/,
+    dims: ['尺码与版型', '材质与工艺', '洗护与保养', '售后退换规则']
+  },
+  service: {
+    match: /服务|课程|培训|咨询|旅游|本地生活|到店|家政|维修|金融|保险|医疗|医美|健身|教育/,
+    dims: ['履约流程与周期', '资质凭证与从业资格', '效果边界与免责条款', '退款与售后规则', '覆盖范围（门店/城市/线上）']
+  }
+};
+
+/** 向后兼容：旧扁平表（已废弃，保留导出防外部引用断裂） */
 const CATEGORY_DIMENSIONS = {
-  '3C': ['绑定手机/App依赖', '联网依赖', '账号生态依赖', '离线能力边界', '续航与充电方式', '兼容机型/系统'],
-  '3C-穿戴': ['绑定手机/App依赖', '联网依赖', '账号生态依赖', '离线能力边界', '佩戴与适配（度数/脸型）', '续航与充电方式'],
-  '美妆': ['肤质适配', '功效依据（备案/临床）', '禁用人群', '使用方法'],
-  '食品': ['配料与致敏原', '保质期', '食用方法', '生产许可'],
+  '3C': CATEGORY_PACKS.hardware.dims,
+  '3C-穿戴': CATEGORY_PACKS.hardware.dims,
+  '美妆': CATEGORY_PACKS.beauty.dims,
+  '食品': CATEGORY_PACKS.food.dims,
   '其他': ['使用前提', '能力边界', '官方口径']
 };
 
 class ProductTruthChecker {
   /**
+   * 品类维度解析：通用底座 + 命中的品类扩展包并集 + Brief 自定义维度
+   * @param {string} category 品类（任意文本，模糊归类，不做枚举校验）
+   * @param {string[]} [customDims] Brief 自定义维度
+   * @returns {{dimensions:string[], packs:string[], needCustomSuggest:boolean}}
+   */
+  resolveDimensions(category = '', customDims = []) {
+    const packs = [];
+    const dims = [...UNIVERSAL_DIMENSIONS];
+    for (const [key, pack] of Object.entries(CATEGORY_PACKS)) {
+      if (pack.match.test(category)) {
+        packs.push(key);
+        for (const d of pack.dims) if (!dims.includes(d)) dims.push(d);
+      }
+    }
+    for (const d of (Array.isArray(customDims) ? customDims : [])) {
+      if (d && !dims.includes(d)) dims.push(d);
+    }
+    // 未命中扩展包且未提供自定义维度：标记需要执行方按商品特性补充
+    const needCustomSuggest = packs.length === 0 && (!customDims || customDims.length === 0);
+    return { dimensions: dims, packs, needCustomSuggest };
+  }
+
+  /**
    * 阶段1：生成调研任务清单（spec 模式，执行方联网调研后回填 researchNotes）
-   * @param {object} brief 规范化后的营销 Brief
+   * @param {object} brief 规范化后的营销 Brief（category 任意值，支持 customDimensions）
    * @returns {object} 调研任务
    */
   buildResearchTask(brief = {}) {
-    const category = brief.category || '其他';
-    const dimensions = CATEGORY_DIMENSIONS[category] || CATEGORY_DIMENSIONS['其他'];
+    const { dimensions, packs, needCustomSuggest } = this.resolveDimensions(brief.category || '', brief.customDimensions);
     const product = brief.product || '商品';
+    const requirements = [
+      '每个维度至少一条可溯源事实，禁止凭印象填写',
+      '使用前提与依赖条件为必查项，缺失即视为调研未完成',
+      '官方宣传口径原文摘录，宣称不得二次放大',
+      '调研记录须标注信源'
+    ];
+    if (needCustomSuggest) {
+      requirements.push(`品类"${brief.category || '未填'}"未命中预设扩展包：执行方必须按商品特性补充 2-4 个自定义调研维度（如资质/履约/兼容/效果边界），禁止只做通用底座调研`);
+    }
     return {
       stage: 'research',
       executor: 'llm-agent',
       product,
+      matchedPacks: packs.length ? packs : ['universal'],
       dimensions,
+      needCustomSuggest,
       queries: [
-        `${product} 官方 使用前提 绑定 配对`,
-        `${product} 功能 参数 官方口径`,
-        `${product} 离线 能否独立使用`,
-        `${product} 官方社媒 宣传 场景`
+        `${product} 官方 使用前提 条件`,
+        `${product} 功能 效果 官方口径`,
+        `${product} 能否独立使用 限制 边界`,
+        `${product} 官方社媒 宣传 场景`,
+        `${product} 价格 购买 履约 退款`
       ],
-      sourcePriority: ['官网/官方社媒', '官方旗舰店', '权威媒体实测', '第三方评测'],
-      requirements: [
-        '每个维度至少一条可溯源事实，禁止凭印象填写',
-        '使用前提（绑定/联网/账号）为必查项，缺失即视为调研未完成',
-        '官方宣传口径原文摘录，宣称不得二次放大',
-        '调研记录须标注信源'
-      ],
+      sourcePriority: ['官网/官方社媒', '官方旗舰店/官方客服', '权威媒体实测', '第三方评测'],
+      requirements,
       researchNotes: [], // 执行后回填：[{ dimension, fact, source }]
       status: 'pending'
     };
@@ -87,16 +167,15 @@ class ProductTruthChecker {
     const issues = [];
     const conflicts = [];
 
-    // ---- 调研完整性闸机 ----
-    const category = brief.category || '其他';
-    const requiredDims = CATEGORY_DIMENSIONS[category] || CATEGORY_DIMENSIONS['其他'];
+    // ---- 调研完整性闸机（维度来自开放解析，与品类无关） ----
+    const { dimensions: requiredDims } = this.resolveDimensions(brief.category || '', brief.customDimensions);
     const coveredDims = new Set(researchNotes.map(n => n.dimension));
     const missingDims = requiredDims.filter(d => !coveredDims.has(d));
     if (!Array.isArray(researchNotes) || researchNotes.length === 0) {
       issues.push('调研记录为空：产品事实校验未执行，禁止进入业务需求洞察');
     }
     for (const d of missingDims) {
-      issues.push(`调研维度缺失：${d}（品类 ${category} 必查）`);
+      issues.push(`调研维度缺失：${d}`);
     }
     const noSource = researchNotes.filter(n => !n.source);
     if (noSource.length > 0) {
@@ -200,4 +279,4 @@ class ProductTruthChecker {
   }
 }
 
-module.exports = { ProductTruthChecker, CATEGORY_DIMENSIONS };
+module.exports = { ProductTruthChecker, CATEGORY_DIMENSIONS, UNIVERSAL_DIMENSIONS, CATEGORY_PACKS };

@@ -36,14 +36,19 @@ class MarketingSkillRouter {
 
   /**
    * 按镜头营销元数据匹配技能
-   * @param {object} meta { fn, style?, platform?, goal? }
+   * @param {object} meta { fn, style?, platform?, goal?, category? }
    * @param {number} [limit=3]
    * @returns {Array<{skill:object, score:number, reasons:string[]}>}
    */
   match(meta = {}, limit = 3) {
     const skills = this._load();
     const scored = [];
+    // 【v2.10.0】品类适配：服务/虚拟类 Brief 不命中实物专属技能（如开箱/材质特写）
+    const serviceLike = /服务|课程|培训|咨询|旅游|本地生活|到店|家政|维修|金融|保险|医疗|医美|健身|教育|软件|SaaS|APP|App|应用|平台|办公|云/.test(String(meta.category || ''));
     for (const skill of skills) {
+      if (serviceLike && Array.isArray(skill.categories) && skill.categories.includes('physical') && !skill.categories.includes('service')) {
+        continue; // 实物专属技能对服务/虚拟类出局
+      }
       let score = 0;
       const reasons = [];
       if (meta.fn && skill.fn === meta.fn) { score += 10; reasons.push(`fn:${meta.fn}`); }

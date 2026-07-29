@@ -129,6 +129,60 @@ const PRODUCT_VIEWS = {
 
 const PRODUCT_VIEW_PACKAGE = ['hero_45', 'front_eye', 'side_profile', 'detail_macro', 'in_context'];
 
+// ========== 服务/虚拟商品视角库（v2.10.0 新增） ==========
+// 服务与虚拟商品无实物外观可抠图白底，定妆照以"品牌视觉+履约场景"为锚点
+const SERVICE_VIEWS = {
+  brand_hero: {
+    id: 'brand_hero',
+    name: '品牌主视觉',
+    purpose: '服务品牌定妆主图，海报与封面镜头的形象基准',
+    framing: '服务品牌主视觉定妆，LOGO/品牌色/官方视觉元素居中完整呈现，商业布光',
+    priority: 1
+  },
+  service_scene: {
+    id: 'service_scene',
+    name: '履约场景',
+    purpose: '服务过程的真实感锚点，服务演示镜头',
+    framing: '服务履约过程场景（门店/上门/线上操作），环境与人物状态真实自然',
+    priority: 1
+  },
+  ui_closeup: {
+    id: 'ui_closeup',
+    name: '界面特写',
+    purpose: '软件/线上服务的功能证据，服务卖点特写镜头',
+    framing: '官方界面/凭证/物料特写，界面元素与文字清晰可读，禁止虚构界面',
+    priority: 2
+  },
+  staff: {
+    id: 'staff',
+    name: '人员形象',
+    purpose: '到店/上门类服务的人员信任锚点',
+    framing: '服务人员标准形象（制服/工牌/专业仪态），真实人像摄影',
+    priority: 2
+  },
+  user_context: {
+    id: 'user_context',
+    name: '用户场景',
+    purpose: '服务与用户世界观的融合验证，服务场景化镜头',
+    framing: '用户享受服务的典型场景，环境光影与整体视觉风格统一',
+    priority: 3
+  }
+};
+
+const SERVICE_VIEW_PACKAGE = ['brand_hero', 'service_scene', 'ui_closeup', 'staff', 'user_context'];
+
+/**
+ * 取商品视角包（按商品类型分派：实物=商业摄影5视角；服务/虚拟=品牌履约5视角）
+ * @param {string} [kind] physical|service（缺省按实物，向后兼容）
+ * @returns {Array} 视角定义数组（按 priority 升序）
+ */
+function getServiceViewPackage() {
+  return SERVICE_VIEW_PACKAGE
+    .map(id => SERVICE_VIEWS[id])
+    .filter(Boolean)
+    .sort((a, b) => a.priority - b.priority);
+}
+
 /**
  * 取角色角度包
  * @param {string} tier lead|supporting|cameo
@@ -158,6 +212,9 @@ module.exports = {
   CHARACTER_TIER_PACKAGES,
   PRODUCT_VIEWS,
   PRODUCT_VIEW_PACKAGE,
+  SERVICE_VIEWS,
+  SERVICE_VIEW_PACKAGE,
   getCharacterAnglePackage,
-  getProductViewPackage
+  getProductViewPackage,
+  getServiceViewPackage
 };

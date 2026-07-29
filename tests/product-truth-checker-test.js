@@ -21,19 +21,23 @@ console.log('📋 产品事实校验闸机');
 const checker = new ProductTruthChecker();
 const brief = { product: '千问AI眼镜S1', category: '3C', platform: 'xiaohongshu' };
 const task = checker.buildResearchTask(brief);
-assert('调研任务含绑定/App必查维度', task.dimensions.includes('绑定手机/App依赖'));
+assert('调研任务含绑定/App必查维度', task.dimensions.includes('绑定/App依赖'));
+assert('调研任务含通用底座维度', task.dimensions.includes('使用前提与依赖条件') && task.dimensions.includes('官方宣传口径'));
 
 const empty = checker.verify({ brief, researchNotes: [], creative: {} });
 assert('调研记录为空即阻断', !empty.pass && empty.issues.some(i => i.includes('调研记录为空')));
 
 const notes = [
-  { dimension: '绑定手机/App依赖', fact: '必须蓝牙绑定千问App使用，AI办事依赖手机端账号生态', source: '官网' },
+  { dimension: '使用前提与依赖条件', fact: '必须蓝牙绑定千问App并联网，AI办事依赖手机端账号生态', source: '官网' },
+  { dimension: '能力/效果边界', fact: '拍摄与本地存储可离线，AI能力需在线且绑定手机', source: '媒体实测' },
+  { dimension: '官方宣传口径', fact: '官方口径为"无需掏出手机"', source: '官方发布会' },
+  { dimension: '价格与购买履约方式', fact: '官方价4299元起，叠加补贴到手3499元', source: '旗舰店' },
+  { dimension: '绑定/App依赖', fact: '必须蓝牙绑定千问App使用，AI办事依赖手机端账号生态', source: '官网' },
   { dimension: '联网依赖', fact: 'AI对话与AI办事需联网', source: '官方社媒' },
   { dimension: '账号生态依赖', fact: '支付/导航调用支付宝与高德账号', source: '官网' },
   { dimension: '离线能力边界', fact: '拍摄与本地存储可离线，AI能力需在线', source: '媒体实测' },
   { dimension: '续航与充电方式', fact: '双电池热插拔换电，可不关机更换', source: '官网' },
-  { dimension: '兼容机型/系统', fact: '支持主流安卓与iOS', source: '旗舰店' },
-  { dimension: '官方宣传口径', fact: '官方口径为"无需掏出手机"', source: '官方发布会' }
+  { dimension: '兼容机型/系统', fact: '支持主流安卓与iOS', source: '旗舰店' }
 ];
 const good = checker.verify({ brief, researchNotes: notes, creative: { premise: '手机在包里全程在线，但一天没掏出来' } });
 assert('事实自洽创意通过', good.pass, JSON.stringify(good.issues.concat(good.conflicts)));

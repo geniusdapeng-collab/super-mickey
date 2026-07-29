@@ -25,10 +25,13 @@
  *      - 全程注入短片视觉系统锚点，保证与镜头提示词风格统一
  */
 
-const { getProductViewPackage } = require('./angle-catalog');
+const { getProductViewPackage, getServiceViewPackage } = require('./angle-catalog');
 
 // 参考图质量门槛：低于该数量的商品标记 needsMoreReference
 const MIN_REFERENCE_IMAGES = 2;
+
+// 服务/虚拟商品品类归类（v2.10.0：无实物外观的商品走品牌履约定妆链路）
+const SERVICE_CATEGORY_PATTERN = /服务|课程|培训|咨询|旅游|本地生活|到店|家政|维修|金融|保险|医疗|医美|健身|教育|软件|SaaS|APP|App|应用|平台|办公|云/;
 
 class ProductPortraitBranch {
   /**
@@ -75,43 +78,64 @@ class ProductPortraitBranch {
       .filter(p => p.name);
   }
 
+  /**
+   * 【v2.10.0 新增】商品类型判定：服务/虚拟/软件类无实物外观，
+   * 走"品牌视觉+履约场景"定妆链路（不强制抠图白底）
+   */
+  _productKind(product = {}) {
+    if (product.assetType) {
+      return /service|virtual|brand/i.test(product.assetType) ? 'service' : 'physical';
+    }
+    return SERVICE_CATEGORY_PATTERN.test(String(product.category || '')) ? 'service' : 'physical';
+  }
+
   _buildProductTask(product, visualStyle, sceneContext) {
+    const kind = this._productKind(product);
     return {
       taskType: 'product',
+      productKind: kind, // physical 实物链路 | service 品牌履约链路
       productId: product.id,
       productName: product.name,
       heroImageId: product.heroImageId,
       branch: 'product-portrait-branch',
       stages: {
-        referenceSearch: this._buildReferenceSearchStage(product),
-        processing: this._buildProcessingStage(product, visualStyle),
-        stylization: this._buildStylizationStage(product, visualStyle, sceneContext)
+        referenceSearch: this._buildReferenceSearchStage(product, kind),
+        processing: this._buildProcessingStage(product, visualStyle, kind),
+        stylization: this._buildStylizationStage(product, visualStyle, sceneContext, kind)
       },
       status: 'pending'
     };
   }
 
   /**
-   * 阶段1：联网搜索真实参考图
+   * 阶段1：联网搜索真实参考图（实物=商品实拍；服务=官方品牌物料/界面/门店/人员实拍）
    */
-  _buildReferenceSearchStage(product) {
+  _buildReferenceSearchStage(product, kind = 'physical') {
     const base = product.name;
     const category = product.category || '';
-    const queries = [
-      `${base} ${category} 官方产品图`.trim(),
-      `${base} 实拍 高清`.trim(),
-      `${base} 白底图`.trim()
-    ];
+    const queries = kind === 'service'
+      ? [
+          `${base} 官方 品牌 物料`.trim(),
+          `${base} 官方界面 截图`.trim(),
+          `${base} 门店 实拍`.trim()
+        ]
+      : [
+          `${base} ${category} 官方产品图`.trim(),
+          `${base} 实拍 高清`.trim(),
+          `${base} 白底图`.trim()
+        ];
     return {
       stage: 'reference-search',
       executor: 'external', // spec 模式下由 Agent/人工执行联网搜索
       queries,
       minImages: this.minReferenceImages,
       requirements: [
-        '必须为真实商品图，禁止 AI 生成图/概念图/渲染图冒充',
+        kind === 'service'
+          ? '必须为官方真实物料（官网/官方社媒/官方App界面/门店实拍），禁止 AI 生成图/概念图冒充'
+          : '必须为真实商品图，禁止 AI 生成图/概念图/渲染图冒充',
         '优先官方渠道图（官网/旗舰店/官方社媒）',
         '分辨率不低于 800px 短边',
-        '覆盖至少两个不同角度',
+        '覆盖至少两个不同角度/场景',
         // 【v2.8.1】系列化产品型号甄别：检索词必须含目标型号全名，
         // 逐张核对型号标识/发售时间，剔除同系列旧款/近似款
         '系列化产品必须甄别型号版本：检索词含目标型号全名，逐张核对型号标识与发售信息，剔除同系列旧款/近似款'
@@ -122,29 +146,43 @@ class ProductPortraitBranch {
   }
 
   /**
-   * 阶段2：参考图标准化处理管线
+   * 阶段2：参考图标准化处理管线（实物=抠图/白底/光影；服务=裁切规范化/光影，不强制白底）
    */
-  _buildProcessingStage(product, visualStyle) {
+  _buildProcessingStage(product, visualStyle, kind = 'physical') {
+    const pipeline = kind === 'service'
+      ? [
+          {
+            step: 'crop_normalize',
+            name: '裁切规范化',
+            instruction: `将${product.name}品牌物料/界面/门店图裁切为统一构图比例，主体居中，保留真实场景信息，禁止抠图去背景（服务场景需保留环境证据）`
+          },
+          {
+            step: 'lighting_unify',
+            name: '光影统一',
+            instruction: this._buildLightingInstruction(visualStyle)
+          }
+        ]
+      : [
+          {
+            step: 'matting',
+            name: '主体抠图',
+            instruction: `将${product.name}主体从参考图背景中精确分离，边缘无锯齿无残留，透明底 PNG`
+          },
+          {
+            step: 'white_base',
+            name: '白底替换',
+            instruction: '替换为纯白背景（#FFFFFF），商品居中，占画面比例 70%-80%，电商基准图规范'
+          },
+          {
+            step: 'lighting_unify',
+            name: '光影统一',
+            instruction: this._buildLightingInstruction(visualStyle)
+          }
+        ];
     return {
       stage: 'processing',
       dependsOn: 'reference-search',
-      pipeline: [
-        {
-          step: 'matting',
-          name: '主体抠图',
-          instruction: `将${product.name}主体从参考图背景中精确分离，边缘无锯齿无残留，透明底 PNG`
-        },
-        {
-          step: 'white_base',
-          name: '白底替换',
-          instruction: '替换为纯白背景（#FFFFFF），商品居中，占画面比例 70%-80%，电商基准图规范'
-        },
-        {
-          step: 'lighting_unify',
-          name: '光影统一',
-          instruction: this._buildLightingInstruction(visualStyle)
-        }
-      ],
+      pipeline,
       outputBaseImage: null, // 执行后回填：处理完成的基准图路径
       status: 'pending'
     };
@@ -159,10 +197,10 @@ class ProductPortraitBranch {
   }
 
   /**
-   * 阶段3：风格化定妆照生成（5 视角）
+   * 阶段3：风格化定妆照生成（实物=商业摄影5视角；服务=品牌履约5视角）
    */
-  _buildStylizationStage(product, visualStyle, sceneContext) {
-    const views = getProductViewPackage();
+  _buildStylizationStage(product, visualStyle, sceneContext, kind = 'physical') {
+    const views = kind === 'service' ? getServiceViewPackage() : getProductViewPackage();
     return {
       stage: 'stylization',
       dependsOn: 'processing',
@@ -173,7 +211,7 @@ class ProductPortraitBranch {
         viewName: view.name,
         purpose: view.purpose,
         priority: view.priority,
-        prompt: this._buildProductPrompt(product, view, visualStyle, sceneContext),
+        prompt: this._buildProductPrompt(product, view, visualStyle, sceneContext, kind),
         status: 'pending',
         outputFile: null
       })),
@@ -181,15 +219,20 @@ class ProductPortraitBranch {
     };
   }
 
-  _buildProductPrompt(product, view, visualStyle, sceneContext) {
-    const materials = product.materials.length ? product.materials.join('、') : '商品真实材质';
+  _buildProductPrompt(product, view, visualStyle, sceneContext, kind = 'physical') {
     const sections = [
       `【商品定妆照】${product.name} — ${view.name}`,
-      `商品：${product.name}${product.category ? `（${product.category}）` : ''}`,
-      `材质锚点：${materials}`,
-      `构图：${view.framing}`
+      `商品：${product.name}${product.category ? `（${product.category}）` : ''}`
     ];
-    if (view.id === 'in_context' && sceneContext.typicalScene) {
+    if (kind === 'service') {
+      const identifiers = (product.materials && product.materials.length) ? product.materials.join('、') : '品牌色/LOGO/官方界面';
+      sections.push(`视觉识别锚点：${identifiers}`);
+    } else {
+      const materials = (product.materials && product.materials.length) ? product.materials.join('、') : '商品真实材质';
+      sections.push(`材质锚点：${materials}`);
+    }
+    sections.push(`构图：${view.framing}`);
+    if ((view.id === 'in_context' || view.id === 'service_scene' || view.id === 'user_context') && sceneContext.typicalScene) {
       sections.push(`场景：${sceneContext.typicalScene}`);
     }
     const styleParts = [];
@@ -197,7 +240,9 @@ class ProductPortraitBranch {
     if (visualStyle.tone) styleParts.push(`色调：${visualStyle.tone}`);
     if (visualStyle.lighting) styleParts.push(`光影：${visualStyle.lighting}`);
     if (styleParts.length) sections.push(`视觉系统：${styleParts.join('，')}`);
-    sections.push('约束：以处理后的白底基准图为唯一外观参考，商品外观/LOGO/配色 100% 忠于实物，禁止虚构细节，商业摄影级品质');
+    sections.push(kind === 'service'
+      ? '约束：以处理后的官方基准物料为唯一视觉参考，品牌视觉/界面/场景 100% 忠于官方实物，禁止虚构界面与品牌元素，商业摄影级品质'
+      : '约束：以处理后的白底基准图为唯一外观参考，商品外观/LOGO/配色 100% 忠于实物，禁止虚构细节，商业摄影级品质');
     return sections.join('\n');
   }
 
