@@ -105,6 +105,20 @@ assert('营销速率 4.7字/秒 放行（电影档 4.5 会拦）', g3.pass || !g
 const g3cine = guard.verify(fastOK, { shotId: 'S01', duration: 4 });
 assert('同一速率电影档 4.5 拦截（差分反证）', g3cine.issues.some(i => i.includes('超速')));
 
+// 英文平台按词计数（M1 验收校准项）：英文台词按词/秒计量，不按字符
+const enOK = MKT_FIELDS.replace(
+  '[00s-04s] 白领 盯着屏幕, 惊喜 说:"咖啡没凉，活干完了。"',
+  '[00s-04s] 白领 盯着屏幕, 惊喜 说:"Done before my coffee gets cold."'
+);
+const g7 = guard.verify(enOK, MKT_SHOT);
+assert('英文自然 VO 按词放行（6词/4s=1.5词/秒）', g7.pass, g7.issues.join(';'));
+const enFast = MKT_FIELDS.replace(
+  '[00s-04s] 白领 盯着屏幕, 惊喜 说:"咖啡没凉，活干完了。"',
+  '[00s-04s] 白领 盯着屏幕, 惊喜 说:"Stop typing start delegating everything right now today instantly automate your entire workflow for good."'
+);
+const g8 = guard.verify(enFast, MKT_SHOT);
+assert('英文超速按词拦截（15词/4s=3.8词/秒>3.2）', g8.issues.some(i => i.includes('超速')), g8.issues.join(';'));
+
 const extreme = MKT_FIELDS.replace('咖啡没凉，活干完了。', 'The best office tool, guaranteed results.');
 const g4 = guard.verify(extreme, MKT_SHOT);
 assert('极限词/欺骗宣称被合规阻断', !g4.pass && g4.issues.some(i => i.includes('合规阻断')));

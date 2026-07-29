@@ -11,7 +11,9 @@
  * 各字段含义：
  *   ratio            画幅（约束模板的唯一来源）
  *   shotDuration     单镜时长带 {min, max}（营销快节奏收窄）
- *   speechRate       台词速率基准/极限（营销 VO 快于电影叙事）
+ *   speechRate       台词速率基准/极限（中文字/秒，营销 VO 快于电影叙事）
+ *   speechRateWords  英文台词速率基准/极限（词/秒，仅 subtitleLanguage=en 平台；
+ *                      守卫按此切换到按词计数，避免把英文按字符误算）
  *   hook             钩子规则 {windowSec: 钩子窗口, productInHook: 商品是否须在钩子在场}
  *   cta              CTA 规则 {required: 是否强制, position: 'final'|'any'}
  *   onscreenText     画面文字政策 {mode: 'designed'|'forbidden'}
@@ -38,6 +40,7 @@ const PROFILES = {
     ratio: '9:16',
     shotDuration: { min: 2, max: 5 },
     speechRate: { normal: 4.5, limit: 5.5 },
+    speechRateWords: { normal: 2.8, limit: 3.2 },
     hook: { windowSec: 2, productInHook: true, styles: ['pattern-interrupt', 'question', 'data-shock', 'contrast'] },
     cta: { required: true, position: 'final' },
     onscreenText: { mode: 'designed' },
@@ -76,6 +79,7 @@ const PROFILES = {
     ratio: '9:16',
     shotDuration: { min: 3, max: 5 },
     speechRate: { normal: 4.2, limit: 5.2 },
+    speechRateWords: { normal: 2.6, limit: 3.0 },
     hook: { windowSec: 2, productInHook: false, styles: ['aesthetic-first-frame', 'pattern-interrupt'] },
     cta: { required: false, position: 'final' },
     onscreenText: { mode: 'designed' },

@@ -14,7 +14,8 @@
  *   2. 长度口径：REFINED_MIN ≤ 字符数 ≤ HARD_MAX（两阶段口径②，唯一真源 prompt-length.js）
  *   3. 台词纪律：有台词镜头【台词】字段在场且格式规范（时间戳+角色+情绪副词+说:"…"）；
  *      无台词镜头禁止出现【台词】（空镜禁虚构）
- *   4. 台词速率：分段时间戳内字数 ≤ LIMIT(4.5 字/秒)，总时长占比 ≤ MAX_DIALOGUE_RATIO(0.8)
+ *   4. 台词速率：分段时间戳内字数 ≤ LIMIT（按 Profile 分流；英文平台按词/秒），
+ *      总时长占比 ≤ MAX_DIALOGUE_RATIO(0.8)
  *   5. 必备锚点：【时间轴】【情绪】【负面约束】【角色一致性】在场
  *   6. 情绪可见性：【情绪】须含可见部位微动作描述（面部/眼/手/呼吸等），
  *      防止"紧张、温情"式关键词写法通过语义层漏网
@@ -51,6 +52,9 @@ class PromptDeliveryGuard {
     const profile = resolveProfile(shot, shot.blueprint || {});
     const rateNormal = (profile.speechRate && profile.speechRate.normal) || SpeechRate.NORMAL;
     const rateLimit = (profile.speechRate && profile.speechRate.limit) || SpeechRate.LIMIT;
+    // 【v2.5.0】英文平台按词计数：字幕语言为 en 且 Profile 提供词速率时切换计量口径，
+    // 避免把英文台词当中文字符计算（"Done already." 13 字符≠13 字）
+    const wordRate = (profile.subtitleLanguage === 'en' && profile.speechRateWords) || null;
 
     // 1. 字段完整性
     for (const f of REQUIRED_CONTENT) {
@@ -97,15 +101,20 @@ class PromptDeliveryGuard {
           continue;
         }
         const segSec = Math.max(1, parseInt(m[2], 10) - parseInt(m[1], 10));
-        const chars = m[5].replace(/[，。！？…—、；：""]/g, '').length;
-        totalDialogueChars += chars;
-        if (chars / segSec > rateLimit) {
-          issues.push(`台词超速:${chars}字/${segSec}s=${(chars / segSec).toFixed(1)}字/秒>${rateLimit}`);
+        const cleanLine = m[5].replace(/[，。！？…—、；：""]/g, '');
+        const units = wordRate
+          ? cleanLine.replace(/[.,!?;:'"()\-—…]/g, ' ').split(/\s+/).filter(Boolean).length
+          : cleanLine.length;
+        totalDialogueChars += units;
+        const segLimit = wordRate ? wordRate.limit : rateLimit;
+        if (units / segSec > segLimit) {
+          issues.push(`台词超速:${units}${wordRate ? '词' : '字'}/${segSec}s=${(units / segSec).toFixed(1)}${wordRate ? '词' : '字'}/秒>${segLimit}`);
         }
       }
       const duration = Number(shot.duration) || 0;
-      if (duration > 0 && totalDialogueChars / rateNormal > duration * SpeechRate.MAX_DIALOGUE_RATIO) {
-        issues.push(`台词总占比超标:约${(totalDialogueChars / rateNormal).toFixed(1)}s/${duration}s>${SpeechRate.MAX_DIALOGUE_RATIO * 100}%`);
+      const segNormal = wordRate ? wordRate.normal : rateNormal;
+      if (duration > 0 && totalDialogueChars / segNormal > duration * SpeechRate.MAX_DIALOGUE_RATIO) {
+        issues.push(`台词总占比超标:约${(totalDialogueChars / segNormal).toFixed(1)}s/${duration}s>${SpeechRate.MAX_DIALOGUE_RATIO * 100}%`);
       }
     }
 
