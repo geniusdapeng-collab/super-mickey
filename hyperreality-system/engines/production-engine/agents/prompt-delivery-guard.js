@@ -24,6 +24,8 @@
 
 const PromptLengthConfig = require('../../../config/prompt-length.js');
 const SpeechRate = require('../../../config/speech-rate.js');
+const { resolveProfile, isSocialCommerce } = require('../../../config/platform-profiles.js');
+const { MarketingComplianceGuard } = require('./marketing-compliance-guard.js');
 
 const REQUIRED_CONTENT = [
   '语言约束', '导演意图', '基础', '约束', '场景', '灯光设计', '明亮约束', '构图',
@@ -45,6 +47,10 @@ class PromptDeliveryGuard {
     const text = String(promptText || '');
     const names = this._fieldNames(text);
     const isOpening = shot.sceneType === 'opening' || shot.shotId === 'SC00' || shot.shotId === 'S00';
+    // 【v2.5.0】平台蓝图：台词速率/场景链校验按 Profile 分流（电影叙事 vs 社媒营销）
+    const profile = resolveProfile(shot, shot.blueprint || {});
+    const rateNormal = (profile.speechRate && profile.speechRate.normal) || SpeechRate.NORMAL;
+    const rateLimit = (profile.speechRate && profile.speechRate.limit) || SpeechRate.LIMIT;
 
     // 1. 字段完整性
     for (const f of REQUIRED_CONTENT) {
@@ -93,13 +99,51 @@ class PromptDeliveryGuard {
         const segSec = Math.max(1, parseInt(m[2], 10) - parseInt(m[1], 10));
         const chars = m[5].replace(/[，。！？…—、；：""]/g, '').length;
         totalDialogueChars += chars;
-        if (chars / segSec > SpeechRate.LIMIT) {
-          issues.push(`台词超速:${chars}字/${segSec}s=${(chars / segSec).toFixed(1)}字/秒>${SpeechRate.LIMIT}`);
+        if (chars / segSec > rateLimit) {
+          issues.push(`台词超速:${chars}字/${segSec}s=${(chars / segSec).toFixed(1)}字/秒>${rateLimit}`);
         }
       }
       const duration = Number(shot.duration) || 0;
-      if (duration > 0 && totalDialogueChars / SpeechRate.NORMAL > duration * SpeechRate.MAX_DIALOGUE_RATIO) {
-        issues.push(`台词总占比超标:约${(totalDialogueChars / SpeechRate.NORMAL).toFixed(1)}s/${duration}s>${SpeechRate.MAX_DIALOGUE_RATIO * 100}%`);
+      if (duration > 0 && totalDialogueChars / rateNormal > duration * SpeechRate.MAX_DIALOGUE_RATIO) {
+        issues.push(`台词总占比超标:约${(totalDialogueChars / rateNormal).toFixed(1)}s/${duration}s>${SpeechRate.MAX_DIALOGUE_RATIO * 100}%`);
+      }
+    }
+
+    // 【v2.5.0】社媒营销场景链：画面文字设计 + 合规阻断
+    if (isSocialCommerce(profile)) {
+      // 1. 画面文字设计字段在场（营销镜头的文字层是转化武器，缺失即问题）
+      if (!names.includes('画面文字设计') && !isOpening) {
+        issues.push('社媒营销镜头缺【画面文字设计】字段');
+      }
+      // 2. CTA 纪律：平台要求 CTA 且为尾镜时，CTA 收尾字必须在场
+      if (profile.cta && profile.cta.required && shot.isFinal) {
+        const textDesign = this._fieldBody(text, '画面文字设计');
+        if (!/CTA收尾字/.test(textDesign)) issues.push('尾镜缺 CTA 收尾字（平台规则强制）');
+      }
+      // 3. 文字时间戳不得超出镜头时长
+      if (names.includes('画面文字设计')) {
+        const td = this._fieldBody(text, '画面文字设计');
+        const duration = Number(shot.duration) || 0;
+        const re = /\[(\d+)s-(\d+)s\]/g;
+        let tm;
+        while ((tm = re.exec(td)) !== null) {
+          if (parseInt(tm[2], 10) > duration) issues.push(`画面文字时间戳越界:[${tm[1]}s-${tm[2]}s]>镜头${duration}s`);
+        }
+        // 4. 花字单条 ≤12 字（移动端 1 秒可读上限）
+        const fm = td.match(/卖点花字\[[^\]]*\]\s*"([^"]*)"/g) || [];
+        for (const f of fm) {
+          const t = f.match(/"([^"]*)"/);
+          if (t && t[1].length > 12) issues.push(`卖点花字超 12 字:"${t[1]}"`);
+        }
+        // 5. 安全区声明
+        if (!/安全区/.test(td)) issues.push('画面文字设计缺安全区声明');
+      }
+      // 6. 营销合规闸机（阻断式）
+      const compliance = new MarketingComplianceGuard().check(text, {
+        lang: profile.subtitleLanguage === 'en' ? 'en' : (profile.subtitleLanguage === 'zh' ? 'zh' : 'both')
+      });
+      for (const hit of compliance.hits) {
+        issues.push(`合规阻断[${hit.level}] ${hit.field}字段命中"${hit.word}":${hit.reason}`);
       }
     }
 

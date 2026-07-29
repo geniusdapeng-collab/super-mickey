@@ -7,6 +7,8 @@
 const { BaseAgent } = require('./base-agent');
 const { FieldContentRefiner } = require('./field-content-refiner');
 const { SemanticRefinementPass } = require('./semantic-refinement-pass');
+const { OnscreenTextDesigner } = require('./onscreen-text-designer');
+const { resolveProfile, isSocialCommerce, constraintTemplateOf } = require('../../../config/platform-profiles.js');
 const { normalizeFields, makeGetter } = require('../../field-standardizer');
 const { FieldConsistencyChecker } = require('../../field-consistency-checker');
 const { FALLBACK_SCENES, renderFallbackAction } = require('../../../config/neutral-fallbacks');
@@ -171,6 +173,9 @@ class PromptFusionAgent extends BaseAgent {
       callLLM: (prompt, schema, fallbackFn, opts) => this._callLLM(prompt, schema, fallbackFn, opts),
       enabled: options.semanticRefinement !== false
     });
+
+    // 【v2.5.0 新增】社媒营销包：画面文字设计器（三层文字体系）
+    this._onscreenTextDesigner = new OnscreenTextDesigner();
 
     // 【v2.1.11-重构】保存生产画像，用于写实校验强度分级
     this.productionProfile = options.productionProfile || null;
@@ -1659,10 +1664,25 @@ ${missing.map(f => `- ${f}:${FIELD_DESCS[f]}`).join('\n')}
     const audioField = getField('audio');
     if (audioField) parts.push(`【音频】${audioField}`);
 
+    // 【画面文字设计】⭐ v2.5.0 社媒营销包：营销镜头强制三层文字（字幕条/卖点花字/CTA）
+    const _platformProfile = resolveProfile(shot, shot.blueprint || {});
+    if (isSocialCommerce(_platformProfile) && shot.sceneType !== 'opening') {
+      const textDesignField = getField('onscreen_text', 'textDesign', 'onscreenTextDesign', 'onscreenText');
+      if (textDesignField) {
+        parts.push(`【画面文字设计】${textDesignField}`);
+      } else {
+        const designed = this._onscreenTextDesigner.design(shot, _platformProfile, shot.marketingBrief || {});
+        if (designed.fieldText) parts.push(`【画面文字设计】${designed.fieldText}`);
+      }
+    }
+
     // 【负面约束】⭐ v2.1.7: 从style动态选择负面约束
     const negativeField = getField('negative');
     if (negativeField) {
       parts.push(`【负面约束】${negativeField}`);
+    } else if (isSocialCommerce(_platformProfile)) {
+      // 【v2.5.0 社媒营销包】放行设计化画面文字，仅禁水印/乱码/平台UI文字/低质
+      parts.push(`【负面约束】no watermark, no platform UI, no garbled text, no distorted typography, no blurry, no low resolution, no pixelated, no distorted, no artifacts, no compression noise, no extra limbs, no deformed hands, no malformed fingers, no extra fingers, no fused fingers; 禁止系统水印，禁止乱码与扭曲文字，禁止平台界面元素入画`);
     } else {
       const style = shot.blueprint?.style || shot.blueprint?.config?.style || 'cinematic';
       const baseNegative = 'no text, no watermark, no caption, no subtitle, no logo, no blurry, no low resolution, no pixelated, no distorted, no artifacts, no compression noise, no extra limbs, no deformed hands, no malformed fingers, no extra fingers, no fused fingers';

@@ -135,6 +135,37 @@ test('P5-2: SemanticRefinementPass 可加载（需注入 callLLM）', () => {
   assert.throws(() => new SemanticRefinementPass(), '未注入 callLLM 应抛错');
 });
 
+// ===== SocialPack 社媒营销场景包（v2.5.0） =====
+test('SP-1: platform-profiles 可加载', () => {
+  const { PROFILES, resolveProfile, constraintTemplateOf, isSocialCommerce } = require('../hyperreality-system/config/platform-profiles');
+  assert.ok(PROFILES.tiktok && PROFILES.cinematic, '应含 tiktok 与 cinematic 蓝图');
+  const tt = resolveProfile({ platform: 'tiktok' }, {});
+  assert.strictEqual(tt.ratio, '9:16', 'TikTok 应为 9:16');
+  assert.strictEqual(isSocialCommerce(tt), true, 'TikTok 应判定为社媒营销场景');
+  assert.strictEqual(isSocialCommerce(resolveProfile({}, {})), false, '默认电影场景不应误判');
+  assert.ok(constraintTemplateOf(tt).includes('9:16'), '约束模板应跟随平台画幅');
+});
+
+test('SP-2: OnscreenTextDesigner 可加载', () => {
+  const { OnscreenTextDesigner } = require('../hyperreality-system/engines/production-engine/agents/onscreen-text-designer');
+  const d = new OnscreenTextDesigner();
+  assert.strictEqual(typeof d.design, 'function', 'design 方法应存在');
+});
+
+test('SP-3: MarketingComplianceGuard 可加载', () => {
+  const { MarketingComplianceGuard } = require('../hyperreality-system/engines/production-engine/agents/marketing-compliance-guard');
+  const g = new MarketingComplianceGuard();
+  assert.strictEqual(typeof g.check, 'function', 'check 方法应存在');
+  assert.strictEqual(g.check('【台词】[00s-03s] 主播 说:"全网最低价。"').pass, false, '极限词应阻断');
+});
+
+test('SP-4: MarketingBriefParser 可加载', () => {
+  const { MarketingBriefParser } = require('../hyperreality-system/skills/marketing-brief');
+  const p = new MarketingBriefParser();
+  assert.strictEqual(typeof p.normalize, 'function', 'normalize 方法应存在');
+  assert.strictEqual(typeof p.generateConfirmationSheet, 'function', '确认单方法应存在');
+});
+
 // ===== 功能验证测试 =====
 test('P3-1: 情绪意图解析功能', () => {
   const { EmotionIntentParser } = require('../hyperreality-system/engines/emotion/emotion-intent-parser');

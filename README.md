@@ -86,6 +86,7 @@ The system currently powers the **Nirath** cinematic universe (a hyper-realistic
 
 ## 🔥 What's New
 
+- **SocialPack: Built for Social Commerce (v2.5.0).** The pipeline now speaks TikTok natively — **Platform Profiles** drive aspect ratio (9:16), pacing, speech-rate limits (4.5/5.5 chars/sec), 2-second hook rules and mandatory end-card CTAs per platform; the **Onscreen Text Designer** auto-composes three text layers (subtitle bars, ≤12-char selling-point pop-ups, CTA end cards) inside platform safe areas; and a **blocking Marketing Compliance Guard** scans every audience-facing field against CN ad-law extreme words, FTC/TikTok deceptive claims and platform bans. Cinematic 16:9 productions run unchanged — the kernel stays scene-agnostic.
 - **The 149-Skill Arsenal Is Complete.** Every Hollywood industrial skill — Villeneuve-scale sci-fi, Nolan-grade drama, micro-expression mastery, war, horror, comedy, dance — fully forged and wired into the **Cinematography Skill Router**. Zero placeholders. Zero dead weight.
 - **Prompts on a Diet, Quality on Steroids.** Our **FieldContentRefiner** post-assembly pass strips redundancy and merges negative constraints — typical prompts drop from ~2700 to ~1500 characters, and the shots only get sharper.
 - **Delivery-Grade Everything.** Numbered-line shot reports, dialogue-first defaults, field-count auditing — every deliverable is built for one-click handoff, not archaeology.

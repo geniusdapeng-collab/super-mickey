@@ -81,6 +81,14 @@ class FieldContentRefiner {
  if (!promptText || typeof promptText !== 'string') return promptText;
  this.stats.charsBefore += promptText.length;
 
+ // 【v2.5.0】社媒营销包：约束模板画幅按镜头平台蓝图解析（9:16 竖屏等），
+ // 电影叙事场景保持调用方注入/默认模板（16:9）
+ try {
+ const { resolveProfile, constraintTemplateOf, isSocialCommerce } = require('../../../config/platform-profiles.js');
+ const profile = resolveProfile(shot, (shot && shot.blueprint) || {});
+ this._shotConstraintTemplate = isSocialCommerce(profile) ? constraintTemplateOf(profile) : null;
+ } catch (_) { this._shotConstraintTemplate = null; }
+
  const sections = this._splitSections(promptText);
  const refinedSections = this._processSections(sections, shot);
  const result = refinedSections.map(s => s.head + s.body + s.sep).join('');
@@ -432,6 +440,8 @@ class FieldContentRefiner {
  }
  const techPattern = /画幅|分辨率|帧率|fps|格式|MP4|编码|色域/;
  if (techPattern.test(body) && body.length < 120) {
+ // 【v2.5.0】营销镜头：模板画幅跟随平台蓝图（如 TikTok 9:16）
+ if (this._shotConstraintTemplate) return this._shotConstraintTemplate;
  // 分辨率跟随【基础】( baseline 出现 8K/6K 则模板同步, 否则用调用方注入/默认模板 )
  const resMatch = String(baselineBody).match(/\b(4K|6K|8K)\b/);
  if (resMatch && !this._templateInjected) {

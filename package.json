@@ -1,6 +1,6 @@
 {
   "name": "super-mickey",
-  "version": "2.4.5",
+  "version": "2.5.0",
   "description": "超级小香宝 (SuperMickey) — AI驱动的电影级视频生成系统",
   "main": "app/cli.js",
   "type": "commonjs",
@@ -11,7 +11,7 @@
     "health": "node scripts/agent-preflight.js",
     "version:check": "node scripts/version-check.js",
     "version:fix": "node scripts/version-check.js --fix",
-    "test": "node tests/module-load-test.js && node tests/panda-cineforge-integration-test.js && node tests/skill-reachability-test.js && node tests/semantic-refinement-test.js",
+    "test": "node tests/module-load-test.js && node tests/panda-cineforge-integration-test.js && node tests/skill-reachability-test.js && node tests/semantic-refinement-test.js && node tests/social-commerce-test.js",
     "release:verify": "node scripts/version-check.js && node scripts/agent-preflight.js && node tests/module-load-test.js",
     "agent:preflight": "node scripts/agent-preflight.js",
     "skill:install": "node scripts/install-skill.js"
