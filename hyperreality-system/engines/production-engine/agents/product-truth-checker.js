@@ -240,11 +240,11 @@ class ProductTruthChecker {
       if (/必须|需要|依赖|绑定/.test(fact)) {
         const targets = this._extractTargets(fact);
         if (targets.length > 0) {
-          forbidden.push(`禁止宣称"脱离${targets.join('/')}独立使用"（事实：${fact.slice(0, 40)}）`);
+          forbidden.push(`禁止宣称"脱离${targets.join('/')}独立使用"（事实：${this._truncateFact(fact, 40)}）`);
         }
       }
       if (/不支持|无法|不能|暂未/.test(fact)) {
-        forbidden.push(`禁止宣称支持该能力（事实：${fact.slice(0, 40)}）`);
+        forbidden.push(`禁止宣称支持该能力（事实：${this._truncateFact(fact, 40)}）`);
       }
     }
     // 【v2.10.1】领域法定禁用表述：命中品类即注入，与事实无关一律禁用
@@ -263,6 +263,18 @@ class ProductTruthChecker {
     return forbidden;
   }
 
+  /** 【修复 Bug2】标点边界感知的截断：优先在最近的分号/句号/逗号处收刀，避免残句 */
+  _truncateFact(text, max = 40) {
+    const s = String(text || '');
+    if (s.length <= max) return s;
+    const cut = s.slice(0, max);
+    const p = Math.max(
+      cut.lastIndexOf('；'), cut.lastIndexOf('。'),
+      cut.lastIndexOf('，'), cut.lastIndexOf('、')
+    );
+    return (p >= max * 0.5 ? cut.slice(0, p) : cut) + '…';
+  }
+
   /** 前提物提取：手机/App/联网/账号 等依赖实体，去重保持出现序 */
   _extractTargets(fact) {
     const TERMS = ['手机', 'App', 'APP', '应用', '联网', '网络', '账号'];
@@ -278,7 +290,14 @@ class ProductTruthChecker {
       const literal = rule.match(/禁止使用"(.+?)"/);
       if (literal) {
         const banned = literal[1];
-        if (creativeText.includes(banned)) {
+        // 【修复 Bug1】先剥离否定语境（"不展示X""禁止X""不涉及X"等合规声明），
+        // 再做裸子串匹配，避免把主动规避禁用表述的声明误判为冲突
+        const escaped = banned.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const negRe = new RegExp(
+          `(?:不|无|禁止|避免|勿|拒绝|不涉及|无需|全程不|绝不)[^。；，,]{0,8}${escaped}`, 'g'
+        );
+        const stripped = creativeText.replace(negRe, '');
+        if (stripped.includes(banned)) {
           conflicts.push({
             type: '创意前提与事实矛盾',
             banned,
@@ -319,7 +338,7 @@ class ProductTruthChecker {
       lines.push(`禁用宣称：${f}`);
     }
     if (baseline.officialClaims.length > 0) {
-      lines.push(`宣称上限：不得超出官方口径——${baseline.officialClaims.map(c => c.fact).join('；').slice(0, 120)}`);
+      lines.push(`宣称上限：不得超出官方口径——${this._truncateFact(baseline.officialClaims.map(c => c.fact).join('；'), 120)}`);
     }
     return lines;
   }

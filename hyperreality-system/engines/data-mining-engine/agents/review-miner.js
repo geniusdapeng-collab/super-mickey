@@ -41,7 +41,19 @@ const NEGATIVE_WORDS = ['差', '失望', '后悔', '退', '垃圾', '坑', '难�
 const ROOT_CAUSE_MAP = {
   质量: 'quality_defect', 安全健康: 'safety_concern', 续航: 'endurance_gap',
   性能: 'performance_gap', 尺寸便携: 'form_factor', 性价比: 'value_mismatch',
-  物流包装: 'fulfillment', 客服售后: 'after_sales', 易用性: 'usability', 外观: 'aesthetics'
+  物流包装: 'fulfillment', 客服售后: 'after_sales', 易用性: 'usability', 外观: 'aesthetics',
+  // 【修复 Bug3/优化点5】品类扩展方面的根因映射（配合 aspectLexiconExt 使用）
+  维修成本: 'after_sales', 补能体验: 'endurance_gap', 驾乘舒适: 'performance_gap',
+  智驾座舱: 'usability', 空间尺寸: 'form_factor'
+};
+
+/** 【优化点5】汽车品类扩展词库（执行方回填时经 input.aspectLexiconExt 注入即可启用） */
+const AUTO_LEXICON_EXT = {
+  维修成本: ['修车', '维修费', '保养贵', '配件', '喷漆', '保险涨'],
+  补能体验: ['充电速度', '超充', '家充', '充电桩', '补能', '谷电'],
+  驾乘舒适: ['减震', '悬架', '底盘', '座椅', '隔音', '胎噪', '风噪'],
+  智驾座舱: ['辅助驾驶', '自动辅助', '车机', '中控屏', '语音'],
+  空间尺寸: ['后排', '空间', '头部空间', '腿部', '储物', '后备箱']
 };
 
 /** 场景提炼模式：人群/时刻/地点线索 */
@@ -92,7 +104,8 @@ class ReviewMiner {
       queries,
       sample_target: { min_reviews: this.minReviews, negative_share: '差评/中评样本不得低于 15%（防偏倚）' },
       fillback_format: {
-        reviews: '[{ text, source(渠道描述), url, rating?(1-5), date?, helpful_votes? }]'
+        reviews: '[{ text, source(渠道描述), url, rating?(1-5), date?, helpful_votes? }]',
+        note: '品类方面词库扩展：回填前可在 input.aspectLexiconExt 声明 {方面名: [触发词...]}（如汽车可用模块导出的 AUTO_LEXICON_EXT），distill 将与通用词库合并并按命中词数仲裁主方面'
       },
       discipline: [
         '评价必须原文回填，禁止改写/润色用户句子',
@@ -130,11 +143,29 @@ class ReviewMiner {
     const scenarioHits = new Map(); // key -> {persona?, scene?, moment?, count, quote}
     const verbatimCandidates = [];
 
+    // 【修复 Bug3/优化点5】品类扩展词库通道：执行方可经 input.aspectLexiconExt 注入
+    // 品类方面词（如汽车：维修成本/补能体验/驾乘舒适/智驾座舱/空间尺寸），与通用词库合并
+    const ext = (input && input.aspectLexiconExt) || {};
+    const lexicon = { ...ASPECT_LEXICON };
+    for (const [aspect, words] of Object.entries(ext)) {
+      lexicon[aspect] = [...(lexicon[aspect] || []), ...words];
+    }
+
+    // 【修复 Bug3】否定前缀抑制计数："不满意"/"不值"/"没味" 等不计入正/负向裸命中
+    const countHits = (text, words) => words.reduce((n, w) => {
+      let hits = 0, idx = -1;
+      while ((idx = text.indexOf(w, idx + 1)) !== -1) {
+        const prev2 = text.slice(Math.max(0, idx - 2), idx);
+        if (!/(不|无|没|别|未)$/.test(prev2)) hits += 1;
+      }
+      return n + hits;
+    }, 0);
+
     for (const r of clean) {
       const text = String(r.text);
       const rating = Number(r.rating) || null;
-      const posScore = POSITIVE_WORDS.reduce((n, w) => n + (text.includes(w) ? 1 : 0), 0);
-      const negScore = NEGATIVE_WORDS.reduce((n, w) => n + (text.includes(w) ? 1 : 0), 0);
+      const posScore = countHits(text, POSITIVE_WORDS);
+      const negScore = countHits(text, NEGATIVE_WORDS);
       const sentiment = rating != null
         ? (rating >= 4 ? 'pos' : rating <= 2 ? 'neg' : (negScore > posScore ? 'neg' : 'pos'))
         : (negScore > posScore ? 'neg' : posScore > 0 ? 'pos' : 'neutral');
@@ -143,12 +174,20 @@ class ReviewMiner {
         ? ledger.register({ claimRef: 'voc.raw_review', sourceUrl: r.url, origin: r.url ? undefined : (r.source || '执行方回填评价'), channel: r.source || '', agent: this.agentName, fetchedAt: r.date })
         : null;
 
-      for (const [aspect, words] of Object.entries(ASPECT_LEXICON)) {
-        if (words.some(w => text.includes(w))) {
-          aspectHits[aspect] = aspectHits[aspect] || { pos: [], neg: [] };
-          const bucket = sentiment === 'neg' ? 'neg' : sentiment === 'pos' ? 'pos' : null;
-          if (bucket) aspectHits[aspect][bucket].push({ text, srcRef, rating });
-        }
+      // 【修复 Bug3】主方面仲裁：得分 = 命中触发词数×2 + 品类扩展方面加权1
+      // （执行方按品类注入的扩展方面比通用桶更精确，平分秋色时优先），
+      // 仅入得分最高的主方面桶，避免"修车太贵……比充电费钱"被'充电'一词错拖进'续航'桶
+      const hits = [];
+      for (const [aspect, words] of Object.entries(lexicon)) {
+        const n = words.reduce((cnt, w) => cnt + (text.includes(w) ? 1 : 0), 0);
+        if (n > 0) hits.push({ aspect, score: n * 2 + (Object.prototype.hasOwnProperty.call(ext, aspect) ? 1 : 0) });
+      }
+      hits.sort((a, b) => b.score - a.score);
+      if (hits.length > 0) {
+        const primary = hits[0].aspect;
+        aspectHits[primary] = aspectHits[primary] || { pos: [], neg: [] };
+        const bucket = sentiment === 'neg' ? 'neg' : sentiment === 'pos' ? 'pos' : null;
+        if (bucket) aspectHits[primary][bucket].push({ text, srcRef, rating });
       }
 
       // 场景提炼
@@ -226,4 +265,4 @@ class ReviewMiner {
   }
 }
 
-module.exports = { ReviewMiner, ASPECT_LEXICON, ROOT_CAUSE_MAP };
+module.exports = { ReviewMiner, ASPECT_LEXICON, ROOT_CAUSE_MAP, AUTO_LEXICON_EXT };

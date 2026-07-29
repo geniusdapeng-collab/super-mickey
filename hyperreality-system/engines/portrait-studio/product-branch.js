@@ -73,6 +73,9 @@ class ProductPortraitBranch {
           sellingPoints: p.sellingPoints || p.卖点 || [],
           materials: p.materials || (p.productHero && p.productHero.materials) || [],
           heroImageId: p.heroImageId || (p.productHero && p.productHero.heroImageId) || null,
+          // 【SKU一致性】颜色/外观配置/型号变体透传（统一SKU锚点解析用，多源字段兼容）
+          skuColor: p.skuColor || p.color || (p.productHero && (p.productHero.skuColor || p.productHero.color)) || '',
+          appearance: p.appearance || p.trim || p.modelVariant || (p.productHero && p.productHero.appearance) || '',
           // 【珍妮纺织机对接】情报档案的商品图 manifest 透传（预填搜图阶段用）
           referenceManifest: p.referenceManifest || p.reference_manifest || null
         };
@@ -142,6 +145,7 @@ class ProductPortraitBranch {
         requirements: [
           '核对预填参考图的真实性（禁止 AI 生成图/概念图冒充）',
           '系列化产品逐张核对型号标识与发售信息，剔除同系列旧款/近似款',
+          '同SKU核验：全部参考图必须为同一颜色/外观配置SKU；官方图集含多SKU（多颜色/多配置版本）时按目标SKU过滤，剔除异色/异配置图，禁止异色SKU图进入生成参考',
           '预填图不足或核对不通过时，按 queries 补检'
         ],
         referenceImages: prefilled.map(img => ({
@@ -165,7 +169,10 @@ class ProductPortraitBranch {
         '覆盖至少两个不同角度/场景',
         // 【v2.8.1】系列化产品型号甄别：检索词必须含目标型号全名，
         // 逐张核对型号标识/发售时间，剔除同系列旧款/近似款
-        '系列化产品必须甄别型号版本：检索词含目标型号全名，逐张核对型号标识与发售信息，剔除同系列旧款/近似款'
+        '系列化产品必须甄别型号版本：检索词含目标型号全名，逐张核对型号标识与发售信息，剔除同系列旧款/近似款',
+        // 【SKU一致性】参考图集必须同SKU：颜色/外观配置不一致的图一律剔除，
+        // 否则生成模型会以异色参考图为视觉主导，压过文字锚点造成颜色漂移
+        '同SKU核验：全部参考图必须为同一颜色/外观配置SKU；官方图集含多SKU（多颜色/多配置版本）时按目标SKU过滤，剔除异色/异配置图，禁止异色SKU图进入生成参考'
       ],
       referenceImages: [], // 执行后回填：[{ url, source, angle, localPath }]
       status: 'pending'
@@ -228,17 +235,21 @@ class ProductPortraitBranch {
    */
   _buildStylizationStage(product, visualStyle, sceneContext, kind = 'physical') {
     const views = kind === 'service' ? getServiceViewPackage() : getProductViewPackage();
+    // 【SKU一致性】全角度统一SKU锚点：定妆照的 N 张图是同一商品的不同角度，
+    // 颜色/外观配置/关键细节禁止任何漂移
+    const skuAnchor = this._resolveSkuAnchor(product, kind);
     return {
       stage: 'stylization',
       dependsOn: 'processing',
       referenceBinding: 'outputBaseImage', // 强制绑定处理后的基准图，禁止无参考生成
+      skuAnchor: skuAnchor.text, // 统一SKU锚点（闸机核验与生成后QA的判定基准）
       portraits: views.map(view => ({
         portraitId: `${product.id || product.name}-${view.id}`,
         view: view.id,
         viewName: view.name,
         purpose: view.purpose,
         priority: view.priority,
-        prompt: this._buildProductPrompt(product, view, visualStyle, sceneContext, kind),
+        prompt: this._buildProductPrompt(product, view, visualStyle, sceneContext, kind, skuAnchor),
         status: 'pending',
         outputFile: null
       })),
@@ -246,7 +257,29 @@ class ProductPortraitBranch {
     };
   }
 
-  _buildProductPrompt(product, view, visualStyle, sceneContext, kind = 'physical') {
+  /**
+   * 【SKU一致性】统一SKU锚点解析：颜色/外观配置/关键细节三元组。
+   * 通用能力——任何商品（多颜色/多配置/系列化）都必须先把"唯一SKU"钉死，
+   * 再允许分角度生成；锚点冲突时锚点优先于参考图。
+   */
+  _resolveSkuAnchor(product, kind = 'physical') {
+    const parts = [];
+    const color = product.skuColor || product.color || '';
+    if (color) parts.push(`颜色=${color}`);
+    const appearance = product.appearance || product.trim || product.modelVariant || '';
+    if (appearance) parts.push(`外观配置=${appearance}`);
+    const materials = (product.materials && product.materials.length) ? product.materials.join('、') : '';
+    if (kind !== 'service' && materials) parts.push(`关键细节=${materials}`);
+    if (kind === 'service' && materials) parts.push(`品牌识别=${materials}`);
+    if (parts.length === 0) parts.push('以处理后基准图为唯一SKU外观来源');
+    return {
+      text: parts.join('；'),
+      block: `SKU锚点：${parts.join('；')}；唯一SKU，全角度/全场景颜色与外观配置禁止漂移；` +
+        `参考图与SKU锚点冲突时（如异色/异配置SKU图）以SKU锚点为准，禁止跟随参考图漂移`
+    };
+  }
+
+  _buildProductPrompt(product, view, visualStyle, sceneContext, kind = 'physical', skuAnchor = null) {
     const sections = [
       `【商品定妆照】${product.name} — ${view.name}`,
       `商品：${product.name}${product.category ? `（${product.category}）` : ''}`
@@ -258,6 +291,8 @@ class ProductPortraitBranch {
       const materials = (product.materials && product.materials.length) ? product.materials.join('、') : '商品真实材质';
       sections.push(`材质锚点：${materials}`);
     }
+    // 【SKU一致性】统一SKU锚点注入每张定妆照 prompt，异色/异配置漂移的硬性约束
+    if (skuAnchor && skuAnchor.block) sections.push(skuAnchor.block);
     sections.push(`构图：${view.framing}`);
     if ((view.id === 'in_context' || view.id === 'service_scene' || view.id === 'user_context') && sceneContext.typicalScene) {
       sections.push(`场景：${sceneContext.typicalScene}`);
@@ -301,7 +336,47 @@ class ProductPortraitBranch {
     if (reasons.length === 0 && !processing.outputBaseImage) {
       reasons.push('阶段2 基准图未产出（outputBaseImage 未回填）：先完成抠图/白底/光影统一');
     }
+    // 【SKU一致性闸机】stylization 必须带统一SKU锚点，且每张定妆照 prompt 必须绑定同一锚点。
+    // 缺锚点 = 无法防止多SKU（颜色/外观配置）漂移，阻断。
+    const stylization = stages.stylization || {};
+    const anchor = stylization.skuAnchor || '';
+    const portraits = Array.isArray(stylization.portraits) ? stylization.portraits : [];
+    if (!anchor) {
+      reasons.push('SKU锚点缺失：stylization 阶段未产出统一SKU锚点（颜色/外观配置/关键细节），无法防止多SKU漂移');
+    } else {
+      const unbound = portraits.filter(p => {
+        const t = String(p.prompt || '');
+        return !t.includes('SKU锚点') || !t.includes(anchor);
+      });
+      if (unbound.length > 0) {
+        reasons.push(`${unbound.length} 张定妆照 prompt 未绑定统一SKU锚点（${unbound.map(p => p.portraitId || p.view).join('、')}），存在颜色/外观漂移风险`);
+      }
+    }
     return { ready: reasons.length === 0, blocked: reasons.length > 0, reasons };
+  }
+
+  /**
+   * 【SKU一致性】生成后全量QA步骤：逐张（禁止抽样）核对主色与外观配置。
+   * 定妆照 N 张 = 同一商品的不同角度；任何一张主色/配置偏离SKU锚点即判不合格，
+   * 绑定SKU锚点重新生成，全部通过后方可交付。
+   * @param {object} task plan() 产出的商品定妆照任务
+   * @returns {object} consistency-qa 阶段任务（执行方生成完成后逐张执行）
+   */
+  buildConsistencyQaStep(task = {}) {
+    const stages = task.stages || task;
+    const stylization = stages.stylization || {};
+    return {
+      stage: 'consistency-qa',
+      dependsOn: 'stylization',
+      skuAnchor: stylization.skuAnchor || '',
+      rules: [
+        '逐张核对（禁止抽样）：每张定妆照的主色/外观配置/关键细节必须与SKU锚点一致',
+        '主色偏离SKU锚点（如锚点为深色系而出图为红色系）→ 该张判不合格，绑定SKU锚点与基准图重新生成',
+        '同一张图内出现多SKU特征混搭（颜色/轮毂/饰件不一致）→ 判不合格重新生成',
+        '全部通过后定妆照环节方可交付；QA结果逐张记录，禁止只写"抽查通过"'
+      ],
+      status: 'pending'
+    };
   }
 }
 

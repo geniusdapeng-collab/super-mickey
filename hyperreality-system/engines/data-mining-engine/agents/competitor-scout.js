@@ -87,6 +87,22 @@ class CompetitorScout {
     const ourMid = _priceMid(input.price_band);
 
     const cards = [];
+    // 【修复 Bug4】回填键校验：契约外键名进 gaps，禁止静默丢弃
+    // （如把 weakness_notes 误写为 weaknesses 时，弱点数据此前会零告警丢失）
+    const KNOWN_KEYS = new Set([
+      'name', 'category', 'price_band', 'price_source_url', 'selling_points',
+      'visual_style', 'visual_source_url', 'viral_patterns', 'weakness_notes', 'adjacent_notes'
+    ]);
+    for (const c of Array.isArray(raw.competitors) ? raw.competitors : []) {
+      if (!c) continue;
+      const unknown = Object.keys(c).filter(k => !KNOWN_KEYS.has(k));
+      if (unknown.length) {
+        gaps.push(
+          `竞品"${c.name || '未命名'}"回填含契约外键 ${unknown.join('/')}，内容已被忽略` +
+          `——请对照 fillback_format 核对键名（弱点字段契约键为 weakness_notes，字符串）`
+        );
+      }
+    }
     for (const c of Array.isArray(raw.competitors) ? raw.competitors : []) {
       if (!c || !c.name) continue;
 
