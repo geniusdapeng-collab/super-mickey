@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { LINKS, type Lang, type Content } from '../i18n'
+import { type Lang, type Content } from '../i18n'
+import type { ModalKind } from './Modal'
 
-export function Nav({ lang, setLang, t }: { lang: Lang; setLang: (l: Lang) => void; t: Content }) {
+type OpenFn = (k: Exclude<ModalKind, null>) => void
+
+export function Nav({ lang, setLang, t, onOpen }: { lang: Lang; setLang: (l: Lang) => void; t: Content; onOpen: OpenFn }) {
   const [open, setOpen] = useState(false)
   const go = (id: string) => {
     setOpen(false)
@@ -24,7 +27,7 @@ export function Nav({ lang, setLang, t }: { lang: Lang; setLang: (l: Lang) => vo
           <button onClick={() => setLang(lang === 'zh' ? 'en' : 'zh')} className="rounded-full border border-[#C9DB8E] px-3 py-1 text-xs font-bold text-[#5B8A00] hover:bg-[#EFF7D6] transition-colors">
             {lang === 'zh' ? 'EN' : '中'}
           </button>
-          <a href={LINKS.mailto} className="hidden rounded-full sm-btn-lime px-4 py-1.5 text-sm sm:block">{t.nav.cta}</a>
+          <button onClick={() => onOpen('mail')} className="hidden rounded-full sm-btn-lime px-4 py-1.5 text-sm sm:block">{t.nav.cta}</button>
           <button className="sm-ink lg:hidden" onClick={() => setOpen(!open)} aria-label="menu">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
           </button>
@@ -35,7 +38,7 @@ export function Nav({ lang, setLang, t }: { lang: Lang; setLang: (l: Lang) => vo
           {[['personas', t.nav.personas], ['wall', t.nav.wall], ['proof', t.nav.proof], ['agent', t.nav.agent]].map(([id, label]) => (
             <button key={id} onClick={() => go(id)} className="block w-full py-2 text-left font-medium sm-sub hover:text-[#5B8A00]">{label}</button>
           ))}
-          <a href={LINKS.mailto} className="mt-2 block rounded-full sm-btn-lime px-4 py-2 text-center text-sm">{t.nav.cta}</a>
+          <button onClick={() => { setOpen(false); onOpen('mail') }} className="mt-2 block w-full rounded-full sm-btn-lime px-4 py-2 text-center text-sm">{t.nav.cta}</button>
         </div>
       )}
     </header>
@@ -77,7 +80,7 @@ function usePipelineCycle(stepCount: number) {
   return { active, done }
 }
 
-export function Hero({ t }: { t: Content }) {
+export function Hero({ t, onOpen }: { t: Content; onOpen: OpenFn }) {
   const typed = useTypingCycle(t.hero.prompts)
   const { active, done } = usePipelineCycle(t.hero.pipeline.length)
   return (
@@ -115,7 +118,7 @@ export function Hero({ t }: { t: Content }) {
                   <div key={step} className="flex flex-1 items-center gap-1">
                     <div className={`flex flex-1 flex-col items-center gap-1.5 rounded-lg px-1 py-2 transition-all duration-500 ${lit ? 'bg-[#EFF7D6]' : ''}`}>
                       <span className={`h-2.5 w-2.5 rounded-full transition-all duration-500 ${lit ? 'bg-[#8FC400] shadow-[0_0_10px_rgba(143,196,0,0.8)]' : 'bg-[#DDE7C0]'}`} />
-                      <span className={`text-[10px] font-semibold sm:text-xs ${lit ? 'text-[#5B8A00]' : 'sm-muted'}`}>{step}</span>
+                      <span className={`whitespace-nowrap text-[9px] font-semibold sm:text-xs ${lit ? 'text-[#5B8A00]' : 'sm-muted'}`}>{step}</span>
                     </div>
                     {i < t.hero.pipeline.length - 1 && <span className={`h-px w-2 sm:w-4 ${i < active || done ? 'bg-[#8FC400]' : 'bg-[#DDE7C0]'} transition-colors duration-500`} />}
                   </div>
@@ -133,11 +136,11 @@ export function Hero({ t }: { t: Content }) {
         </div>
 
         <div className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row">
-          <a href={LINKS.mailto} className="w-full rounded-full sm-btn-lime px-8 py-3.5 text-base sm:w-auto">{t.hero.ctaPrimary}</a>
-          <a href={LINKS.github} target="_blank" rel="noreferrer" className="flex w-full items-center justify-center gap-2 rounded-full sm-btn-ghost px-8 py-3.5 text-base sm:w-auto">
+          <button onClick={() => onOpen('mail')} className="w-full rounded-full sm-btn-lime px-8 py-3.5 text-base sm:w-auto">{t.hero.ctaPrimary}</button>
+          <button onClick={() => onOpen('github')} className="flex w-full items-center justify-center gap-2 rounded-full sm-btn-ghost px-8 py-3.5 text-base sm:w-auto">
             <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
             {t.hero.ctaSecondary}
-          </a>
+          </button>
         </div>
       </div>
     </section>
