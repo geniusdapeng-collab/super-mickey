@@ -1,0 +1,127 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
+    --radius: 0.625rem;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* ===== SuperMickey Lime-Fresh Design System ===== */
+.sm-bg {
+  background: linear-gradient(180deg, #FBFCF5 0%, #F6F9EE 50%, #F1F6E3 100%);
+}
+.sm-ink { color: #1A2408; }
+.sm-sub { color: #55663A; }
+.sm-muted { color: #8A9570; }
+.sm-lime-text {
+  background: linear-gradient(100deg, #7DA50F 0%, #5B8A00 45%, #94C11F 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.sm-card {
+  background: #ffffff;
+  border: 1px solid #E4EBD0;
+  box-shadow: 0 2px 12px rgba(90, 120, 20, 0.06);
+}
+.sm-card-hover { transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease; }
+.sm-card-hover:hover {
+  transform: translateY(-4px);
+  border-color: #C2EE1B;
+  box-shadow: 0 14px 40px rgba(140, 180, 30, 0.18);
+}
+.sm-btn-lime {
+  background: linear-gradient(100deg, #D4F542 0%, #C2EE1B 55%, #AEE010 100%);
+  color: #1A2408;
+  font-weight: 800;
+  box-shadow: 0 8px 24px rgba(170, 220, 30, 0.45);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.sm-btn-lime:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(170, 220, 30, 0.6); }
+.sm-btn-ghost {
+  border: 1.5px solid #1A2408;
+  color: #1A2408;
+  font-weight: 700;
+  transition: background .2s ease, transform .2s ease;
+}
+.sm-btn-ghost:hover { background: rgba(26, 36, 8, 0.06); transform: translateY(-2px); }
+.sm-chip { border: 1px solid #C9DB8E; background: #EFF7D6; color: #5B8A00; font-weight: 600; }
+.sm-dark { background: linear-gradient(180deg, #141B08 0%, #0E1306 100%); }
+.sm-dark-card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); }
+.sm-code { background: #10150A; border: 1px solid rgba(255,255,255,0.12); }
+.sm-lime-glow { text-shadow: 0 0 24px rgba(212, 245, 66, 0.5); }
+@keyframes sm-pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+.sm-pulse-dot { animation: sm-pulse-dot 1.6s ease-in-out infinite; }
+@keyframes sm-caret { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+.sm-caret { animation: sm-caret 0.9s step-end infinite; }
+@keyframes sm-pop { 0% { transform: scale(.85); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+.sm-pop { animation: sm-pop .5s cubic-bezier(.2,.9,.3,1.2) both; }
+.sm-compare-handle { touch-action: none; cursor: ew-resize; }

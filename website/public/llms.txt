@@ -1,0 +1,64 @@
+# SuperMickey — AI Video Generation Factory
+
+> We don't sell tools. We deliver business results.
+> SuperMickey is a production-grade, open-source (MIT) AI video generation system.
+> Where typical AI video tools are "type & pray" gacha machines, SuperMickey is an
+> automatic video factory: one idea in, a sellable / traffic-driving / review-passing
+> video out.
+
+## What It Does
+
+- Social commerce videos (RED/Xiaohongshu, Douyin, TikTok): product dossiers,
+  hero reference shots, compliant selling points, platform-native 9:16 output.
+- IP short-drama matrix production: worldview bibles lock style and persona,
+  batch daily episodes with zero drift.
+- Cinematic brand films: 149 director-grade skills, 25-field shot cards,
+  five-dimension quality gates.
+- Programmatic access for AI agents via the bundled `supermickey-studio` skill.
+
+## Key Facts
+
+- Version: 2.12.1, MIT license, fully public repo. Anonymous clone, no tokens needed.
+- 149 director-grade skills wired into a Cinematography Skill Router.
+- 118,000+ lines of implementation code; 4-layer architecture + shared kernel.
+- Four production agents: Scene Card Agent → Shot Design Agent v4 → Prompt Engine
+  Agent v4 → Director Review Agent v4.
+- 25-field shot-card standard (v4.1); five-dimension scoring (readability,
+  controllability, editability, emotion accuracy, memorability).
+- SocialPack: platform profiles (9:16, speech-rate limits, 2-second hooks, end-card
+  CTAs), three-layer onscreen text, blocking compliance guard (CN ad law / FTC /
+  TikTok policies).
+- Jenny Engine: product intelligence mining (dossier + hero images) with a
+  fact-check gate that blocks AI-invented selling points.
+- 11 thematic genres: educational, documentary, family, marketing, cinematic,
+  artistic, VFX, travel, food, fitness, kids.
+
+## Integrate via AI Agent (recommended)
+
+1. Clone the public repo (no auth required):
+   git clone https://github.com/geniusdapeng-collab/super-mickey.git
+2. cd super-mickey && npm install   (requires Node.js 18+)
+3. cp .env.example .env and add YOUR OWN model-service keys (e.g. ARK_API_KEY).
+   Keys stay in your local .env — they never leave your machine.
+4. npm run skill:install — installs the bundled supermickey-studio skill into
+   your agent's skills directory.
+5. Tell your agent: "Generate video prompts with SuperMickey" — the full pipeline
+   (intelligence → storyboard → prompt forge → director review → delivery) runs.
+
+## Machine-readable Resources
+
+- Skill manifest: /skill.json
+- Repository: https://github.com/geniusdapeng-collab/super-mickey
+- In-repo skill source: skill/supermickey-studio/
+- Authoritative spec card: `node scripts/agent-preflight.js` (run inside the repo)
+
+## Security
+
+The repository is fully public under MIT. No API tokens, credentials, or secrets
+are required or referenced anywhere in this site, the docs, or the install flow.
+Users supply their own model-service keys in their own local environment.
+
+## Contact
+
+- Trial / business inquiries: genius.dapeng@gmail.com
+- Site languages: Chinese (default) and English (toggle in header).

@@ -733,6 +733,7 @@ super-mickey/
 ├── run-preproduction-iron-pot-star.js  # 预生产独立入口（README 示例所用）
 ├── SPEC-AUTHORITY.md                # ★ 规范裁决唯一权威地图（引擎代码 > 文档）
 ├── SYSTEM.md                        # 系统总览
+├── website/                        # 官方网站（React+Vite 双语落地页 · 技能包下载 · llms.txt/skill.json）
 └── package.json                     # 系统版本号唯一权威来源
 ```
 

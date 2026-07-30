@@ -1,0 +1,87 @@
+{
+  "name": "supermickey-studio",
+  "display_name": "SuperMickey AI Video Generation System",
+  "version": "2.12.1",
+  "license": "MIT",
+  "tagline": "We don't sell tools. We deliver business results.",
+  "description": "Production-grade open-source AI video factory: one idea in, a sellable / traffic-driving / review-passing video out. Four production agents, 149 director-grade skills, 25-field shot cards, five-dimension quality gates.",
+  "repository": {
+    "url": "https://github.com/geniusdapeng-collab/super-mickey",
+    "visibility": "public",
+    "auth_required": false,
+    "skill_path": "skill/supermickey-studio/"
+  },
+  "install": {
+    "requirements": ["Node.js >= 18"],
+    "steps": [
+      "git clone https://github.com/geniusdapeng-collab/super-mickey.git",
+      "cd super-mickey && npm install",
+      "cp .env.example .env  # add YOUR OWN model-service keys, e.g. ARK_API_KEY",
+      "npm run skill:install"
+    ],
+    "verify": "node scripts/agent-preflight.js"
+  },
+  "triggers": {
+    "zh": ["用 SuperMickey 系统生成视频提示词", "生成视频提示词", "SuperMickey 跑一下这个主题"],
+    "en": ["Generate video prompts with SuperMickey"]
+  },
+  "capabilities": [
+    "social-commerce-video",
+    "ip-short-drama-matrix",
+    "cinematic-brand-film",
+    "product-intelligence-mining",
+    "ad-compliance-guard",
+    "multi-platform-profiles"
+  ],
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "title": { "type": "string", "description": "Story or campaign title" },
+      "narrative_mode": { "type": "string", "enum": ["dramatic", "educational", "documentary", "commercial", "lifelog"] },
+      "target_duration": { "type": "number", "description": "Seconds" },
+      "target_platform": { "type": "array", "items": { "type": "string" }, "example": ["xiaohongshu", "douyin", "tiktok", "youtube"] }
+    },
+    "required": ["title"]
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "shot_id": { "type": "string", "example": "S01-SH03" },
+      "priority": { "type": "string", "enum": ["P1", "P2", "P3", "P4", "P5"] },
+      "is_hero_shot": { "type": "boolean" },
+      "shot_size": { "type": "string" },
+      "camera_position": { "type": "string" },
+      "camera_movement": { "type": "string" },
+      "light_tier": { "type": "string", "enum": ["A", "B", "C", "D"] },
+      "dialogue": { "type": "string" },
+      "render_prompt": { "type": "string" },
+      "target_scores": {
+        "type": "object",
+        "properties": {
+          "readability": { "type": "number" },
+          "controllability": { "type": "number" },
+          "editability": { "type": "number" },
+          "emotion": { "type": "number" },
+          "memorability": { "type": "number" }
+        }
+      }
+    },
+    "notes": "Full 25-field v4.1 standard; see repo templates/shot-card-v4-template.md"
+  },
+  "metrics": {
+    "skills": 149,
+    "loc": 118000,
+    "shot_fields": 25,
+    "genres": 11,
+    "quality_dimensions": 5
+  },
+  "security": {
+    "secrets_in_repo": false,
+    "secrets_in_site": false,
+    "key_handling": "Users supply their own model-service keys in a local .env; keys never leave the user's machine."
+  },
+  "contact": {
+    "email": "genius.dapeng@gmail.com",
+    "trial": "Business / trial inquiries welcome"
+  }
+}
