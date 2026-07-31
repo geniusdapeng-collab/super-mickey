@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuperMickey 系统架构 · Harness + Skill</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --bg:#F5F8EA; --ink:#1A2408; --sub:#55663A; --muted:#8A9570;
+    --lime:#C2EE1B; --lime-deep:#AADC1E; --lime-dark:#5B8A00; --lime-text:#4a6b00;
+    --dark:#10150A; --card:rgba(255,255,255,.72); --line:#DCE5C0;
+  }
+  body { background:var(--bg); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif; padding:56px 48px 48px; -webkit-font-smoothing:antialiased; }
+  .mono { font-family:"SF Mono",Menlo,Consolas,monospace; }
+
+  /* ===== header ===== */
+  .hd { text-align:center; margin-bottom:14px; }
+  .hd .tag { display:inline-block; font-size:12px; font-weight:800; letter-spacing:.35em; color:var(--lime-dark); text-transform:uppercase; margin-bottom:14px; }
+  .hd h1 { font-size:42px; font-weight:900; letter-spacing:-.5px; line-height:1.15; }
+  .hd h1 em { font-style:normal; background:linear-gradient(120deg,#8FC400,#C2EE1B 55%,#8FC400); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .hd .sub { margin-top:12px; font-size:15px; color:var(--sub); }
+  .hd .creed { margin:16px auto 0; display:inline-flex; align-items:center; gap:10px; background:var(--dark); color:#E9F5C0; border-radius:999px; padding:9px 22px; font-size:13px; font-weight:700; }
+  .hd .creed b { color:var(--lime); }
+  .legend { display:flex; justify-content:center; gap:22px; margin:18px 0 26px; font-size:12px; color:var(--sub); flex-wrap:wrap; }
+  .legend span { display:inline-flex; align-items:center; gap:7px; }
+  .dot { width:12px; height:12px; border-radius:4px; display:inline-block; }
+
+  /* ===== generic layer band ===== */
+  .layer { position:relative; border:1.5px solid var(--line); border-radius:22px; padding:26px 24px 22px; margin-bottom:0; background:rgba(255,255,255,.4); }
+  .layer > .ltag { position:absolute; top:-13px; left:28px; background:var(--bg); padding:2px 14px; font-size:12px; font-weight:900; letter-spacing:.18em; color:var(--sub); }
+  .layer > .ltag b { color:var(--lime-dark); }
+
+  .row { display:flex; gap:16px; }
+  .card { background:var(--card); border:1px solid rgba(26,36,8,.08); border-radius:16px; padding:16px 18px; flex:1; box-shadow:0 2px 10px rgba(26,36,8,.04); }
+  .card h4 { font-size:15px; font-weight:800; margin-bottom:5px; }
+  .card p { font-size:12px; color:var(--sub); line-height:1.55; }
+  .card .chip { display:inline-block; margin-top:8px; font-size:10.5px; font-weight:700; color:var(--lime-text); background:#EFF7D2; border:1px solid #DCE9AC; border-radius:999px; padding:2px 10px; }
+
+  .flow-arrow { text-align:center; padding:10px 0; color:var(--lime-dark); font-size:20px; line-height:1; }
+  .flow-arrow small { display:block; font-size:10.5px; color:var(--muted); margin-top:2px; letter-spacing:.1em; }
+
+  /* ===== core zone ===== */
+  .core { display:grid; grid-template-columns:340px 1fr 340px; gap:18px; align-items:stretch; }
+
+  /* skill arsenal (left, dark) */
+  .arsenal { background:var(--dark); border-radius:22px; padding:24px 22px; color:#DDE8C0; position:relative; display:flex; flex-direction:column; }
+  .arsenal .atag { font-size:12px; font-weight:900; letter-spacing:.2em; color:var(--lime); margin-bottom:4px; }
+  .arsenal h3 { font-size:20px; font-weight:900; color:#fff; margin-bottom:4px; }
+  .arsenal .adesc { font-size:11.5px; color:#9AA88A; margin-bottom:16px; }
+  .sk-big { display:flex; gap:12px; margin-bottom:14px; }
+  .sk-num { flex:1; background:rgba(194,238,27,.08); border:1px solid rgba(194,238,27,.25); border-radius:14px; padding:12px 10px; text-align:center; }
+  .sk-num b { display:block; font-size:26px; font-weight:900; color:var(--lime); }
+  .sk-num span { font-size:10.5px; color:#B7C69A; }
+  .sk-list { display:flex; flex-direction:column; gap:8px; }
+  .sk-item { background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.1); border-radius:12px; padding:10px 14px; font-size:12px; }
+  .sk-item b { color:#F2F8DC; font-weight:800; }
+  .sk-item span { color:#93A37F; font-size:11px; display:block; margin-top:2px; }
+  .router-note { margin-top:14px; padding:11px 14px; border:1px dashed rgba(194,238,27,.5); border-radius:12px; font-size:11px; color:var(--lime); line-height:1.5; }
+
+  /* harness spine (center) */
+  .spine-wrap { background:#fff; border:1.5px solid var(--line); border-radius:22px; padding:24px 26px 20px; position:relative; }
+  .spine-wrap .stag { font-size:12px; font-weight:900; letter-spacing:.2em; color:var(--lime-dark); }
+  .spine-wrap h3 { font-size:20px; font-weight:900; margin-bottom:2px; }
+  .spine-wrap .sdesc { font-size:11.5px; color:var(--muted); margin-bottom:18px; }
+  .spine { position:relative; padding-left:34px; }
+  .spine::before { content:""; position:absolute; left:11px; top:14px; bottom:14px; width:3px; border-radius:3px; background:linear-gradient(180deg,var(--lime),var(--lime-deep),#8FC400); }
+  .stage { position:relative; margin-bottom:12px; background:var(--card); border:1px solid rgba(26,36,8,.1); border-radius:14px; padding:12px 16px; }
+  .stage::before { content:""; position:absolute; left:-29px; top:18px; width:13px; height:13px; border-radius:50%; background:var(--lime); border:3px solid #fff; box-shadow:0 0 0 2px var(--lime-deep); }
+  .stage h5 { font-size:14px; font-weight:900; }
+  .stage h5 .en { color:var(--muted); font-weight:700; font-size:11px; margin-left:6px; }
+  .stage p { font-size:11.5px; color:var(--sub); margin-top:3px; line-height:1.5; }
+  .stage .mini { margin-top:6px; display:flex; flex-wrap:wrap; gap:5px; }
+  .stage .mini i { font-style:normal; font-size:10px; font-weight:700; color:var(--lime-text); background:#F0F8D5; border:1px solid #DFEAB0; border-radius:6px; padding:2px 8px; }
+  .stage.hot { background:linear-gradient(120deg,#FDFFF2,#F4FAD9); border-color:#C9DB8E; }
+
+  /* governance (right) */
+  .gov { background:#fff; border:1.5px solid var(--line); border-radius:22px; padding:24px 22px; }
+  .gov .gtag { font-size:12px; font-weight:900; letter-spacing:.2em; color:var(--lime-dark); }
+  .gov h3 { font-size:20px; font-weight:900; margin-bottom:2px; }
+  .gov .gdesc { font-size:11.5px; color:var(--muted); margin-bottom:14px; }
+  .gv-item { border:1px solid rgba(26,36,8,.09); border-radius:13px; padding:11px 14px; margin-bottom:9px; background:var(--card); }
+  .gv-item b { font-size:13px; font-weight:800; display:flex; justify-content:space-between; align-items:center; }
+  .gv-item b i { font-style:normal; font-size:10px; color:var(--lime-text); background:#EFF7D2; border-radius:999px; padding:2px 9px; font-weight:800; }
+  .gv-item p { font-size:11px; color:var(--sub); margin-top:3px; line-height:1.5; }
+
+  /* foundation bar */
+  .foundation { margin-top:18px; background:var(--dark); border-radius:18px; padding:18px 24px; display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+  .foundation .ft { color:var(--lime); font-size:12px; font-weight:900; letter-spacing:.15em; white-space:nowrap; }
+  .foundation .fitems { display:flex; gap:8px; flex-wrap:wrap; }
+  .foundation .fitems i { font-style:normal; font-size:11px; color:#DDE8C0; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:8px; padding:5px 12px; }
+
+  /* delivery */
+  .deliver .card { text-align:left; }
+  .deliver .card h4 { display:flex; align-items:center; gap:8px; }
+  .deliver .ic { width:22px; height:22px; border-radius:7px; background:linear-gradient(135deg,var(--lime),var(--lime-deep)); display:inline-flex; align-items:center; justify-content:center; font-size:12px; }
+
+  /* stats footer */
+  .stats { margin-top:26px; display:grid; grid-template-columns:repeat(6,1fr); gap:12px; }
+  .stat { background:#fff; border:1px solid rgba(26,36,8,.08); border-radius:14px; padding:14px 10px; text-align:center; }
+  .stat b { display:block; font-size:24px; font-weight:900; color:var(--lime-dark); }
+  .stat span { font-size:10.5px; color:var(--sub); }
+  .foot { margin-top:20px; text-align:center; font-size:11px; color:var(--muted); }
+  .foot b { color:var(--sub); }
+</style>
+</head>
+<body>
+
+<div class="hd">
+  <div class="tag">SYSTEM ARCHITECTURE · 系统架构拓扑</div>
+  <h1>Harness 造骨架，Skill 灌灵魂<br><em>AI 生成视频版的 Claude Code</em></h1>
+  <div class="sub">别人还在抽卡，我们已经建厂 —— 这不是一句口号，是这套系统的物理结构</div>
+  <div class="creed">核心思想：<b>Harness</b> 不变的生产骨架 × <b>Skill</b> 可插拔的能力弹药</div>
+</div>
+
+<div class="legend">
+  <span><i class="dot" style="background:#1A2408"></i>意图输入</span>
+  <span><i class="dot" style="background:#fff;border:1.5px solid #DCE5C0"></i>Harness 生产骨架（不变）</span>
+  <span><i class="dot" style="background:#10150A"></i>Skill 弹药库（可插拔）</span>
+  <span><i class="dot" style="background:#C2EE1B"></i>质量闸机与治理</span>
+</div>
+
+<!-- ① 意图输入层 -->
+<div class="layer">
+  <div class="ltag">① 意图输入层 · <b>INTENT</b></div>
+  <div class="row">
+    <div class="card"><h4>一句话主题</h4><p>「给雾岛气泡水做一条小红书种草视频」—— 自然语言直接进厂</p><span class="chip">主题生成技能包接管</span></div>
+    <div class="card"><h4>商品链接 / 营销需求</h4><p>社媒营销场景：先跑情报挖掘，再进产线，货不对板不放行</p><span class="chip">珍妮纺织机接管</span></div>
+    <div class="card"><h4>IP 剧本 / 世界观档案</h4><p>《异兽纪元》式连续剧：角色与世界观宪法锁死风格，批量产出</p><span class="chip">世界观一致性引擎接管</span></div>
+  </div>
+</div>
+
+<div class="flow-arrow">▼<small>INTENT PARSED</small></div>
+
+<!-- ② 感知与决策层 -->
+<div class="layer">
+  <div class="ltag">② 感知与决策层 · <b>PERCEPTION</b></div>
+  <div class="row">
+    <div class="card"><h4>珍妮纺织机 · 数据挖掘引擎</h4><p>6 源情报交叉验证 → 商品情报档案 + 商品主图，营销场景的第一道工序</p></div>
+    <div class="card"><h4>需求洞察引擎</h4><p>RequirementDiscoveryEngine：把一句人话拆成可执行的需求清单</p></div>
+    <div class="card"><h4>PRD 生成器</h4><p>需求 → 产品需求文档：受众、平台、时长、卖点全部定稿才进产线</p></div>
+  </div>
+</div>
+
+<div class="flow-arrow">▼<small>PRD LOCKED · 人工确认闸</small></div>
+
+<!-- ③ 核心：Skill × Harness × 治理 -->
+<div class="core">
+
+  <!-- Skill 弹药库 -->
+  <div class="arsenal">
+    <div class="atag">THE SKILLS · 可插拔</div>
+    <h3>Skill 弹药库</h3>
+    <div class="adesc">像 Claude Code 装载技能包一样，产线按镜头语境动态路由注入</div>
+    <div class="sk-big">
+      <div class="sk-num"><b>203</b><span>导演级技能<br>零占位零废件</span></div>
+      <div class="sk-num"><b>21</b><span>位大师导演<br>技法坐镇</span></div>
+    </div>
+    <div class="sk-list">
+      <div class="sk-item"><b>好莱坞摄影技能库 · 167 项</b><span>维伦纽瓦科幻 / 诺兰叙事 / 库布里克构图 / 黑泽明调度…</span></div>
+      <div class="sk-item"><b>表演与微表情技能 · 36 项</b><span>卡萨维茨式即兴、微表情子 Agent，让角色有「人格」</span></div>
+      <div class="sk-item"><b>5 大业务技能包</b><span>主题生成 · 社媒营销 · 营销简报 · PandaCineForge · 好莱坞摄影</span></div>
+      <div class="sk-item"><b>11 大题材世界</b><span>神话 / 科幻 / 电商 / 旅行 / 亲子… 一套引擎自由穿梭</span></div>
+    </div>
+    <div class="router-note">▶ Cinematography Skill Router：按「导演 × 情绪 × 运镜 × 强度」实时路由，技能在提示词锻造阶段注入脊柱 →</div>
+  </div>
+
+  <!-- Harness 脊柱 -->
+  <div class="spine-wrap">
+    <div class="stag">THE HARNESS · 不变的生产骨架</div>
+    <h3>五大引擎脊柱</h3>
+    <div class="sdesc">从剧本到成片的确定性流水线 —— 换什么题材、什么技能，骨架永远不动</div>
+    <div class="spine">
+      <div class="stage">
+        <h5>剧本引擎<span class="en">ScriptEngine</span></h5>
+        <p>场景卡定策略：叙事结构、情绪曲线、创意强度分级</p>
+        <div class="mini"><i>场景卡</i><i>创意强度引擎</i><i>节奏模板库</i></div>
+      </div>
+      <div class="stage">
+        <h5>制作引擎<span class="en">ProductionEngine · 4 Phase</span></h5>
+        <p>场景设计 → 视觉音频 → 提示词融合 → 字段质量，逐镜拆解</p>
+        <div class="mini"><i>25 字段镜头卡 v4.1</i><i>定妆照工作室</i><i>时长分配桥</i></div>
+      </div>
+      <div class="stage hot">
+        <h5>提示词锻造<span class="en">PromptForge · 技能注入点</span></h5>
+        <p>8 步精炼管线：规则精炼 → LLM 语义精炼 → 交付守卫硬闸，违规自动回滚</p>
+        <div class="mini"><i>FieldContentRefiner</i><i>SemanticRefinementPass</i><i>PromptDeliveryGuard</i></div>
+      </div>
+      <div class="stage">
+        <h5>渲染引擎<span class="en">RenderingEngine</span></h5>
+        <p>Seedance / 火山引擎执行渲染，参考图闸机先把关一致性</p>
+        <div class="mini"><i>定妆照锚定</i><i>参考图闸机</i></div>
+      </div>
+      <div class="stage">
+        <h5>后期引擎<span class="en">PostProductionEngine</span></h5>
+        <p>剪辑节奏、声效设计、成片组装，导演审核打分后才放行</p>
+        <div class="mini"><i>声效设计</i><i>节奏校正</i><i>成片组装</i></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 治理层 -->
+  <div class="gov">
+    <div class="gtag">GOVERNANCE · 横切治理</div>
+    <h3>质量与合规治理层</h3>
+    <div class="gdesc">贯穿脊柱每一环 —— Harness 的「免疫系统」</div>
+    <div class="gv-item"><b>12 道硬性闸机 <i>阻断式</i></b><p>关键字段闸机 · 定妆照守卫 · 参考图闸机 · 提示词稳定守卫 · 执行完整性强制器 · 运行时记忆守卫…</p></div>
+    <div class="gv-item"><b>5 维质量评分 <i>导演审核</i></b><p>可读性 25% · 可控性 20% · 可剪性 20% · 情绪命中 20% · 记忆点 15%，五级评级，不合格打回重造</p></div>
+    <div class="gv-item"><b>LLM 适配层 <i>稳定性盾</i></b><p>输入包构建 → 推理引擎 → 输出解析 / 归一 / 校验，LLM 永不直接接触产线</p></div>
+    <div class="gv-item"><b>合规保镖 <i>三平台</i></b><p>CN 广告法极限词 · FTC · TikTok 平台禁令扫描，不过审不放行</p></div>
+  </div>
+</div>
+
+<!-- Harness 基座 -->
+<div class="foundation">
+  <div class="ft">HARNESS 基座 · FOUNDATION</div>
+  <div class="fitems">
+    <i>上下文管理器</i><i>审计日志</i><i>版本化检查点</i><i>崩溃防护 ProcessGuard</i><i>优雅关闭</i><i>成长轨迹追踪</i><i>108 个系统模块全链咬合</i>
+  </div>
+</div>
+
+<div class="flow-arrow">▼<small>QC PASSED · DELIVERY</small></div>
+
+<!-- ⑤ 交付层 -->
+<div class="layer deliver">
+  <div class="ltag">④ 交付层 · <b>DELIVERY</b></div>
+  <div class="row">
+    <div class="card"><h4><span class="ic">🎬</span>成片</h4><p>能带货、能涨粉、能过审的成品视频，逐镜可追溯</p></div>
+    <div class="card"><h4><span class="ic">📋</span>25 字段镜头卡</h4><p>v4.1 标准：光线色温、材质反光、台词声效全部白纸黑字</p></div>
+    <div class="card"><h4><span class="ic">🗂</span>工程档案</h4><p>商品情报档案 · 定妆照集 · 编号行镜头报告 · 字段数审计</p></div>
+    <div class="card"><h4><span class="ic">🔁</span>版本化存档</h4><p>每一次产出都可回滚、可交接、可复盘 —— 交付即工程</p></div>
+  </div>
+</div>
+
+<!-- 数据 footer -->
+<div class="stats">
+  <div class="stat"><b>203</b><span>导演级技能</span></div>
+  <div class="stat"><b>21</b><span>大师导演技法库</span></div>
+  <div class="stat"><b>124,000+</b><span>行手工锻造代码</span></div>
+  <div class="stat"><b>108</b><span>系统模块</span></div>
+  <div class="stat"><b>12</b><span>道硬性质量闸机</span></div>
+  <div class="stat"><b>36</b><span>种情绪精确映射</span></div>
+</div>
+
+<div class="foot"><b>SuperMickey</b> · Harness + Skill 架构拓扑 · 每一个数字都能在 GitHub 开源仓库里亲自验证 · MIT License</div>
+
+</body>
+</html>

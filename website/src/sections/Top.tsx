@@ -21,6 +21,7 @@ export function Nav({ lang, setLang, t, onOpen }: { lang: Lang; setLang: (l: Lan
           <button onClick={() => go('personas')} className="hover:text-[#5B8A00] transition-colors">{t.nav.personas}</button>
           <button onClick={() => go('wall')} className="hover:text-[#5B8A00] transition-colors">{t.nav.wall}</button>
           <button onClick={() => go('proof')} className="hover:text-[#5B8A00] transition-colors">{t.nav.proof}</button>
+          <button onClick={() => go('arch')} className="hover:text-[#5B8A00] transition-colors">{t.nav.arch}</button>
           <button onClick={() => go('agent')} className="hover:text-[#5B8A00] transition-colors">{t.nav.agent}</button>
         </nav>
         <div className="flex items-center gap-3">
@@ -35,7 +36,7 @@ export function Nav({ lang, setLang, t, onOpen }: { lang: Lang; setLang: (l: Lan
       </div>
       {open && (
         <div className="border-t border-[#E4EBD0] bg-[#FBFCF5] px-6 py-4 lg:hidden">
-          {[['personas', t.nav.personas], ['wall', t.nav.wall], ['proof', t.nav.proof], ['agent', t.nav.agent]].map(([id, label]) => (
+          {[['personas', t.nav.personas], ['wall', t.nav.wall], ['proof', t.nav.proof], ['arch', t.nav.arch], ['agent', t.nav.agent]].map(([id, label]) => (
             <button key={id} onClick={() => go(id)} className="block w-full py-2 text-left font-medium sm-sub hover:text-[#5B8A00]">{label}</button>
           ))}
           <button onClick={() => { setOpen(false); onOpen('mail') }} className="mt-2 block w-full rounded-full sm-btn-lime px-4 py-2 text-center text-sm">{t.nav.cta}</button>

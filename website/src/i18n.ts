@@ -25,6 +25,7 @@ const zh = {
     personas: '看看你是谁',
     wall: '作品墙',
     proof: '较真的人看这里',
+    arch: '系统架构',
     agent: 'AI 接入',
     cta: '联系试用',
   },
@@ -174,6 +175,13 @@ const zh = {
     promptTitle: '渲染提示词（精炼后节选）',
     prompt: 'Cinematic low-angle tracking shot, pearl-white electric sedan front three-quarter, a blade of amber light sweeping across the metallic waistline, matte wheels, glass roof highlight, volumetric haze, shallow depth of field, 9:16, photorealistic, film grain --no text, watermark, distortion...',
   },
+  arch: {
+    tag: 'SYSTEM ARCHITECTURE',
+    title: 'Harness 造骨架，Skill 灌灵魂',
+    sub: 'AI 生成视频版的 Claude Code：Harness 是不变的生产骨架（五大引擎脊柱 + 12 道闸机 + LLM 适配层），Skill 是可插拔的能力弹药（203 导演级技能 · 21 位大师导演）。换题材、换平台，骨架永远不动，只换弹药。',
+    note: '图上每一个数字、每一个模块，都能在 GitHub 开源仓库里亲自验证',
+    download: '下载高清架构图',
+  },
   agent: {
     tag: 'AI AGENT 接入',
     title: '这个网站，AI 也能读',
@@ -258,6 +266,7 @@ const en: Content = {
     personas: 'Who It\'s For',
     wall: 'The Wall',
     proof: 'For Skeptics',
+    arch: 'Architecture',
     agent: 'For AI Agents',
     cta: 'Contact for Trial',
   },
@@ -406,6 +415,13 @@ const en: Content = {
     scoreTotal: 'Total 91.2 · Passed delivery gate',
     promptTitle: 'Render Prompt (refined excerpt)',
     prompt: 'Cinematic low-angle tracking shot, pearl-white electric sedan front three-quarter, a blade of amber light sweeping across the metallic waistline, matte wheels, glass roof highlight, volumetric haze, shallow depth of field, 9:16, photorealistic, film grain --no text, watermark, distortion...',
+  },
+  arch: {
+    tag: 'SYSTEM ARCHITECTURE',
+    title: 'Harness Builds the Spine, Skills Feed the Soul',
+    sub: 'The Claude Code of AI video generation: the Harness is the immutable production spine (5 engines + 12 hard gates + LLM adapter), Skills are pluggable ammunition (203 director-grade skills · 21 master directors). New genre, new platform — the spine never moves, only the ammo changes.',
+    note: 'Every number and module on this map can be verified in the open-source repo',
+    download: 'Download Hi-Res Diagram',
   },
   agent: {
     tag: 'FOR AI AGENTS',

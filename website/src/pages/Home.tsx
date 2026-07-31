@@ -4,6 +4,7 @@ import { Nav, Hero, Compare } from '../sections/Top'
 import { Personas, Wall } from '../sections/PersonasWall'
 import { ThreeSteps } from '../sections/ThreeSteps'
 import { Proof } from '../sections/Proof'
+import { Architecture } from '../sections/Architecture'
 import { AgentZone, SiteFooter } from '../sections/AgentZone'
 import { InfoModal, type ModalKind } from '../sections/Modal'
 
@@ -23,6 +24,7 @@ export default function Home() {
         <ThreeSteps t={t} />
         <Wall t={t} />
         <Proof t={t} />
+        <Architecture t={t} />
         <AgentZone t={t} />
       </main>
       <SiteFooter t={t} onOpen={openModal} />
